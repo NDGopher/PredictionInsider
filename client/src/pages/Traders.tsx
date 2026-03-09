@@ -88,17 +88,28 @@ function TraderCard({ trader }: { trader: Trader }) {
 
             <div className="flex items-center gap-2 mt-2 flex-wrap">
               <RoiPill roi={trader.roi} />
-              {trader.tradesCount > 0 && (
-                <span className="text-[10px] text-muted-foreground">{trader.tradesCount.toLocaleString()} positions tracked</span>
+              {(trader as any).positionCount > 0 && (
+                <span className="text-[10px] text-muted-foreground">{(trader as any).positionCount.toLocaleString()} positions tracked</span>
+              )}
+              {(trader as any).qualityScore !== undefined && (
+                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${
+                  (trader as any).qualityScore >= 70
+                    ? "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20"
+                    : (trader as any).qualityScore >= 40
+                    ? "bg-yellow-500/10 text-yellow-600 border-yellow-500/20"
+                    : "bg-muted text-muted-foreground border-border"
+                }`}>
+                  Quality {(trader as any).qualityScore}/100
+                </span>
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mt-3">
+            <div className="grid grid-cols-3 gap-2 mt-3">
               <div>
                 <div className="text-[10px] text-muted-foreground mb-0.5">Volume</div>
                 <div className="text-xs font-semibold">
                   {trader.volume >= 1_000_000
-                    ? `$${(trader.volume / 1_000_000).toFixed(2)}M`
+                    ? `$${(trader.volume / 1_000_000).toFixed(1)}M`
                     : trader.volume >= 1000
                     ? `$${(trader.volume / 1000).toFixed(1)}K`
                     : `$${trader.volume.toFixed(0)}`}
@@ -109,6 +120,10 @@ function TraderCard({ trader }: { trader: Trader }) {
                 <div className={`text-xs font-semibold ${trader.roi >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
                   {trader.roi >= 0 ? "+" : ""}{trader.roi.toFixed(1)}%
                 </div>
+              </div>
+              <div>
+                <div className="text-[10px] text-muted-foreground mb-0.5">Positions</div>
+                <div className="text-xs font-semibold">{(trader as any).positionCount || "—"}</div>
               </div>
             </div>
 

@@ -8,10 +8,12 @@ export const traderSchema = z.object({
   pnl: z.number(),
   roi: z.number(),
   tradesCount: z.number(),
+  positionCount: z.number().optional(),
   winRate: z.number(),
   avgSize: z.number(),
   volume: z.number(),
   rank: z.number(),
+  qualityScore: z.number().optional(),
 });
 
 export const tradeSchema = z.object({
@@ -41,18 +43,23 @@ export const signalSchema = z.object({
   valueDelta: z.number(),
   currentPrice: z.number(),
   avgEntryPrice: z.number(),
+  totalNetUsdc: z.number().optional(),
+  avgNetUsdc: z.number().optional(),
   traderCount: z.number(),
   traders: z.array(z.object({
     address: z.string(),
     name: z.string().optional(),
     entryPrice: z.number(),
     size: z.number(),
+    netUsdc: z.number().optional(),
     roi: z.number(),
+    qualityScore: z.number().optional(),
   })),
   category: z.string(),
   volume: z.number(),
   generatedAt: z.number(),
   isValue: z.boolean(),
+  isNew: z.boolean().optional(),
 });
 
 export const marketSchema = z.object({
@@ -84,6 +91,7 @@ export const signalsResponseSchema = z.object({
   signals: z.array(signalSchema),
   topTraderCount: z.number(),
   marketsScanned: z.number(),
+  newSignalCount: z.number().optional(),
   fetchedAt: z.number(),
   source: z.string().optional(),
 });

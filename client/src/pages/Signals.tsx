@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,45 @@ import {
 } from "@/components/ui/select";
 import {
   Zap, Search, ExternalLink, TrendingUp, TrendingDown, AlertCircle,
-  RefreshCw, Users, Target, ChevronDown, ChevronUp, Star, Activity
+  RefreshCw, Users, Target, ChevronDown, ChevronUp, Star, Activity,
+  Bell, BellOff, Clock, DollarSign, ShieldCheck, AlertTriangle
 } from "lucide-react";
 import type { SignalsResponse, Signal } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
+
+// ─── Auto-refresh intervals ────────────────────────────────────────────────────
+const ELITE_REFRESH_SEC = 5 * 60;    // 5 minutes
+const FAST_REFRESH_SEC  = 90;        // 90 seconds
+
+// ─── Alert history (localStorage) ─────────────────────────────────────────────
+const ALERT_KEY = "pi_alert_ids";
+function getSeenAlerts(): Set<string> {
+  try { return new Set(JSON.parse(localStorage.getItem(ALERT_KEY) || "[]")); } catch { return new Set(); }
+}
+function saveSeenAlert(id: string) {
+  try {
+    const s = getSeenAlerts(); s.add(id);
+    localStorage.setItem(ALERT_KEY, JSON.stringify(Array.from(s).slice(-500)));
+  } catch {}
+}
+
+// ─── Browser notification helper ──────────────────────────────────────────────
+async function requestNotificationPermission(): Promise<boolean> {
+  if (!("Notification" in window)) return false;
+  if (Notification.permission === "granted") return true;
+  if (Notification.permission === "denied") return false;
+  const perm = await Notification.requestPermission();
+  return perm === "granted";
+}
+
+function sendNotification(title: string, body: string) {
+  if (Notification.permission !== "granted") return;
+  try {
+    new Notification(title, { body, icon: "/favicon.ico" });
+  } catch {}
+}
+
+// ─── Sub-components ────────────────────────────────────────────────────────────
 
 function ConfidenceBar({ score }: { score: number }) {
   const color = score >= 75 ? "bg-green-500" : score >= 50 ? "bg-yellow-500" : "bg-red-500";
@@ -26,46 +62,70 @@ function ConfidenceBar({ score }: { score: number }) {
   );
 }
 
+function QualityPip({ score }: { score: number }) {
+  if (!score && score !== 0) return null;
+  const color = score >= 70 ? "text-green-600 dark:text-green-400" : score >= 40 ? "text-yellow-600" : "text-red-500";
+  return (
+    <span className={`text-[10px] font-semibold ${color} flex items-center gap-0.5`} title="Trader quality score">
+      <ShieldCheck className="w-2.5 h-2.5" />{score}
+    </span>
+  );
+}
+
+function formatUsdc(val: number): string {
+  if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`;
+  if (val >= 1000)      return `$${(val / 1000).toFixed(1)}K`;
+  return `$${val.toFixed(0)}`;
+}
+
 function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }) {
   const [expanded, setExpanded] = useState(false);
 
-  const yesColor = signal.side === "YES"
+  const borderCls = signal.side === "YES"
     ? "border-green-500/30 bg-green-500/5"
     : "border-red-500/30 bg-red-500/5";
 
   const confidenceLabel =
     signal.confidence >= 75 ? { label: "HIGH", cls: "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/20" } :
-    signal.confidence >= 50 ? { label: "MED", cls: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 border-yellow-500/20" } :
+    signal.confidence >= 50 ? { label: "MED",  cls: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 border-yellow-500/20" } :
     { label: "LOW", cls: "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/20" };
 
   const polyUrl = signal.slug
     ? `https://polymarket.com/market/${signal.slug}`
     : signal.marketId ? `https://polymarket.com/event/${signal.marketId}` : null;
 
-  const hasROI = signal.traders.some(t => t.roi > 0);
+  const totalNetUsdc = (signal as any).totalNetUsdc as number | undefined;
+  const avgNetUsdc   = (signal as any).avgNetUsdc   as number | undefined;
 
   return (
-    <Card className={`border ${yesColor}`} data-testid={`signal-card-${signal.id}`}>
+    <Card className={`border ${borderCls}`} data-testid={`signal-card-${signal.id}`}>
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
+          {/* Side badge */}
           <div className={`mt-0.5 shrink-0 w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold
             ${signal.side === "YES" ? "bg-green-500/15 text-green-600 dark:text-green-400" : "bg-red-500/15 text-red-600 dark:text-red-400"}`}>
             {signal.side}
           </div>
 
           <div className="flex-1 min-w-0">
+            {/* Title row */}
             <div className="flex items-start justify-between gap-2 flex-wrap">
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold leading-snug" data-testid={`signal-question-${signal.id}`}>
                   {signal.marketQuestion}
                 </div>
-                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                   <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${confidenceLabel.cls}`}>
                     {confidenceLabel.label} CONFIDENCE
                   </span>
                   {signal.isValue && (
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-                      VALUE
+                      VALUE EDGE
+                    </span>
+                  )}
+                  {(signal as any).isNew && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-600 dark:text-orange-400 border border-orange-500/20 flex items-center gap-0.5">
+                      <AlertTriangle className="w-2.5 h-2.5" /> NEW
                     </span>
                   )}
                   {mode === "elite" && (
@@ -76,8 +136,16 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
                   <span className="text-[10px] text-muted-foreground capitalize">{signal.category}</span>
                 </div>
               </div>
+              {/* Net USDC aggregate */}
+              {totalNetUsdc && totalNetUsdc > 0 && (
+                <div className="text-right shrink-0">
+                  <div className="text-sm font-bold text-foreground">{formatUsdc(totalNetUsdc)}</div>
+                  <div className="text-[10px] text-muted-foreground">elite net pos.</div>
+                </div>
+              )}
             </div>
 
+            {/* Confidence bar */}
             <div className="mt-3">
               <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1">
                 <span>Confidence Score</span>
@@ -86,9 +154,10 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
               <ConfidenceBar score={signal.confidence} />
             </div>
 
+            {/* Stats grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
               <div className="bg-muted/50 rounded-md p-2">
-                <div className="text-[10px] text-muted-foreground">Current Price</div>
+                <div className="text-[10px] text-muted-foreground">Live Price</div>
                 <div className="text-sm font-semibold">{(signal.currentPrice * 100).toFixed(1)}¢</div>
               </div>
               <div className="bg-muted/50 rounded-md p-2">
@@ -100,21 +169,31 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
                 <div className="text-sm font-semibold">{signal.consensusPct}%</div>
               </div>
               <div className="bg-muted/50 rounded-md p-2">
-                <div className="text-[10px] text-muted-foreground">Traders</div>
-                <div className="text-sm font-semibold">{signal.traderCount}</div>
+                <div className="text-[10px] text-muted-foreground">
+                  {mode === "elite" ? "Avg Net Size" : "Traders"}
+                </div>
+                <div className="text-sm font-semibold">
+                  {mode === "elite" && avgNetUsdc
+                    ? formatUsdc(avgNetUsdc)
+                    : signal.traderCount}
+                </div>
               </div>
             </div>
 
+            {/* Value delta line */}
             {signal.valueDelta !== 0 && (
               <div className={`flex items-center gap-1.5 mt-2 text-xs
                 ${signal.valueDelta > 0 ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
-                {signal.valueDelta > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
                 {signal.valueDelta > 0
-                  ? `${(signal.valueDelta * 100).toFixed(1)}¢ value edge vs. live price (after 2¢ slippage)`
-                  : `Entry was ${Math.abs(signal.valueDelta * 100).toFixed(1)}¢ cheaper than live price`}
+                  ? <TrendingUp className="w-3.5 h-3.5" />
+                  : <TrendingDown className="w-3.5 h-3.5" />}
+                {signal.valueDelta > 0
+                  ? `${(signal.valueDelta * 100).toFixed(1)}¢ value edge over live price (incl. 2¢ slippage)`
+                  : `Elite avg entry was ${Math.abs(signal.valueDelta * 100).toFixed(1)}¢ below live price`}
               </div>
             )}
 
+            {/* Footer row */}
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
               <button
                 onClick={() => setExpanded(!expanded)}
@@ -137,23 +216,36 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
               )}
             </div>
 
+            {/* Expanded trader list */}
             {expanded && signal.traders.length > 0 && (
               <div className="mt-3 space-y-1.5">
+                <div className="grid grid-cols-4 text-[10px] text-muted-foreground font-medium px-2.5 py-1">
+                  <span>Trader</span>
+                  <span className="text-right">Entry</span>
+                  <span className="text-right">Net Pos.</span>
+                  <span className="text-right">ROI / Quality</span>
+                </div>
                 {signal.traders.map((t, i) => (
-                  <div key={i} className="flex items-center justify-between bg-muted/40 rounded px-2.5 py-1.5">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-xs font-mono">
+                  <div key={i} className="grid grid-cols-4 items-center bg-muted/40 rounded px-2.5 py-1.5 text-xs gap-1">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Users className="w-3 h-3 text-muted-foreground shrink-0" />
+                      <span className="font-mono truncate">
                         {t.name || (t.address ? `${t.address.slice(0, 6)}...${t.address.slice(-4)}` : "Trader")}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 text-xs">
-                      <span className="text-muted-foreground">Entry: {(t.entryPrice * 100).toFixed(1)}¢</span>
-                      {hasROI && t.roi > 0 && (
-                        <span className={`font-medium ${t.roi >= 20 ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
-                          {t.roi >= 0 ? "+" : ""}{t.roi.toFixed(1)}% ROI
+                    <div className="text-right text-muted-foreground tabular-nums">
+                      {(t.entryPrice * 100).toFixed(1)}¢
+                    </div>
+                    <div className="text-right font-medium tabular-nums">
+                      {(t as any).netUsdc ? formatUsdc((t as any).netUsdc) : `${t.size.toLocaleString()} shr`}
+                    </div>
+                    <div className="text-right flex items-center justify-end gap-1.5">
+                      {t.roi > 0 && (
+                        <span className={`${t.roi >= 20 ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
+                          {t.roi >= 0 ? "+" : ""}{t.roi.toFixed(1)}%
                         </span>
                       )}
+                      {(t as any).qualityScore ? <QualityPip score={(t as any).qualityScore} /> : null}
                     </div>
                   </div>
                 ))}
@@ -166,73 +258,221 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
   );
 }
 
+// ─── Countdown timer component ─────────────────────────────────────────────────
+function RefreshCountdown({ secondsLeft }: { secondsLeft: number }) {
+  const m = Math.floor(secondsLeft / 60);
+  const s = secondsLeft % 60;
+  return (
+    <span className="flex items-center gap-1 text-[11px] text-muted-foreground tabular-nums">
+      <Clock className="w-3 h-3" />
+      {m > 0 ? `${m}m ${s}s` : `${s}s`}
+    </span>
+  );
+}
+
+// ─── Main page ─────────────────────────────────────────────────────────────────
 export default function Signals() {
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("all");
-  const [sort, setSort] = useState("confidence");
-  const [mode, setMode] = useState<"elite" | "fast">("elite");
+  const [search, setSearch]       = useState("");
+  const [filter, setFilter]       = useState("all");
+  const [sort, setSort]           = useState("confidence");
+  const [mode, setMode]           = useState<"elite" | "fast">("elite");
+  const [notifEnabled, setNotifEnabled] = useState(Notification?.permission === "granted");
+  const [countdown, setCountdown] = useState(mode === "elite" ? ELITE_REFRESH_SEC : FAST_REFRESH_SEC);
+  const [alertHistory, setAlertHistory] = useState<Array<{ id: string; question: string; confidence: number; ts: number }>>([]);
+  const [showAlerts, setShowAlerts] = useState(false);
 
-  const eliteQuery = useQuery<SignalsResponse>({
-    queryKey: ["/api/signals"],
-    staleTime: 4 * 60 * 1000,
-    enabled: mode === "elite",
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const countdownRef = useRef<ReturnType<typeof setInterval>>();
+
+  const refreshInterval = mode === "elite" ? ELITE_REFRESH_SEC : FAST_REFRESH_SEC;
+  const queryKey = mode === "elite" ? ["/api/signals"] : ["/api/signals/fast"];
+
+  // ── Query ────────────────────────────────────────────────────────────────────
+  const { data, isLoading, error } = useQuery<SignalsResponse>({
+    queryKey,
+    staleTime: (refreshInterval - 5) * 1000,
   });
 
-  const fastQuery = useQuery<SignalsResponse>({
-    queryKey: ["/api/signals/fast"],
-    staleTime: 90 * 1000,
-    enabled: mode === "fast",
-  });
+  // ── Process new signals for alerts ───────────────────────────────────────────
+  const processAlerts = useCallback((signals: Signal[]) => {
+    const seen = getSeenAlerts();
+    const newAlerts: typeof alertHistory = [];
 
-  const activeQuery = mode === "elite" ? eliteQuery : fastQuery;
-  const { data, isLoading, error, refetch } = activeQuery;
+    for (const sig of signals) {
+      if (sig.confidence >= 70 && !seen.has(sig.id)) {
+        saveSeenAlert(sig.id);
+        newAlerts.push({ id: sig.id, question: sig.marketQuestion, confidence: sig.confidence, ts: Date.now() });
+        if (notifEnabled) {
+          sendNotification(
+            `PredictionInsider — ${sig.side} Signal (${sig.confidence}/100)`,
+            sig.marketQuestion
+          );
+        }
+      }
+    }
+
+    if (newAlerts.length > 0) {
+      setAlertHistory(prev => [...newAlerts, ...prev].slice(0, 20));
+      toast({
+        title: `${newAlerts.length} new high-confidence signal${newAlerts.length > 1 ? "s" : ""}`,
+        description: newAlerts[0].question,
+      });
+    }
+  }, [notifEnabled, toast]);
+
+  useEffect(() => {
+    if (data?.signals) processAlerts(data.signals);
+  }, [data, processAlerts]);
+
+  // ── Auto-refresh countdown ────────────────────────────────────────────────────
+  const resetCountdown = useCallback(() => {
+    setCountdown(refreshInterval);
+    clearInterval(countdownRef.current);
+    countdownRef.current = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          queryClient.invalidateQueries({ queryKey });
+          return refreshInterval;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, [refreshInterval, queryClient, queryKey]);
+
+  useEffect(() => {
+    resetCountdown();
+    return () => clearInterval(countdownRef.current);
+  }, [mode, resetCountdown]);
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey });
+    resetCountdown();
+  };
+
+  const handleEnableNotifications = async () => {
+    const ok = await requestNotificationPermission();
+    setNotifEnabled(ok);
+    toast({
+      title: ok ? "Notifications enabled" : "Notifications blocked",
+      description: ok
+        ? "You'll be alerted for signals with confidence ≥ 70."
+        : "Please allow notifications in your browser settings.",
+    });
+  };
+
   const signals = data?.signals || [];
-
   const filtered = signals
     .filter(s => {
       if (search && !s.marketQuestion.toLowerCase().includes(search.toLowerCase())) return false;
-      if (filter === "value") return s.isValue;
-      if (filter === "high") return s.confidence >= 70;
-      if (filter === "yes") return s.side === "YES";
-      if (filter === "no") return s.side === "NO";
+      if (filter === "value")  return s.isValue;
+      if (filter === "high")   return s.confidence >= 70;
+      if (filter === "yes")    return s.side === "YES";
+      if (filter === "no")     return s.side === "NO";
       return true;
     })
     .sort((a, b) => {
-      if (sort === "confidence") return b.confidence - a.confidence;
-      if (sort === "consensus") return b.consensusPct - a.consensusPct;
-      if (sort === "value") return b.valueDelta - a.valueDelta;
-      if (sort === "traders") return b.traderCount - a.traderCount;
+      if (sort === "confidence")  return b.confidence - a.confidence;
+      if (sort === "consensus")   return b.consensusPct - a.consensusPct;
+      if (sort === "value")       return b.valueDelta - a.valueDelta;
+      if (sort === "traders")     return b.traderCount - a.traderCount;
+      if (sort === "size") {
+        const aSize = (a as any).totalNetUsdc || 0;
+        const bSize = (b as any).totalNetUsdc || 0;
+        return bSize - aSize;
+      }
       return 0;
     });
 
+  const newCount  = signals.filter(s => (s as any).isNew).length;
+  const highCount = signals.filter(s => s.confidence >= 70).length;
+  const valueCount = signals.filter(s => s.isValue).length;
+
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-5">
+      {/* Header */}
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <div className="flex items-center gap-2">
             <Zap className="w-5 h-5 text-primary" />
             <h1 className="text-xl font-bold tracking-tight">Live Signals</h1>
-            {!isLoading && (
-              <Badge variant="secondary" className="ml-1">{filtered.length}</Badge>
+            {!isLoading && <Badge variant="secondary" className="ml-1">{filtered.length}</Badge>}
+            {newCount > 0 && (
+              <Badge className="bg-orange-500 text-white text-[10px] px-1.5 h-4">
+                {newCount} new
+              </Badge>
             )}
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
             {mode === "elite"
-              ? "Consensus positions from official top-50 leaderboard traders (40% ROI weighted)"
-              : "Real-time consensus from recent Polymarket sports trading activity"}
+              ? "Aggregate open positions from official top-50 leaderboard — direct from on-chain subgraph"
+              : "Real-time consensus from recent Polymarket sports trades — refreshes every 90s"}
           </p>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => refetch()}
-          data-testid="button-refresh-signals"
-          className="gap-2"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          Refresh
-        </Button>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Notifications */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleEnableNotifications}
+            data-testid="button-notifications"
+            className="gap-1.5"
+            title={notifEnabled ? "Notifications active" : "Enable notifications"}
+          >
+            {notifEnabled ? <Bell className="w-3.5 h-3.5 text-green-500" /> : <BellOff className="w-3.5 h-3.5" />}
+            <span className="text-xs">{notifEnabled ? "Alerts on" : "Alerts off"}</span>
+          </Button>
+
+          {/* Alert history */}
+          {alertHistory.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowAlerts(!showAlerts)}
+              data-testid="button-alert-history"
+              className="gap-1.5 relative"
+            >
+              <Bell className="w-3.5 h-3.5" />
+              <span className="text-xs">History ({alertHistory.length})</span>
+            </Button>
+          )}
+
+          <RefreshCountdown secondsLeft={countdown} />
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleRefresh}
+            data-testid="button-refresh-signals"
+            className="gap-1.5"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Refresh
+          </Button>
+        </div>
       </div>
+
+      {/* Alert history panel */}
+      {showAlerts && alertHistory.length > 0 && (
+        <Card className="border-orange-500/20 bg-orange-500/5">
+          <CardContent className="p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Bell className="w-3.5 h-3.5 text-orange-500" />
+              <span className="text-xs font-semibold text-orange-600 dark:text-orange-400">Recent Alerts</span>
+            </div>
+            <div className="space-y-1.5">
+              {alertHistory.map((a) => (
+                <div key={a.id} className="flex items-center justify-between text-xs bg-background/50 rounded px-2.5 py-1.5">
+                  <span className="truncate flex-1 mr-2">{a.question}</span>
+                  <span className="shrink-0 font-bold text-green-600 dark:text-green-400">{a.confidence}/100</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Mode toggle */}
       <div className="flex items-center gap-1.5 p-1 bg-muted rounded-lg w-fit">
@@ -240,9 +480,7 @@ export default function Signals() {
           onClick={() => setMode("elite")}
           data-testid="button-mode-elite"
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-            mode === "elite"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+            mode === "elite" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <Star className="w-3.5 h-3.5" />
@@ -252,9 +490,7 @@ export default function Signals() {
           onClick={() => setMode("fast")}
           data-testid="button-mode-fast"
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-            mode === "fast"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+            mode === "fast" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <Activity className="w-3.5 h-3.5" />
@@ -264,7 +500,7 @@ export default function Signals() {
 
       {/* Filters */}
       <div className="flex items-center gap-2 flex-wrap">
-        <div className="relative flex-1 min-w-[180px] max-w-xs">
+        <div className="relative flex-1 min-w-[160px] max-w-xs">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
           <Input
             placeholder="Search markets..."
@@ -280,8 +516,8 @@ export default function Signals() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Signals</SelectItem>
-            <SelectItem value="value">Value Only</SelectItem>
-            <SelectItem value="high">High Confidence</SelectItem>
+            <SelectItem value="value">Value Edge Only</SelectItem>
+            <SelectItem value="high">High Confidence (70+)</SelectItem>
             <SelectItem value="yes">YES Positions</SelectItem>
             <SelectItem value="no">NO Positions</SelectItem>
           </SelectContent>
@@ -293,26 +529,35 @@ export default function Signals() {
           <SelectContent>
             <SelectItem value="confidence">Confidence</SelectItem>
             <SelectItem value="consensus">Consensus %</SelectItem>
-            <SelectItem value="value">Value Delta</SelectItem>
+            <SelectItem value="value">Value Edge</SelectItem>
             <SelectItem value="traders">Trader Count</SelectItem>
+            <SelectItem value="size">Net Position $</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
+      {/* Summary bar */}
       {!isLoading && signals.length > 0 && (
-        <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
-          <span className="font-medium">{data?.topTraderCount} traders tracked</span>
-          <span>{data?.marketsScanned} sports markets scanned</span>
-          <span className="text-green-600 dark:text-green-400">{signals.filter(s => s.isValue).length} value opportunities</span>
-          <span>{signals.filter(s => s.confidence >= 70).length} high-confidence signals</span>
+        <div className="flex items-center gap-3 text-xs flex-wrap">
+          <span className="text-muted-foreground">{data?.topTraderCount} elite traders</span>
+          <span className="text-muted-foreground">{data?.marketsScanned} sports markets scanned</span>
+          {valueCount > 0 && (
+            <span className="text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
+              <DollarSign className="w-3 h-3" /> {valueCount} value edges
+            </span>
+          )}
+          {highCount > 0 && (
+            <span className="text-primary font-medium">{highCount} high-confidence</span>
+          )}
           {data?.source && (
             <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-muted border border-border">
-              {data.source === "official_leaderboard_v2" ? "Official leaderboard" : "Live activity"} source
+              {data.source.includes("elite") ? "On-chain subgraph" : "Live trades"} · {mode === "elite" ? "5m refresh" : "90s refresh"}
             </span>
           )}
         </div>
       )}
 
+      {/* Signal cards */}
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -322,9 +567,7 @@ export default function Signals() {
                 <Skeleton className="h-3 w-full mb-1.5" />
                 <Skeleton className="h-3 w-4/5 mb-4" />
                 <div className="grid grid-cols-4 gap-2">
-                  {Array.from({ length: 4 }).map((_, j) => (
-                    <Skeleton key={j} className="h-12" />
-                  ))}
+                  {Array.from({ length: 4 }).map((_, j) => <Skeleton key={j} className="h-12" />)}
                 </div>
               </CardContent>
             </Card>
@@ -337,10 +580,10 @@ export default function Signals() {
             <div>
               <div className="font-medium">Failed to load signals</div>
               <div className="text-sm text-muted-foreground mt-1 max-w-sm">
-                The Polymarket APIs may be temporarily unavailable or rate-limited.
+                Polymarket APIs may be temporarily unavailable or rate-limited.
               </div>
             </div>
-            <Button onClick={() => refetch()} variant="outline" className="gap-2">
+            <Button onClick={handleRefresh} variant="outline" className="gap-2">
               <RefreshCw className="w-4 h-4" /> Try Again
             </Button>
           </CardContent>
@@ -356,9 +599,9 @@ export default function Signals() {
               <div className="text-sm text-muted-foreground mt-1 max-w-sm">
                 {signals.length === 0
                   ? mode === "elite"
-                    ? "Elite signals appear when 2+ top-50 leaderboard traders hold the same position. Try Live Feed for faster signals."
-                    : "Live signals appear when 2+ active traders take the same side. Data is loading."
-                  : "Try adjusting your filters to see more signals."}
+                    ? "Elite signals are built from open on-chain positions of the top-50 Polymarket traders in sports markets. This requires them to hold open positions — try Live Feed for faster results."
+                    : "Live feed signals appear when 2+ active traders share a sports market position in the last 1,000 trades."
+                  : "Try adjusting your filters."}
               </div>
             </div>
             {signals.length === 0 && mode === "elite" && (
