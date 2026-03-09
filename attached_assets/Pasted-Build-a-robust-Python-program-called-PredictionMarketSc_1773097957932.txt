@@ -1,0 +1,56 @@
+Build a robust Python program called "PredictionMarketScanner" that replicates the core functionality of OddsJam Insiders. The tool should scan top traders on Polymarket (and Kalshi where possible), analyze their trades for consensus and value, compare entry prices to current market prices on Polymarket and Kalshi, and generate signals/alerts if value remains. Make it incredibly robust: handle errors, rate limits, data persistence, logging, and backtesting. I don't care how long it takes—prioritize quality and modularity.
+
+Requirements Overview:
+- Focus on Polymarket first (better APIs); add Kalshi support.
+- Identify top traders: Use leaderboards (PNL > threshold, >500 trades, high ROI).
+- Analyze trades: Fetch historical trades/positions, calculate metrics (win rate, average size, category specialization).
+- Consensus: If >50% of top traders bet on same outcome in a market.
+- Value Detection: For each signal, check if current midpoint price (from order book) is better than trader's entry (e.g., for buys: current < entry + slippage).
+- Outputs: Console logs, CSV exports, email alerts (use smtplib). Confidence score: 0-100 based on trader ROI, consensus, value delta.
+- Robustness: SQLite DB for data storage, async requests, retries (5x), logging (to file), config file for APIs/keys.
+- Backtesting: Simulate signals on historical data (use Polymarket subgraph for old trades).
+- Run Modes: 'scan' (real-time), 'backtest', 'report' (summarize profits).
+
+Tech Stack:
+- Libraries: requests, pandas, sqlite3, beautifulsoup4 (for Kalshi scraping), asyncio/aiohttp (async), smtplib (alerts), logging, json, time, os.
+- APIs:
+  - Polymarket: Gamma (https://gamma-api.polymarket.com) for markets; Data (https://data-api.polymarket.com) for leaderboards/trades/positions; CLOB (https://clob.polymarket.com) for prices/orderbooks.
+  - Kalshi: https://api.elections.kalshi.com/trade-api/v2 for markets/orderbooks (no auth for public data).
+  - Polymarket Subgraph: https://api.goldsky.com/api/public/project_cl6mb8i9h0003e201j6li0diw/subgraphs/orderbook-subgraph/0.0.1/gn (GraphQL for historical/on-chain).
+- Config: Use .env or config.json for email creds, thresholds (e.g., min_PNL=10000, min_trades=500).
+
+Program Structure (Modular Files):
+1. config.py: Load configs (API bases, thresholds, email).
+2. db.py: SQLite functions (init DB, insert/fetch traders, trades, markets).
+3. polymarket_api.py: Functions for leaderboards (get_top_traders(category='sports', time='week', limit=50)), get_trades(user_addr), get_positions(user_addr), get_market_price(market_id), get_orderbook(market_id).
+4. kalshi_api.py: Functions for get_markets(series_ticker), get_orderbook(market_ticker). Scrape leaderboard from https://kalshi.com/social/leaderboard (use BS4, fetch top 50 by profit).
+5. analyzer.py: Analyze_trades(trades_df): Calc ROI, win_rate, avg_size. Find_consensus(top_traders, market): % agreement. Compute_value(entry_price, current_price, side): Delta with slippage (0.02).
+6. scanner.py: Main loop: Fetch top traders, their recent trades (last 24h), find active markets, check value, generate signals (dict with confidence, sizing, deeplink).
+7. alerter.py: Send_email(signal) if confidence > 70.
+8. backtester.py: Use subgraph to fetch historical trades, simulate signals, compute simulated PNL.
+9. main.py: CLI args (e.g., python main.py --mode=scan --category=sports). Infinite loop for scan (sleep 5min).
+
+Step-by-Step Implementation Guide:
+1. Setup: Create Replit project, install libs. Init DB with tables: traders (addr, pnl, roi, trades_count, category), trades (id, user_addr, market_id, entry_price, size, side, timestamp), markets (id, name, current_price, orderbook).
+2. Fetch Top Traders:
+   - Polymarket: requests.get('https://data-api.polymarket.com/v1/leaderboard?category=SPORTS&timePeriod=WEEK&orderBy=PNL&limit=50'). Filter by min_trades>500, pnl>10000.
+   - Kalshi: Scrape leaderboard HTML, parse tables for usernames/profits. (Note: No trade details; approximate by monitoring public activity if possible.)
+3. Fetch/Analyze Trades:
+   - For each top trader: Get trades via Data API (/trades?address=addr&limit=100). Store in DB.
+   - Compute metrics: ROI = (sum(profits)/sum(investments))100. Win rate = wins/total_trades.
+4. Market Scanning:
+   - Get active markets: Gamma API (/markets?active=true&category=sports).
+   - For markets with trader activity: Get orderbook (CLOB /book?token_id=market_token), compute midpoint = (best_bid + best_ask)/2.
+5. Signal Generation:
+   - For each recent trade: If consensus >50% and value_delta >0, create signal: {'market': name, 'outcome': side, 'confidence': (roi0.4 + consensus0.4 + value0.2), 'sizing': size * (bankroll/10000), 'deeplink': f'https://polymarket.com/market/{slug}'}.
+6. Robustness Features:
+   - Retries: Use try/except, sleep on 429 errors.
+   - Logging: logging.info('Fetched 50 traders').
+   - Persistence: Store all data in DB; load from cache if API fails.
+   - Async: Use aiohttp for parallel fetches.
+7. Backtesting:
+   - Query subgraph GraphQL for historical trades (e.g., query { enrichedOrderFilleds(where: {timestamp_gt: unix_time}) { ... } }).
+   - Simulate: For past signals, assume execution at midpoint, calc PNL.
+8. Run: In main, loop scan every 5min. Add --test flag for dry runs.
+
+Make it expandable (e.g., add ML via scikit-learn for better filtering later). Output sample signals to console/CSV. Test thoroughly with sample data.
