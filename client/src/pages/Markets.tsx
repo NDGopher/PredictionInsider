@@ -49,6 +49,11 @@ function MarketCard({ market }: { market: Market }) {
                   {market.category}
                 </Badge>
               )}
+              {(market as any).source === "kalshi" && (
+                <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4 border-blue-500/30 text-blue-600 dark:text-blue-400">
+                  Kalshi
+                </Badge>
+              )}
               {daysLeft !== null && (
                 <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
                   <Clock className="w-3 h-3" />
@@ -89,15 +94,27 @@ function MarketCard({ market }: { market: Market }) {
 
         {market.slug && (
           <div className="mt-3 pt-2.5 border-t border-border/50">
-            <a
-              href={`https://polymarket.com/market/${market.slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-[11px] text-primary"
-              data-testid={`link-market-${market.id}`}
-            >
-              Trade on Polymarket <ExternalLink className="w-3 h-3" />
-            </a>
+            {(market as any).source === "kalshi" ? (
+              <a
+                href={`https://kalshi.com/markets/${market.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[11px] text-primary"
+                data-testid={`link-market-${market.id}`}
+              >
+                Trade on Kalshi <ExternalLink className="w-3 h-3" />
+              </a>
+            ) : (
+              <a
+                href={`https://polymarket.com/market/${market.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[11px] text-primary"
+                data-testid={`link-market-${market.id}`}
+              >
+                Trade on Polymarket <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
           </div>
         )}
       </CardContent>

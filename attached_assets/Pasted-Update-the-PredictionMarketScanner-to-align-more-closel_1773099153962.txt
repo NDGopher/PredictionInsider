@@ -1,0 +1,29 @@
+Update the "PredictionMarketScanner" to align more closely with OddsJam Insiders, incorporating the latest API details from Polymarket and Kalshi as of 2026. The current version relies on activity instead of proven leaders—fix this by using Polymarket's official leaderboard API (which is active at https://data-api.polymarket.com/v1/leaderboard) for top traders by PNL/ROI. Explain: OddsJam focuses on elite insiders (high ROI, 500+ trades, consistent performance), not broad activity. Use subgraphs for detailed PNL/ROI. Add full Kalshi integration via API for markets/order books and scraping for leaderboards (no API for traders). Include new wallet scanning, backtesting, and robust error handling.
+
+**Key Changes Based on Latest Research:**
+- **Polymarket Leaderboard**: Use API endpoint /v1/leaderboard with params: category=SPORTS, timePeriod=MONTH (or ALL for long-term), orderBy=PNL, limit=50. Filter further with subgraph for ROI (realizedPnL / investedAmount * 100 >20%), trades_count >500.
+- **Subgraph for PNL/ROI**: Use GraphQL at https://api.goldsky.com/api/public/project_cl6mb8i9h0003e201j6li0diw/subgraphs/pnl-subgraph/0.0.14/gn (or latest). Example query: gql("""{ userPositions(first:100, orderBy:realizedPnL, orderDirection:desc, where:{realizedPnL_gt:10000}) { user {id}, realizedPnL, investedAmount, unrealizedPnL, positionCount } }"""). Calc ROI = (realizedPnL + unrealizedPnL) / investedAmount * 100. Use for filtering/confidence.
+- **Trades/Positions**: Data API /trades?address=addr&limit=500, /positions?address=addr.
+- **Markets/Prices**: Gamma API /markets?active=true&category=sports, CLOB /book?token_id= for order books, /midpoint for prices.
+- **Kalshi**: No trader API—scrape leaderboard https://kalshi.com/social/leaderboard for top by profit/volume (weekly/all). Parse rankings, usernames, stats. Use trade-api/v2/markets?series_ticker=SPORTS* for markets, /markets/{ticker}/orderbook for books. Note: API base is https://api.elections.kalshi.com but covers sports; check for updates.
+- **Filtering**: Exclude bots (e.g., >100 trades/day via positionCount), gamblers (erratic sizing variance > threshold). Sports focus: Filter trades by market category.
+- **Consensus/Signals**: From top 50 only (>50% on outcome). Per-trader value comparison; aggregate for consensus. Confidence: 40% trader ROI, 30% consensus, 20% value delta (entry vs. midpoint +0.02 slippage), 10% relative sizing.
+- **New Wallets**: Hourly, query leaderboard API/subgraph for new addresses meeting criteria (PNL>10k, ROI>20%, trades>500). Alert if new.
+- **Backtesting**: Subgraph historical queries (e.g., enrichedOrderFilleds for past trades). Simulate PNL over past month.
+- **Robustness**: Rate limits (Polymarket: throttle on exceed), User-Agent rotation for scraping, async, DB for caching.
+
+**Updated Structure:**
+- **config.py**: Add subgraph_url, kalshi_api_base='https://api.elections.kalshi.com/trade-api/v2'.
+- **db.py**: Tables for traders (addr/username, pnl, roi, trades_count, category), add kalshi_traders.
+- **polymarket_api.py**: get_leaderboard(category='SPORTS', timePeriod='MONTH', orderBy='PNL', limit=50). get_subgraph_pnl(query). get_trades(addr), get_orderbook(token_id).
+- **kalshi_api.py**: get_markets(series_ticker), get_orderbook(ticker).
+- **scraper.py**: scrape_polymarket_leaderboard(url='https://polymarket.com/leaderboard') as fallback (parse tabs for time/category, lists for ranks/addr/pnl). scrape_kalshi_leaderboard(url='https://kalshi.com/social/leaderboard')—parse weekly lists for profit/volume.
+- **analyzer.py**: calc_roi_from_subgraph(data). find_consensus(top_traders, market). compute_value(entry, midpoint, side, slippage=0.02).
+- **scanner.py**: Hourly: Fetch/update top traders from API/subgraph, scan new wallets. Generate signals for recent trades (last 24h) if value >0.
+- **alerter.py**: Email for signals/new insiders (confidence>70).
+- **backtester.py**: Historical query e.g., gql("""{ enrichedOrderFilleds(where:{timestamp_gt:unix_past_month}) { ... }"""), simulate.
+- **main.py**: Modes: scan (loop 5min), backtest, report. --category=sports.
+
+Implement: Prioritize API over scrape. Test subgraph with gql lib (pip install gql[all]). For Kalshi scrape, use Selenium if dynamic (page has timers). Expand to politics if needed. Output to console/CSV, add dashboard if Flask.
+
+This makes it robust and closer to OddsJam—focus on elite traders for high-value signals.

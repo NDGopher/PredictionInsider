@@ -251,16 +251,21 @@ export default function Dashboard() {
                           <div className="text-xs font-medium truncate">
                             {trader.name || `${trader.address.slice(0, 6)}...${trader.address.slice(-4)}`}
                           </div>
-                          <div className="text-[10px] text-muted-foreground">
-                            {trader.tradesCount} trades
+                          <div className={`text-[10px] font-medium ${trader.roi >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                            {trader.roi >= 0 ? "+" : ""}{trader.roi.toFixed(1)}% ROI
                           </div>
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <div className="text-xs font-semibold">
-                          ${trader.volume >= 1000 ? `${(trader.volume/1000).toFixed(1)}K` : trader.volume.toFixed(0)}
+                        <div className={`text-xs font-semibold ${trader.pnl >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                          {trader.pnl >= 0 ? "+" : ""}
+                          {trader.pnl >= 1_000_000
+                            ? `$${(trader.pnl / 1_000_000).toFixed(1)}M`
+                            : trader.pnl >= 1000
+                            ? `$${(trader.pnl / 1000).toFixed(0)}K`
+                            : `$${trader.pnl.toFixed(0)}`}
                         </div>
-                        <div className="text-[10px] text-muted-foreground">volume</div>
+                        <div className="text-[10px] text-muted-foreground">PNL</div>
                       </div>
                     </div>
                   ))}

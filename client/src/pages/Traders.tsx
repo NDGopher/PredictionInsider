@@ -9,26 +9,42 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
 import {
-  Users, Search, RefreshCw, AlertCircle, ExternalLink
+  Users, Search, RefreshCw, AlertCircle, ExternalLink, BadgeCheck, TrendingUp
 } from "lucide-react";
 import type { LeaderboardResponse, Trader } from "@shared/schema";
 
 function TraderRank({ rank }: { rank: number }) {
-  if (rank === 1) return <span className="text-xs font-bold text-yellow-500">🥇</span>;
-  if (rank === 2) return <span className="text-xs font-bold text-slate-400">🥈</span>;
-  if (rank === 3) return <span className="text-xs font-bold text-amber-600">🥉</span>;
-  return <span className="text-xs text-muted-foreground tabular-nums w-5 text-center">#{rank}</span>;
+  if (rank === 1) return <span className="text-xs font-bold text-yellow-500">#1</span>;
+  if (rank === 2) return <span className="text-xs font-bold text-slate-400">#2</span>;
+  if (rank === 3) return <span className="text-xs font-bold text-amber-600">#3</span>;
+  return <span className="text-xs text-muted-foreground tabular-nums">#{rank}</span>;
 }
 
-function WinRateBar({ rate }: { rate: number }) {
-  const color = rate >= 60 ? "bg-green-500" : rate >= 45 ? "bg-yellow-500" : "bg-red-500";
+function PnlBadge({ pnl }: { pnl: number }) {
+  const positive = pnl >= 0;
+  const formatted = pnl >= 1_000_000
+    ? `$${(pnl / 1_000_000).toFixed(2)}M`
+    : pnl >= 1000
+    ? `$${(pnl / 1000).toFixed(1)}K`
+    : `$${pnl.toFixed(0)}`;
   return (
-    <div className="flex items-center gap-1.5">
-      <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${Math.min(rate, 100)}%` }} />
-      </div>
-      <span className="text-[11px] tabular-nums text-muted-foreground">{rate.toFixed(0)}%</span>
-    </div>
+    <span className={`text-xs font-bold tabular-nums ${positive ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+      {positive ? "+" : ""}{formatted}
+    </span>
+  );
+}
+
+function RoiPill({ roi }: { roi: number }) {
+  const pct = Math.round(roi * 10) / 10;
+  const cls = pct >= 20
+    ? "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/20"
+    : pct >= 5
+    ? "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 border-yellow-500/20"
+    : "bg-muted text-muted-foreground border-border";
+  return (
+    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${cls}`}>
+      {pct >= 0 ? "+" : ""}{pct.toFixed(1)}% ROI
+    </span>
   );
 }
 
@@ -36,6 +52,7 @@ function TraderCard({ trader }: { trader: Trader }) {
   const addr = trader.address;
   const shortAddr = addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : "Unknown";
   const polyLink = `https://polymarket.com/profile/${addr}`;
+  const xLink = (trader as any).xUsername ? `https://x.com/${(trader as any).xUsername}` : null;
 
   return (
     <Card className="hover-elevate" data-testid={`trader-card-${trader.rank}`}>
@@ -50,50 +67,63 @@ function TraderCard({ trader }: { trader: Trader }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2 flex-wrap">
               <div className="min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 flex-wrap">
                   <TraderRank rank={trader.rank} />
                   <span className="text-sm font-semibold truncate" data-testid={`trader-name-${trader.rank}`}>
                     {trader.name || shortAddr}
                   </span>
+                  {(trader as any).verifiedBadge && (
+                    <BadgeCheck className="w-3.5 h-3.5 text-primary shrink-0" />
+                  )}
                 </div>
                 {trader.name && (
                   <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{shortAddr}</div>
                 )}
               </div>
               <div className="text-right shrink-0">
-                <div className="text-sm font-bold text-foreground">
-                  {trader.tradesCount} trades
-                </div>
-                <div className="text-[10px] text-muted-foreground">recent activity</div>
+                <PnlBadge pnl={trader.pnl} />
+                <div className="text-[10px] text-muted-foreground mt-0.5">all-time PNL</div>
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 mt-3">
-              <div>
-                <div className="text-[10px] text-muted-foreground mb-0.5">Trades</div>
-                <div className="text-xs font-semibold">{trader.tradesCount.toLocaleString()}</div>
-              </div>
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <RoiPill roi={trader.roi} />
+              {trader.tradesCount > 0 && (
+                <span className="text-[10px] text-muted-foreground">{trader.tradesCount.toLocaleString()} positions tracked</span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mt-3">
               <div>
                 <div className="text-[10px] text-muted-foreground mb-0.5">Volume</div>
                 <div className="text-xs font-semibold">
-                  ${trader.volume >= 1_000_000
-                    ? `${(trader.volume / 1_000_000).toFixed(2)}M`
+                  {trader.volume >= 1_000_000
+                    ? `$${(trader.volume / 1_000_000).toFixed(2)}M`
                     : trader.volume >= 1000
-                    ? `${(trader.volume / 1000).toFixed(1)}K`
-                    : trader.volume.toFixed(0)}
+                    ? `$${(trader.volume / 1000).toFixed(1)}K`
+                    : `$${trader.volume.toFixed(0)}`}
                 </div>
               </div>
               <div>
-                <div className="text-[10px] text-muted-foreground mb-0.5">Avg Size</div>
-                <div className="text-xs font-semibold">
-                  ${trader.avgSize >= 1000
-                    ? `${(trader.avgSize / 1000).toFixed(1)}K`
-                    : trader.avgSize.toFixed(0)}
+                <div className="text-[10px] text-muted-foreground mb-0.5">ROI</div>
+                <div className={`text-xs font-semibold ${trader.roi >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                  {trader.roi >= 0 ? "+" : ""}{trader.roi.toFixed(1)}%
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end mt-2.5 pt-2.5 border-t border-border/50">
+            <div className="flex items-center justify-end gap-3 mt-2.5 pt-2.5 border-t border-border/50">
+              {xLink && (
+                <a
+                  href={xLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                  data-testid={`link-trader-x-${trader.rank}`}
+                >
+                  @{(trader as any).xUsername}
+                </a>
+              )}
               <a
                 href={polyLink}
                 target="_blank"
@@ -113,10 +143,12 @@ function TraderCard({ trader }: { trader: Trader }) {
 
 export default function Traders() {
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("trades");
+  const [sort, setSort] = useState("rank");
+  const [period, setPeriod] = useState("ALL");
 
   const { data, isLoading, error, refetch } = useQuery<LeaderboardResponse>({
-    queryKey: ["/api/traders"],
+    queryKey: ["/api/traders", period],
+    queryFn: () => fetch(`/api/traders?period=${period}`).then(r => r.json()),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -131,15 +163,16 @@ export default function Traders() {
       return addr.includes(q) || name.includes(q);
     })
     .sort((a, b) => {
-      if (sort === "trades") return b.tradesCount - a.tradesCount;
+      if (sort === "rank") return a.rank - b.rank;
+      if (sort === "pnl") return b.pnl - a.pnl;
+      if (sort === "roi") return b.roi - a.roi;
       if (sort === "volume") return b.volume - a.volume;
-      if (sort === "avgsize") return b.avgSize - a.avgSize;
       return 0;
     });
 
+  const totalPnl = traders.reduce((s, t) => s + t.pnl, 0);
   const totalVolume = traders.reduce((s, t) => s + t.volume, 0);
-  const avgTradeSize = traders.length > 0 ? traders.reduce((s, t) => s + t.avgSize, 0) / traders.length : 0;
-  const totalTrades = traders.reduce((s, t) => s + t.tradesCount, 0);
+  const avgROI = traders.length > 0 ? traders.reduce((s, t) => s + t.roi, 0) / traders.length : 0;
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-5">
@@ -153,54 +186,66 @@ export default function Traders() {
             )}
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Most active sports traders from recent Polymarket activity
+            Elite traders from Polymarket's official leaderboard, ranked by PNL
           </p>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => refetch()}
-          data-testid="button-refresh-traders"
-          className="gap-2"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Select value={period} onValueChange={v => { setPeriod(v); }}>
+            <SelectTrigger className="w-28 h-8 text-sm" data-testid="select-period">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Time</SelectItem>
+              <SelectItem value="MONTH">This Month</SelectItem>
+              <SelectItem value="WEEK">This Week</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => refetch()}
+            data-testid="button-refresh-traders"
+            className="gap-2"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      {/* Summary Stats */}
       {!isLoading && traders.length > 0 && (
         <div className="grid grid-cols-3 gap-3">
           <Card>
             <CardContent className="pt-3 pb-3 px-4">
-              <div className="text-[10px] text-muted-foreground mb-1">Active Traders</div>
-              <div className="text-lg font-bold">{traders.length}</div>
+              <div className="text-[10px] text-muted-foreground mb-1">Total PNL (Top Traders)</div>
+              <div className="text-lg font-bold text-green-600 dark:text-green-400">
+                +{totalPnl >= 1_000_000
+                  ? `$${(totalPnl / 1_000_000).toFixed(1)}M`
+                  : `$${(totalPnl / 1000).toFixed(0)}K`}
+              </div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-3 pb-3 px-4">
               <div className="text-[10px] text-muted-foreground mb-1">Total Volume</div>
               <div className="text-lg font-bold">
-                ${totalVolume >= 1_000_000
-                  ? `${(totalVolume / 1_000_000).toFixed(1)}M`
-                  : totalVolume >= 1000
-                  ? `${(totalVolume / 1000).toFixed(0)}K`
-                  : totalVolume.toFixed(0)}
+                {totalVolume >= 1_000_000
+                  ? `$${(totalVolume / 1_000_000).toFixed(0)}M`
+                  : `$${(totalVolume / 1000).toFixed(0)}K`}
               </div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-3 pb-3 px-4">
-              <div className="text-[10px] text-muted-foreground mb-1">Avg Trade Size</div>
-              <div className="text-lg font-bold">
-                ${avgTradeSize >= 1000 ? `${(avgTradeSize / 1000).toFixed(1)}K` : avgTradeSize.toFixed(0)}
+              <div className="text-[10px] text-muted-foreground mb-1">Avg ROI</div>
+              <div className={`text-lg font-bold ${avgROI >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                {avgROI >= 0 ? "+" : ""}{avgROI.toFixed(1)}%
               </div>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* Filters */}
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[180px] max-w-xs">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
@@ -217,9 +262,10 @@ export default function Traders() {
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="trades">Trade Count</SelectItem>
+            <SelectItem value="rank">Rank</SelectItem>
+            <SelectItem value="pnl">PNL</SelectItem>
+            <SelectItem value="roi">ROI %</SelectItem>
             <SelectItem value="volume">Volume</SelectItem>
-            <SelectItem value="avgsize">Avg Size</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -234,8 +280,7 @@ export default function Traders() {
                   <div className="flex-1">
                     <Skeleton className="h-4 w-1/2 mb-2" />
                     <Skeleton className="h-3 w-full mb-3" />
-                    <div className="grid grid-cols-3 gap-2">
-                      <Skeleton className="h-10" />
+                    <div className="grid grid-cols-2 gap-2">
                       <Skeleton className="h-10" />
                       <Skeleton className="h-10" />
                     </div>
@@ -270,7 +315,7 @@ export default function Traders() {
               </div>
               <div className="text-sm text-muted-foreground mt-1">
                 {traders.length === 0
-                  ? "Trader data is loading from the Polymarket leaderboard."
+                  ? "Loading from the Polymarket official leaderboard..."
                   : "Try a different search term."}
               </div>
             </div>
@@ -281,6 +326,12 @@ export default function Traders() {
           {filtered.map((trader) => (
             <TraderCard key={trader.address} trader={trader} />
           ))}
+        </div>
+      )}
+
+      {!isLoading && data && (
+        <div className="text-center text-[11px] text-muted-foreground pt-2">
+          Source: Polymarket official leaderboard ({data.window}) — updated every 10 min
         </div>
       )}
     </div>

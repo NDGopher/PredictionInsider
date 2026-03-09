@@ -3,6 +3,8 @@ import { z } from "zod";
 export const traderSchema = z.object({
   address: z.string(),
   name: z.string().optional(),
+  xUsername: z.string().optional(),
+  verifiedBadge: z.boolean().optional(),
   pnl: z.number(),
   roi: z.number(),
   tradesCount: z.number(),
@@ -68,12 +70,14 @@ export const marketSchema = z.object({
   bestAsk: z.number().optional(),
   conditionId: z.string().optional(),
   tokenIds: z.array(z.string()).optional(),
+  source: z.enum(["polymarket", "kalshi"]).optional(),
 });
 
 export const leaderboardResponseSchema = z.object({
   traders: z.array(traderSchema),
   fetchedAt: z.number(),
   window: z.string(),
+  source: z.string().optional(),
 });
 
 export const signalsResponseSchema = z.object({
@@ -81,12 +85,15 @@ export const signalsResponseSchema = z.object({
   topTraderCount: z.number(),
   marketsScanned: z.number(),
   fetchedAt: z.number(),
+  source: z.string().optional(),
 });
 
 export const marketsResponseSchema = z.object({
   markets: z.array(marketSchema),
   fetchedAt: z.number(),
   total: z.number(),
+  polymarketCount: z.number().optional(),
+  kalshiCount: z.number().optional(),
 });
 
 export type Trader = z.infer<typeof traderSchema>;

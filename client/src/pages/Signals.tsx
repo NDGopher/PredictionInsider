@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import {
   Zap, Search, ExternalLink, TrendingUp, TrendingDown, AlertCircle,
-  RefreshCw, Users, Target, ChevronDown, ChevronUp
+  RefreshCw, Users, Target, ChevronDown, ChevronUp, Star, Activity
 } from "lucide-react";
 import type { SignalsResponse, Signal } from "@shared/schema";
 
@@ -26,7 +26,7 @@ function ConfidenceBar({ score }: { score: number }) {
   );
 }
 
-function SignalCard({ signal }: { signal: Signal }) {
+function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }) {
   const [expanded, setExpanded] = useState(false);
 
   const yesColor = signal.side === "YES"
@@ -37,6 +37,12 @@ function SignalCard({ signal }: { signal: Signal }) {
     signal.confidence >= 75 ? { label: "HIGH", cls: "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/20" } :
     signal.confidence >= 50 ? { label: "MED", cls: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 border-yellow-500/20" } :
     { label: "LOW", cls: "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/20" };
+
+  const polyUrl = signal.slug
+    ? `https://polymarket.com/market/${signal.slug}`
+    : signal.marketId ? `https://polymarket.com/event/${signal.marketId}` : null;
+
+  const hasROI = signal.traders.some(t => t.roi > 0);
 
   return (
     <Card className={`border ${yesColor}`} data-testid={`signal-card-${signal.id}`}>
@@ -60,6 +66,11 @@ function SignalCard({ signal }: { signal: Signal }) {
                   {signal.isValue && (
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
                       VALUE
+                    </span>
+                  )}
+                  {mode === "elite" && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20 flex items-center gap-0.5">
+                      <Star className="w-2.5 h-2.5" /> ELITE
                     </span>
                   )}
                   <span className="text-[10px] text-muted-foreground capitalize">{signal.category}</span>
@@ -99,8 +110,8 @@ function SignalCard({ signal }: { signal: Signal }) {
                 ${signal.valueDelta > 0 ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
                 {signal.valueDelta > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
                 {signal.valueDelta > 0
-                  ? `${(signal.valueDelta * 100).toFixed(1)}¢ value vs. entry (after slippage)`
-                  : `Entry was ${Math.abs(signal.valueDelta * 100).toFixed(1)}¢ cheaper than current`}
+                  ? `${(signal.valueDelta * 100).toFixed(1)}¢ value edge vs. live price (after 2¢ slippage)`
+                  : `Entry was ${Math.abs(signal.valueDelta * 100).toFixed(1)}¢ cheaper than live price`}
               </div>
             )}
 
@@ -113,9 +124,9 @@ function SignalCard({ signal }: { signal: Signal }) {
                 {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                 {expanded ? "Hide" : "Show"} traders ({signal.traderCount})
               </button>
-              {signal.slug && (
+              {polyUrl && (
                 <a
-                  href={`https://polymarket.com/market/${signal.slug}`}
+                  href={polyUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 text-xs text-primary"
@@ -132,13 +143,17 @@ function SignalCard({ signal }: { signal: Signal }) {
                   <div key={i} className="flex items-center justify-between bg-muted/40 rounded px-2.5 py-1.5">
                     <div className="flex items-center gap-2">
                       <Users className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-xs font-mono">{t.name || `${t.address.slice(0, 6)}...${t.address.slice(-4)}`}</span>
+                      <span className="text-xs font-mono">
+                        {t.name || (t.address ? `${t.address.slice(0, 6)}...${t.address.slice(-4)}` : "Trader")}
+                      </span>
                     </div>
                     <div className="flex items-center gap-3 text-xs">
                       <span className="text-muted-foreground">Entry: {(t.entryPrice * 100).toFixed(1)}¢</span>
-                      <span className={`font-medium ${t.roi >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
-                        {t.roi.toFixed(1)}% ROI
-                      </span>
+                      {hasROI && t.roi > 0 && (
+                        <span className={`font-medium ${t.roi >= 20 ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
+                          {t.roi >= 0 ? "+" : ""}{t.roi.toFixed(1)}% ROI
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -155,10 +170,22 @@ export default function Signals() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [sort, setSort] = useState("confidence");
+  const [mode, setMode] = useState<"elite" | "fast">("elite");
 
-  const { data, isLoading, error, refetch } =
-    useQuery<SignalsResponse>({ queryKey: ["/api/signals"], staleTime: 3 * 60 * 1000 });
+  const eliteQuery = useQuery<SignalsResponse>({
+    queryKey: ["/api/signals"],
+    staleTime: 4 * 60 * 1000,
+    enabled: mode === "elite",
+  });
 
+  const fastQuery = useQuery<SignalsResponse>({
+    queryKey: ["/api/signals/fast"],
+    staleTime: 90 * 1000,
+    enabled: mode === "fast",
+  });
+
+  const activeQuery = mode === "elite" ? eliteQuery : fastQuery;
+  const { data, isLoading, error, refetch } = activeQuery;
   const signals = data?.signals || [];
 
   const filtered = signals
@@ -190,7 +217,9 @@ export default function Signals() {
             )}
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Consensus positions from top Polymarket sports traders
+            {mode === "elite"
+              ? "Consensus positions from official top-50 leaderboard traders (40% ROI weighted)"
+              : "Real-time consensus from recent Polymarket sports trading activity"}
           </p>
         </div>
         <Button
@@ -203,6 +232,34 @@ export default function Signals() {
           <RefreshCw className="w-3.5 h-3.5" />
           Refresh
         </Button>
+      </div>
+
+      {/* Mode toggle */}
+      <div className="flex items-center gap-1.5 p-1 bg-muted rounded-lg w-fit">
+        <button
+          onClick={() => setMode("elite")}
+          data-testid="button-mode-elite"
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+            mode === "elite"
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Star className="w-3.5 h-3.5" />
+          Elite Signals
+        </button>
+        <button
+          onClick={() => setMode("fast")}
+          data-testid="button-mode-fast"
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+            mode === "fast"
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Activity className="w-3.5 h-3.5" />
+          Live Feed
+        </button>
       </div>
 
       {/* Filters */}
@@ -242,17 +299,20 @@ export default function Signals() {
         </Select>
       </div>
 
-      {/* Summary Bar */}
       {!isLoading && signals.length > 0 && (
         <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
-          <span>{data?.topTraderCount} top traders tracked</span>
-          <span>{data?.marketsScanned} markets scanned</span>
-          <span>{signals.filter(s => s.isValue).length} value opportunities</span>
-          <span>{signals.filter(s => s.confidence >= 70).length} high-confidence picks</span>
+          <span className="font-medium">{data?.topTraderCount} traders tracked</span>
+          <span>{data?.marketsScanned} sports markets scanned</span>
+          <span className="text-green-600 dark:text-green-400">{signals.filter(s => s.isValue).length} value opportunities</span>
+          <span>{signals.filter(s => s.confidence >= 70).length} high-confidence signals</span>
+          {data?.source && (
+            <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-muted border border-border">
+              {data.source === "official_leaderboard_v2" ? "Official leaderboard" : "Live activity"} source
+            </span>
+          )}
         </div>
       )}
 
-      {/* Signal Cards */}
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -277,7 +337,7 @@ export default function Signals() {
             <div>
               <div className="font-medium">Failed to load signals</div>
               <div className="text-sm text-muted-foreground mt-1 max-w-sm">
-                The Polymarket APIs may be temporarily unavailable or rate-limited. Please try again shortly.
+                The Polymarket APIs may be temporarily unavailable or rate-limited.
               </div>
             </div>
             <Button onClick={() => refetch()} variant="outline" className="gap-2">
@@ -295,10 +355,17 @@ export default function Signals() {
               </div>
               <div className="text-sm text-muted-foreground mt-1 max-w-sm">
                 {signals.length === 0
-                  ? "Signals appear when 2+ top traders take the same position on a sports market. Data may still be loading."
+                  ? mode === "elite"
+                    ? "Elite signals appear when 2+ top-50 leaderboard traders hold the same position. Try Live Feed for faster signals."
+                    : "Live signals appear when 2+ active traders take the same side. Data is loading."
                   : "Try adjusting your filters to see more signals."}
               </div>
             </div>
+            {signals.length === 0 && mode === "elite" && (
+              <Button variant="outline" size="sm" onClick={() => setMode("fast")} className="gap-2">
+                <Activity className="w-3.5 h-3.5" /> Switch to Live Feed
+              </Button>
+            )}
             {search && (
               <Button variant="outline" size="sm" onClick={() => setSearch("")}>Clear search</Button>
             )}
@@ -307,7 +374,7 @@ export default function Signals() {
       ) : (
         <div className="space-y-3">
           {filtered.map(signal => (
-            <SignalCard key={signal.id} signal={signal} />
+            <SignalCard key={signal.id} signal={signal} mode={mode} />
           ))}
         </div>
       )}
