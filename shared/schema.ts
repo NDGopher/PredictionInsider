@@ -7,13 +7,15 @@ export const traderSchema = z.object({
   verifiedBadge: z.boolean().optional(),
   pnl: z.number(),
   roi: z.number(),
-  tradesCount: z.number(),
+  tradesCount: z.number().optional(),
   positionCount: z.number().optional(),
   winRate: z.number(),
   avgSize: z.number(),
   volume: z.number(),
   rank: z.number(),
   qualityScore: z.number().optional(),
+  tier: z.enum(["elite", "pro", "active"]).optional(),
+  polyAnalyticsUrl: z.string().optional(),
 });
 
 export const tradeSchema = z.object({
@@ -84,6 +86,7 @@ export const leaderboardResponseSchema = z.object({
   traders: z.array(traderSchema),
   fetchedAt: z.number(),
   window: z.string(),
+  category: z.string().optional(),
   source: z.string().optional(),
 });
 

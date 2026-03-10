@@ -17,7 +17,7 @@ A sports prediction market intelligence dashboard that surfaces consensus signal
 
 ## Key API Routes
 
-- `GET /api/traders` — Active traders from recent trades, aggregated by wallet
+- `GET /api/traders?category=sports` — Sports-specific leaderboard (default). Use `category=all` for overall leaderboard
 - `GET /api/markets` — Active sports prediction markets from Gamma API
 - `GET /api/signals?sports=true/false` — Elite signals: large bets ($200+) with leaderboard enrichment
 - `GET /api/signals/fast?sports=true/false` — Live Feed: consensus from recent 2000 trades

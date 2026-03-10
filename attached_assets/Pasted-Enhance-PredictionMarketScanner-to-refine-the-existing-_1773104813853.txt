@@ -1,0 +1,27 @@
+Enhance PredictionMarketScanner to refine the existing build, surpassing OddsJam Insiders with abundant obvious sports signals from elite traders. Keep trader sourcing/scraping from the provided PolymarketAnalytics link, with filters and seeds. Retain midpoint price value detection (entry vs. midpoint + 0.02 slippage). Adjust consensus for practicality; add backtesting with historical data; show Poly/Kalshi prices on high-scoring markets; enhance dashboard with detailed breakdowns. Remove exit guidance, arb detection, and Kalshi leaderboard scraping (keep Kalshi for prices only).Core Requirements:Trader Sourcing & Filtering: Scrape https://polymarketanalytics.com/traders?pageSize=100&pnlMin=100000&activePositionsMin=1&activePositionsMax=200&winRateMin=55&currentValueMin=5000&totalPositionsMin=100&traderTag=Sports+PnL+%3E+%24100k&sortBy=winRate&sortDesc=true using Selenium (pip install selenium, Chrome webdriver). Handle pagination (&page=1,2,...), extract ~100-200 traders: usernames, wallets (from links/regex 0x...), PNL, win rate, total/active positions, current value. Post-scrape: Fetch positions (/positions?address=), compute sports % (>60% sports markets to keep). Rank: 40% PNL, 30% volume, 20% win rate, 10% ROI. Fallback seeds: DrPufferfish, lhtsports, 432614799197, 1j59y6nk, 0xae363845352952CDEa784F581E9EE99a219c8Fb, majorexploiter, gopfan2, Noose, HyperLiquid0xb, abeautifulmind, kch123. Store 100+ in DB.
+Position/Signal Filters: Active/open markets only (active=true, closing_date > now). Exclude closed. Filter midpoints 0.10-0.90 (avoid YOLOs/bonding).
+Signal Generation: Elite: From scraped traders; consensus based on net agreement (# on YES vs. NO—stronger with more on one side; ignore if balanced, e.g., <20% net majority). Live: Recent 1k trades ($200+). Confidence: 40% ROI, 30% consensus (# traders/side strength), 20% value delta, 10% sizing. Generate abundant plays (all potentials, sortable/filterable low-confidence too). Show +X% ROI estimate.
+Value Detection: Entry vs. midpoint (CLOB /midpoint or /book avg) + slippage. For high-scoring markets, display current prices from Polymarket and Kalshi (match events by description, use Kalshi API /markets/{ticker}/orderbook for midpoint).
+Advanced Filtering: Scikit-learn k-means for bots/arb (high freq/low variance). Custom thresholds (min_ROI=10%).
+Pregame/Live Breakout: Parse descriptions/timestamps (live: <now+2h). Separate tabs; alert live for pile-ins (>2 traders, size >2x avg, last hour).
+Kalshi Integration: API for markets/orderbooks/prices only (no trader scraping).
+New Wallets: Hourly scrape link/subgraph for new qualifiers (PNL>100k, win>55%, trades>100); alert.
+Backtesting: Use subgraph/CLOB historical (enrichedOrderFilleds for past trades/entries, outcomes). Simulate: For past months, apply current logic (traders' historical entries, signal triggers, win/loss based on resolution). Display PNL/win rate/ROI charts (matplotlib), e.g., "How signals would have performed: +X% ROI, Y wins/Z losses."
+UI/UX: Flask dashboard: Signals table (sortable confidence/net $/market, expandable: score breakdown (components), involved traders (data: PNL/ROI/win rate/volume/sports %), their net positions, why high score, deeplink to view positions on Polymarket). Icons ( high ROI,  large size). Bet sizing calculator (bankroll input). Browser/email alerts (confidence>70). Countdown refreshes (elite 5min, live 90s). Alert history. Show Poly/Kalshi prices on high signals.
+Robustness: SQLite DB. Async/aiohttp. Retries, User-Agent rotation. Mocks/tests (50 traders/markets, expect 10+ signals). Log filters.
+
+Program Structure:config.py: APIs, thresholds.
+db.py: Traders table (addr/username/pnl/roi/win_rate/volume/sports%).
+polymarket_api.py: Trades/positions/orderbook/markets.
+kalshi_api.py: Markets/orderbooks/prices.
+scraper.py: scrape_polymarketanalytics(url=provided, pagination=True): Selenium extract table/pages.
+analyzer.py: Consensus (# side strength, ignore balanced), value, sports_fit. ml_bot_filter.
+scanner.py: Hourly scrape/update, signal gen.
+alerter.py: Email/browser for signals/new insiders/pile-ins.
+backtester.py: Historical sim, charts.
+ui.py: Flask routes (dashboard/signals/traders, expandables).
+tester.py: Mocks/simulations.
+main.py: Modes (scan/backtest/dashboard); loops.
+
+Implement: Refine from existing; test scraped traders generate strong signals (e.g., more on one side = high confidence). Backtest on historical sports data. Ensure dashboard shows detailed why/high-score data, trader links.
+

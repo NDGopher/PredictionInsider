@@ -138,12 +138,13 @@ function computeConfidence(
 
 // ─── Data fetchers ────────────────────────────────────────────────────────────
 
-async function fetchOfficialLeaderboard(timePeriod = "ALL", limit = 100): Promise<any[]> {
-  const key = `lb-${timePeriod}-${limit}`;
+async function fetchOfficialLeaderboard(timePeriod = "ALL", limit = 100, category = ""): Promise<any[]> {
+  const key = `lb-${timePeriod}-${limit}-${category}`;
   const hit = getCache<any[]>(key);
   if (hit) return hit;
+  const catParam = category ? `&category=${encodeURIComponent(category)}` : "";
   const res = await fetchWithRetry(
-    `${DATA_API}/v1/leaderboard?timePeriod=${timePeriod}&orderBy=PNL&limit=${limit}`
+    `${DATA_API}/v1/leaderboard?window=all&limit=${limit}${catParam}`
   );
   if (!res.ok) return [];
   const data = await res.json();
@@ -416,48 +417,64 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   // ── GET /api/traders ────────────────────────────────────────────────────────
   app.get("/api/traders", async (req, res) => {
     try {
-      const period = (req.query.period as string) || "ALL";
-      const limit  = Math.min(parseInt((req.query.limit as string) || "100"), 200);
-      const cKey   = `traders-full-${period}-${limit}`;
-      const hit    = getCache<unknown>(cKey);
+      const category = (req.query.category as string) || "sports";
+      const limit    = Math.min(parseInt((req.query.limit as string) || "50"), 100);
+      const cKey     = `traders-v4-${category}-${limit}`;
+      const hit      = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
-      const raw = await fetchOfficialLeaderboard(period, limit * 2);
-      const addresses = raw.map((t: any) => (t.proxyWallet || "").toLowerCase()).filter(Boolean);
-      const sgData = await fetchSubgraphROI(addresses);
+      const raw = await fetchOfficialLeaderboard("ALL", limit * 3, category === "all" ? "" : category);
 
-      const traders = raw
-        .filter((t: any) => !isLikelyBot(t))
+      // Filter out bot-like entries and low-quality arb traders
+      const filtered = raw.filter((t: any) => {
+        const name = t.userName || "";
+        const vol  = parseFloat(t.vol || "0");
+        const pnl  = parseFloat(t.pnl || "0");
+        // Remove hex-wallet usernames (auto-generated names like "0x6a57D263...-timestamp")
+        if (name.startsWith("0x") && name.length > 20) return false;
+        // Remove entries where username contains a long hex+timestamp pattern
+        if (/^0x[a-fA-F0-9]{10,}-\d{10,}$/.test(name)) return false;
+        // Remove pure arbitrageurs: high volume but near-zero profit ratio
+        if (vol > 500_000 && pnl / vol < 0.025) return false;
+        // Require some minimum PNL for quality
+        if (pnl < 1000) return false;
+        return true;
+      });
+
+      const traders = filtered
         .map((t: any, i: number) => {
-          const addr = (t.proxyWallet || "").toLowerCase();
-          const pnl  = parseFloat(t.pnl || "0");
-          const vol  = parseFloat(t.vol || "0");
-          const sg   = sgData[addr];
-          const roi  = sg ? sg.roi : (vol > 0 ? (pnl / vol) * 100 : 0);
-          const posC = sg?.positionCount ?? 0;
-          const qualityScore = traderQualityScore(pnl, roi, posC);
+          const pnl = parseFloat(t.pnl || "0");
+          const vol = parseFloat(t.vol || "0");
+          const roi = vol > 0 ? (pnl / vol) * 100 : 0;
+          const qualityScore = traderQualityScore(pnl, roi, 0);
+          const tier =
+            pnl >= 100_000 ? "elite"
+            : pnl >= 30_000 ? "pro"
+            : "active";
           return {
-            address: t.proxyWallet || "",
-            name: t.userName || truncAddr(t.proxyWallet || ""),
-            xUsername: t.xUsername || undefined,
+            address:       t.proxyWallet || "",
+            name:          t.userName || truncAddr(t.proxyWallet || ""),
+            xUsername:     t.xUsername || undefined,
             verifiedBadge: t.verifiedBadge || false,
-            pnl, roi, positionCount: posC,
-            winRate: 0,
-            avgSize: posC > 0 ? vol / posC : 0,
-            volume: vol,
-            rank: parseInt(t.rank || String(i + 1)),
+            pnl, roi,
+            positionCount: 0,
+            winRate:       0,
+            avgSize:       0,
+            volume:        vol,
+            rank:          parseInt(t.rank || String(i + 1)),
             qualityScore,
+            tier,
+            polyAnalyticsUrl: `https://polymarketanalytics.com/traders/${t.proxyWallet || ""}`,
           };
         })
-        .filter(Boolean)
         .slice(0, limit);
 
-      const result = { traders, fetchedAt: Date.now(), window: period, source: "official_leaderboard_v3" };
+      const result = { traders, fetchedAt: Date.now(), window: "ALL", category, source: "sports_leaderboard_v4" };
       setCache(cKey, result, 10 * 60 * 1000);
       res.json(result);
     } catch (err: any) {
       console.error("Traders error:", err.message);
-      res.status(500).json({ error: err.message, traders: [], fetchedAt: Date.now(), window: "ALL" });
+      res.status(500).json({ error: err.message, traders: [], fetchedAt: Date.now(), window: "ALL", category: "sports" });
     }
   });
 
