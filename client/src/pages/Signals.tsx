@@ -151,9 +151,21 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
             {/* Title row */}
             <div className="flex items-start justify-between gap-2 flex-wrap">
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold leading-snug" data-testid={`signal-question-${signal.id}`}>
-                  {signal.marketQuestion}
-                </div>
+                {polyUrl ? (
+                  <a
+                    href={polyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-semibold leading-snug hover:text-primary hover:underline transition-colors cursor-pointer block"
+                    data-testid={`signal-question-${signal.id}`}
+                  >
+                    {signal.marketQuestion}
+                  </a>
+                ) : (
+                  <div className="text-sm font-semibold leading-snug" data-testid={`signal-question-${signal.id}`}>
+                    {signal.marketQuestion}
+                  </div>
+                )}
                 <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                   <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${confidenceLabel.cls}`}>
                     {confidenceLabel.label} CONFIDENCE
@@ -189,6 +201,16 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
                   {mode === "elite" && (
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20 flex items-center gap-0.5">
                       <Star className="w-2.5 h-2.5" /> ELITE
+                    </span>
+                  )}
+                  {(signal as any).sportsLbCount > 0 && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-green-500/15 text-green-700 dark:text-green-300 border border-green-500/20 flex items-center gap-0.5" title="At least one verified sports leaderboard trader">
+                      <ShieldCheck className="w-2.5 h-2.5" /> SPORTS LB
+                    </span>
+                  )}
+                  {(signal as any).source === "positions" && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center gap-0.5" title="Signal derived from current open positions of verified sports traders">
+                      <BarChart2 className="w-2.5 h-2.5" /> POSITIONS
                     </span>
                   )}
                 </div>
@@ -306,7 +328,10 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
                       <span className="font-mono truncate">
                         {t.name || (t.address ? `${t.address.slice(0, 6)}...${t.address.slice(-4)}` : "Trader")}
                       </span>
-                      {(t as any).isLeaderboard && (
+                      {(t as any).isSportsLb && (
+                        <span className="text-[9px] font-bold bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-1 rounded shrink-0" title="Top sports leaderboard trader">SPORTS</span>
+                      )}
+                      {(t as any).isLeaderboard && !(t as any).isSportsLb && (
                         <span className="text-[9px] font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 px-1 rounded shrink-0" title="Top PNL leaderboard trader">LB</span>
                       )}
                     </div>
