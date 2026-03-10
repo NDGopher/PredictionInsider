@@ -3,12 +3,36 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   Zap, Users, BarChart3, TrendingUp, TrendingDown, ArrowRight,
-  Activity, Target, AlertCircle, RefreshCw
+  Activity, Target, AlertCircle, RefreshCw, ExternalLink
 } from "lucide-react";
 import type { SignalsResponse, LeaderboardResponse, MarketsResponse, Signal } from "@shared/schema";
+
+function getOutcomeLabel(title: string, side: "YES" | "NO"): string {
+  const t = title.trim();
+  const ouMatch = t.match(/o\/?u\s+([\d.]+)/i) || t.match(/total[:\s]+([\d.]+)/i);
+  if (ouMatch) return side === "YES" ? `Over ${ouMatch[1]}` : `Under ${ouMatch[1]}`;
+  const spreadMatch = t.match(/spread[:\s]+([A-Za-z].+?)\s*\(([+-]?\d+\.?\d*)\)/i);
+  if (spreadMatch) return side === "YES" ? `${spreadMatch[1].trim()} ${spreadMatch[2]} covers` : `${spreadMatch[1].trim()} doesn't cover`;
+  const willMatch = t.match(/will\s+(?:the\s+)?(.+?)\s+win/i);
+  if (willMatch) return side === "YES" ? `${willMatch[1].trim()} WIN` : `${willMatch[1].trim()} won't win`;
+  if (!t.includes(":")) {
+    const vsMatch = t.match(/^(.+?)\s+vs\.?\s+(.+)$/i);
+    if (vsMatch) return side === "YES" ? `${vsMatch[1].trim()} WIN` : `${vsMatch[2].trim()} WIN`;
+  }
+  const colonAfterVs = t.match(/^(.+?)\s+vs\.?\s+([^:]+):\s*(.+)$/i);
+  if (colonAfterVs) {
+    const sub = colonAfterVs[3].trim();
+    const subOu = sub.match(/o\/?u\s*([\d.]+)/i);
+    if (subOu) return side === "YES" ? `Over ${subOu[1]}` : `Under ${subOu[1]}`;
+    return `${sub} — ${side}`;
+  }
+  const tourneyVs = t.match(/^.+?:\s*(.+?)\s+vs\.?\s+(.+)$/i);
+  if (tourneyVs) return side === "YES" ? `${tourneyVs[1].trim()} WIN` : `${tourneyVs[2].trim()} WIN`;
+  return side;
+}
 
 function ConfidenceBadge({ score }: { score: number }) {
   const color =
@@ -23,8 +47,27 @@ function ConfidenceBadge({ score }: { score: number }) {
 }
 
 function SignalRow({ signal }: { signal: Signal }) {
+  const [, nav] = useLocation();
+  const outcomeLabel = (signal as any).outcomeLabel || getOutcomeLabel(signal.marketQuestion, signal.side as "YES" | "NO");
+  const polyUrl = (signal as any).slug
+    ? `https://polymarket.com/market/${(signal as any).slug}`
+    : null;
+
+  const handleClick = () => {
+    if (polyUrl) { window.open(polyUrl, "_blank", "noopener,noreferrer"); }
+    else { nav("/signals"); }
+  };
+
+  const outcomeColor = signal.side === "YES"
+    ? "text-green-600 dark:text-green-400"
+    : "text-red-500 dark:text-red-400";
+
   return (
     <div
+      role="button"
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={e => e.key === "Enter" && handleClick()}
       className="flex items-center gap-3 py-2.5 px-3 rounded-md hover-elevate cursor-pointer border border-transparent hover:border-border"
       data-testid={`signal-row-${signal.id}`}
     >
@@ -34,18 +77,14 @@ function SignalRow({ signal }: { signal: Signal }) {
           {signal.isValue && (
             <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 shrink-0">VALUE</Badge>
           )}
+          {polyUrl && <ExternalLink className="w-3 h-3 text-muted-foreground shrink-0" />}
         </div>
         <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-          <span className="text-xs text-muted-foreground">
-            {signal.side === "YES" ? (
-              <span className="text-green-600 dark:text-green-400 font-medium">YES</span>
-            ) : (
-              <span className="text-red-600 dark:text-red-400 font-medium">NO</span>
-            )}
-            {" @ "}{(signal.currentPrice * 100).toFixed(1)}¢
+          <span className={`text-xs font-semibold ${outcomeColor}`}>
+            {outcomeLabel}
           </span>
+          <span className="text-xs text-muted-foreground">@ {(signal.currentPrice * 100).toFixed(1)}¢</span>
           <span className="text-xs text-muted-foreground">{signal.traderCount} traders</span>
-          <span className="text-xs text-muted-foreground">{signal.consensusPct}% consensus</span>
         </div>
       </div>
       <ConfidenceBadge score={signal.confidence} />

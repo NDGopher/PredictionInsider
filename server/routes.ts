@@ -219,6 +219,63 @@ function isAutoPseudonym(name: string): boolean {
   return /^[A-Z][a-z]+-[A-Z][a-z]+$/.test(name);
 }
 
+/** Detect the hex+timestamp auto-username Polymarket assigns to wallets without a display name */
+function isHexTimestampUsername(name: string): boolean {
+  return /^0x[a-fA-F0-9]{10,}-\d{9,}$/.test(name);
+}
+
+/**
+ * Compute a human-readable outcome label for a market + side.
+ * e.g. "Warriors vs. Jazz" + YES  →  "Warriors WIN"
+ *      "Warriors vs. Jazz: O/U 225.5" + NO  →  "Under 225.5"
+ *      "Spread: Warriors (-6.5)" + YES  →  "Warriors -6.5 covers"
+ *      "Will the Celtics win the 2026 NBA Finals?" + YES  →  "Celtics WIN"
+ */
+function computeOutcomeLabel(title: string, side: "YES" | "NO"): string {
+  const t = title.trim();
+  // O/U totals: "O/U 225.5" or "total 225.5"
+  const ouMatch = t.match(/o\/?u\s+([\d.]+)/i) || t.match(/total[:\s]+([\d.]+)/i);
+  if (ouMatch) return side === "YES" ? `Over ${ouMatch[1]}` : `Under ${ouMatch[1]}`;
+  // Spread markets: "Spread: Team (-6.5)"
+  const spreadMatch = t.match(/spread[:\s]+([A-Za-z].+?)\s*\(([+-]?\d+\.?\d*)\)/i);
+  if (spreadMatch) {
+    const team = spreadMatch[1].trim();
+    const spd  = spreadMatch[2];
+    return side === "YES" ? `${team} ${spd} covers` : `${team} doesn't cover`;
+  }
+  // "Will [the] Team win ..." futures
+  const willMatch = t.match(/will\s+(?:the\s+)?(.+?)\s+win/i);
+  if (willMatch) {
+    const team = willMatch[1].trim();
+    return side === "YES" ? `${team} WIN` : `${team} won't win`;
+  }
+  // "Team1 vs. Team2" game winner (no colon = winner market)
+  if (!t.includes(":")) {
+    const vsMatch = t.match(/^(.+?)\s+vs\.?\s+(.+)$/i);
+    if (vsMatch) {
+      return side === "YES"
+        ? `${vsMatch[1].trim()} WIN`
+        : `${vsMatch[2].trim()} WIN`;
+    }
+  }
+  // "Team1 vs. Team2: Sub-market" — e.g. "Warriors vs. Jazz: O/U 225.5"
+  const colonAfterVs = t.match(/^(.+?)\s+vs\.?\s+([^:]+):\s*(.+)$/i);
+  if (colonAfterVs) {
+    const sub = colonAfterVs[3].trim();
+    const subOu = sub.match(/o\/?u\s*([\d.]+)/i);
+    if (subOu) return side === "YES" ? `Over ${subOu[1]}` : `Under ${subOu[1]}`;
+    return `${sub} — ${side}`;
+  }
+  // "Tournament: Player1 vs. Player2" — colon before vs (tennis, soccer, etc.)
+  const tourneyVs = t.match(/^.+?:\s*(.+?)\s+vs\.?\s+(.+)$/i);
+  if (tourneyVs) {
+    const p1 = tourneyVs[1].trim();
+    const p2 = tourneyVs[2].trim();
+    return side === "YES" ? `${p1} WIN` : `${p2} WIN`;
+  }
+  return side;
+}
+
 /** Return a display name — wallet address if auto-pseudonym */
 function displayName(name: string, wallet: string): string {
   if (!name || isAutoPseudonym(name)) return truncAddr(wallet);
@@ -505,16 +562,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       const raw = await fetchOfficialLeaderboard("ALL", limit * 3, category === "all" ? "" : category);
 
-      // Filter out bot-like entries and low-quality arb traders
+      // Filter out low-quality / pure arb traders
       const filtered = raw.filter((t: any) => {
-        const name = t.userName || "";
         const vol  = parseFloat(t.vol || "0");
         const pnl  = parseFloat(t.pnl || "0");
-        // Remove hex-wallet usernames (auto-generated names like "0x6a57D263...-timestamp")
-        if (name.startsWith("0x") && name.length > 20) return false;
-        // Remove entries where username contains a long hex+timestamp pattern
-        if (/^0x[a-fA-F0-9]{10,}-\d{10,}$/.test(name)) return false;
-        // Remove pure arbitrageurs: high volume but near-zero profit ratio
+        // Remove pure arbitrageurs: very high volume but near-zero profit margin
         if (vol > 500_000 && pnl / vol < 0.025) return false;
         // Require some minimum PNL for quality
         if (pnl < 1000) return false;
@@ -531,9 +583,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             pnl >= 100_000 ? "elite"
             : pnl >= 30_000 ? "pro"
             : "active";
+          // If userName is a hex+timestamp auto-generated name, display as truncated wallet
+          const rawName = t.userName || "";
+          const displayedName = isHexTimestampUsername(rawName) || !rawName
+            ? truncAddr(t.proxyWallet || "")
+            : rawName;
           return {
             address:       t.proxyWallet || "",
-            name:          t.userName || truncAddr(t.proxyWallet || ""),
+            name:          displayedName,
             xUsername:     t.xUsername || undefined,
             verifiedBadge: t.verifiedBadge || false,
             pnl, roi,
@@ -855,6 +912,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           volume: 0,
           generatedAt: now,
           isValue: valueDelta > 0, isNew,
+          outcomeLabel: computeOutcomeLabel(mw.question, side),
         });
       }
 
@@ -882,7 +940,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             const curPrice = parseFloat(pos.curPrice || "0");
             const val = parseFloat(pos.currentValue || "0");
             if (val < 50) continue; // skip positions < $50
-            if (curPrice < 0.08 || curPrice > 0.95) continue; // extended range for futures
+            if (curPrice < 0.08 || curPrice > 0.90) continue; // extended range for futures, max 90¢
             const title = pos.title || pos.market || "";
             if (!isSportsRelated(title.toLowerCase())) continue;
             const condId = pos.conditionId || "";
@@ -911,6 +969,35 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           }
         }
 
+        // ── Conflict detection: if both YES and NO have verified positions on same
+        //    conditionId, only keep the clearly dominant side. If split, skip both.
+        const condSideMap = new Map<string, { YES?: { val: number; cnt: number }; NO?: { val: number; cnt: number } }>();
+        for (const pg of posMap.values()) {
+          const cs = condSideMap.get(pg.conditionId) || {};
+          cs[pg.side] = { val: pg.totalValue, cnt: pg.traders.length };
+          condSideMap.set(pg.conditionId, cs);
+        }
+        const conflictedConds = new Set<string>();
+        const suppressedSides = new Set<string>(); // "condId-SIDE" → weaker side to hide
+        for (const [condId, cs] of condSideMap.entries()) {
+          if (!cs.YES || !cs.NO) continue; // only one side, no conflict
+          const yVal = cs.YES.val, nVal = cs.NO.val;
+          const dominantSide = yVal >= nVal ? "YES" : "NO";
+          const weakerSide   = dominantSide === "YES" ? "NO" : "YES";
+          const dominantVal  = Math.max(yVal, nVal);
+          const otherVal     = Math.min(yVal, nVal);
+          const ratio = otherVal > 0 ? dominantVal / otherVal : 10;
+          if (ratio >= 3.0) {
+            // Clear winner — suppress weaker side only
+            suppressedSides.add(`${condId}-${weakerSide}`);
+            console.log(`[Positions] Conflict on ${condId.slice(0,10)}: ${dominantSide} (${dominantVal.toFixed(0)}) dominates ${weakerSide} (${otherVal.toFixed(0)}) — suppressing ${weakerSide}`);
+          } else {
+            // Close split — both sides invalid as signals
+            conflictedConds.add(condId);
+            console.log(`[Positions] Conflicted market ${condId.slice(0,10)}: YES $${yVal.toFixed(0)} vs NO $${nVal.toFixed(0)} — suppressing both`);
+          }
+        }
+
         const existingIds = new Set(signals.map(s => `${s.marketId}-${s.side}`));
         for (const pg of posMap.values()) {
           // Quality gate: need meaningful capital committed
@@ -921,6 +1008,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           // Avoid duplicating markets already in trades-based signals
           const dedupeKey = `${pg.conditionId}-${pg.side}`;
           if (existingIds.has(dedupeKey)) continue;
+
+          // Skip conflicted markets (smart money is split — no actionable signal)
+          if (conflictedConds.has(pg.conditionId)) continue;
+          if (suppressedSides.has(dedupeKey)) continue;
 
           // Check price range strictly for game-day markets, loosely for futures
           const avgCurPrice = pg.traders.reduce((s, t) => s + t.curPrice, 0) / pg.traders.length;
@@ -982,6 +1073,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             isValue: valueDelta > 0,
             isNew,
             source: "positions",
+            outcomeLabel: computeOutcomeLabel(pg.question, pg.side),
           });
         }
         console.log(`[Elite v11] Added ${signals.length - (signals.length - posMap.size)} positions-based signals from top sports traders`);

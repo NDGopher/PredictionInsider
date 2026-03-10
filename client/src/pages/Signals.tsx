@@ -117,6 +117,30 @@ function ScoreBreakdown({ breakdown, confidence }: { breakdown: Record<string, n
   );
 }
 
+function getOutcomeLabel(title: string, side: "YES" | "NO"): string {
+  const t = title.trim();
+  const ouMatch = t.match(/o\/?u\s+([\d.]+)/i) || t.match(/total[:\s]+([\d.]+)/i);
+  if (ouMatch) return side === "YES" ? `Over ${ouMatch[1]}` : `Under ${ouMatch[1]}`;
+  const spreadMatch = t.match(/spread[:\s]+([A-Za-z].+?)\s*\(([+-]?\d+\.?\d*)\)/i);
+  if (spreadMatch) return side === "YES" ? `${spreadMatch[1].trim()} ${spreadMatch[2]} covers` : `${spreadMatch[1].trim()} doesn't cover`;
+  const willMatch = t.match(/will\s+(?:the\s+)?(.+?)\s+win/i);
+  if (willMatch) return side === "YES" ? `${willMatch[1].trim()} WIN` : `${willMatch[1].trim()} won't win`;
+  if (!t.includes(":")) {
+    const vsMatch = t.match(/^(.+?)\s+vs\.?\s+(.+)$/i);
+    if (vsMatch) return side === "YES" ? `${vsMatch[1].trim()} WIN` : `${vsMatch[2].trim()} WIN`;
+  }
+  const colonAfterVs = t.match(/^(.+?)\s+vs\.?\s+([^:]+):\s*(.+)$/i);
+  if (colonAfterVs) {
+    const sub = colonAfterVs[3].trim();
+    const subOu = sub.match(/o\/?u\s*([\d.]+)/i);
+    if (subOu) return side === "YES" ? `Over ${subOu[1]}` : `Under ${subOu[1]}`;
+    return `${sub} — ${side}`;
+  }
+  const tourneyVs = t.match(/^.+?:\s*(.+?)\s+vs\.?\s+(.+)$/i);
+  if (tourneyVs) return side === "YES" ? `${tourneyVs[1].trim()} WIN` : `${tourneyVs[2].trim()} WIN`;
+  return side;
+}
+
 function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }) {
   const [expanded, setExpanded] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
@@ -134,6 +158,8 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
     ? `https://polymarket.com/market/${signal.slug}`
     : signal.marketId ? `https://polymarket.com/event/${signal.marketId}` : null;
 
+  const outcomeLabel = (signal as any).outcomeLabel || getOutcomeLabel(signal.marketQuestion, signal.side as "YES" | "NO");
+
   const totalNetUsdc = (signal as any).totalNetUsdc as number | undefined;
   const avgNetUsdc   = (signal as any).avgNetUsdc   as number | undefined;
 
@@ -141,11 +167,9 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
     <Card className={`border ${borderCls}`} data-testid={`signal-card-${signal.id}`}>
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
-          {/* Side badge */}
-          <div className={`mt-0.5 shrink-0 w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold
-            ${signal.side === "YES" ? "bg-green-500/15 text-green-600 dark:text-green-400" : "bg-red-500/15 text-red-600 dark:text-red-400"}`}>
-            {signal.side}
-          </div>
+          {/* Side indicator strip */}
+          <div className={`mt-0.5 shrink-0 w-1 self-stretch rounded-full
+            ${signal.side === "YES" ? "bg-green-500" : "bg-red-500"}`} />
 
           <div className="flex-1 min-w-0">
             {/* Title row */}
@@ -166,6 +190,11 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
                     {signal.marketQuestion}
                   </div>
                 )}
+                {/* Outcome label — the specific bet this signal represents */}
+                <div className={`mt-0.5 text-xs font-bold ${signal.side === "YES" ? "text-green-600 dark:text-green-400" : "text-red-500 dark:text-red-400"}`}
+                  data-testid={`signal-outcome-${signal.id}`}>
+                  {outcomeLabel} <span className="font-normal text-muted-foreground">@ {(signal.currentPrice * 100).toFixed(1)}¢</span>
+                </div>
                 <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                   <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${confidenceLabel.cls}`}>
                     {confidenceLabel.label} CONFIDENCE
