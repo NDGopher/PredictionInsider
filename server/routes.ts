@@ -968,7 +968,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       alerts.sort((a, b) => b.size - a.size);
 
       const result = { alerts: alerts.slice(0, 30), fetchedAt: now };
-      setCache(cKey, result, 45_000); // 45s cache
+      setCache(cKey, result, 20_000); // 20s cache — keeps it near-live
       res.json(result);
     } catch (err: any) {
       console.error("Live alerts error:", err.message);

@@ -10,15 +10,17 @@ import {
 } from "@/components/ui/select";
 import {
   BarChart3, Search, ExternalLink, RefreshCw, AlertCircle,
-  Clock, Droplets, Radio, Hourglass, CalendarClock, TrendingUp
+  Clock, Droplets, Radio, Hourglass, CalendarClock, TrendingUp,
+  ChevronDown, ChevronUp, DollarSign, Target
 } from "lucide-react";
 import type { MarketsResponse, Market } from "@shared/schema";
 
 const AUTO_REFRESH_MS = 30_000; // 30s
 
-type MarketType = "upcoming" | "all" | "moneyline" | "spread" | "total" | "futures";
+type MarketType = "live" | "upcoming" | "all" | "moneyline" | "spread" | "total" | "futures";
 
 const TYPE_TABS: { value: MarketType; label: string }[] = [
+  { value: "live", label: "🔴 Live" },
   { value: "upcoming", label: "Upcoming" },
   { value: "moneyline", label: "Moneyline" },
   { value: "spread", label: "Spread" },
@@ -26,6 +28,26 @@ const TYPE_TABS: { value: MarketType; label: string }[] = [
   { value: "futures", label: "Futures" },
   { value: "all", label: "All" },
 ];
+
+function getOutcomeLabel(title: string, side: "YES" | "NO"): string {
+  const t = title.trim();
+  const ouMatch = t.match(/o\/?u\s+([\d.]+)/i) || t.match(/total[:\s]+([\d.]+)/i);
+  if (ouMatch) return side === "YES" ? `Over ${ouMatch[1]}` : `Under ${ouMatch[1]}`;
+  const willMatch = t.match(/will\s+(?:the\s+)?(.+?)\s+win/i);
+  if (willMatch) return side === "YES" ? `${willMatch[1].trim()} WIN` : `${willMatch[1].trim()} won't win`;
+  if (!t.includes(":")) {
+    const vsMatch = t.match(/^(.+?)\s+vs\.?\s+(.+)$/i);
+    if (vsMatch) return side === "YES" ? `${vsMatch[1].trim()} WIN` : `${vsMatch[2].trim()} WIN`;
+  }
+  const colonAfterVs = t.match(/^(.+?)\s+vs\.?\s+([^:]+):\s*(.+)$/i);
+  if (colonAfterVs) {
+    const sub = colonAfterVs[3].trim();
+    const subOu = sub.match(/o\/?u\s*([\d.]+)/i);
+    if (subOu) return side === "YES" ? `Over ${subOu[1]}` : `Under ${subOu[1]}`;
+    return `${sub} — ${side}`;
+  }
+  return side === "YES" ? "YES wins" : "NO wins";
+}
 
 function GameStatusBadge({ status }: { status?: string }) {
   if (status === "live") return (
@@ -119,13 +141,21 @@ function SharpActionBanner({ action }: { action: any }) {
 }
 
 function MarketCard({ market }: { market: Market & { marketType?: string; gameStatus?: string; sharpAction?: any } }) {
+  const [expanded, setExpanded] = useState(false);
   const pct = Math.round(market.currentPrice * 100);
   const timeLeft = formatTimeLeft(market.endDate);
   const gameStatus = market.gameStatus as string | undefined;
   const sharpAction = (market as any).sharpAction;
 
+  // Sharp action derived values
+  const entryPct    = sharpAction ? Math.round(sharpAction.avgEntry * 100) : null;
+  const currentPct  = sharpAction ? Math.round(sharpAction.currentPrice * 100) : null;
+  const delta       = (entryPct !== null && currentPct !== null) ? currentPct - entryPct : null;
+  const totalK      = sharpAction ? (sharpAction.totalUsdc / 1000).toFixed(1) : null;
+  const outcomeLabel = sharpAction ? getOutcomeLabel(market.question, sharpAction.side) : null;
+
   return (
-    <Card className="hover-elevate" data-testid={`market-card-${market.id}`}>
+    <Card className={`hover-elevate transition-all ${sharpAction ? "border-primary/20" : ""}`} data-testid={`market-card-${market.id}`}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex-1 min-w-0">
@@ -150,9 +180,101 @@ function MarketCard({ market }: { market: Market & { marketType?: string; gameSt
 
         <PriceBar price={market.currentPrice} />
 
+        {/* Sharp action banner — clickable to expand */}
         {sharpAction && (
           <div className="mt-3">
-            <SharpActionBanner action={sharpAction} />
+            <button
+              onClick={() => setExpanded(e => !e)}
+              data-testid={`button-expand-sharp-${market.id}`}
+              className="w-full text-left"
+            >
+              <div className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs border cursor-pointer transition-colors ${
+                sharpAction.isActionable
+                  ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/15"
+                  : sharpAction.bigPlayScore >= 2
+                  ? "bg-amber-500/10 border-amber-500/25 text-amber-700 dark:text-amber-300 hover:bg-amber-500/15"
+                  : "bg-primary/8 border-primary/20 text-primary hover:bg-primary/12"
+              }`}>
+                <div className="flex items-center gap-1.5 font-semibold">
+                  <TrendingUp className="w-3 h-3" />
+                  <span>SHARPS → {sharpAction.side}</span>
+                  {sharpAction.isActionable && (
+                    <span className="text-[10px] px-1 py-0.5 rounded bg-emerald-500/20 font-bold">ACTIONABLE</span>
+                  )}
+                  {!sharpAction.isActionable && sharpAction.bigPlayScore >= 2 && (
+                    <span className="text-[10px] px-1 py-0.5 rounded bg-amber-500/20 font-bold">BIG PLAY</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
+                  <span>{sharpAction.traderCount} traders · {sharpAction.confidence}/100</span>
+                  {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                </div>
+              </div>
+            </button>
+
+            {/* Expanded sharp action panel */}
+            {expanded && (
+              <div className="mt-2 p-3 rounded-md bg-muted/50 border border-border space-y-2.5" data-testid={`sharp-detail-${market.id}`}>
+                <div className="flex items-center gap-1.5 text-xs font-semibold">
+                  <Target className="w-3.5 h-3.5 text-primary" />
+                  <span>Sharp Play: <span className={sharpAction.side === "YES" ? "text-green-600 dark:text-green-400" : "text-red-500"}>{outcomeLabel}</span></span>
+                </div>
+
+                {/* Price comparison */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="text-center p-2 rounded bg-background border border-border">
+                    <div className="text-[10px] text-muted-foreground mb-0.5">They Paid</div>
+                    <div className="text-sm font-bold tabular-nums">{entryPct}¢</div>
+                  </div>
+                  <div className="text-center p-2 rounded bg-background border border-border">
+                    <div className="text-[10px] text-muted-foreground mb-0.5">Live Now</div>
+                    <div className="text-sm font-bold tabular-nums">{pct}¢</div>
+                  </div>
+                  <div className={`text-center p-2 rounded border ${
+                    delta !== null && delta <= 3
+                      ? "bg-emerald-500/10 border-emerald-500/25"
+                      : delta !== null && delta > 10
+                      ? "bg-red-500/10 border-red-500/25"
+                      : "bg-muted border-border"
+                  }`}>
+                    <div className="text-[10px] text-muted-foreground mb-0.5">Moved</div>
+                    <div className={`text-sm font-bold tabular-nums ${
+                      delta !== null && delta <= 3 ? "text-emerald-600 dark:text-emerald-400"
+                      : delta !== null && delta > 10 ? "text-red-500"
+                      : "text-foreground"
+                    }`}>
+                      {delta !== null ? (delta >= 0 ? `+${delta}` : delta) : "—"}¢
+                    </div>
+                  </div>
+                </div>
+
+                {/* What to look for */}
+                {entryPct !== null && (
+                  <div className={`px-2.5 py-1.5 rounded text-[11px] border ${
+                    delta !== null && Math.abs(delta) <= 5
+                      ? "bg-emerald-500/8 border-emerald-500/20 text-emerald-700 dark:text-emerald-300"
+                      : "bg-muted border-border text-muted-foreground"
+                  }`}>
+                    {delta !== null && Math.abs(delta) <= 5 ? (
+                      <span>✓ <strong>Still actionable</strong> — price is near where sharps entered ({entryPct}¢). Look to buy {sharpAction.side} at or below {entryPct + 3}¢.</span>
+                    ) : delta !== null && delta > 5 ? (
+                      <span>⚠ Price moved +{delta}¢ since sharps entered at {entryPct}¢. Value may be gone — proceed with caution.</span>
+                    ) : (
+                      <span>↓ Price dropped {Math.abs(delta ?? 0)}¢ since sharps entered. Could be an even better entry near {pct}¢.</span>
+                    )}
+                  </div>
+                )}
+
+                {/* Meta stats */}
+                <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-0.5">
+                  <span className="flex items-center gap-1">
+                    <DollarSign className="w-3 h-3" />
+                    ${totalK}K committed by {sharpAction.traderCount} tracked traders
+                  </span>
+                  <span className="font-semibold text-foreground">{sharpAction.confidence}/100 confidence</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -203,19 +325,23 @@ export default function Markets() {
   const [priceFilter, setPriceFilter] = useState("all");
   const [marketType, setMarketType] = useState<MarketType>("upcoming");
 
-  const queryKey = ["/api/markets", marketType];
+  // "live" is client-side filtered from "all"
+  const apiType   = marketType === "live" ? "all" : marketType;
+  const queryKey  = ["/api/markets", apiType];
 
   const { data, isLoading, error, refetch } = useQuery<MarketsResponse>({
     queryKey,
-    queryFn: () => fetch(`/api/markets?type=${marketType}&limit=150`).then(r => r.json()),
+    queryFn: () => fetch(`/api/markets?type=${apiType}&limit=200`).then(r => r.json()),
     staleTime: 25_000,
-    refetchInterval: AUTO_REFRESH_MS,
+    refetchInterval: marketType === "live" ? 15_000 : AUTO_REFRESH_MS, // faster for live
   });
 
   const markets = (data?.markets || []) as (Market & { marketType?: string; gameStatus?: string })[];
 
   const filtered = markets
     .filter(m => {
+      // Live tab: only show live game markets
+      if (marketType === "live" && m.gameStatus !== "live") return false;
       if (search && !m.question.toLowerCase().includes(search.toLowerCase())) return false;
       if (priceFilter === "long")  return m.currentPrice < 0.4;
       if (priceFilter === "short") return m.currentPrice > 0.6;
@@ -308,16 +434,29 @@ export default function Markets() {
         {TYPE_TABS.map(tab => (
           <button
             key={tab.value}
-            onClick={() => setMarketType(tab.value)}
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors border
+            onClick={() => {
+              setMarketType(tab.value);
+              if (tab.value === "live") setSort("sharps"); // default sharps sort for live tab
+            }}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors border
               ${marketType === tab.value
-                ? "bg-primary text-primary-foreground border-primary"
+                ? tab.value === "live"
+                  ? "bg-red-500 text-white border-red-500"
+                  : "bg-primary text-primary-foreground border-primary"
                 : "bg-background text-muted-foreground border-border hover:text-foreground hover:border-border/80"}`}
             data-testid={`tab-market-type-${tab.value}`}
           >
             {tab.label}
+            {tab.value === "live" && liveCount > 0 && (
+              <span className={`text-[10px] px-1 py-0 rounded font-bold ${
+                marketType === "live" ? "bg-white/20 text-white" : "bg-red-500/15 text-red-600 dark:text-red-400"
+              }`}>{liveCount}</span>
+            )}
           </button>
         ))}
+        {marketType === "live" && (
+          <span className="text-[10px] text-muted-foreground ml-1">15s auto-refresh</span>
+        )}
       </div>
 
       {/* Filters */}

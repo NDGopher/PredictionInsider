@@ -268,6 +268,8 @@ function StatCard({
 }
 
 export default function Dashboard() {
+  const [signalTypeFilter, setSignalTypeFilter] = useState<"all" | "live" | "pregame" | "nofutures">("all");
+
   const { data: signalsData, isLoading: signalsLoading, error: signalsError, refetch: refetchSignals } =
     useQuery<SignalsResponse>({
       queryKey: ["/api/signals"],
@@ -289,15 +291,24 @@ export default function Dashboard() {
   const { data: alertsData, isLoading: alertsLoading } =
     useQuery<{ alerts: any[]; fetchedAt: number }>({
       queryKey: ["/api/alerts/live"],
-      staleTime: 40_000,
-      refetchInterval: 45_000,
+      staleTime: 12_000,
+      refetchInterval: 15_000,
     });
 
   const signals = signalsData?.signals || [];
-  const topSignals = signals.slice(0, 8);
   const highConfidence = signals.filter(s => s.confidence >= 70);
   const actionable = signals.filter(s => (s as any).isActionable === true);
   const traders = tradersData?.traders || [];
+
+  const filteredSignals = signals.filter(s => {
+    const mType = (s as any).marketType as string | undefined;
+    const cat   = ((s as any).marketCategory || "").toLowerCase();
+    if (signalTypeFilter === "live")     return mType === "live";
+    if (signalTypeFilter === "pregame")  return mType === "pregame";
+    if (signalTypeFilter === "nofutures") return cat !== "futures" && mType !== "futures";
+    return true;
+  });
+  const topSignals = filteredSignals.slice(0, 8);
 
   const loading = signalsLoading || tradersLoading || marketsLoading;
 
@@ -362,13 +373,114 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* Live Big Action Panel — above everything else for quick scanning */}
+      <Card>
+        <CardHeader className="pb-2 pt-4 px-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Flame className="w-4 h-4 text-orange-500" />
+              <CardTitle className="text-sm font-semibold">Live Big Action</CardTitle>
+              <span className="text-[10px] text-muted-foreground">— tracked-trader bets · 15s refresh</span>
+            </div>
+            {alertsData?.alerts?.length ? (
+              <Badge variant="secondary" className="text-[10px]">{alertsData.alerts.length} bets</Badge>
+            ) : null}
+          </div>
+        </CardHeader>
+        <CardContent className="px-4 pb-4 pt-0">
+          {alertsLoading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-10 w-full" />
+              ))}
+            </div>
+          ) : !alertsData?.alerts?.length ? (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground py-4 justify-center">
+              <Bell className="w-3.5 h-3.5" />
+              No large tracked-trader bets in recent data — check back shortly
+            </div>
+          ) : (
+            <div className="divide-y divide-border/50">
+              {alertsData.alerts.slice(0, 15).map((alert: any) => {
+                const outcomeLabel = getOutcomeLabel(alert.market, alert.side);
+                return (
+                  <div key={alert.id} className="flex items-center gap-3 py-2.5" data-testid={`live-alert-${alert.id}`}>
+                    {/* Side pill — prominent */}
+                    <div className={`shrink-0 flex flex-col items-center justify-center w-12 h-12 rounded-lg font-bold text-xs border ${
+                      alert.side === "YES"
+                        ? "bg-green-500/10 border-green-500/25 text-green-700 dark:text-green-300"
+                        : "bg-red-500/10 border-red-500/25 text-red-600 dark:text-red-400"
+                    }`}>
+                      <span className="text-[10px] leading-none">{alert.side === "YES" ? "BET" : "BET"}</span>
+                      <span className="text-sm leading-tight font-black">{alert.side}</span>
+                    </div>
+                    {/* Market + outcome */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-semibold text-foreground" title={alert.market}>
+                          {outcomeLabel}
+                        </span>
+                        {alert.isSportsLb && (
+                          <span className="text-[10px] px-1 py-0 rounded bg-primary/10 text-primary border border-primary/20 font-semibold shrink-0">LB</span>
+                        )}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground truncate mt-0.5">{alert.market}</div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] font-medium text-muted-foreground">{alert.trader}</span>
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                          <Clock className="w-2.5 h-2.5" />{alert.minutesAgo}m ago
+                        </span>
+                      </div>
+                    </div>
+                    {/* Size + price */}
+                    <div className="text-right shrink-0">
+                      <div className="text-sm font-bold tabular-nums">
+                        ${alert.size >= 1000 ? `${(alert.size / 1000).toFixed(1)}K` : alert.size}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground tabular-nums">
+                        @ {Math.round(alert.price * 100)}¢
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Top Signals */}
         <div className="lg:col-span-2 space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <h2 className="font-semibold text-sm">Top Signals</h2>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-muted-foreground">Click to expand · auto-refresh 90s</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {/* Signal type filter toggles */}
+              {(["all", "live", "pregame", "nofutures"] as const).map(f => {
+                const labels: Record<typeof f, string> = {
+                  all: "All", live: "Live", pregame: "Pregame", nofutures: "No Futures",
+                };
+                return (
+                  <button
+                    key={f}
+                    onClick={() => setSignalTypeFilter(f)}
+                    data-testid={`filter-signals-${f}`}
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition-all ${
+                      signalTypeFilter === f
+                        ? f === "live"
+                          ? "bg-red-500 text-white border-red-500"
+                          : f === "pregame"
+                          ? "bg-blue-500 text-white border-blue-500"
+                          : "bg-primary text-primary-foreground border-primary"
+                        : "bg-muted border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {f === "live" && <span className="inline-block w-1.5 h-1.5 rounded-full bg-current mr-1 animate-pulse align-middle" />}
+                    {labels[f]}
+                  </button>
+                );
+              })}
+              <span className="text-[10px] text-muted-foreground hidden sm:inline">90s refresh</span>
               <Link href="/signals">
                 <Button size="sm" variant="ghost" className="gap-1.5 h-7 text-xs" data-testid="link-all-signals">
                   View all <ArrowRight className="w-3 h-3" />
@@ -403,9 +515,13 @@ export default function Dashboard() {
                 <div className="flex flex-col items-center justify-center py-10 gap-3 text-center">
                   <Activity className="w-8 h-8 text-muted-foreground" />
                   <div>
-                    <div className="font-medium text-sm">No signals generated yet</div>
+                    <div className="font-medium text-sm">
+                      {signalTypeFilter !== "all" ? `No ${signalTypeFilter === "nofutures" ? "non-futures" : signalTypeFilter} signals right now` : "No signals generated yet"}
+                    </div>
                     <div className="text-xs text-muted-foreground mt-1 max-w-xs">
-                      Signals appear when 2+ top traders share a consensus position on sports markets.
+                      {signalTypeFilter !== "all"
+                        ? "Try a different filter or check back after the next refresh."
+                        : "Signals appear when 2+ top traders share a consensus position on sports markets."}
                     </div>
                   </div>
                 </div>
@@ -485,76 +601,6 @@ export default function Dashboard() {
           </Card>
         </div>
       </div>
-
-      {/* Live Big Action Panel */}
-      <Card>
-        <CardHeader className="pb-2 pt-4 px-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Flame className="w-4 h-4 text-orange-500" />
-              <CardTitle className="text-sm font-semibold">Live Big Action</CardTitle>
-              <span className="text-[10px] text-muted-foreground">— large tracked-trader bets · 45s refresh</span>
-            </div>
-            {alertsData?.alerts?.length ? (
-              <Badge variant="secondary" className="text-[10px]">{alertsData.alerts.length}</Badge>
-            ) : null}
-          </div>
-        </CardHeader>
-        <CardContent className="px-4 pb-4 pt-0">
-          {alertsLoading ? (
-            <div className="space-y-2">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          ) : !alertsData?.alerts?.length ? (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground py-4 justify-center">
-              <Bell className="w-3.5 h-3.5" />
-              No large tracked-trader bets found in recent data
-            </div>
-          ) : (
-            <div className="divide-y divide-border/50">
-              {alertsData.alerts.slice(0, 12).map((alert: any) => (
-                <div key={alert.id} className="flex items-center gap-3 py-2" data-testid={`live-alert-${alert.id}`}>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-xs font-medium truncate max-w-[280px]" title={alert.market}>
-                        {alert.market}
-                      </span>
-                      {alert.isSportsLb && (
-                        <span className="text-[10px] px-1 py-0 rounded bg-primary/10 text-primary border border-primary/20 font-semibold shrink-0">LB</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] text-muted-foreground">{alert.trader}</span>
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                        <Clock className="w-2.5 h-2.5" />{alert.minutesAgo}m ago
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
-                      alert.side === "YES"
-                        ? "bg-green-500/10 text-green-700 dark:text-green-300"
-                        : "bg-red-500/10 text-red-700 dark:text-red-300"
-                    }`}>
-                      {alert.side}
-                    </span>
-                    <div className="text-right">
-                      <div className="text-xs font-bold tabular-nums">
-                        ${alert.size >= 1000 ? `${(alert.size / 1000).toFixed(1)}K` : alert.size}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground tabular-nums">
-                        @ {Math.round(alert.price * 100)}¢
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       {/* How It Works */}
       <Card>
