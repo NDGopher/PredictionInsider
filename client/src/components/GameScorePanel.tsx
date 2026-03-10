@@ -80,10 +80,11 @@ export default function GameScorePanel({ slug, conditionId, yesTokenId, noTokenI
     }
 
     // Build price chart from trade prices (works for all market types incl. AMM sports)
-    // Pass both conditionId and yesTokenId so the backend can match on either field
+    // Pass conditionId for lookup; backend normalises all prices to YES probability.
+    // When side=NO we invert the returned prices so the chart shows the NO token trajectory.
     const historyParams = new URLSearchParams();
     if (conditionId) historyParams.set("conditionId", conditionId);
-    if (yesTokenId) historyParams.set("tokenId", yesTokenId);
+    else if (yesTokenId) historyParams.set("tokenId", yesTokenId);
     const historyParam = historyParams.toString() || null;
 
     if (historyParam) {
@@ -92,7 +93,9 @@ export default function GameScorePanel({ slug, conditionId, yesTokenId, noTokenI
           .then(r => r.ok ? r.json() : null)
           .then(d => {
             if (!cancelled && d?.history?.length) {
-              setHistory(d.history);
+              const pts: PricePoint[] = d.history;
+              // Backend always returns YES probability; invert for NO-side signals
+              setHistory(side === "NO" ? pts.map(pt => ({ t: pt.t, p: 1 - pt.p })) : pts);
             }
           })
           .catch(() => {})
@@ -101,7 +104,7 @@ export default function GameScorePanel({ slug, conditionId, yesTokenId, noTokenI
 
     Promise.all(promises).finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [slug, conditionId, yesTokenId]);
+  }, [slug, conditionId, yesTokenId, noTokenId, side]);
 
   const hasScore = !!score;
   const hasChart = history.length > 2;
@@ -157,7 +160,7 @@ export default function GameScorePanel({ slug, conditionId, yesTokenId, noTokenI
         <div className="px-1 pt-2 pb-1">
           <div className="flex items-center justify-between px-2 mb-1">
             <span className="text-[10px] text-muted-foreground">
-              YES price (trade history)
+              {side === "NO" ? "NO price" : "YES price"} (trade history)
               {marketQuestion && ` — ${marketQuestion.length > 36 ? marketQuestion.slice(0, 36) + "…" : marketQuestion}`}
             </span>
             {lastP !== null && (

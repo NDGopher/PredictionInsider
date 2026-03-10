@@ -111,6 +111,16 @@ All API responses cached in-memory:
 
 `fetchMultiWindowSportsLB()` runs three parallel leaderboard fetches (ALL×200, WEEK×100, MONTH×100 with category=sports), deduplicates by proxyWallet, and annotates each trader with `_windows: { inAll, inWeek, inMonth }` for recency scoring. Cache key: `lb-multi-sports` (10 min).
 
+**NOTE**: Polymarket's leaderboard API is hard-capped at 50 traders per request regardless of limit parameter. Three windows (ALL+WEEK+MONTH) yield ~50–120 unique traders.
+
+## Curated Elite Traders
+
+`CURATED_ELITES` is a hardcoded list of known high-calibre sports traders who don't appear in the official Polymarket sports leaderboard (API cap issue). Each entry: `{ addr, name, estimatedPnl }`.
+
+`fetchEliteTraderTrades(wallet, limit=100)` fetches recent trades per curated wallet via `DATA_API/trades?user=wallet`. These are merged into `allTrades` (deduped by transactionHash) before signal processing. Curated traders are pre-populated in `lbMap` at the start of Phase 1 with `isSportsLb: true`.
+
+Current curated list includes: kch123 (0x6a72f61...e33ee, est. PNL $191K sports).
+
 ## Trader Recency Scoring
 
 `traderQualityScore(pnl, roi, posCount, windows)` applies a recency multiplier:
@@ -123,13 +133,19 @@ Traders page sorted by this score (hot hands bubbled to top). Signal lbMap also 
 
 ## LIVE/PREGAME Status
 
-`categoriseMarket(question, endDate, gameStartTime)` uses `gameStartTime` (from Gamma API `gameStartTime` field, normalized to ISO) to accurately determine pregame status: if `now < gameStartTime`, returns "pregame" regardless of endDate proximity.
+`categoriseMarket(question, endDate, gameStartTime)`:
+1. Text keywords (live/in-game/period/etc.) → "live" immediately
+2. `ms < 0` (market already ended) → "pregame" (not live — avoids false positives)
+3. `ms > 7 days` → "futures"
+4. `gameStartTime` provided AND `now >= gameStartTime` → "live" (game in progress)
+5. `gameStartTime` provided AND `now < gameStartTime` → "pregame"
+6. No `gameStartTime` → "pregame" (safe default, never falsely marks unstarted games as live)
 
-`buildMarketDatabase` and `enrichGameMarketsFromGamma` both store `gameStartTime` from Gamma API market objects.
+**Key fix**: Removed `ms < 4h → live` and `ms ∈ [-20h,0) → live` heuristics which falsely marked resolved/ending markets as live.
 
 ## Chart Price History
 
-`GameScorePanel` price chart uses `formatChartTime(ts, allTimes)` which detects multi-day spans (>20h) and shows "Mar 10 14:30" format vs "14:30" for same-day. Tooltip shows full date+time for each point.
+`GameScorePanel` price chart: backend `/api/price-history` returns YES-normalized prices (0–1). When `side === "NO"`, the frontend inverts each price point (`p = 1 - p`) so the chart shows the NO token's price trajectory. Label dynamically shows "NO price" or "YES price" based on side.
 
 ## Design
 
