@@ -246,10 +246,11 @@ export default function Traders() {
   const [sort, setSort]             = useState("rank");
   const [category, setCategory]     = useState<"sports" | "all">("sports");
   const [tierFilter, setTierFilter] = useState("all");
+  const [sourceFilter, setSourceFilter] = useState<"all" | "sports_lb" | "curated" | "discovered">("all");
 
   const { data, isLoading, error, refetch } = useQuery<LeaderboardResponse>({
     queryKey: ["/api/traders", category],
-    queryFn: () => fetch(`/api/traders?category=${category}&limit=150`).then(r => r.json()),
+    queryFn: () => fetch(`/api/traders?category=${category}&limit=300`).then(r => r.json()),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -261,6 +262,12 @@ export default function Traders() {
         const rf = (t as any).recentForm as string | undefined;
         if (!rf || rf === "all-time") return false;
       } else if (tierFilter !== "all" && (t as any).tier !== tierFilter) return false;
+      if (sourceFilter !== "all") {
+        const src = (t as any).source as string | undefined;
+        if (sourceFilter === "curated" && src !== "curated") return false;
+        if (sourceFilter === "discovered" && src !== "discovered") return false;
+        if (sourceFilter === "sports_lb" && src !== "sports_lb") return false;
+      }
       if (!search) return true;
       const q = search.toLowerCase();
       return (t.address || "").toLowerCase().includes(q) || (t.name || "").toLowerCase().includes(q);
@@ -365,6 +372,42 @@ export default function Traders() {
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* Source filter pills */}
+      {!isLoading && traders.length > 0 && (
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {(["all", "sports_lb", "curated", "discovered"] as const).map(src => {
+            const count = src === "all" ? traders.length
+              : traders.filter(t => (t as any).source === src).length;
+            const labels: Record<typeof src, string> = {
+              all: "All Sources",
+              sports_lb: "Sports LB",
+              curated: "📌 Curated",
+              discovered: "🔍 Discovered",
+            };
+            if (count === 0 && src !== "all") return null;
+            return (
+              <button
+                key={src}
+                onClick={() => setSourceFilter(src)}
+                data-testid={`button-source-filter-${src}`}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-all border ${
+                  sourceFilter === src
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
+                }`}
+              >
+                {labels[src]}
+                {count > 0 && (
+                  <span className={`ml-0.5 px-1 rounded text-[10px] font-bold ${
+                    sourceFilter === src ? "bg-primary-foreground/20 text-primary-foreground" : "bg-background text-muted-foreground"
+                  }`}>{count}</span>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
 

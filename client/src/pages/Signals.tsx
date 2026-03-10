@@ -683,6 +683,7 @@ export default function Signals() {
   const filtered = signals
     .filter(s => {
       if (search && !s.marketQuestion.toLowerCase().includes(search.toLowerCase())) return false;
+      if (filter === "best_bets") return s.confidence >= 70 && s.isActionable && s.valueDelta > 0;
       if (filter === "value")   return s.isValue;
       if (filter === "high")    return s.confidence >= 70;
       if (filter === "multi")   return s.traderCount >= 2;
@@ -713,9 +714,10 @@ export default function Signals() {
       return 0;
     });
 
-  const newCount  = signals.filter(s => (s as any).isNew).length;
-  const highCount = signals.filter(s => s.confidence >= 70).length;
-  const valueCount = signals.filter(s => s.isValue).length;
+  const newCount     = signals.filter(s => (s as any).isNew).length;
+  const highCount    = signals.filter(s => s.confidence >= 70).length;
+  const valueCount   = signals.filter(s => s.isValue).length;
+  const bestBetsCount = signals.filter(s => s.confidence >= 70 && s.isActionable && s.valueDelta > 0).length;
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-5">
@@ -730,6 +732,16 @@ export default function Signals() {
               <Badge className="bg-orange-500 text-white text-[10px] px-1.5 h-4">
                 {newCount} new
               </Badge>
+            )}
+            {bestBetsCount > 0 && (
+              <button
+                onClick={() => setFilter("best_bets")}
+                className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 h-4 rounded bg-green-600 text-white hover:bg-green-700 transition-colors"
+                data-testid="badge-best-bets-count"
+              >
+                <Star className="w-2.5 h-2.5" />
+                {bestBetsCount} Best Bet{bestBetsCount !== 1 ? "s" : ""}
+              </button>
             )}
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -900,12 +912,27 @@ export default function Signals() {
             data-testid="input-search-signals"
           />
         </div>
+        {/* Best Bets quick filter button */}
+        <button
+          onClick={() => setFilter(filter === "best_bets" ? "all" : "best_bets")}
+          data-testid="button-filter-best-bets"
+          className={`flex items-center gap-1.5 px-3 py-1.5 h-8 rounded-md text-xs font-bold transition-all border ${
+            filter === "best_bets"
+              ? "bg-green-600 text-white border-green-600"
+              : "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/30 hover:bg-green-500/20"
+          }`}
+          title="High confidence (70+), actionable, and positive value edge"
+        >
+          <Star className="w-3 h-3" />
+          Best Bets
+        </button>
         <Select value={filter} onValueChange={setFilter}>
           <SelectTrigger className="w-40 h-8 text-sm" data-testid="select-filter">
             <SelectValue placeholder="Filter" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Signals</SelectItem>
+            <SelectItem value="best_bets">⭐ Best Bets (70+ & Edge)</SelectItem>
             <SelectItem value="value">Value Edge Only</SelectItem>
             <SelectItem value="high">High Confidence (70+)</SelectItem>
             <SelectItem value="multi">Multi-Trader (2+)</SelectItem>

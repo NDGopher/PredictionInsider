@@ -122,6 +122,13 @@ function isSportsRelated(text: string): boolean {
   return SPORTS_KW.some(k => t.includes(k));
 }
 
+/** Returns true if a market appears to be postponed, cancelled, or voided */
+function isPostponedOrCancelled(question: string, active: boolean, closed: boolean): boolean {
+  if (!active || closed) return true;
+  const q = (question || "").toLowerCase();
+  return /(postponed|cancelled|canceled|suspended|voided|void|abandoned|forfeit|no contest|walkover)/.test(q);
+}
+
 // ─── Categorise as Pregame / Live / Futures ───────────────────────────────────
 /**
  * Categorise a market as live / pregame / futures.
@@ -282,13 +289,14 @@ function computeConfidence(
 
 // ─── Data fetchers ────────────────────────────────────────────────────────────
 
-async function fetchOfficialLeaderboard(timePeriod = "ALL", limit = 100, category = ""): Promise<any[]> {
-  const key = `lb-${timePeriod}-${limit}-${category}`;
+async function fetchOfficialLeaderboard(timePeriod = "ALL", limit = 100, category = "", offset = 0): Promise<any[]> {
+  const key = `lb-${timePeriod}-${limit}-${category}-${offset}`;
   const hit = getCache<any[]>(key);
   if (hit) return hit;
   const catParam = category ? `&category=${encodeURIComponent(category)}` : "";
+  const offsetParam = offset > 0 ? `&offset=${offset}` : "";
   const res = await fetchWithRetry(
-    `${DATA_API}/v1/leaderboard?window=${timePeriod.toLowerCase()}&limit=${limit}${catParam}`
+    `${DATA_API}/v1/leaderboard?window=${timePeriod.toLowerCase()}&limit=${limit}${catParam}${offsetParam}`
   );
   if (!res.ok) return [];
   const data = await res.json();
@@ -297,15 +305,40 @@ async function fetchOfficialLeaderboard(timePeriod = "ALL", limit = 100, categor
   return traders;
 }
 
+/**
+ * Paginated leaderboard fetch — loops until maxTraders unique wallets collected.
+ * Uses batched parallel requests for speed. Returns deduped list sorted by rank.
+ */
+async function fetchPaginatedLeaderboard(timePeriod: string, maxTraders: number, category: string): Promise<any[]> {
+  const PAGE_SIZE = 50;
+  const pages = Math.ceil(maxTraders / PAGE_SIZE);
+  // Fetch all pages in parallel for max speed
+  const batches = await Promise.all(
+    Array.from({ length: pages }, (_, i) =>
+      fetchOfficialLeaderboard(timePeriod, PAGE_SIZE, category, i * PAGE_SIZE)
+    )
+  );
+  const seen = new Set<string>();
+  const result: any[] = [];
+  for (const batch of batches) {
+    for (const t of batch) {
+      const w = (t.proxyWallet || "").toLowerCase();
+      if (w && !seen.has(w)) { seen.add(w); result.push(t); }
+    }
+  }
+  console.log(`[LB] Paginated fetch: ${timePeriod}/${category} → ${result.length} unique traders from ${pages} pages`);
+  return result;
+}
+
 /** Combine ALL + WEEK + MONTH sports leaderboards, deduplicated by proxyWallet */
 async function fetchMultiWindowSportsLB(): Promise<any[]> {
   const key = "lb-multi-sports";
   const hit = getCache<any[]>(key);
   if (hit) return hit;
   const [allW, weekW, monthW] = await Promise.all([
-    fetchOfficialLeaderboard("ALL",   200, "sports"), // was 50 — more all-time winners
-    fetchOfficialLeaderboard("WEEK",  100, "sports"), // was 50 — current hot hands
-    fetchOfficialLeaderboard("MONTH", 100, "sports"), // was 50 — recent form
+    fetchPaginatedLeaderboard("ALL",   500, "sports"), // paginated: up to 500 all-time sports traders
+    fetchPaginatedLeaderboard("WEEK",  200, "sports"), // paginated: up to 200 this-week hot hands
+    fetchPaginatedLeaderboard("MONTH", 200, "sports"), // paginated: up to 200 this-month traders
   ]);
   // Build per-wallet window membership for recency scoring
   const byWallet = new Map<string, any>();
@@ -1104,19 +1137,21 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/traders", async (req, res) => {
     try {
       const category = (req.query.category as string) || "sports";
-      const limit    = Math.min(parseInt((req.query.limit as string) || "150"), 500);
-      const cKey     = `traders-v6-${category}-${limit}`;
+      const limit    = Math.min(parseInt((req.query.limit as string) || "300"), 600);
+      const cKey     = `traders-v7-${category}-${limit}`;
       const hit      = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
       // ── Step 1: Fetch the primary leaderboard for this category ──────────────
+      // Sports: paginated multi-window approach for 500+ unique traders
+      // All: paginated general leaderboard
       let raw: any[];
       if (category === "sports") {
-        raw = await fetchMultiWindowSportsLB();
+        raw = await fetchMultiWindowSportsLB(); // already paginated: 500 ALL + 200 WEEK + 200 MONTH
       } else {
         const [allW, weekW] = await Promise.all([
-          fetchOfficialLeaderboard("ALL",  100, category === "all" ? "" : category),
-          fetchOfficialLeaderboard("WEEK", 50,  "sports"),
+          fetchPaginatedLeaderboard("ALL",  300, ""),
+          fetchPaginatedLeaderboard("WEEK", 150, ""),
         ]);
         const seen = new Set<string>();
         raw = [];
@@ -1164,32 +1199,60 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       for (let i = 0; i < raw.length; i++) addLbTrader(raw[i], i);
 
-      // ── Step 3: Merge curated and discovered traders from sharedTraderMap ──────
-      // These are populated during signal computation and shared here.
-      // Show curated traders always; show discovered/general LB if they have quality score.
+      // ── Step 3a: Always inject CURATED_ELITES regardless of sharedTraderMap state ──
+      // These are hand-picked traders that MUST appear in the tab.
+      // If sharedTraderMap has their data (populated by signals run), use it.
+      // If not yet computed, show a stub entry with "📌 Curated" badge.
+      for (const elite of CURATED_ELITES) {
+        const addr = elite.addr.toLowerCase();
+        if (seenAddrs.has(addr)) continue;
+        seenAddrs.add(addr);
+        const mapInfo = sharedTraderMap.get(addr);
+        const pnl = mapInfo?.pnl ?? 0;
+        const roi = mapInfo?.roi ?? 0;
+        const vol = mapInfo?.volume ?? 0;
+        const qs  = mapInfo?.qualityScore ?? 50; // default 50 until computed
+        const tier = pnl >= 100_000 ? "elite" : pnl >= 30_000 ? "pro" : "active";
+        traders.push({
+          address: elite.addr,
+          name: elite.name,
+          xUsername: undefined,
+          verifiedBadge: true,
+          pnl, roi,
+          positionCount: 0, winRate: 0, avgSize: 0,
+          volume: vol,
+          rank: 9999,
+          qualityScore: qs,
+          tier,
+          recentForm: "📌 Curated",
+          source: "curated",
+          polyAnalyticsUrl: `https://polymarketanalytics.com/traders/${elite.addr}`,
+        });
+      }
+
+      // ── Step 3b: Merge discovered traders from sharedTraderMap ──────────────
       if (sharedTraderMap.size > 0) {
         for (const [addr, info] of sharedTraderMap) {
-          if (seenAddrs.has(addr)) continue; // already in leaderboard list
+          if (seenAddrs.has(addr)) continue;
+          if (info.source === "curated") continue; // already handled above
           // Only show non-LB traders if they have meaningful quality
           if (info.source === "discovered" && info.qualityScore < 10) continue;
           if (info.source === "general_lb" && info.pnl < 500) continue;
           seenAddrs.add(addr);
           const tier = info.pnl >= 100_000 ? "elite" : info.pnl >= 30_000 ? "pro" : "active";
-          const recentForm = info.source === "curated" ? "📌 Curated"
-            : info.source === "discovered" ? "🔍 Discovered"
-            : "all-time";
+          const recentForm = info.source === "discovered" ? "🔍 Discovered" : "all-time";
           traders.push({
             address: addr,
             name: info.name,
             xUsername: undefined,
-            verifiedBadge: info.source === "curated",
+            verifiedBadge: false,
             pnl: info.pnl,
             roi: info.roi,
             positionCount: 0,
             winRate: 0,
             avgSize: 0,
             volume: info.volume,
-            rank: 999,
+            rank: 9998,
             qualityScore: info.qualityScore,
             tier,
             recentForm,
@@ -1246,6 +1309,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }).filter(m => {
         if (!m.id || !m.question || !m.active) return false;
         if (sportsOnly && !isSportsRelated(m.question)) return false;
+        // Exclude postponed/cancelled/voided markets
+        if (isPostponedOrCancelled(m.question, m.active, false)) return false;
         const endMs = m.endDate ? new Date(m.endDate).getTime() : Infinity;
         if (endMs < now - 30 * 60_000) return false; // ended 30+ min ago
 
@@ -1436,7 +1501,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/signals", async (req, res) => {
     try {
       const sportsOnly = req.query.sports !== "false";
-      const cKey = `signals-elite-v15-${sportsOnly ? "sp" : "all"}`;
+      const cKey = `signals-elite-v16-${sportsOnly ? "sp" : "all"}`;
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -1446,9 +1511,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       // Pull from: sports leaderboard (category=sports) + general leaderboard + curated elites
       const [allSportsLb, rawGeneralLb, generalWeek, generalMonth, allTrades, marketDb, ...curatedTradeBatches] = await Promise.all([
         fetchMultiWindowSportsLB(),                    // ALL + WEEK + MONTH sports, deduped
-        fetchOfficialLeaderboard("ALL",   150, ""),    // top 150 all-time general
-        fetchOfficialLeaderboard("WEEK",  100, ""),    // top 100 weekly general
-        fetchOfficialLeaderboard("MONTH", 100, ""),    // top 100 monthly general
+        fetchPaginatedLeaderboard("ALL",   300, ""),    // top 300 all-time general (paginated)
+        fetchPaginatedLeaderboard("WEEK",  150, ""),   // top 150 weekly general (paginated)
+        fetchPaginatedLeaderboard("MONTH", 150, ""),   // top 150 monthly general (paginated)
         fetchRecentTrades(20000),                      // 20K trades for broad wallet discovery
         buildMarketDatabase(800),
         // Fetch recent trades for each curated elite in parallel
@@ -2059,8 +2124,19 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         console.log(`[Elite v11] Added ${signals.length - (signals.length - posMap.size)} positions-based signals from top sports traders`);
       }
 
+      // Filter out any signals for postponed, cancelled, or voided markets
+      const beforeFilter = signals.length;
+      for (let i = signals.length - 1; i >= 0; i--) {
+        if (isPostponedOrCancelled(signals[i].marketQuestion || "", true, false)) {
+          signals.splice(i, 1);
+        }
+      }
+      if (signals.length < beforeFilter) {
+        console.log(`[PostponedFilter] Removed ${beforeFilter - signals.length} cancelled/postponed signals`);
+      }
+
       signals.sort((a, b) => b.confidence - a.confidence);
-      console.log(`[Elite v11] ${signals.length} signals total (trades + positions)`);
+      console.log(`[Elite v16] ${signals.length} signals total (trades + positions)`);
 
       // ── Populate signal-per-market registry for /api/markets sharp overlay ────
       signalsByMarket.clear();
