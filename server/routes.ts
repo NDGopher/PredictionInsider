@@ -476,6 +476,9 @@ export type SharedTraderEntry = {
 export const sharedTraderMap = new Map<string, SharedTraderEntry>();
 let sharedTraderMapUpdatedAt = 0;
 
+// Shared market DB — populated by signals route, used by alerts functions
+const sharedMarketDb = new Map<string, { question: string; slug?: string; endDate?: string; gameStartTime?: string; active: boolean; tokenIds?: string[] }>();
+
 /**
  * Fetch recent trades for a specific wallet (curated elite trader).
  * Returns trades in the same format as fetchRecentTrades so they can be merged.
@@ -660,6 +663,52 @@ async function buildMarketDatabase(limit = 800): Promise<Map<string, {
 
   setCache(key, db, 4 * 60_000);
   return db;
+}
+
+/**
+ * Enrich a marketDb with data from CLOB API for conditionIds not already present.
+ * The CLOB API uses end_date_iso / game_start_time (vs Gamma's endDate / gameStartTime).
+ * Runs batches of parallel CLOB lookups for unknown markets found in positions data.
+ */
+async function enrichMarketDbFromClob(
+  marketDb: Map<string, any>,
+  conditionIds: string[],
+): Promise<void> {
+  const unknown = conditionIds.filter(id => id && !marketDb.has(id));
+  if (unknown.length === 0) return;
+  const BATCH = 8;
+  for (let i = 0; i < Math.min(unknown.length, 40); i += BATCH) {
+    const batch = unknown.slice(i, i + BATCH);
+    await Promise.all(batch.map(async condId => {
+      const cKey = `clob-market-${condId}`;
+      const cached = getCache<any>(cKey);
+      if (cached) { marketDb.set(condId, cached); return; }
+      try {
+        const url = `https://clob.polymarket.com/markets/${condId}`;
+        const r = await fetch(url, { signal: AbortSignal.timeout(4000) });
+        if (!r.ok) return;
+        const m = await r.json() as any;
+        if (!m || !m.question) return;
+        const endDate = m.end_date_iso || m.endDate;
+        let gst: string | undefined;
+        if (m.game_start_time) gst = String(m.game_start_time).replace(" ", "T").replace("+00", "Z");
+        const isActive = m.active !== false && m.closed !== true;
+        let tokenIds: string[] = [];
+        if (Array.isArray(m.tokens)) tokenIds = m.tokens.map((t: any) => String(t.token_id || "")).filter(Boolean);
+        const entry = {
+          question: m.question,
+          slug: m.market_slug || m.slug,
+          endDate,
+          gameStartTime: gst,
+          active: isActive,
+          tokenIds,
+          category: "sports",
+        };
+        setCache(cKey, entry, 5 * 60_000);
+        marketDb.set(condId, entry);
+      } catch { /* non-fatal */ }
+    }));
+  }
 }
 
 /**
@@ -1109,7 +1158,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const side = (trade.outcomeIndex === 0 || trade.outcome === "Yes") ? "YES" : "NO";
         const ts = trade.timestamp ? trade.timestamp * 1000 : (trade.createdAt ? new Date(trade.createdAt).getTime() : now);
         const condId = trade.conditionId || "";
-        const dbEntry = marketDb.get(condId);
+        const dbEntry = sharedMarketDb.get(condId);
+        // Skip postponed/inactive markets
+        if (dbEntry && !dbEntry.active) continue;
+        if (isPostponedOrCancelled(title, true, false)) continue;
         const mEndDate = trade.endDate || dbEntry?.endDate;
         alerts.push({
           id: `alert-${trade.id || key}`,
@@ -1459,7 +1511,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const side = (trade.outcomeIndex === 0 || trade.outcome === "Yes") ? "YES" : "NO";
         const ts    = trade.timestamp ? trade.timestamp * 1000 : (trade.createdAt ? new Date(trade.createdAt).getTime() : now);
         const alertCondId = trade.conditionId || "";
-        const alertDbEntry = marketDb.get(alertCondId);
+        const alertDbEntry = sharedMarketDb.get(alertCondId);
+        // Skip postponed/inactive markets
+        if (alertDbEntry && !alertDbEntry.active) continue;
+        if (isPostponedOrCancelled(title, true, false)) continue;
         const alertEndDate = trade.endDate || alertDbEntry?.endDate;
 
         alerts.push({
@@ -1501,7 +1556,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/signals", async (req, res) => {
     try {
       const sportsOnly = req.query.sports !== "false";
-      const cKey = `signals-elite-v16-${sportsOnly ? "sp" : "all"}`;
+      const cKey = `signals-elite-v19-${sportsOnly ? "sp" : "all"}`;
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -1632,6 +1687,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
 
       console.log(`[Elite v11] ${lbMap.size} tracked traders (${[...lbMap.values()].filter(t=>t.source==='sports_lb').length} sportsLB, ${[...lbMap.values()].filter(t=>t.source==='general_lb').length} generalLB, ${[...lbMap.values()].filter(t=>t.source==='curated').length} curated, ${[...lbMap.values()].filter(t=>t.source==='discovered').length} discovered) | ${allTrades.length} trades | ${marketDb.size} markets`);
+
+      // Populate module-level sharedMarketDb for alerts functions (non-blocking, best-effort)
+      sharedMarketDb.clear();
+      for (const [k, v] of marketDb) sharedMarketDb.set(k, v);
 
       // Populate module-level sharedTraderMap for /api/traders endpoint.
       // Refresh if stale (older than 10 min) or if we have more traders now.
@@ -1950,6 +2009,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             if (!posMap.has(mapKey)) {
               // Fall back to marketDb endDate if pos.endDate is missing, then slug date
               const dbEntry = marketDb.get(condId);
+              // Skip positions on inactive/postponed/cancelled markets
+              if (dbEntry && !dbEntry.active) continue;
+              if (isPostponedOrCancelled(title, true, false)) continue;
               const mSlug = pos.slug || pos.eventSlug || "";
               const resolvedEndDate = pos.endDate || dbEntry?.endDate || slugDateFallback(mSlug);
               // Skip positions for markets that have already ended (resolved games)
@@ -1984,6 +2046,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             pg.totalValue += val;
           }
         }
+
+        // ── Enrich marketDb with CLOB data for position markets not in Gamma top-800 ──
+        // This fills in endDate / gameStartTime / active for rescheduled or niche markets.
+        const unknownCondIds = [...posMap.keys()].map(k => k.replace(/-YES$|-NO$/, ""));
+        await enrichMarketDbFromClob(marketDb, [...new Set(unknownCondIds)]);
 
         // ── Conflict detection: if both YES and NO have verified positions on same
         //    conditionId, only keep the clearly dominant side. If split, skip both.
@@ -2029,9 +2096,16 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           if (conflictedConds.has(pg.conditionId)) continue;
           if (suppressedSides.has(dedupeKey)) continue;
 
+          // Resolve enriched market data (CLOB enrichment may have filled in missing fields)
+          const pgMarket = marketDb.get(pg.conditionId);
+          const resolvedEndDate = pg.endDate || pgMarket?.endDate;
+          const resolvedGameStartTime = pgMarket?.gameStartTime;
+          // Also check if market became inactive after CLOB enrichment
+          if (pgMarket && !pgMarket.active) continue;
+
           // Skip positions for markets whose end date has already passed
-          const endMs = pg.endDate ? new Date(pg.endDate).getTime() : Infinity;
-          if (pg.endDate && endMs < now) continue;
+          const endMs = resolvedEndDate ? new Date(resolvedEndDate).getTime() : Infinity;
+          if (resolvedEndDate && endMs < now) continue;
 
           // Check price range strictly for game-day markets, loosely for futures
           const avgCurPrice = pg.traders.reduce((s, t) => s + t.curPrice, 0) / pg.traders.length;
@@ -2056,7 +2130,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             avgROI, consensusPct, valueDelta, avgSize, pg.traders.length, avgQualityForScore
           );
 
-          const mTypeRaw = categoriseMarket(pg.question, pg.endDate, marketDb.get(pg.conditionId)?.gameStartTime);
+          const mTypeRaw = categoriseMarket(pg.question, resolvedEndDate, resolvedGameStartTime);
           const marketCategory = classifyMarketType(pg.question);
           // Specific game markets (moneyline/spread/total) should show as PREGAME, not FUTURES
           // even if the game is > 7 days away. FUTURES badge is reserved for season/championship bets.
@@ -2066,16 +2140,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const id = `pos-${pg.conditionId}-${pg.side}`;
           const isNew = !seenSignalIds.has(id);
           seenSignalIds.add(id);
-
-          // Token IDs: prefer position's asset data (always available), fall back to marketDb
-          const pgMarket = marketDb.get(pg.conditionId);
           const pgYesTokenId = pg.yesAsset || pgMarket?.tokenIds?.[0];
           const pgNoTokenId  = pg.noAsset  || pgMarket?.tokenIds?.[1];
 
           signals.push({
             id, marketId: pg.conditionId,
             marketQuestion: pg.question,
-            slug: pg.slug,
+            slug: pg.slug || pgMarket?.slug,
+            endDate: resolvedEndDate,
+            gameStartTime: resolvedGameStartTime,
             outcome: pg.side, side: pg.side,
             confidence, tier: pg.traders.length >= 3 ? "HIGH" : "MED",
             marketType: mType, isSports: true,
@@ -2124,15 +2197,19 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         console.log(`[Elite v11] Added ${signals.length - (signals.length - posMap.size)} positions-based signals from top sports traders`);
       }
 
-      // Filter out any signals for postponed, cancelled, or voided markets
+      // Filter out any signals for postponed, cancelled, inactive, or voided markets
       const beforeFilter = signals.length;
       for (let i = signals.length - 1; i >= 0; i--) {
-        if (isPostponedOrCancelled(signals[i].marketQuestion || "", true, false)) {
+        const sig = signals[i];
+        const mdbEntry = marketDb.get(sig.marketId);
+        // Remove if market is explicitly inactive in Polymarket (postponed/cancelled)
+        const isInactive = mdbEntry && !mdbEntry.active;
+        if (isInactive || isPostponedOrCancelled(sig.marketQuestion || "", true, false)) {
           signals.splice(i, 1);
         }
       }
       if (signals.length < beforeFilter) {
-        console.log(`[PostponedFilter] Removed ${beforeFilter - signals.length} cancelled/postponed signals`);
+        console.log(`[PostponedFilter] Removed ${beforeFilter - signals.length} cancelled/postponed/inactive signals`);
       }
 
       signals.sort((a, b) => b.confidence - a.confidence);
