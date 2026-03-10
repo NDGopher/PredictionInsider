@@ -9,7 +9,7 @@ import {
   Zap, Users, BarChart3, TrendingUp, TrendingDown, ArrowRight,
   Activity, Target, AlertCircle, RefreshCw, ExternalLink, X,
   Radio, Hourglass, CalendarClock, DollarSign, ShieldCheck,
-  ChevronDown, ChevronUp, Bell, Clock, Flame
+  ChevronDown, ChevronUp, Bell, Clock, Flame, BarChart2, BookmarkPlus, EyeOff
 } from "lucide-react";
 import type { SignalsResponse, LeaderboardResponse, MarketsResponse, Signal } from "@shared/schema";
 import GameScorePanel from "@/components/GameScorePanel";
@@ -91,6 +91,58 @@ function timeAgo(ts: number): string {
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
   return `${Math.floor(hrs / 24)}d ago`;
+}
+
+function DashboardScoreBreakdown({ breakdown, confidence, signal }: {
+  breakdown: Record<string, number>;
+  confidence: number;
+  signal: any;
+}) {
+  const roiImplied = Math.round((breakdown.roiPct ?? 0) / 40 * 60);
+  const items = [
+    { label: "Trader ROI (40%)", val: breakdown.roiPct ?? 0, max: 40, color: "bg-blue-500",
+      note: roiImplied > 0 ? `~${roiImplied}% avg ROI` : "low ROI data", low: (breakdown.roiPct ?? 0) < 8 },
+    { label: "Consensus (30%)", val: breakdown.consensusPct ?? 0, max: 30, color: "bg-green-500",
+      note: signal?.consensusPct ? `${signal.consensusPct}% same side` : "", low: false },
+    { label: "Value Edge (20%)", val: breakdown.valuePct ?? 0, max: 20, color: "bg-yellow-500",
+      note: signal?.valueDelta !== undefined
+        ? signal.valueDelta > 0 ? `+${(signal.valueDelta*100).toFixed(1)}¢ edge`
+          : Math.abs(signal.valueDelta) < 0.01 ? "at entry (slippage eats edge)"
+          : `${(Math.abs(signal.valueDelta)*100).toFixed(1)}¢ worse than live`
+        : "", low: (breakdown.valuePct ?? 0) === 0 },
+    { label: "Position Size (10%)", val: breakdown.sizePct ?? 0, max: 10, color: "bg-purple-500",
+      note: signal?.avgNetUsdc ? `avg $${(signal.avgNetUsdc/1000).toFixed(1)}K` : "", low: (breakdown.sizePct ?? 0) < 3 },
+    { label: "Quality Bonus", val: breakdown.tierBonus ?? 0, max: 15, color: "bg-orange-500",
+      note: signal?.avgQuality ? `quality ${signal.avgQuality}/100` : "", low: false },
+  ];
+  return (
+    <div className="p-2.5 bg-muted/30 rounded-md border border-border/40 text-[10px]">
+      <div className="flex items-center gap-1.5 mb-2">
+        <BarChart2 className="w-3 h-3 text-muted-foreground" />
+        <span className="font-semibold text-muted-foreground uppercase tracking-wide">Why {confidence}/95?</span>
+      </div>
+      <div className="space-y-1.5">
+        {items.map(item => (
+          <div key={item.label}>
+            <div className="flex items-center justify-between mb-0.5">
+              <span className={item.low ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}>{item.label}</span>
+              <span className="font-semibold tabular-nums">{item.val}/{item.max}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+                <div className={`h-full ${item.color} opacity-70`} style={{ width: `${item.max > 0 ? (item.val / item.max) * 100 : 0}%` }} />
+              </div>
+              {item.note && <span className="text-muted-foreground shrink-0 max-w-[110px] truncate" title={item.note}>{item.note}</span>}
+            </div>
+          </div>
+        ))}
+        <div className="flex items-center justify-between border-t border-border/30 pt-1 mt-0.5">
+          <span className="font-semibold">Total</span>
+          <span className="font-bold text-primary">{confidence}/95 max</span>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function SignalExpandedPanel({ signal, onClose }: { signal: Signal; onClose: () => void }) {
@@ -222,58 +274,101 @@ function SignalExpandedPanel({ signal, onClose }: { signal: Signal; onClose: () 
         marketQuestion={signal.marketQuestion}
       />
 
-      {/* Traders */}
+      {/* Traders (ranked by size) */}
       {s.traders && s.traders.length > 0 && (
         <div>
-          <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
-            Traders ({s.traders.length})
+          <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 flex items-center justify-between">
+            <span>Traders — ranked by size ({s.traders.length})</span>
+            {s.counterTraderCount > 0 && (
+              <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                ⚠ {s.counterTraderCount} on opposite side
+              </span>
+            )}
           </div>
           <div className="space-y-1">
             {s.traders.slice(0, 6).map((t: any, i: number) => (
-              <div key={i} className="flex items-center justify-between text-xs">
+              <div key={i} className="flex items-center gap-2 bg-muted/40 rounded px-2 py-1 text-xs">
+                <span className="text-[9px] font-bold text-muted-foreground w-4 text-center shrink-0">#{i+1}</span>
+                {t.isSportsLb && <span className="text-[9px] shrink-0">🏆</span>}
+                {t.isLeaderboard && !t.isSportsLb && <span className="text-[9px] bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 px-0.5 rounded shrink-0">LB</span>}
                 {t.address ? (
                   <a
                     href={`https://polymarket.com/profile/${t.address}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary hover:underline truncate flex-1 flex items-center gap-1"
+                    className="text-primary hover:underline font-mono truncate flex items-center gap-0.5 flex-1 min-w-0"
                     data-testid={`link-trader-${t.address}`}
                   >
                     {t.name || `${t.address.slice(0, 6)}…${t.address.slice(-4)}`}
-                    <ExternalLink className="w-2.5 h-2.5 shrink-0 opacity-60" />
+                    <ExternalLink className="w-2 h-2 shrink-0 opacity-50" />
                   </a>
                 ) : (
-                  <span className="text-foreground/80 truncate flex-1">{t.name}</span>
+                  <span className="font-mono truncate flex-1">{t.name}</span>
                 )}
-                <span className="font-semibold ml-2 tabular-nums">
-                  {formatUsdc(t.size)} @ {(t.entryPrice * 100).toFixed(0)}¢
-                </span>
-                {t.tradeTime ? (
-                  <span className="text-muted-foreground ml-2 shrink-0">{timeAgo(t.tradeTime)}</span>
-                ) : null}
+                <div className="shrink-0 text-right space-y-0">
+                  <div className="tabular-nums font-semibold">{formatUsdc(t.size)} @ {(t.entryPrice * 100).toFixed(0)}¢</div>
+                  <div className="flex items-center gap-1.5 justify-end">
+                    {t.roi !== 0 && <span className={`text-[9px] ${t.roi >= 20 ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>{t.roi >= 0 ? "+" : ""}{t.roi?.toFixed(0)}% ROI</span>}
+                    {t.tradeTime > 0 && <span className="text-[9px] text-muted-foreground">{timeAgo(t.tradeTime)}</span>}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Confidence */}
+      {/* Score breakdown — why is this confidence? */}
+      {s.scoreBreakdown && (
+        <DashboardScoreBreakdown breakdown={s.scoreBreakdown} confidence={signal.confidence} signal={s} />
+      )}
+
+      {/* Confidence summary */}
       <div className="flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">Confidence: <span className="font-bold text-foreground">{signal.confidence}/100</span></span>
+        <span className="text-muted-foreground">Score: <span className="font-bold text-foreground">{signal.confidence}/95</span></span>
         <span className="text-muted-foreground">{s.traderCount} trader{s.traderCount !== 1 ? "s" : ""} · {formatUsdc(s.totalNetUsdc || 0)} total</span>
       </div>
 
-      {polyUrl && (
-        <a
-          href={polyUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 w-full py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
-          data-testid={`link-polymarket-${signal.id}`}
+      <div className="flex gap-2">
+        <button
+          onClick={() => {
+            const s = signal as any;
+            const outcomeLabel = s.outcomeLabel || getOutcomeLabel(signal.marketQuestion, signal.side as "YES" | "NO");
+            try {
+              const bets = JSON.parse(localStorage.getItem("pi_bets") || "[]");
+              bets.unshift({
+                id: `bet-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                marketQuestion: signal.marketQuestion,
+                outcomeLabel,
+                side: signal.side,
+                conditionId: signal.marketId,
+                slug: s.slug,
+                entryPrice: signal.avgEntryPrice,
+                betAmount: 0,
+                betDate: Date.now(),
+                status: "open",
+                notes: `Signal confidence: ${signal.confidence}/95`,
+              });
+              localStorage.setItem("pi_bets", JSON.stringify(bets));
+            } catch {}
+          }}
+          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md bg-muted hover:bg-muted/80 text-xs font-semibold transition-colors"
+          data-testid={`button-track-bet-dash-${signal.id}`}
         >
-          View on Polymarket <ExternalLink className="w-3 h-3" />
-        </a>
-      )}
+          <BookmarkPlus className="w-3.5 h-3.5" /> Track Bet
+        </button>
+        {polyUrl && (
+          <a
+            href={polyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
+            data-testid={`link-polymarket-${signal.id}`}
+          >
+            View on Polymarket <ExternalLink className="w-3 h-3" />
+          </a>
+        )}
+      </div>
     </div>
   );
 }

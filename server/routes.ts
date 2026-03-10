@@ -1579,7 +1579,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/signals", async (req, res) => {
     try {
       const sportsOnly = req.query.sports !== "false";
-      const cKey = `signals-elite-v20-${sportsOnly ? "sp" : "all"}`;
+      const cKey = `signals-elite-v21-${sportsOnly ? "sp" : "all"}`;
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -1919,9 +1919,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // Specific game markets (moneyline/spread/total) should be PREGAME, not FUTURES
         const mType = (mTypeRaw2 === "futures" && marketCategory !== "futures") ? "pregame" : mTypeRaw2;
         const priceStatus  = computePriceStatus(currentPrice, avgEntry, side);
+        // Stale signal filter: price moved >5¢ past sharp entry in wrong direction — not actionable
+        if (priceStatus === "moved" && Math.abs(currentPrice - avgEntry) > 0.05) continue;
         const isActionable = priceStatus === "actionable" || priceStatus === "dip";
         const bigPlayScore = computeBigPlayScore(totalDominantSize, dominant.length);
         const dominantSorted = [...dominant].sort((a, b) => b.totalSize - a.totalSize);
+        const counterTraderCount = entries.length - dominant.length;
 
         signals.push({
           id, marketId: condId,
@@ -1944,6 +1947,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           traderCount: dominant.length,
           lbTraderCount: lbCount,
           sportsLbCount,
+          counterTraderCount,
           avgQuality: Math.round(avgQuality),
           scoreBreakdown: breakdown,
           traders: dominantSorted.slice(0, 8).map(e => ({
@@ -2168,8 +2172,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           // even if the game is > 7 days away. FUTURES badge is reserved for season/championship bets.
           const mType = (mTypeRaw === "futures" && marketCategory !== "futures") ? "pregame" : mTypeRaw;
           const priceStatus  = computePriceStatus(avgCurPrice, avgEntry, pg.side);
+          // Stale signal filter: price moved >5¢ past sharp entry in wrong direction
+          if (priceStatus === "moved" && Math.abs(avgCurPrice - avgEntry) > 0.05) continue;
           const isActionable = priceStatus === "actionable" || priceStatus === "dip";
           const bigPlayScore = computeBigPlayScore(pg.totalValue, pg.traders.length);
+          const oppositeKey = `${pg.conditionId}-${pg.side === "YES" ? "NO" : "YES"}`;
+          const counterTraderCount = posMap.get(oppositeKey)?.traders.length ?? 0;
           const id = `pos-${pg.conditionId}-${pg.side}`;
           const isNew = !seenSignalIds.has(id);
           seenSignalIds.add(id);
@@ -2199,6 +2207,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             traderCount: pg.traders.length,
             lbTraderCount: pg.traders.filter(t => lbMap.get(t.wallet)?.isLeaderboard).length,
             sportsLbCount: pg.traders.filter(t => t.isSportsLb).length,
+            counterTraderCount,
             avgQuality: pg.traders.length > 0
               ? Math.round(pg.traders.reduce((s, t) => s + (lbMap.get(t.wallet)?.qualityScore ?? 20), 0) / pg.traders.length)
               : 20,

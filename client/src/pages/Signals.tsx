@@ -13,14 +13,60 @@ import {
   Zap, Search, ExternalLink, TrendingUp, TrendingDown, AlertCircle,
   RefreshCw, Users, Target, ChevronDown, ChevronUp, Star, Activity,
   Bell, BellOff, Clock, DollarSign, ShieldCheck, AlertTriangle, Radio,
-  Hourglass, CalendarClock, BarChart2, Flame, ChevronRight
+  Hourglass, CalendarClock, BarChart2, Flame, ChevronRight, BookmarkPlus, EyeOff, X
 } from "lucide-react";
+import { Link } from "wouter";
 import type { SignalsResponse, Signal } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
 // ─── Auto-refresh intervals ────────────────────────────────────────────────────
 const ELITE_REFRESH_SEC = 120;       // 2 minutes (was 5 min)
 const FAST_REFRESH_SEC  = 45;        // 45 seconds (was 90s)
+
+// ─── Snooze helpers (localStorage) ────────────────────────────────────────────
+const SNOOZE_KEY = "pi_snoozed";
+function getSnoozed(): Record<string, number> {
+  try { return JSON.parse(localStorage.getItem(SNOOZE_KEY) || "{}"); } catch { return {}; }
+}
+function snoozeSignal(id: string, hours: number) {
+  const s = getSnoozed();
+  s[id] = Date.now() + hours * 3600_000;
+  localStorage.setItem(SNOOZE_KEY, JSON.stringify(s));
+}
+function unsnoozeSignal(id: string) {
+  const s = getSnoozed();
+  delete s[id];
+  localStorage.setItem(SNOOZE_KEY, JSON.stringify(s));
+}
+function isSignalSnoozed(id: string): boolean {
+  const s = getSnoozed();
+  const until = s[id];
+  if (!until) return false;
+  if (Date.now() > until) { unsnoozeSignal(id); return false; }
+  return true;
+}
+
+// ─── Bet tracker helpers (localStorage) ────────────────────────────────────────
+const BET_KEY = "pi_bets";
+function trackBetFromSignal(signal: Signal, outcomeLabel: string) {
+  try {
+    const bets = JSON.parse(localStorage.getItem(BET_KEY) || "[]");
+    bets.unshift({
+      id: `bet-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      marketQuestion: signal.marketQuestion,
+      outcomeLabel,
+      side: signal.side,
+      conditionId: signal.marketId,
+      slug: (signal as any).slug,
+      entryPrice: signal.avgEntryPrice,
+      betAmount: 0,
+      betDate: Date.now(),
+      status: "open",
+      notes: `Signal confidence: ${signal.confidence}/95`,
+    });
+    localStorage.setItem(BET_KEY, JSON.stringify(bets));
+  } catch {}
+}
 
 // ─── Alert history (localStorage) ─────────────────────────────────────────────
 const ALERT_KEY = "pi_alert_ids";
@@ -98,31 +144,85 @@ function MarketTypePill({ type }: { type?: string }) {
   return <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border"><CalendarClock className="w-2.5 h-2.5" />FUTURES</span>;
 }
 
-function ScoreBreakdown({ breakdown, confidence }: { breakdown: Record<string, number>; confidence: number }) {
+function ScoreBreakdown({ breakdown, confidence, signal }: {
+  breakdown: Record<string, number>;
+  confidence: number;
+  signal?: any;
+}) {
+  const roiImplied  = Math.round((breakdown.roiPct ?? 0) / 40 * 60);
   const items = [
-    { label: "ROI (40%)",      val: breakdown.roiPct ?? 0,       color: "bg-blue-500" },
-    { label: "Consensus (30%)",val: breakdown.consensusPct ?? 0,  color: "bg-green-500" },
-    { label: "Value (20%)",    val: breakdown.valuePct ?? 0,      color: "bg-yellow-500" },
-    { label: "Size (10%)",     val: breakdown.sizePct ?? 0,       color: "bg-purple-500" },
-    { label: "Tier Bonus",     val: breakdown.tierBonus ?? 0,     color: "bg-orange-500" },
-  ].filter(i => i.val > 0);
+    {
+      label: "Trader ROI (40%)",
+      val: breakdown.roiPct ?? 0,
+      max: 40,
+      color: "bg-blue-500",
+      note: roiImplied > 0 ? `avg ~${roiImplied}% ROI` : "low/no ROI data",
+      low: (breakdown.roiPct ?? 0) < 8,
+    },
+    {
+      label: "Consensus (30%)",
+      val: breakdown.consensusPct ?? 0,
+      max: 30,
+      color: "bg-green-500",
+      note: signal?.consensusPct ? `${signal.consensusPct}% on same side` : "",
+      low: false,
+    },
+    {
+      label: "Value Edge (20%)",
+      val: breakdown.valuePct ?? 0,
+      max: 20,
+      color: "bg-yellow-500",
+      note: signal?.valueDelta !== undefined
+        ? signal.valueDelta > 0
+          ? `+${(signal.valueDelta * 100).toFixed(1)}¢ edge vs current`
+          : signal.valueDelta === 0 || Math.abs(signal.valueDelta) < 0.01
+          ? "at entry (slippage eats edge)"
+          : `entry ${(Math.abs(signal.valueDelta) * 100).toFixed(1)}¢ worse than live`
+        : "",
+      low: (breakdown.valuePct ?? 0) === 0,
+    },
+    {
+      label: "Position Size (10%)",
+      val: breakdown.sizePct ?? 0,
+      max: 10,
+      color: "bg-purple-500",
+      note: signal?.avgNetUsdc ? `avg $${(signal.avgNetUsdc / 1000).toFixed(1)}K (threshold $15K)` : "",
+      low: (breakdown.sizePct ?? 0) < 3,
+    },
+    {
+      label: "Quality Bonus",
+      val: breakdown.tierBonus ?? 0,
+      max: 15,
+      color: "bg-orange-500",
+      note: signal?.avgQuality ? `avg quality ${signal.avgQuality}/100` : "",
+      low: false,
+    },
+  ];
 
   return (
-    <div className="mt-3 pt-3 border-t border-border/40">
+    <div className="mt-2 p-2.5 bg-muted/30 rounded-md border border-border/40">
       <div className="flex items-center gap-1.5 mb-2">
         <BarChart2 className="w-3 h-3 text-muted-foreground" />
-        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Score Breakdown</span>
+        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Why {confidence}/100?</span>
       </div>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+      <div className="space-y-1.5">
         {items.map(item => (
-          <div key={item.label} className="flex items-center justify-between text-[10px]">
-            <span className="text-muted-foreground">{item.label}</span>
-            <span className="font-semibold">{item.val}pts</span>
+          <div key={item.label}>
+            <div className="flex items-center justify-between text-[10px] mb-0.5">
+              <span className={item.low ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}>{item.label}</span>
+              <span className="font-semibold tabular-nums">{item.val}/{item.max}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+                <div className={`h-full ${item.color} opacity-70`} style={{ width: `${item.max > 0 ? (item.val / item.max) * 100 : 0}%` }} />
+              </div>
+              {item.note && <span className="text-[9px] text-muted-foreground shrink-0 max-w-[120px] truncate" title={item.note}>{item.note}</span>}
+            </div>
           </div>
         ))}
-        <div className="flex items-center justify-between text-[10px] col-span-2 border-t border-border/30 pt-1 mt-0.5">
-          <span className="font-semibold">Total Score</span>
-          <span className="font-bold text-primary">{confidence}/100</span>
+        <div className="flex items-center justify-between text-[10px] border-t border-border/30 pt-1.5 mt-1">
+          <span className="font-semibold">Total</span>
+          <span className="font-bold text-primary">{confidence}/95 max</span>
         </div>
       </div>
     </div>
@@ -153,10 +253,17 @@ function getOutcomeLabel(title: string, side: "YES" | "NO"): string {
   return side;
 }
 
-function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }) {
+function SignalCard({ signal, mode, onSnoozed }: { signal: Signal; mode: "elite" | "fast"; onSnoozed?: (id: string) => void }) {
   const [expanded, setExpanded] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [livePrice, setLivePrice] = useState<number | null>(null);
+  const [showSnoozeMenu, setShowSnoozeMenu] = useState(false);
+  const { toast } = useToast();
+
+  // Auto-show score breakdown when card is expanded
+  useEffect(() => {
+    if (expanded && (signal as any).scoreBreakdown) setShowBreakdown(true);
+  }, [expanded]);
 
   // Subscribe to SSE price stream while expanded
   useEffect(() => {
@@ -171,8 +278,8 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
   }, [expanded, signal.id, (signal as any).marketId]);
 
   const borderCls = signal.side === "YES"
-    ? "border-green-500/30 bg-green-500/5"
-    : "border-red-500/30 bg-red-500/5";
+    ? "border-green-500/25"
+    : "border-red-500/25";
 
   const confidenceLabel =
     signal.confidence >= 75 ? { label: "HIGH", cls: "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/20" } :
@@ -401,22 +508,80 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
                   </button>
                 )}
               </div>
-              {polyUrl && (
-                <a
-                  href={polyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs text-primary"
-                  data-testid={`link-polymarket-${signal.id}`}
-                >
-                  View on Polymarket <ExternalLink className="w-3 h-3" />
-                </a>
-              )}
+              <div className="flex items-center gap-1.5">
+                {/* Track Bet button */}
+                <Link href="/bets">
+                  <button
+                    onClick={() => {
+                      const outcomeLabel = getOutcomeLabel(signal.marketQuestion, signal.side as "YES" | "NO");
+                      trackBetFromSignal(signal, outcomeLabel);
+                      toast({ title: "Bet logged!", description: `Added ${outcomeLabel} to My Bets. Set your amount there.` });
+                    }}
+                    className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
+                    data-testid={`button-track-bet-${signal.id}`}
+                    title="Log this signal as a bet"
+                  >
+                    <BookmarkPlus className="w-3 h-3" /> Track
+                  </button>
+                </Link>
+
+                {/* Snooze button */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowSnoozeMenu(s => !s)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    data-testid={`button-snooze-${signal.id}`}
+                    title="Hide this signal for a while"
+                  >
+                    <EyeOff className="w-3 h-3" />
+                  </button>
+                  {showSnoozeMenu && (
+                    <div className="absolute right-0 bottom-6 bg-background border border-border rounded-lg shadow-lg p-1 z-50 min-w-[130px]">
+                      <div className="text-[10px] font-semibold text-muted-foreground px-2 py-1">Snooze for...</div>
+                      {[["1h", 1], ["4h", 4], ["24h", 24], ["3 days", 72]].map(([label, hrs]) => (
+                        <button
+                          key={label as string}
+                          onClick={() => {
+                            snoozeSignal(signal.id, hrs as number);
+                            setShowSnoozeMenu(false);
+                            onSnoozed?.(signal.id);
+                            toast({ title: `Signal snoozed ${label}`, description: signal.marketQuestion });
+                          }}
+                          className="w-full text-left px-2 py-1 text-xs hover:bg-muted rounded transition-colors"
+                          data-testid={`button-snooze-${label}-${signal.id}`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {polyUrl && (
+                  <a
+                    href={polyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-xs text-primary"
+                    data-testid={`link-polymarket-${signal.id}`}
+                  >
+                    View on Polymarket <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
             </div>
 
-            {/* Score breakdown */}
+            {/* Score breakdown + counter-trader warning */}
             {showBreakdown && (signal as any).scoreBreakdown && (
-              <ScoreBreakdown breakdown={(signal as any).scoreBreakdown} confidence={signal.confidence} />
+              <div className="mt-3">
+                {(signal as any).counterTraderCount > 0 && (
+                  <div className="mb-2 flex items-center gap-1.5 text-[11px] px-2 py-1.5 bg-amber-500/10 border border-amber-500/25 rounded text-amber-700 dark:text-amber-400">
+                    <AlertCircle className="w-3 h-3 shrink-0" />
+                    <span><strong>{(signal as any).counterTraderCount}</strong> tracked trader{(signal as any).counterTraderCount !== 1 ? "s" : ""} hold the opposite position — reduces conviction</span>
+                  </div>
+                )}
+                <ScoreBreakdown breakdown={(signal as any).scoreBreakdown} confidence={signal.confidence} signal={signal} />
+              </div>
             )}
 
             {/* Game score + price chart */}
@@ -519,8 +684,15 @@ function fmtMinsAgo(mins: number): string {
   return `${h}h ago`;
 }
 
-function SharpMovesPanel() {
+function toAmericanOdds(p: number): string {
+  if (p <= 0 || p >= 1) return "—";
+  if (p >= 0.5) return `${Math.round(-p / (1 - p) * 100)}`;
+  return `+${Math.round((1 - p) / p * 100)}`;
+}
+
+function SharpMovesPanel({ signals }: { signals?: any[] }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const { data, isLoading, refetch } = useQuery<{ alerts: any[]; fetchedAt: number }>({
     queryKey: ["/api/alerts/live"],
     queryFn: () => fetch("/api/alerts/live").then(r => r.json()),
@@ -530,6 +702,165 @@ function SharpMovesPanel() {
   const alerts = data?.alerts || [];
   const multiAlerts = alerts.filter((a: any) => a.sharpAction?.traderCount >= 2);
   const bigAlerts   = alerts.filter((a: any) => !multiAlerts.includes(a));
+
+  function renderAlert(a: any, isMulti: boolean) {
+    const alertOutcomeLabel = a.outcomeLabel || getOutcomeLabel(a.market, a.side);
+    const alertTimeStr = a.timestamp ? timeAgoShort(a.timestamp) : fmtMinsAgo(a.minutesAgo);
+    const isExp = expandedId === a.id;
+    const sharp = a.sharpAction;
+    // Cross-reference with signals to find matching signal for trader list
+    const matchSignal = signals?.find(s =>
+      s.marketId === a.conditionId && s.side === (sharp?.side ?? a.side)
+    );
+
+    return (
+      <div key={a.id} data-testid={isMulti ? `sharp-move-multi-${a.id}` : `sharp-move-${a.id}`}>
+        {/* Collapsed row — clickable */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setExpandedId(isExp ? null : a.id)}
+          onKeyDown={e => e.key === "Enter" && setExpandedId(isExp ? null : a.id)}
+          className={`flex items-center gap-2 text-[11px] rounded-md px-2.5 py-1.5 cursor-pointer transition-colors ${
+            isMulti
+              ? "bg-orange-500/8 border border-orange-500/20 hover:bg-orange-500/15"
+              : "bg-muted/40 hover:bg-muted/70"
+          }`}
+        >
+          {isMulti && (
+            <span className="shrink-0 font-bold px-1 py-0.5 rounded text-[9px] bg-orange-500/20 text-orange-600 dark:text-orange-400">
+              MULTI
+            </span>
+          )}
+          {!isMulti && a.isTracked && (
+            <span className="shrink-0 font-semibold text-[9px] px-1 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 max-w-[60px] truncate" title={a.trader}>
+              {a.trader}
+            </span>
+          )}
+          {sharp?.isActionable && (
+            <span
+              className="shrink-0 text-[9px] font-bold px-1 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 cursor-help"
+              title="ACTIONABLE — current price is within 2¢ of sharp avg entry. You can get in at essentially the same price as these traders."
+            >
+              ACT
+            </span>
+          )}
+          <div className="flex-1 min-w-0">
+            <div className={`font-bold text-[11px] ${a.side === "YES" ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+              {alertOutcomeLabel}
+            </div>
+            <div className="text-[10px] text-muted-foreground truncate">{a.market}</div>
+          </div>
+          <div className="text-right shrink-0 flex items-center gap-1.5">
+            {matchSignal && (
+              <span className={`text-[9px] font-bold px-1 py-0.5 rounded shrink-0 ${
+                matchSignal.confidence >= 70 ? "bg-green-500/15 text-green-700 dark:text-green-300"
+                : matchSignal.confidence >= 50 ? "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300"
+                : "bg-muted text-muted-foreground"
+              }`} title={`Signal confidence: ${matchSignal.confidence}/95`}>
+                {matchSignal.confidence}
+              </span>
+            )}
+            <div>
+              <div className="font-bold tabular-nums">${a.size >= 1000 ? `${(a.size/1000).toFixed(1)}K` : a.size}</div>
+              <div className="text-muted-foreground text-[10px]">{alertTimeStr}</div>
+            </div>
+            {isExp ? <ChevronUp className="w-3 h-3 text-muted-foreground" /> : <ChevronDown className="w-3 h-3 text-muted-foreground" />}
+          </div>
+        </div>
+
+        {/* Expanded detail */}
+        {isExp && (
+          <div className="mx-1 mb-1 p-2.5 rounded-b-md bg-muted/60 border-x border-b border-border space-y-2 text-[11px]">
+            {/* Bet details */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <div>
+                <span className="text-muted-foreground">Entry: </span>
+                <span className="font-bold">{Math.round(a.price * 100)}¢</span>
+                <span className="text-muted-foreground ml-1">({a.americanOdds || toAmericanOdds(a.price)})</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Size: </span>
+                <span className="font-bold">${a.size >= 1000 ? `${(a.size/1000).toFixed(1)}K` : a.size}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Time: </span>
+                <span className="font-medium">{alertTimeStr}</span>
+              </div>
+              {a.isTracked && a.trader && (
+                <div>
+                  <span className="text-muted-foreground">Trader: </span>
+                  <span className="font-semibold text-primary">{a.trader}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Sharp consensus context */}
+            {sharp && (
+              <div className={`p-1.5 rounded border text-[10px] ${
+                sharp.priceStatus === "dip"
+                  ? "bg-blue-500/10 border-blue-500/20 text-blue-700 dark:text-blue-300"
+                  : sharp.isActionable
+                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-300"
+                  : "bg-primary/5 border-primary/15 text-primary"
+              }`}>
+                <div className="font-semibold">
+                  {sharp.traderCount} tracked traders → {sharp.side} · Confidence: {sharp.confidence}/100
+                </div>
+                <div className="mt-0.5">
+                  Avg entry: {Math.round(sharp.avgEntry * 100)}¢ ({toAmericanOdds(sharp.avgEntry)})
+                  {" · "}Live: {Math.round(sharp.currentPrice * 100)}¢
+                  {sharp.priceStatus === "dip" ? " · PRICE DIP ↓ — better than what sharps paid" :
+                   sharp.isActionable ? " · ACTIONABLE — at sharp entry" :
+                   " · Moved past entry"}
+                </div>
+              </div>
+            )}
+
+            {/* Trader list from matching signal */}
+            {matchSignal && matchSignal.traders?.length > 0 && (
+              <div>
+                <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Traders (sorted by size)</div>
+                {matchSignal.traders.slice(0, 5).map((t: any, i: number) => (
+                  <div key={i} className="flex items-center justify-between py-0.5 border-t border-border/30 text-[10px]">
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground w-4 text-right">#{i + 1}</span>
+                      {t.isSportsLb && <span className="text-[9px]">🏆</span>}
+                      <a
+                        href={`https://polymarket.com/profile/${t.address}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline font-mono"
+                        onClick={e => e.stopPropagation()}
+                      >{t.name}</a>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <span>{Math.round(t.entryPrice * 100)}¢ entry</span>
+                      <span className="font-medium text-foreground">${(t.netUsdc / 1000).toFixed(1)}K</span>
+                      {t.tradeTime > 0 && <span>{timeAgoShort(t.tradeTime)}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Polymarket link */}
+            {a.slug && (
+              <a
+                href={`https://polymarket.com/market/${a.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-primary hover:underline font-medium"
+                onClick={e => e.stopPropagation()}
+              >
+                Trade on Polymarket <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <Card className="border-orange-500/20 bg-gradient-to-r from-orange-500/5 to-transparent">
@@ -551,9 +882,10 @@ function SharpMovesPanel() {
                 {multiAlerts.length} MULTI SHARP
               </span>
             )}
+            <span className="text-[10px] text-muted-foreground">· tap to expand</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-muted-foreground">30s auto-refresh</span>
+            <span className="text-[10px] text-muted-foreground">30s</span>
             <Button
               size="sm"
               variant="ghost"
@@ -568,7 +900,7 @@ function SharpMovesPanel() {
         </div>
 
         {!collapsed && (
-          <div className="mt-2.5 space-y-1.5" data-testid="sharp-moves-list">
+          <div className="mt-2.5 space-y-1" data-testid="sharp-moves-list">
             {isLoading ? (
               <div className="space-y-1.5">
                 {Array.from({ length: 3 }).map((_, i) => (
@@ -581,58 +913,8 @@ function SharpMovesPanel() {
               </div>
             ) : (
               <>
-                {multiAlerts.slice(0, 5).map((a: any) => {
-                  const alertOutcomeLabel = a.outcomeLabel || getOutcomeLabel(a.market, a.side);
-                  const alertTimeStr = a.timestamp ? timeAgoShort(a.timestamp) : fmtMinsAgo(a.minutesAgo);
-                  return (
-                    <div
-                      key={a.id}
-                      className="flex items-start gap-2 text-[11px] bg-orange-500/8 border border-orange-500/20 rounded-md px-2.5 py-1.5"
-                      data-testid={`sharp-move-multi-${a.id}`}
-                    >
-                      <span className="shrink-0 font-bold px-1 py-0.5 rounded text-[9px] bg-orange-500/20 text-orange-600 dark:text-orange-400 mt-0.5">
-                        MULTI SHARP
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className={`font-bold text-[11px] ${a.side === "YES" ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
-                          {alertOutcomeLabel}
-                        </div>
-                        <div className="text-[10px] text-muted-foreground truncate" title={a.market}>{a.market}</div>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <div className="font-bold tabular-nums">${a.size.toLocaleString()}</div>
-                        <div className="text-muted-foreground text-[10px]">{alertTimeStr} · {a.americanOdds}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-                {bigAlerts.slice(0, 8 - Math.min(multiAlerts.length, 5)).map((a: any) => {
-                  const alertOutcomeLabel = a.outcomeLabel || getOutcomeLabel(a.market, a.side);
-                  const alertTimeStr = a.timestamp ? timeAgoShort(a.timestamp) : fmtMinsAgo(a.minutesAgo);
-                  return (
-                    <div
-                      key={a.id}
-                      className="flex items-start gap-2 text-[11px] bg-muted/40 rounded-md px-2.5 py-1.5"
-                      data-testid={`sharp-move-${a.id}`}
-                    >
-                      {a.isTracked && (
-                        <span className="shrink-0 font-semibold text-[9px] px-1 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 mt-0.5">
-                          {a.trader}
-                        </span>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className={`font-bold text-[11px] ${a.side === "YES" ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
-                          {alertOutcomeLabel}
-                        </div>
-                        <div className="text-[10px] text-muted-foreground truncate" title={a.market}>{a.market}</div>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <div className="font-bold tabular-nums">${a.size.toLocaleString()}</div>
-                        <div className="text-muted-foreground text-[10px]">{alertTimeStr} · {a.americanOdds}</div>
-                      </div>
-                    </div>
-                  );
-                })}
+                {multiAlerts.slice(0, 5).map((a: any) => renderAlert(a, true))}
+                {bigAlerts.slice(0, 8 - Math.min(multiAlerts.length, 5)).map((a: any) => renderAlert(a, false))}
               </>
             )}
           </div>
@@ -654,6 +936,15 @@ export default function Signals() {
   const [countdown, setCountdown] = useState(mode === "elite" ? ELITE_REFRESH_SEC : FAST_REFRESH_SEC);
   const [alertHistory, setAlertHistory] = useState<Array<{ id: string; question: string; confidence: number; ts: number }>>([]);
   const [showAlerts, setShowAlerts] = useState(false);
+  const [snoozedIds, setSnoozedIds] = useState<Set<string>>(() => {
+    const s = getSnoozed();
+    const now = Date.now();
+    return new Set(Object.entries(s).filter(([, v]) => v > now).map(([k]) => k));
+  });
+
+  const handleSnoozed = useCallback((id: string) => {
+    setSnoozedIds(prev => new Set([...prev, id]));
+  }, []);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -740,6 +1031,7 @@ export default function Signals() {
   const signals = data?.signals || [];
   const filtered = signals
     .filter(s => {
+      if (snoozedIds.has(s.id)) return false;
       if (search && !s.marketQuestion.toLowerCase().includes(search.toLowerCase())) return false;
       if (filter === "best_bets") return s.confidence >= 70 && s.isActionable && s.valueDelta > 0;
       if (filter === "value")   return s.isValue;
@@ -873,7 +1165,7 @@ export default function Signals() {
       )}
 
       {/* Sharp Moves real-time feed */}
-      <SharpMovesPanel />
+      <SharpMovesPanel signals={signals} />
 
       {/* Mode toggle + category filter */}
       <div className="flex items-center gap-3 flex-wrap">
@@ -1108,8 +1400,20 @@ export default function Signals() {
         </Card>
       ) : (
         <div className="space-y-3">
+          {snoozedIds.size > 0 && (
+            <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
+              <span>{snoozedIds.size} signal{snoozedIds.size !== 1 ? "s" : ""} snoozed</span>
+              <button
+                onClick={() => { localStorage.removeItem(SNOOZE_KEY); setSnoozedIds(new Set()); }}
+                className="flex items-center gap-1 hover:text-foreground transition-colors"
+                data-testid="button-clear-snooze"
+              >
+                <X className="w-3 h-3" /> Clear all
+              </button>
+            </div>
+          )}
           {filtered.map(signal => (
-            <SignalCard key={signal.id} signal={signal} mode={mode} />
+            <SignalCard key={signal.id} signal={signal} mode={mode} onSnoozed={handleSnoozed} />
           ))}
         </div>
       )}

@@ -14,6 +14,7 @@ A sports prediction market intelligence dashboard that surfaces consensus signal
 - `/signals` — Signals: Two modes — Elite (large bets + positions) and Live Feed (consensus from recent trades). Shows ACTIONABLE/PRICE MOVED/BIG PLAY badges. Elite refreshes 120s, Fast 45s.
 - `/traders` — Top Traders: Unified pool of 300+ traders — Sports LB + Curated elites + Discovered (from 20K trade scan) + General LB active in sports. Source filter pills (All/Sports LB/Curated/Discovered) above search bar. Source badges show origin (📌 Curated, 🔍 Discovered, 🔥 Hot). Pool breakdown shown in footer.
 - `/markets` — Sports Markets: Filter tabs (Upcoming/Moneyline/Spread/Total/Futures/All). Shows LIVE/PREGAME/FUTURES badges. 30s auto-refresh. Game markets populated from positions registry.
+- `/bets` — My Bets: localStorage bet tracker. Log bets from signal cards ("Track" button), enter amount, resolve as Won/Lost with auto PNL calculation. Stats: Open count, Win Rate, Total PNL, At Risk.
 
 ## Key API Routes
 

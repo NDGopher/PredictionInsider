@@ -9,6 +9,7 @@ import Dashboard from "@/pages/Dashboard";
 import Traders from "@/pages/Traders";
 import Signals from "@/pages/Signals";
 import Markets from "@/pages/Markets";
+import Bets from "@/pages/Bets";
 import NotFound from "@/pages/not-found";
 import { Moon, Sun, TrendingUp } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -59,6 +60,7 @@ function Router() {
       <Route path="/traders" component={Traders} />
       <Route path="/signals" component={Signals} />
       <Route path="/markets" component={Markets} />
+      <Route path="/bets" component={Bets} />
       <Route component={NotFound} />
     </Switch>
   );
