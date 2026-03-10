@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -294,12 +294,35 @@ export default function Dashboard() {
       refetchInterval: 30_000,
     });
 
-  const { data: alertsData, isLoading: alertsLoading } =
-    useQuery<{ alerts: any[]; fetchedAt: number }>({
-      queryKey: ["/api/alerts/live"],
-      staleTime: 12_000,
-      refetchInterval: 15_000,
+  // Live alerts via SSE — updates arrive automatically every 15s from the server
+  const [alertsData, setAlertsData] = useState<{ alerts: any[]; fetchedAt: number } | null>(null);
+  const [alertsLoading, setAlertsLoading] = useState(true);
+  const [lastAlertPush, setLastAlertPush] = useState<number>(0);
+  const [nowTick, setNowTick] = useState(Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNowTick(Date.now()), 5000);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    const es = new EventSource("/api/stream?channel=alerts");
+    es.addEventListener("alerts", (e: MessageEvent) => {
+      try {
+        const data = JSON.parse(e.data);
+        setAlertsData(data);
+        setLastAlertPush(Date.now());
+        setAlertsLoading(false);
+      } catch { /* ignore */ }
     });
+    es.onerror = () => {
+      // On SSE failure, fall back to one-shot fetch
+      fetch("/api/alerts/live").then(r => r.json()).then(d => {
+        setAlertsData(d);
+        setAlertsLoading(false);
+      }).catch(() => setAlertsLoading(false));
+    };
+    return () => es.close();
+  }, []);
 
   const signals = signalsData?.signals || [];
   const highConfidence = signals.filter(s => s.confidence >= 70);
@@ -386,7 +409,12 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <Flame className="w-4 h-4 text-orange-500" />
               <CardTitle className="text-sm font-semibold">Live Big Action</CardTitle>
-              <span className="text-[10px] text-muted-foreground">— tracked-trader bets · 15s refresh</span>
+              <span className="text-[10px] text-muted-foreground">
+                — live push ·{" "}
+                {lastAlertPush > 0
+                  ? `${Math.round((nowTick - lastAlertPush) / 1000)}s ago`
+                  : "connecting…"}
+              </span>
             </div>
             {alertsData?.alerts?.length ? (
               <Badge variant="secondary" className="text-[10px]">{alertsData.alerts.length} bets</Badge>

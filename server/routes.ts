@@ -19,6 +19,21 @@ function setCache(key: string, data: unknown, ttlMs: number) {
 }
 const seenSignalIds = new Set<string>();
 
+// ─── SSE client registry ──────────────────────────────────────────────────────
+// Each connected client gets a Response object stored here.
+// We broadcast fresh data to all clients whenever our live-alerts cache refreshes.
+type SseClient = { res: import("express").Response; channel: string };
+const sseClients = new Set<SseClient>();
+
+function broadcastSSE(channel: string, event: string, data: unknown) {
+  const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+  for (const c of sseClients) {
+    if (c.channel === channel) {
+      try { c.res.write(payload); } catch { sseClients.delete(c); }
+    }
+  }
+}
+
 // ─── Game Market Registry ─────────────────────────────────────────────────────
 // Shared registry populated by positions-based signal generation.
 // Lets the /api/markets route show today's game markets even when they
@@ -107,19 +122,22 @@ function categoriseMarket(question: string, endDate?: string): "live" | "pregame
   if (!endDate) return "pregame";
   const now = Date.now();
   const ms = new Date(endDate).getTime() - now;
-  if (ms < 0) return "pregame";               // ended already
-  if (ms < 3 * 3600_000) return "live";       // ending within 3h = definitely live/ending
+
+  // Recently ended (within 20h of endDate passing) — resolution still pending, treat as live
+  if (ms >= -20 * 3600_000 && ms < 0) return "live";
+  if (ms < -20 * 3600_000) return "pregame";     // ended long ago, definitely resolved
+  if (ms < 4 * 3600_000) return "live";           // ending within 4h = in progress / overtime
 
   if (ms < 7 * 24 * 3600_000) {
-    // Game markets with endDate within 7 days could be pregame or live.
-    // NBA/NHL/MLB night games run roughly 7 PM–1 AM ET = 00:00–06:00 UTC (next day).
-    // Polymarket often sets endDate to the NEXT calendar day in UTC to give resolution buffer.
-    // So a game happening tonight ET has endDate "tomorrow" in UTC = 20-28h away.
-    // Strategy: if endDate ≤ 30h away AND current UTC hour is in the sports-prime-time window
-    // (23:00–09:00 UTC = 6 PM–4 AM ET), classify as live.
+    // Game markets within 7 days: infer live vs pregame from time-of-day.
+    // Sports prime window: 19:00–11:00 UTC (2 PM–6 AM ET) covers:
+    //   afternoon college basketball, evening NBA/NHL, late-night west-coast games.
+    // Polymarket sets endDate to next calendar day in UTC as resolution buffer,
+    // so a same-day game often has endDate 20-48h away.
+    // Use 48h window to catch college markets that set endDate further out.
     const utcHour = new Date().getUTCHours();
-    const inSportsPrimeTime = utcHour >= 23 || utcHour < 9; // 11 PM – 9 AM UTC
-    if (ms < 30 * 3600_000 && inSportsPrimeTime) return "live";
+    const inSportsPrimeTime = utcHour >= 19 || utcHour < 11; // 7 PM – 11 AM UTC
+    if (ms < 48 * 3600_000 && inSportsPrimeTime) return "live";
     return "pregame";
   }
   return "futures";
@@ -164,11 +182,11 @@ function classifyMarketType(q: string): "moneyline" | "spread" | "total" | "futu
 /** Compute actionability: price is still close enough to avg entry to be worth acting on */
 function computeIsActionable(currentPrice: number, avgEntry: number, side: "YES" | "NO"): boolean {
   const priceDiff = Math.abs(currentPrice - avgEntry);
-  if (currentPrice < 0.08 || currentPrice > 0.90) return false; // out of range
-  // Moved significantly against the signal = stale
-  if (side === "YES" && currentPrice > avgEntry + 0.10) return false; // price jumped, late
-  if (side === "NO"  && currentPrice < avgEntry - 0.10) return false; // price fell, late
-  return priceDiff <= 0.12; // within 12¢ of entry = still actionable
+  if (currentPrice < 0.08 || currentPrice > 0.92) return false; // out of range
+  // Price moved against you (more expensive than what sharps paid) = getting late
+  if (side === "YES" && currentPrice > avgEntry + 0.07) return false; // YES jumped 7¢+, too late
+  if (side === "NO"  && currentPrice < avgEntry - 0.07) return false; // NO dropped 7¢+, too late
+  return priceDiff <= 0.07; // within 7¢ of entry = still actionable
 }
 
 /** Score for "big play": how large is this bet */
@@ -709,6 +727,80 @@ function parseMarket(m: any) {
 
 // ─── Route registration ───────────────────────────────────────────────────────
 export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
+
+  // ── GET /api/stream ─── Server-Sent Events push channel ──────────────────
+  // Subscribe: `new EventSource('/api/stream?channel=alerts')`
+  // Events: `alerts` (same shape as /api/alerts/live)
+  app.get("/api/stream", (req, res) => {
+    const channel = (req.query.channel as string) || "alerts";
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no"); // disable nginx buffering
+    res.flushHeaders();
+
+    // Send a heartbeat comment immediately so the browser knows the connection is alive
+    res.write(": connected\n\n");
+
+    const client: SseClient = { res, channel };
+    sseClients.add(client);
+
+    // Push current cached alerts immediately if available
+    const cached = getCache<unknown>("live-alerts-v2");
+    if (cached) res.write(`event: alerts\ndata: ${JSON.stringify(cached)}\n\n`);
+
+    req.on("close", () => { sseClients.delete(client); });
+  });
+
+  // Background task: refresh live alerts every 15s and push to all SSE clients
+  async function refreshAndBroadcastAlerts() {
+    try {
+      const now = Date.now();
+      const [allTrades, allSportsLb] = await Promise.all([
+        fetchRecentTrades(3000),
+        fetchMultiWindowSportsLB(),
+      ]);
+      const lbMap = new Map<string, { name: string; pnl: number; isSportsLb: boolean }>();
+      for (const t of allSportsLb) {
+        const w = (t.proxyWallet || "").toLowerCase();
+        if (!w || lbMap.has(w)) continue;
+        lbMap.set(w, { name: t.userName || truncAddr(w), pnl: parseFloat(t.pnl || "0"), isSportsLb: true });
+      }
+      const alerts: any[] = [];
+      const seen = new Set<string>();
+      for (const trade of allTrades) {
+        const wallet = (trade.proxyWallet || "").toLowerCase();
+        const isTracked = lbMap.has(wallet);
+        const size = parseFloat(trade.size || trade.amount || "0");
+        if (!isTracked && size < 5000) continue;
+        if (size < 200) continue;
+        const title = trade.title || trade.market || "";
+        if (!isSportsRelated(title) || !title) continue;
+        const key = `${trade.conditionId || "?"}-${wallet}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const trader = lbMap.get(wallet);
+        const side = (trade.outcomeIndex === 0 || trade.outcome === "Yes") ? "YES" : "NO";
+        const price = parseFloat(trade.price || "0.5");
+        const ts = trade.timestamp ? trade.timestamp * 1000 : (trade.createdAt ? new Date(trade.createdAt).getTime() : now);
+        alerts.push({
+          id: `alert-${trade.id || key}`,
+          trader: trader?.name || truncAddr(wallet),
+          wallet, isTracked, isSportsLb: trader?.isSportsLb ?? false,
+          market: title.slice(0, 80), slug: trade.slug, conditionId: trade.conditionId,
+          side, size: Math.round(size), price: Math.round(price * 1000) / 1000,
+          timestamp: ts, minutesAgo: Math.round((now - ts) / 60_000),
+          sharpAction: signalsByMarket.get(trade.conditionId || "") ?? null,
+        });
+        if (alerts.length >= 40) break;
+      }
+      alerts.sort((a, b) => b.size - a.size);
+      const result = { alerts: alerts.slice(0, 30), fetchedAt: now };
+      setCache("live-alerts-v2", result, 20_000);
+      if (sseClients.size > 0) broadcastSSE("alerts", "alerts", result);
+    } catch { /* non-fatal */ }
+  }
+  setInterval(refreshAndBroadcastAlerts, 15_000);
 
   // ── GET /api/traders ────────────────────────────────────────────────────────
   app.get("/api/traders", async (req, res) => {
