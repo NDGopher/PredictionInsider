@@ -135,7 +135,7 @@ function isPostponedOrCancelled(question: string, active: boolean, closed: boole
  * Uses Polymarket's own `gameStartTime` when available — this is the most accurate method.
  * Falls back to simple endDate heuristics only when gameStartTime is unknown.
  */
-function categoriseMarket(question: string, endDate?: string, gameStartTime?: string): "live" | "pregame" | "futures" {
+function categoriseMarket(question: string, endDate?: string, gameStartTime?: string, slug?: string): "live" | "pregame" | "futures" {
   const q = (question || "").toLowerCase();
   // Definitive live signals from question text (e.g. in-play markets)
   if (/(lead|trailing|winning|losing|currently|live|in-game|halftime|first half|second half|quarter|overtime|period|inning)/.test(q)) return "live";
@@ -144,8 +144,12 @@ function categoriseMarket(question: string, endDate?: string, gameStartTime?: st
   const endMs = new Date(endDate).getTime();
   const ms = endMs - now;
 
-  // Market has already ended → pregame (resolved/expired, not live)
-  if (ms < 0) return "pregame";
+  // Market has already ended — check ESPN cache before giving up
+  if (ms < 0) {
+    // Game ended recently (within 4h) — ESPN may still show it as live
+    if (ms > -4 * 3600_000 && slug && espnLiveGames.get(slug) === true) return "live";
+    return "pregame";
+  }
   // Far future → futures
   if (ms > 7 * 24 * 3600_000) return "futures";
 
@@ -159,8 +163,16 @@ function categoriseMarket(question: string, endDate?: string, gameStartTime?: st
     return "live"; // started but not yet resolved
   }
 
-  // ── Fallback: no gameStartTime available ───────────────────────────────────
-  // Default to pregame — never falsely mark a market as LIVE without evidence
+  // ── Fallback: ESPN background cache ────────────────────────────────────────
+  // When Polymarket doesn't provide gameStartTime, use ESPN live-status cache.
+  // This catches in-progress games like Red Wings vs Panthers where GST is missing.
+  if (slug) {
+    const espnLive = espnLiveGames.get(slug);
+    if (espnLive === true)  return "live";
+    if (espnLive === false) return "pregame"; // ESPN says not started / final
+  }
+
+  // ── Last resort: no evidence game has started ───────────────────────────────
   return "pregame";
 }
 
@@ -497,6 +509,44 @@ let sharedTraderMapUpdatedAt = 0;
 
 // Shared market DB — populated by signals route, used by alerts functions
 const sharedMarketDb = new Map<string, { question: string; slug?: string; endDate?: string; gameStartTime?: string; active: boolean; tokenIds?: string[] }>();
+
+// ESPN live-status background cache: slug → isCurrentlyLive (true = IN_PROGRESS)
+// Refreshed every 90s so categoriseMarket can use it as a fallback when Polymarket
+// doesn't supply gameStartTime for a market we know has started.
+const espnLiveGames = new Map<string, boolean>();
+
+async function refreshESPNLiveGames(): Promise<void> {
+  const now = Date.now();
+  const checkedSlugs = new Set<string>();
+  // Gather slugs from sharedMarketDb and gameMarketRegistry that are game-day markets
+  const allEntries: { slug?: string; endDate?: string; gameStartTime?: string }[] = [
+    ...sharedMarketDb.values(),
+    ...gameMarketRegistry.values(),
+  ];
+  for (const entry of allEntries) {
+    const slug = entry.slug;
+    if (!slug || checkedSlugs.has(slug)) continue;
+    // Only check sports slugs that match ESPN sport paths
+    if (!/^(nba|nhl|nfl|mlb|ncaab|ncaaf)-/.test(slug)) continue;
+    // Only check markets ending within 24h (game-day)
+    if (entry.endDate) {
+      const endMs = new Date(entry.endDate).getTime();
+      if (endMs < now - 4 * 3600_000) continue; // ended >4h ago — skip
+      if (endMs > now + 24 * 3600_000) continue; // too far out — skip
+    }
+    checkedSlugs.add(slug);
+    try {
+      const score = await fetchESPNGameScore(slug);
+      if (!score) continue;
+      const isLive = !score.completed && (
+        score.status === "STATUS_IN_PROGRESS" ||
+        /in.progress|in progress|live|progress/i.test(score.status) ||
+        (score.period > 0 && !score.completed)
+      );
+      espnLiveGames.set(slug, isLive);
+    } catch { /* ignore */ }
+  }
+}
 
 /**
  * Fetch recent trades for a specific wallet (curated elite trader).
@@ -1189,7 +1239,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           market: title.slice(0, 80), slug: trade.slug, conditionId: condId,
           side, size: Math.round(size), price: Math.round(price * 1000) / 1000,
           americanOdds: toAmericanOdds(price),
-          gameStatus: categoriseMarket(title, mEndDate, dbEntry?.gameStartTime),
+          gameStatus: categoriseMarket(title, mEndDate, dbEntry?.gameStartTime, trade.slug || dbEntry?.slug),
           endDate: mEndDate,
           timestamp: ts, minutesAgo: Math.round((now - ts) / 60_000),
           sharpAction: signalsByMarket.get(condId) ?? null,
@@ -1203,6 +1253,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     } catch { /* non-fatal */ }
   }
   setInterval(refreshAndBroadcastAlerts, 15_000);
+
+  // ESPN live-status background refresh — updates every 90s during game hours
+  // so that categoriseMarket() can correctly identify in-progress games even
+  // when Polymarket doesn't supply gameStartTime for a given market.
+  refreshESPNLiveGames().catch(() => {});
+  setInterval(() => { refreshESPNLiveGames().catch(() => {}); }, 90_000);
 
   // ── GET /api/traders ────────────────────────────────────────────────────────
   app.get("/api/traders", async (req, res) => {
@@ -1374,7 +1430,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       let markets = raw.map(m => {
         const parsed = parseMarket(m);
         const mType  = classifyMarketType(parsed.question);
-        const gameStatus = categoriseMarket(parsed.question, parsed.endDate, parsed.gameStartTime);
+        const gameStatus = categoriseMarket(parsed.question, parsed.endDate, parsed.gameStartTime, parsed.slug);
         const sharpAction = signalsByMarket.get(parsed.id || parsed.conditionId || "") ?? null;
         return { ...parsed, marketType: mType, gameStatus, sharpAction };
       }).filter(m => {
@@ -1551,7 +1607,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           size: Math.round(size),
           price: Math.round(price * 1000) / 1000,
           americanOdds: toAmericanOdds(price),
-          gameStatus: categoriseMarket(title, alertEndDate, alertDbEntry?.gameStartTime),
+          gameStatus: categoriseMarket(title, alertEndDate, alertDbEntry?.gameStartTime, trade.slug || alertDbEntry?.slug),
           gameStartTime: alertDbEntry?.gameStartTime,
           endDate: alertEndDate,
           timestamp: ts,
@@ -1914,7 +1970,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         seenSignalIds.add(id);
 
         const isSports = isSportsRelated(mw.question);
-        const mTypeRaw2 = categoriseMarket(mw.question, mw.endDate || mInfo?.endDate, mInfo?.gameStartTime);
+        const mTypeRaw2 = categoriseMarket(mw.question, mw.endDate || mInfo?.endDate, mInfo?.gameStartTime, mw.slug || mInfo?.slug);
         const marketCategory = classifyMarketType(mw.question);
         // Specific game markets (moneyline/spread/total) should be PREGAME, not FUTURES
         const mType = (mTypeRaw2 === "futures" && marketCategory !== "futures") ? "pregame" : mTypeRaw2;
@@ -2067,7 +2123,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                 currentPrice: curPrice,
                 volume: 0, liquidity: 0, active: true,
                 marketType: classifyMarketType(title),
-                gameStatus: categoriseMarket(title, resolvedEndDate, marketDb.get(condId)?.gameStartTime),
+                gameStatus: categoriseMarket(title, resolvedEndDate, marketDb.get(condId)?.gameStartTime, pos.slug || pos.eventSlug || marketDb.get(condId)?.slug),
               });
             }
             const pg = posMap.get(mapKey)!;
@@ -2166,7 +2222,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             avgROI, consensusPct, valueDelta, avgSize, pg.traders.length, avgQualityForScore
           );
 
-          const mTypeRaw = categoriseMarket(pg.question, resolvedEndDate, resolvedGameStartTime);
+          const mTypeRaw = categoriseMarket(pg.question, resolvedEndDate, resolvedGameStartTime, pg.slug || pgMarket?.slug);
           const marketCategory = classifyMarketType(pg.question);
           // Specific game markets (moneyline/spread/total) should show as PREGAME, not FUTURES
           // even if the game is > 7 days away. FUTURES badge is reserved for season/championship bets.
@@ -2254,6 +2310,38 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
       if (signals.length < beforeFilter) {
         console.log(`[PostponedFilter] Removed ${beforeFilter - signals.length} cancelled/postponed/inactive signals`);
+      }
+
+      // ── Cross-O/U conflict detection ──────────────────────────────────────────
+      // If sharps are on OVER at line X AND UNDER at line Y for the same game,
+      // the signals are directionally conflicting even though the conditionIds differ.
+      // Flag both with splitOU=true so the UI can show a SPLIT badge and lower confidence.
+      {
+        const ouGameMap = new Map<string, { overSigs: any[]; underSigs: any[] }>();
+        function extractGameKey(q: string): string {
+          // Strip the O/U line from a question like "Timberwolves vs. Lakers: Over/Under 232.5"
+          return q.replace(/[\s:]+(?:over\/?under|o\/u|total)[\s\d.?]+$/i, "").trim().toLowerCase();
+        }
+        for (const sig of signals) {
+          if (sig.marketCategory !== "total") continue;
+          const key = extractGameKey(sig.marketQuestion || "");
+          if (!key) continue;
+          const entry = ouGameMap.get(key) || { overSigs: [], underSigs: [] };
+          if (sig.side === "YES") entry.overSigs.push(sig);
+          else entry.underSigs.push(sig);
+          ouGameMap.set(key, entry);
+        }
+        for (const { overSigs, underSigs } of ouGameMap.values()) {
+          if (overSigs.length === 0 || underSigs.length === 0) continue;
+          // Both Over and Under signals exist for the same game — flag all of them
+          for (const s of [...overSigs, ...underSigs]) {
+            s.splitOU = true;
+            // Reduce confidence by 12 pts to reflect uncertainty
+            s.confidence = Math.max(s.confidence - 12, 30);
+          }
+          const lines = [...overSigs, ...underSigs].map(s => s.marketQuestion?.match(/[\d.]+\??$/)?.[0] || "?");
+          console.log(`[CrossOU] Split O/U on same game (${extractGameKey(overSigs[0].marketQuestion || "")}): lines ${lines.join(", ")} — flagging ${overSigs.length + underSigs.length} signals`);
+        }
       }
 
       signals.sort((a, b) => b.confidence - a.confidence);
@@ -2414,7 +2502,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         );
 
         const tier = dominant.length >= 3 ? "HIGH" : "MED";
-        const marketTypeRaw = categoriseMarket(info.question || condId, info.endDate, info.gameStartTime);
+        const marketTypeRaw = categoriseMarket(info.question || condId, info.endDate, info.gameStartTime, info.slug);
         const marketCategory = classifyMarketType(info.question || condId);
         // Specific game markets should be PREGAME, not FUTURES regardless of time horizon
         const marketType = (marketTypeRaw === "futures" && marketCategory !== "futures") ? "pregame" : marketTypeRaw;

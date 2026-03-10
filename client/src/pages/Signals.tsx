@@ -400,6 +400,11 @@ function SignalCard({ signal, mode, onSnoozed }: { signal: Signal; mode: "elite"
                       VALUE EDGE
                     </span>
                   )}
+                  {(signal as any).splitOU && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-700 dark:text-orange-300 border border-orange-500/20 flex items-center gap-0.5" title="Sharps are split between Over and Under on this game at different lines — conflicting O/U signal, reduced confidence">
+                      ⚡ SPLIT O/U
+                    </span>
+                  )}
                   {(signal as any).isNew && (
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-600 dark:text-orange-400 border border-orange-500/20 flex items-center gap-0.5">
                       <AlertTriangle className="w-2.5 h-2.5" /> NEW
