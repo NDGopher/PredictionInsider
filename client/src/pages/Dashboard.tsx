@@ -8,8 +8,8 @@ import { Link } from "wouter";
 import {
   Zap, Users, BarChart3, TrendingUp, TrendingDown, ArrowRight,
   Activity, Target, AlertCircle, RefreshCw, ExternalLink, X,
-  Radio, Hourglass, CalendarClock, DollarSign, ShieldCheck, ChevronDown, ChevronUp,
-  Bell, Clock, Flame
+  Radio, Hourglass, CalendarClock, DollarSign, ShieldCheck,
+  ChevronDown, ChevronUp, Bell, Clock, Flame
 } from "lucide-react";
 import type { SignalsResponse, LeaderboardResponse, MarketsResponse, Signal } from "@shared/schema";
 
@@ -269,6 +269,12 @@ function StatCard({
 
 export default function Dashboard() {
   const [signalTypeFilter, setSignalTypeFilter] = useState<"all" | "live" | "pregame" | "nofutures">("all");
+  const [expandedAlerts, setExpandedAlerts] = useState<Set<string>>(new Set());
+  const toggleAlert = (id: string) => setExpandedAlerts(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
 
   const { data: signalsData, isLoading: signalsLoading, error: signalsError, refetch: refetchSignals } =
     useQuery<SignalsResponse>({
@@ -403,44 +409,123 @@ export default function Dashboard() {
             <div className="divide-y divide-border/50">
               {alertsData.alerts.slice(0, 15).map((alert: any) => {
                 const outcomeLabel = getOutcomeLabel(alert.market, alert.side);
+                const isExpanded = expandedAlerts.has(alert.id);
+                const sharp = alert.sharpAction;
                 return (
-                  <div key={alert.id} className="flex items-center gap-3 py-2.5" data-testid={`live-alert-${alert.id}`}>
-                    {/* Side pill — prominent */}
-                    <div className={`shrink-0 flex flex-col items-center justify-center w-12 h-12 rounded-lg font-bold text-xs border ${
-                      alert.side === "YES"
-                        ? "bg-green-500/10 border-green-500/25 text-green-700 dark:text-green-300"
-                        : "bg-red-500/10 border-red-500/25 text-red-600 dark:text-red-400"
-                    }`}>
-                      <span className="text-[10px] leading-none">{alert.side === "YES" ? "BET" : "BET"}</span>
-                      <span className="text-sm leading-tight font-black">{alert.side}</span>
+                  <div key={alert.id} data-testid={`live-alert-${alert.id}`}>
+                    {/* Main row — clickable */}
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => toggleAlert(alert.id)}
+                      onKeyDown={e => e.key === "Enter" && toggleAlert(alert.id)}
+                      className="flex items-center gap-3 py-2.5 cursor-pointer rounded-md hover:bg-muted/40 transition-colors px-1 -mx-1"
+                    >
+                      {/* Side pill */}
+                      <div className={`shrink-0 flex flex-col items-center justify-center w-12 h-12 rounded-lg font-bold text-xs border ${
+                        alert.side === "YES"
+                          ? "bg-green-500/10 border-green-500/25 text-green-700 dark:text-green-300"
+                          : "bg-red-500/10 border-red-500/25 text-red-600 dark:text-red-400"
+                      }`}>
+                        <span className="text-[10px] leading-none">BET</span>
+                        <span className="text-sm leading-tight font-black">{alert.side}</span>
+                      </div>
+                      {/* Market + outcome */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-xs font-semibold text-foreground">{outcomeLabel}</span>
+                          {alert.isSportsLb && (
+                            <span className="text-[10px] px-1 py-0 rounded bg-primary/10 text-primary border border-primary/20 font-semibold shrink-0">LB</span>
+                          )}
+                          {sharp?.isActionable && (
+                            <span className="text-[10px] px-1 py-0 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 font-semibold shrink-0">ACT</span>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground truncate mt-0.5">{alert.market}</div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] font-medium text-muted-foreground">{alert.trader}</span>
+                          <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                            <Clock className="w-2.5 h-2.5" />{alert.minutesAgo}m ago
+                          </span>
+                        </div>
+                      </div>
+                      {/* Size + expand chevron */}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="text-right">
+                          <div className="text-sm font-bold tabular-nums">
+                            ${alert.size >= 1000 ? `${(alert.size / 1000).toFixed(1)}K` : alert.size}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground tabular-nums">
+                            @ {Math.round(alert.price * 100)}¢
+                          </div>
+                        </div>
+                        {isExpanded
+                          ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" />
+                          : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />}
+                      </div>
                     </div>
-                    {/* Market + outcome */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-xs font-semibold text-foreground" title={alert.market}>
-                          {outcomeLabel}
-                        </span>
-                        {alert.isSportsLb && (
-                          <span className="text-[10px] px-1 py-0 rounded bg-primary/10 text-primary border border-primary/20 font-semibold shrink-0">LB</span>
+
+                    {/* Expanded detail panel */}
+                    {isExpanded && (
+                      <div className="mb-2 mx-1 p-3 rounded-md bg-muted/50 border border-border space-y-2 text-xs">
+                        <div className="font-semibold text-foreground">{alert.market}</div>
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <div className="flex items-center gap-1">
+                            <span className="text-muted-foreground">Bet:</span>
+                            <span className={`font-bold ${alert.side === "YES" ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                              {outcomeLabel}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-muted-foreground">Size:</span>
+                            <span className="font-bold">${alert.size >= 1000 ? `${(alert.size / 1000).toFixed(1)}K` : alert.size}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-muted-foreground">Entry price:</span>
+                            <span className="font-bold tabular-nums">{Math.round(alert.price * 100)}¢</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-muted-foreground">Implied odds:</span>
+                            <span className="font-bold">{(1 / alert.price).toFixed(1)}x</span>
+                          </div>
+                        </div>
+
+                        {/* Sharp consensus context */}
+                        {sharp ? (
+                          <div className={`p-2 rounded border text-[11px] ${
+                            sharp.isActionable
+                              ? "bg-emerald-500/8 border-emerald-500/20 text-emerald-700 dark:text-emerald-300"
+                              : "bg-primary/5 border-primary/15 text-primary"
+                          }`}>
+                            <div className="font-semibold mb-0.5">
+                              Sharp consensus: {sharp.traderCount} tracked traders → {sharp.side} · {sharp.confidence}/100
+                            </div>
+                            <div>
+                              Avg entry: {Math.round(sharp.avgEntry * 100)}¢ · 
+                              Current price: {Math.round(sharp.currentPrice * 100)}¢
+                              {sharp.isActionable ? " · Still actionable" : " · Price has moved"}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-muted-foreground text-[11px]">
+                            No consensus signal yet for this market — this is an individual tracked-trader bet.
+                          </div>
+                        )}
+
+                        {/* Polymarket link */}
+                        {alert.slug && (
+                          <a
+                            href={`https://polymarket.com/market/${alert.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-primary hover:underline font-medium"
+                            onClick={e => e.stopPropagation()}
+                          >
+                            Trade on Polymarket <ExternalLink className="w-3 h-3" />
+                          </a>
                         )}
                       </div>
-                      <div className="text-[10px] text-muted-foreground truncate mt-0.5">{alert.market}</div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] font-medium text-muted-foreground">{alert.trader}</span>
-                        <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                          <Clock className="w-2.5 h-2.5" />{alert.minutesAgo}m ago
-                        </span>
-                      </div>
-                    </div>
-                    {/* Size + price */}
-                    <div className="text-right shrink-0">
-                      <div className="text-sm font-bold tabular-nums">
-                        ${alert.size >= 1000 ? `${(alert.size / 1000).toFixed(1)}K` : alert.size}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground tabular-nums">
-                        @ {Math.round(alert.price * 100)}¢
-                      </div>
-                    </div>
+                    )}
                   </div>
                 );
               })}

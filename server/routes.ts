@@ -105,10 +105,23 @@ function categoriseMarket(question: string, endDate?: string): "live" | "pregame
   // Definitive live signals from question text
   if (/(lead|trailing|winning|losing|currently|live|in-game|halftime|first half|second half|quarter|overtime|period|inning)/.test(q)) return "live";
   if (!endDate) return "pregame";
-  const ms = new Date(endDate).getTime() - Date.now();
-  if (ms < 0) return "pregame";          // already ended → still show, was recent
-  if (ms < 5 * 3600 * 1000) return "live";     // ending within 5h = game in progress
-  if (ms < 7 * 24 * 3600 * 1000) return "pregame"; // ending within 7 days = upcoming game
+  const now = Date.now();
+  const ms = new Date(endDate).getTime() - now;
+  if (ms < 0) return "pregame";               // ended already
+  if (ms < 3 * 3600_000) return "live";       // ending within 3h = definitely live/ending
+
+  if (ms < 7 * 24 * 3600_000) {
+    // Game markets with endDate within 7 days could be pregame or live.
+    // NBA/NHL/MLB night games run roughly 7 PM–1 AM ET = 00:00–06:00 UTC (next day).
+    // Polymarket often sets endDate to the NEXT calendar day in UTC to give resolution buffer.
+    // So a game happening tonight ET has endDate "tomorrow" in UTC = 20-28h away.
+    // Strategy: if endDate ≤ 30h away AND current UTC hour is in the sports-prime-time window
+    // (23:00–09:00 UTC = 6 PM–4 AM ET), classify as live.
+    const utcHour = new Date().getUTCHours();
+    const inSportsPrimeTime = utcHour >= 23 || utcHour < 9; // 11 PM – 9 AM UTC
+    if (ms < 30 * 3600_000 && inSportsPrimeTime) return "live";
+    return "pregame";
+  }
   return "futures";
 }
 
