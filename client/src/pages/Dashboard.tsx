@@ -81,12 +81,46 @@ function toAmericanOdds(p: number): string {
   return `+${Math.round(((1 - p) / p) * 100)}`;
 }
 
+function timeAgo(ts: number): string {
+  if (!ts) return "";
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
 function SignalExpandedPanel({ signal, onClose }: { signal: Signal; onClose: () => void }) {
   const s = signal as any;
   const outcomeLabel = s.outcomeLabel || getOutcomeLabel(signal.marketQuestion, signal.side as "YES" | "NO");
   const polyUrl = s.slug ? `https://polymarket.com/market/${s.slug}` : null;
-  const priceDiff = ((signal.currentPrice - signal.avgEntryPrice) * 100).toFixed(1);
-  const priceUp = signal.currentPrice > signal.avgEntryPrice;
+  const condId: string = s.marketId || s.id || "";
+
+  // SSE live price — updates every 3s from server
+  const [livePrice, setLivePrice] = useState<number | null>(null);
+  const [livePriceOdds, setLivePriceOdds] = useState<string>("");
+  const [priceConnected, setPriceConnected] = useState(false);
+
+  useEffect(() => {
+    if (!condId) return;
+    const es = new EventSource(`/api/stream?channel=price&conditionId=${encodeURIComponent(condId)}`);
+    es.addEventListener("price", (e: MessageEvent) => {
+      try {
+        const d = JSON.parse(e.data);
+        setLivePrice(d.currentPrice);
+        setLivePriceOdds(d.americanOdds || toAmericanOdds(d.currentPrice));
+        setPriceConnected(true);
+      } catch { /* ignore */ }
+    });
+    es.onerror = () => setPriceConnected(false);
+    return () => es.close();
+  }, [condId]);
+
+  const displayPrice = livePrice ?? signal.currentPrice;
+  const priceDiff = ((displayPrice - signal.avgEntryPrice) * 100).toFixed(1);
+  const priceUp = displayPrice > signal.avgEntryPrice;
 
   return (
     <div className="mt-2 rounded-lg border border-border bg-muted/30 p-3 space-y-3">
@@ -127,15 +161,22 @@ function SignalExpandedPanel({ signal, onClose }: { signal: Signal; onClose: () 
         )}
       </div>
 
-      {/* Price comparison */}
+      {/* Price comparison — live price via SSE */}
       <div className="grid grid-cols-3 gap-2">
         <div className="bg-background rounded-md p-2 text-center border border-border/50">
-          <div className="text-[10px] text-muted-foreground">Live Price</div>
-          <div className="text-base font-bold text-foreground">{(signal.currentPrice * 100).toFixed(1)}¢</div>
+          <div className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
+            {priceConnected
+              ? <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              : <span className="inline-block w-1.5 h-1.5 rounded-full bg-muted-foreground" />}
+            Live Price
+          </div>
+          <div className="text-base font-bold text-foreground">{(displayPrice * 100).toFixed(1)}¢</div>
+          <div className="text-[10px] text-muted-foreground">{livePriceOdds || toAmericanOdds(displayPrice)}</div>
         </div>
         <div className="bg-background rounded-md p-2 text-center border border-border/50">
           <div className="text-[10px] text-muted-foreground">Avg Entry</div>
           <div className="text-base font-bold">{(signal.avgEntryPrice * 100).toFixed(1)}¢</div>
+          <div className="text-[10px] text-muted-foreground">{toAmericanOdds(signal.avgEntryPrice)}</div>
         </div>
         <div className="bg-background rounded-md p-2 text-center border border-border/50">
           <div className="text-[10px] text-muted-foreground">Move</div>
@@ -162,10 +203,15 @@ function SignalExpandedPanel({ signal, onClose }: { signal: Signal; onClose: () 
             Traders ({s.traders.length})
           </div>
           <div className="space-y-1">
-            {s.traders.slice(0, 4).map((t: any, i: number) => (
+            {s.traders.slice(0, 6).map((t: any, i: number) => (
               <div key={i} className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground truncate flex-1">{t.name}</span>
-                <span className="font-semibold ml-2">{formatUsdc(t.size)} @ {(t.entryPrice * 100).toFixed(0)}¢</span>
+                <span className="text-foreground/80 truncate flex-1">{t.name}</span>
+                <span className="font-semibold ml-2 tabular-nums">
+                  {formatUsdc(t.size)} @ {(t.entryPrice * 100).toFixed(0)}¢
+                </span>
+                {t.tradeTime ? (
+                  <span className="text-muted-foreground ml-2 shrink-0">{timeAgo(t.tradeTime)}</span>
+                ) : null}
               </div>
             ))}
           </div>
@@ -489,6 +535,16 @@ export default function Dashboard() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-xs font-semibold text-foreground">{outcomeLabel}</span>
+                          {alert.gameStatus === "live" && (
+                            <span className="flex items-center gap-0.5 text-[10px] px-1 py-0 rounded bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/20 font-semibold shrink-0 animate-pulse">
+                              <Radio className="w-2.5 h-2.5" />LIVE
+                            </span>
+                          )}
+                          {alert.gameStatus === "pregame" && (
+                            <span className="flex items-center gap-0.5 text-[10px] px-1 py-0 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-semibold shrink-0">
+                              <CalendarClock className="w-2.5 h-2.5" />PRE
+                            </span>
+                          )}
                           {alert.isSportsLb && (
                             <span className="text-[10px] px-1 py-0 rounded bg-primary/10 text-primary border border-primary/20 font-semibold shrink-0">LB</span>
                           )}

@@ -144,6 +144,19 @@ function getOutcomeLabel(title: string, side: "YES" | "NO"): string {
 function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }) {
   const [expanded, setExpanded] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const [livePrice, setLivePrice] = useState<number | null>(null);
+
+  // Subscribe to SSE price stream while expanded
+  useEffect(() => {
+    if (!expanded) { setLivePrice(null); return; }
+    const condId = (signal as any).marketId || signal.id;
+    if (!condId) return;
+    const es = new EventSource(`/api/stream?channel=price&conditionId=${condId}`);
+    es.addEventListener("price", (e: MessageEvent) => {
+      try { const d = JSON.parse(e.data); if (typeof d.price === "number") setLivePrice(d.price); } catch {}
+    });
+    return () => es.close();
+  }, [expanded, signal.id, (signal as any).marketId]);
 
   const borderCls = signal.side === "YES"
     ? "border-green-500/30 bg-green-500/5"
@@ -282,8 +295,15 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
             {/* Stats grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
               <div className="bg-muted/50 rounded-md p-2">
-                <div className="text-[10px] text-muted-foreground">Live Price</div>
-                <div className="text-sm font-semibold">{(signal.currentPrice * 100).toFixed(1)}¢</div>
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                  {livePrice !== null && <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block" />}
+                  Live Price
+                </div>
+                <div className="text-sm font-semibold">
+                  {livePrice !== null
+                    ? `${(livePrice * 100).toFixed(1)}¢`
+                    : `${(signal.currentPrice * 100).toFixed(1)}¢`}
+                </div>
               </div>
               <div className="bg-muted/50 rounded-md p-2">
                 <div className="text-[10px] text-muted-foreground">Avg Entry</div>

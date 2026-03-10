@@ -141,10 +141,16 @@ function categoriseMarket(question: string, endDate?: string): "live" | "pregame
     //   afternoon college basketball, evening NBA/NHL, late-night west-coast games.
     // Polymarket sets endDate to next calendar day in UTC as resolution buffer,
     // so a same-day game often has endDate 20-48h away.
-    // Use 48h window to catch college markets that set endDate further out.
     const utcHour = new Date().getUTCHours();
     const inSportsPrimeTime = utcHour >= 19 || utcHour < 11; // 7 PM – 11 AM UTC
+    // Standard game markets: 48h window
     if (ms < 48 * 3600_000 && inSportsPrimeTime) return "live";
+    // Match-win markets (tennis, boxing, MMA): e.g. "Elena Rybakina WIN"
+    // Polymarket sets endDate to end-of-round which can be 2-4 days out.
+    // Widen live window to 96h for these single-match outcome markets.
+    const isMatchWin = /\bwin\b/i.test(q) && !/(champion|finals?|series|season|\b202[78]\b)/.test(q)
+      && !q.includes(" vs ") && !q.includes(" vs."); // exclude head-to-head markets
+    if (isMatchWin && ms < 96 * 3600_000 && inSportsPrimeTime) return "live";
     return "pregame";
   }
   return "futures";
@@ -186,14 +192,19 @@ function classifyMarketType(q: string): "moneyline" | "spread" | "total" | "futu
   return "other";
 }
 
-/** Compute actionability: price is still close enough to avg entry to be worth acting on */
+/** Compute actionability: price is still close enough to avg entry to be worth acting on.
+ *  Threshold is proportional to price — low-prob markets move fast in % terms.
+ *  - < 30¢ or > 70¢ (mirror): max delta 2¢  (sharp doubled their money = too late)
+ *  - 30–70¢ range:             max delta 3¢  */
 function computeIsActionable(currentPrice: number, avgEntry: number, side: "YES" | "NO"): boolean {
+  if (currentPrice < 0.08 || currentPrice > 0.92) return false; // out of actionable range
+  const refPrice = Math.min(avgEntry, currentPrice); // use lower as reference
+  const maxDelta = refPrice < 0.30 || refPrice > 0.70 ? 0.02 : 0.03;
   const priceDiff = Math.abs(currentPrice - avgEntry);
-  if (currentPrice < 0.08 || currentPrice > 0.92) return false; // out of range
-  // Price moved against you (more expensive than what sharps paid) = getting late
-  if (side === "YES" && currentPrice > avgEntry + 0.07) return false; // YES jumped 7¢+, too late
-  if (side === "NO"  && currentPrice < avgEntry - 0.07) return false; // NO dropped 7¢+, too late
-  return priceDiff <= 0.07; // within 7¢ of entry = still actionable
+  // Price moved against you (more expensive than what sharps paid for YES) = too late
+  if (side === "YES" && currentPrice > avgEntry + maxDelta) return false;
+  if (side === "NO"  && currentPrice < avgEntry - maxDelta) return false;
+  return priceDiff <= maxDelta;
 }
 
 /** Score for "big play": how large is this bet */
@@ -738,6 +749,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   // ── GET /api/stream ─── Server-Sent Events push channel ──────────────────
   // Subscribe: `new EventSource('/api/stream?channel=alerts')`
   // Events: `alerts` (same shape as /api/alerts/live)
+  // Price stream: `new EventSource('/api/stream?channel=price&conditionId=X')`
+  // Events: `price` { conditionId, currentPrice, americanOdds, fetchedAt }
   app.get("/api/stream", (req, res) => {
     const channel = (req.query.channel as string) || "alerts";
     res.setHeader("Content-Type", "text/event-stream");
@@ -745,9 +758,42 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     res.setHeader("Connection", "keep-alive");
     res.setHeader("X-Accel-Buffering", "no"); // disable nginx buffering
     res.flushHeaders();
-
-    // Send a heartbeat comment immediately so the browser knows the connection is alive
     res.write(": connected\n\n");
+
+    if (channel === "price") {
+      // Real-time price stream for a specific conditionId — polls every 3s
+      const conditionId = (req.query.conditionId as string) || "";
+      let closed = false;
+      const pushPrice = async () => {
+        if (closed) return;
+        try {
+          const sig = signalsByMarket.get(conditionId);
+          let price: number | null = sig?.currentPrice ?? null;
+          let source = "signal_cache";
+          if (!price) {
+            const entry = gameMarketRegistry.get(conditionId);
+            if (entry?.currentPrice) { price = entry.currentPrice; source = "market_registry"; }
+          }
+          if (!price) {
+            const gmRes = await fetch(`${GAMMA_API}/markets?condition_id=${conditionId}&limit=1`);
+            if (gmRes.ok) {
+              const gm = await gmRes.json();
+              const m = Array.isArray(gm) ? gm[0] : gm?.markets?.[0];
+              const p = m && parseFloat(m.lastTradePrice || m.bestAsk || m.midpoint || "0");
+              if (p && p > 0) { price = p; source = "gamma"; }
+            }
+          }
+          if (price && !closed) {
+            const payload = JSON.stringify({ conditionId, currentPrice: price, americanOdds: toAmericanOdds(price), fetchedAt: Date.now(), source });
+            res.write(`event: price\ndata: ${payload}\n\n`);
+          }
+        } catch { /* non-fatal */ }
+        if (!closed) setTimeout(pushPrice, 3000);
+      };
+      req.on("close", () => { closed = true; });
+      pushPrice();
+      return;
+    }
 
     const client: SseClient = { res, channel };
     sseClients.add(client);
@@ -791,15 +837,20 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const trader = lbMap.get(wallet);
         const side = (trade.outcomeIndex === 0 || trade.outcome === "Yes") ? "YES" : "NO";
         const ts = trade.timestamp ? trade.timestamp * 1000 : (trade.createdAt ? new Date(trade.createdAt).getTime() : now);
+        const condId = trade.conditionId || "";
+        const dbEntry = marketDb.get(condId);
+        const mEndDate = trade.endDate || dbEntry?.endDate;
         alerts.push({
           id: `alert-${trade.id || key}`,
           trader: trader?.name || truncAddr(wallet),
           wallet, isTracked, isSportsLb: trader?.isSportsLb ?? false,
-          market: title.slice(0, 80), slug: trade.slug, conditionId: trade.conditionId,
+          market: title.slice(0, 80), slug: trade.slug, conditionId: condId,
           side, size: Math.round(size), price: Math.round(price * 1000) / 1000,
           americanOdds: toAmericanOdds(price),
+          gameStatus: categoriseMarket(title, mEndDate),
+          endDate: mEndDate,
           timestamp: ts, minutesAgo: Math.round((now - ts) / 60_000),
-          sharpAction: signalsByMarket.get(trade.conditionId || "") ?? null,
+          sharpAction: signalsByMarket.get(condId) ?? null,
         });
         if (alerts.length >= 40) break;
       }
@@ -1059,6 +1110,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const trader = lbMap.get(wallet);
         const side = (trade.outcomeIndex === 0 || trade.outcome === "Yes") ? "YES" : "NO";
         const ts    = trade.timestamp ? trade.timestamp * 1000 : (trade.createdAt ? new Date(trade.createdAt).getTime() : now);
+        const alertCondId = trade.conditionId || "";
+        const alertDbEntry = marketDb.get(alertCondId);
+        const alertEndDate = trade.endDate || alertDbEntry?.endDate;
 
         alerts.push({
           id: `alert-${trade.id || key}`,
@@ -1068,14 +1122,16 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           isSportsLb: trader?.isSportsLb ?? false,
           market: title.slice(0, 80),
           slug: trade.slug,
-          conditionId: trade.conditionId,
+          conditionId: alertCondId,
           side,
           size: Math.round(size),
           price: Math.round(price * 1000) / 1000,
           americanOdds: toAmericanOdds(price),
+          gameStatus: categoriseMarket(title, alertEndDate),
+          endDate: alertEndDate,
           timestamp: ts,
           minutesAgo: Math.round((now - ts) / 60_000),
-          sharpAction: signalsByMarket.get(trade.conditionId || "") ?? null,
+          sharpAction: signalsByMarket.get(alertCondId) ?? null,
         });
 
         if (alerts.length >= 40) break;
@@ -1185,10 +1241,21 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       type WalletPos = {
         side: "YES"|"NO"; totalSize: number; prices: number[];
         name: string; traderInfo: TraderInfo; address: string;
-        asset: string;
+        asset: string; lastTimestamp: number;
       };
+      /** Extract "YYYY-MM-DD" from slugs like "nba-bos-mia-2026-03-10" — use as endDate fallback */
+      function slugDateFallback(slug?: string): string | undefined {
+        if (!slug) return undefined;
+        const m = slug.match(/(\d{4}-\d{2}-\d{2})/);
+        if (!m) return undefined;
+        // Polymarket games end the day AFTER the slug date (resolution buffer)
+        const d = new Date(m[1] + "T00:00:00Z");
+        d.setUTCDate(d.getUTCDate() + 1);
+        return d.toISOString();
+      }
+
       const marketWallets = new Map<string, {
-        question: string; slug?: string; condId: string;
+        question: string; slug?: string; condId: string; endDate?: string;
         yesTokenId?: string; noTokenId?: string;
         wallets: Map<string, WalletPos>;
       }>();
@@ -1230,10 +1297,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         };
 
         if (!marketWallets.has(condId)) {
+          const mSlug = mInfo?.slug || trade.slug;
+          const mEndDate = mInfo?.endDate || trade.endDate || slugDateFallback(mSlug);
           marketWallets.set(condId, {
             question: mInfo?.question || trade.title || condId,
-            slug: mInfo?.slug || trade.slug,
+            slug: mSlug,
             condId,
+            endDate: mEndDate,
             wallets: new Map(),
           });
         }
@@ -1248,12 +1318,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           if (!mw.noTokenId)  mw.noTokenId  = mInfo.tokenIds[1];
         }
 
+        const tradeTs = trade.timestamp ? trade.timestamp * 1000 : (trade.createdAt ? new Date(trade.createdAt).getTime() : now);
         const ex = mw.wallets.get(wallet);
         if (!ex) {
-          mw.wallets.set(wallet, { side, totalSize: size, prices: [price], name: traderInfo.name, traderInfo, address: wallet, asset });
+          mw.wallets.set(wallet, { side, totalSize: size, prices: [price], name: traderInfo.name, traderInfo, address: wallet, asset, lastTimestamp: tradeTs });
         } else {
-          if (ex.side === side) { ex.totalSize += size; ex.prices.push(price); }
-          else if (size > ex.totalSize) { ex.side = side; ex.totalSize = size; ex.prices = [price]; }
+          if (ex.side === side) { ex.totalSize += size; ex.prices.push(price); ex.lastTimestamp = Math.max(ex.lastTimestamp, tradeTs); }
+          else if (size > ex.totalSize) { ex.side = side; ex.totalSize = size; ex.prices = [price]; ex.lastTimestamp = tradeTs; }
         }
       }
 
@@ -1340,7 +1411,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         seenSignalIds.add(id);
 
         const isSports = isSportsRelated(mw.question);
-        const mType = categoriseMarket(mw.question, mInfo?.endDate);
+        const mType = categoriseMarket(mw.question, mw.endDate || mInfo?.endDate);
         const marketCategory = classifyMarketType(mw.question);
         const isActionable = computeIsActionable(currentPrice, avgEntry, side);
         const bigPlayScore = computeBigPlayScore(totalDominantSize, dominant.length);
@@ -1376,6 +1447,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             pnl: Math.round(e.traderInfo.pnl),
             isLeaderboard: e.traderInfo.isLeaderboard,
             isSportsLb: (e.traderInfo as any).isSportsLb ?? false,
+            tradeTime: (e as any).lastTimestamp || 0,
           })),
           category: isSports ? "sports" : "other",
           volume: 0,
