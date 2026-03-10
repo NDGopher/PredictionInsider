@@ -726,7 +726,14 @@ function parseMarket(m: any) {
     const toks = JSON.parse(m.tokens || "[]");
     tokenIds = toks.map((t: any) => String(t.token_id || t.tokenId)).filter(Boolean);
   } catch {}
-  if (tokenIds.length === 0 && Array.isArray(m.clobTokenIds)) tokenIds = m.clobTokenIds.map(String);
+  if (tokenIds.length === 0) {
+    try {
+      // clobTokenIds may be a JSON string OR an array
+      const raw = m.clobTokenIds;
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (Array.isArray(parsed)) tokenIds = parsed.map(String).filter(Boolean);
+    } catch {}
+  }
   return {
     id: m.id || m.conditionId || "",
     question: m.question || m.title || "",
@@ -742,6 +749,122 @@ function parseMarket(m: any) {
     tokenIds,
   };
 }
+
+// ─── ESPN live-score helpers ─────────────────────────────────────────────────
+const SPORT_PATH_MAP: Record<string, string> = {
+  nba:   "basketball/nba",
+  nfl:   "football/nfl",
+  nhl:   "hockey/nhl",
+  mlb:   "baseball/mlb",
+  ncaab: "basketball/mens-college-basketball",
+  ncaaf: "football/college-football",
+  ucl:   "soccer/uefa.champions",
+  uel:   "soccer/uefa.europa",
+  epl:   "soccer/eng.1",
+  lal:   "soccer/esp.1",
+  bun:   "soccer/ger.1",
+  sea:   "soccer/ita.1",
+  fl1:   "soccer/fra.1",
+  elc:   "soccer/eng.2",
+  mls:   "soccer/usa.1",
+  nwsl:  "soccer/usa.nwsl",
+};
+
+interface GameScore {
+  homeTeam: string; awayTeam: string;
+  homeAbbr: string; awayAbbr: string;
+  homeScore: number; awayScore: number;
+  status: string; detail: string;
+  period: number; clock: string; completed: boolean;
+}
+
+function parseSlugForESPN(slug: string): { sportPath: string; t1: string; t2: string; date: string } | null {
+  const m = slug.match(/^([a-z]+)-([a-z]{2,4})-([a-z]{2,4})-(\d{4}-\d{2}-\d{2})/);
+  if (!m) return null;
+  const [, sport, t1, t2, dateStr] = m;
+  const sportPath = SPORT_PATH_MAP[sport];
+  if (!sportPath) return null;
+  return { sportPath, t1, t2, date: dateStr.replace(/-/g, "") };
+}
+
+/** Polymarket team abbreviations that differ from ESPN */
+const POLY_TO_ESPN: Record<string, string> = {
+  sas: "sa",    // San Antonio Spurs (ESPN: "SA")
+  las: "vgk",   // Vegas Golden Knights (ESPN: "VGK")
+  nyk: "ny",    // New York Knicks (ESPN: "NY")
+  nyj: "nyj",
+  nyg: "nyg",
+  nyr: "nyr",   // NY Rangers
+  nym: "nym",
+  lak: "lak",   // LA Kings (sometimes ESPN "LA")
+  lac: "lac",   // LA Clippers
+  nob: "no",    // New Orleans
+  gsw: "gs",    // Golden State Warriors (ESPN: "GS")
+  phx: "phx",   // Phoenix Suns stays "PHX" in ESPN
+  phf: "phi",   // Philly
+  sea: "sea",
+};
+
+async function fetchESPNGameScore(slug: string): Promise<GameScore | null> {
+  const parsed = parseSlugForESPN(slug);
+  if (!parsed) return null;
+  const cKey = `espn-score-${slug}`;
+  const hit = getCache<GameScore | null>(cKey);
+  if (hit !== undefined && hit !== null) return hit;
+  const { sportPath, t1, t2, date } = parsed;
+  const url = `https://site.api.espn.com/apis/site/v2/sports/${sportPath}/scoreboard?dates=${date}`;
+  try {
+    const res = await fetchWithRetry(url, 2, 6000);
+    if (!res.ok) { setCache(cKey, null, 60_000); return null; }
+    const data = await res.json();
+    const events: any[] = data.events || [];
+    for (const event of events) {
+      const comp = (event.competitions || [])[0];
+      if (!comp) continue;
+      const competitors: any[] = comp.competitors || [];
+      const home = competitors.find((c: any) => c.homeAway === "home");
+      const away = competitors.find((c: any) => c.homeAway === "away");
+      if (!home || !away) continue;
+      const homeAbbr = (home.team?.abbreviation || "").toLowerCase();
+      const awayAbbr = (away.team?.abbreviation || "").toLowerCase();
+      // Fuzzy match: slug teams (2-3 chars) vs ESPN abbreviations
+      // Translate known Polymarket→ESPN mismatches first
+      const slugTeams = [
+        POLY_TO_ESPN[t1.toLowerCase()] || t1.toLowerCase(),
+        POLY_TO_ESPN[t2.toLowerCase()] || t2.toLowerCase(),
+      ];
+      const espnAbbrs = [homeAbbr.toLowerCase(), awayAbbr.toLowerCase()];
+      function teamsMatch(slug3: string, espn: string): boolean {
+        if (espn === slug3) return true;
+        const overlap = Math.min(slug3.length, espn.length, 3);
+        if (overlap < 3) return false;
+        return espn.startsWith(slug3.slice(0, overlap)) || slug3.startsWith(espn.slice(0, overlap));
+      }
+      const matchCount = slugTeams.filter(s => espnAbbrs.some(e => teamsMatch(s, e))).length;
+      if (matchCount < 2) continue;
+      const status = event.status || {};
+      const st = status.type || {};
+      const result: GameScore = {
+        homeTeam: home.team?.displayName || homeAbbr.toUpperCase(),
+        awayTeam: away.team?.displayName || awayAbbr.toUpperCase(),
+        homeAbbr: home.team?.abbreviation || homeAbbr.toUpperCase(),
+        awayAbbr: away.team?.abbreviation || awayAbbr.toUpperCase(),
+        homeScore: parseInt(home.score || "0"),
+        awayScore: parseInt(away.score || "0"),
+        status: st.name || "",
+        detail: st.shortDetail || st.detail || "",
+        period: status.period || 0,
+        clock: status.displayClock || "",
+        completed: !!(st.completed),
+      };
+      setCache(cKey, result, result.completed ? 10 * 60_000 : 30_000);
+      return result;
+    }
+  } catch { /* ESPN unavailable */ }
+  setCache(cKey, null, 60_000);
+  return null;
+}
+
 
 // ─── Route registration ───────────────────────────────────────────────────────
 export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
@@ -1161,10 +1284,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       // ── Phase 1: Build verified trader quality map ───────────────────────────
       // Pull from: sports leaderboard (category=sports) + general leaderboard
-      const [allSportsLb, rawGeneralLb, allTrades, marketDb] = await Promise.all([
-        fetchMultiWindowSportsLB(),          // ALL + WEEK + MONTH, deduped
-        fetchOfficialLeaderboard("ALL", 100, ""),
-        fetchRecentTrades(5000),
+      const [allSportsLb, rawGeneralLb, generalWeek, generalMonth, allTrades, marketDb] = await Promise.all([
+        fetchMultiWindowSportsLB(),                    // ALL + WEEK + MONTH sports, deduped
+        fetchOfficialLeaderboard("ALL",   150, ""),    // top 150 all-time general
+        fetchOfficialLeaderboard("WEEK",  100, ""),    // top 100 weekly general
+        fetchOfficialLeaderboard("MONTH", 100, ""),    // top 100 monthly general
+        fetchRecentTrades(10000),                      // 2× trade window for more trader coverage
         buildMarketDatabase(800),
       ]);
       const rawSportsLb = allSportsLb; // keep alias for positions section
@@ -1187,8 +1312,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           isSportsLb: true,
         });
       }
-      // Add general leaderboard traders (still quality traders)
-      for (const t of rawGeneralLb) {
+      // Add general leaderboard traders (ALL + WEEK + MONTH windows)
+      for (const t of [...rawGeneralLb, ...generalWeek, ...generalMonth]) {
         const addr = (t.proxyWallet || "").toLowerCase();
         if (!addr || lbMap.has(addr)) continue;
         const pnl = parseFloat(t.pnl || "0");
@@ -1454,6 +1579,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           generatedAt: now,
           isValue: valueDelta > 0, isNew,
           outcomeLabel: computeOutcomeLabel(mw.question, side),
+          yesTokenId: mw.yesTokenId,
+          noTokenId: mw.noTokenId,
         });
       }
 
@@ -1462,7 +1589,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       // These reflect actual money they have deployed RIGHT NOW.
       // Use all traders from multi-window LB (up to 60) for richer position coverage
       const topSportsWallets = [...new Set(
-        allSportsLb.slice(0, 100).map((t: any) => (t.proxyWallet || "").toLowerCase()).filter(Boolean)
+        allSportsLb.slice(0, 150).map((t: any) => (t.proxyWallet || "").toLowerCase()).filter(Boolean)
       )];
       if (topSportsWallets.length > 0) {
         const positionBatches = await Promise.all(topSportsWallets.map(w => fetchTraderPositions(w)));
@@ -1472,6 +1599,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           question: string; slug?: string; endDate?: string;
           traders: { name: string; wallet: string; entryPrice: number; curPrice: number; currentValue: number; isSportsLb: boolean }[];
           totalValue: number;
+          yesAsset?: string; noAsset?: string;
         };
         const posMap = new Map<string, PosGroup>();
 
@@ -1492,6 +1620,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             const outcomeIdx = pos.outcomeIndex ?? (pos.outcome === "Yes" ? 0 : 1);
             const side: "YES"|"NO" = outcomeIdx === 0 ? "YES" : "NO";
             const mapKey = `${condId}-${side}`;
+            // Asset IDs from position data (YES=asset, NO=oppositeAsset when outcomeIdx=0)
+            const yesAssetFromPos = outcomeIdx === 0 ? String(pos.asset || "") : String(pos.oppositeAsset || "");
+            const noAssetFromPos  = outcomeIdx === 0 ? String(pos.oppositeAsset || "") : String(pos.asset || "");
 
             if (!posMap.has(mapKey)) {
               // Fall back to marketDb endDate if pos.endDate is missing
@@ -1503,6 +1634,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                 slug: pos.slug || pos.eventSlug,
                 endDate: resolvedEndDate,
                 traders: [], totalValue: 0,
+                yesAsset: yesAssetFromPos || undefined,
+                noAsset:  noAssetFromPos  || undefined,
               });
               // Register in shared game market registry for /api/markets
               upsertGameMarket(condId, {
@@ -1597,6 +1730,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const isNew = !seenSignalIds.has(id);
           seenSignalIds.add(id);
 
+          // Token IDs: prefer position's asset data (always available), fall back to marketDb
+          const pgMarket = marketDb.get(pg.conditionId);
+          const pgYesTokenId = pg.yesAsset || pgMarket?.tokenIds?.[0];
+          const pgNoTokenId  = pg.noAsset  || pgMarket?.tokenIds?.[1];
+
           signals.push({
             id, marketId: pg.conditionId,
             marketQuestion: pg.question,
@@ -1637,6 +1775,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             isNew,
             source: "positions",
             outcomeLabel: computeOutcomeLabel(pg.question, pg.side),
+            yesTokenId: pgYesTokenId,
+            noTokenId: pgNoTokenId,
           });
         }
         console.log(`[Elite v11] Added ${signals.length - (signals.length - posMap.size)} positions-based signals from top sports traders`);
@@ -1967,6 +2107,82 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         }
       }
       res.status(404).json({ error: "Price not found", conditionId: condId });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── GET /api/game-score?slug=nba-bos-mia-2026-03-10 ─────────────────────────
+  // Returns live score, period, clock from ESPN for a given Polymarket slug
+  app.get("/api/game-score", async (req, res) => {
+    const slug = (req.query.slug as string || "").toLowerCase();
+    if (!slug) return res.status(400).json({ error: "slug required" });
+    try {
+      const score = await fetchESPNGameScore(slug);
+      if (!score) return res.status(404).json({ error: "Game not found", slug });
+      res.json(score);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── GET /api/price-history?conditionId=0x... ─────────────────────────────────
+  // Returns price chart data for a market using recent trade prices.
+  // Each point = { t: ms_timestamp, p: price 0-1 }
+  // Sports markets (AMM-based) don't have CLOB order book data, so we build the
+  // chart from actual trade prices which shows exactly when sharp money moved.
+  app.get("/api/price-history", async (req, res) => {
+    const conditionId = (req.query.conditionId as string || "");
+    const tokenId     = (req.query.tokenId as string || "").toLowerCase();
+    if (!conditionId && !tokenId) return res.status(400).json({ error: "conditionId or tokenId required" });
+
+    const cKey = `trade-history-${conditionId || ""}-${tokenId || ""}`;
+    const hit = getCache<{ t: number; p: number }[]>(cKey);
+    if (hit) return res.json({ history: hit });
+
+    try {
+      // Fetch market-specific trades using the Polymarket data API's `market` filter.
+      // `market=conditionId` returns only trades for that market (confirmed working).
+      // Fall back to slug or token-based filtering when needed.
+      let mTrades: any[] = [];
+      if (conditionId) {
+        const pages = await Promise.all([
+          fetchWithRetry(`${DATA_API}/trades?market=${encodeURIComponent(conditionId)}&limit=1000`)
+            .then(r => r.ok ? r.json() : []).then(d => Array.isArray(d) ? d : d.data || []).catch(() => []),
+          fetchWithRetry(`${DATA_API}/trades?market=${encodeURIComponent(conditionId)}&limit=1000&offset=1000`)
+            .then(r => r.ok ? r.json() : []).then(d => Array.isArray(d) ? d : d.data || []).catch(() => []),
+        ]);
+        mTrades = pages.flat();
+      } else if (tokenId) {
+        // Fallback: filter global pool by asset token ID
+        const all = await fetchRecentTrades(10000);
+        const needleTok = tokenId.toLowerCase();
+        mTrades = all.filter(t => String(t.asset || "").toLowerCase() === needleTok);
+      }
+
+      // Sort ascending by time and build price series
+      const sorted = mTrades
+        .map(t => ({
+          t: t.timestamp ? t.timestamp * 1000 : new Date(t.createdAt || 0).getTime(),
+          p: parseFloat(t.price || "0.5"),
+          side: (t.outcomeIndex ?? (t.outcome === "Yes" ? 0 : 1)) === 0 ? "YES" : "NO",
+        }))
+        .filter(x => x.t > 0 && x.p > 0 && x.p < 1)
+        .sort((a, b) => a.t - b.t);
+
+      // Return YES prices (0-1 scale); if side is NO, invert the price
+      // Downsample to max 200 points for chart performance
+      const allHistory = sorted.map(x => ({
+        t: x.t,
+        p: x.side === "YES" ? x.p : (1 - x.p),
+      }));
+      const MAX_POINTS = 200;
+      const history = allHistory.length > MAX_POINTS
+        ? allHistory.filter((_, i) => i % Math.ceil(allHistory.length / MAX_POINTS) === 0)
+        : allHistory;
+
+      setCache(cKey, history, 60_000);
+      res.json({ history });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }

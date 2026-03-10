@@ -12,6 +12,7 @@ import {
   ChevronDown, ChevronUp, Bell, Clock, Flame
 } from "lucide-react";
 import type { SignalsResponse, LeaderboardResponse, MarketsResponse, Signal } from "@shared/schema";
+import GameScorePanel from "@/components/GameScorePanel";
 
 const SIGNAL_REFRESH_MS = 90_000; // 90s auto-refresh
 
@@ -196,6 +197,16 @@ function SignalExpandedPanel({ signal, onClose }: { signal: Signal; onClose: () 
         </div>
       )}
 
+      {/* Game score + price chart */}
+      <GameScorePanel
+        slug={s.slug}
+        conditionId={condId}
+        yesTokenId={s.yesTokenId}
+        noTokenId={s.noTokenId}
+        side={signal.side as "YES" | "NO"}
+        marketQuestion={signal.marketQuestion}
+      />
+
       {/* Traders */}
       {s.traders && s.traders.length > 0 && (
         <div>
@@ -205,7 +216,20 @@ function SignalExpandedPanel({ signal, onClose }: { signal: Signal; onClose: () 
           <div className="space-y-1">
             {s.traders.slice(0, 6).map((t: any, i: number) => (
               <div key={i} className="flex items-center justify-between text-xs">
-                <span className="text-foreground/80 truncate flex-1">{t.name}</span>
+                {t.address ? (
+                  <a
+                    href={`https://polymarket.com/profile/${t.address}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline truncate flex-1 flex items-center gap-1"
+                    data-testid={`link-trader-${t.address}`}
+                  >
+                    {t.name || `${t.address.slice(0, 6)}…${t.address.slice(-4)}`}
+                    <ExternalLink className="w-2.5 h-2.5 shrink-0 opacity-60" />
+                  </a>
+                ) : (
+                  <span className="text-foreground/80 truncate flex-1">{t.name}</span>
+                )}
                 <span className="font-semibold ml-2 tabular-nums">
                   {formatUsdc(t.size)} @ {(t.entryPrice * 100).toFixed(0)}¢
                 </span>

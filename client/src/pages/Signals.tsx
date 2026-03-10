@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useRef, useCallback } from "react";
+import GameScorePanel from "@/components/GameScorePanel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -378,6 +379,20 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
               <ScoreBreakdown breakdown={(signal as any).scoreBreakdown} confidence={signal.confidence} />
             )}
 
+            {/* Game score + price chart */}
+            {expanded && (
+              <div className="mt-3">
+                <GameScorePanel
+                  slug={(signal as any).slug}
+                  conditionId={signal.marketId}
+                  yesTokenId={(signal as any).yesTokenId}
+                  noTokenId={(signal as any).noTokenId}
+                  side={signal.side as "YES" | "NO"}
+                  marketQuestion={signal.marketQuestion}
+                />
+              </div>
+            )}
+
             {/* Expanded trader list */}
             {expanded && signal.traders.length > 0 && (
               <div className="mt-3 space-y-1.5">
@@ -391,9 +406,23 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
                   <div key={i} className="grid grid-cols-4 items-center bg-muted/40 rounded px-2.5 py-1.5 text-xs gap-1">
                     <div className="flex items-center gap-1.5 min-w-0">
                       <Users className="w-3 h-3 text-muted-foreground shrink-0" />
-                      <span className="font-mono truncate">
-                        {t.name || (t.address ? `${t.address.slice(0, 6)}...${t.address.slice(-4)}` : "Trader")}
-                      </span>
+                      {t.address ? (
+                        <a
+                          href={`https://polymarket.com/profile/${t.address}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline font-mono truncate flex items-center gap-0.5"
+                          data-testid={`link-trader-${t.address}`}
+                          title="View on Polymarket"
+                        >
+                          {t.name || `${t.address.slice(0, 6)}…${t.address.slice(-4)}`}
+                          <ExternalLink className="w-2.5 h-2.5 shrink-0 opacity-50" />
+                        </a>
+                      ) : (
+                        <span className="font-mono truncate">
+                          {t.name || "Trader"}
+                        </span>
+                      )}
                       {(t as any).isSportsLb && (
                         <span className="text-[9px] font-bold bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-1 rounded shrink-0" title="Top sports leaderboard trader">SPORTS</span>
                       )}
