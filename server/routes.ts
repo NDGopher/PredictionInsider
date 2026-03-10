@@ -204,15 +204,34 @@ function classifyMarketType(q: string): "moneyline" | "spread" | "total" | "futu
  *  Threshold is proportional to price — low-prob markets move fast in % terms.
  *  - < 30¢ or > 70¢ (mirror): max delta 2¢  (sharp doubled their money = too late)
  *  - 30–70¢ range:             max delta 3¢  */
-function computeIsActionable(currentPrice: number, avgEntry: number, side: "YES" | "NO"): boolean {
-  if (currentPrice < 0.08 || currentPrice > 0.92) return false; // out of actionable range
-  const refPrice = Math.min(avgEntry, currentPrice); // use lower as reference
+/**
+ * Returns a 3-state price status:
+ * "actionable" — current price is within 2-3¢ of sharp avg entry (right price zone)
+ * "dip"        — price has fallen BELOW sharp avg entry for YES (or risen above for NO)
+ *                = you can enter CHEAPER than what sharps paid — favorable
+ * "moved"      — price has moved AGAINST the bet direction (too expensive vs sharp entry)
+ */
+function computePriceStatus(currentPrice: number, avgEntry: number, side: "YES" | "NO"): "actionable" | "dip" | "moved" {
+  if (currentPrice < 0.08 || currentPrice > 0.92) return "moved";
+  const refPrice = Math.min(avgEntry, currentPrice);
   const maxDelta = refPrice < 0.30 || refPrice > 0.70 ? 0.02 : 0.03;
-  const priceDiff = Math.abs(currentPrice - avgEntry);
-  // Price moved against you (more expensive than what sharps paid for YES) = too late
-  if (side === "YES" && currentPrice > avgEntry + maxDelta) return false;
-  if (side === "NO"  && currentPrice < avgEntry - maxDelta) return false;
-  return priceDiff <= maxDelta;
+  const priceDiff = currentPrice - avgEntry; // positive = price went up, negative = price went down
+
+  // Within tolerance → actionable (right at entry price zone)
+  if (Math.abs(priceDiff) <= maxDelta) return "actionable";
+
+  // Price DROPPED below avg entry for YES = dip (cheaper than sharps paid)
+  if (side === "YES" && priceDiff < -maxDelta) return "dip";
+  // Price ROSE above avg entry for NO = dip (cheaper than sharps paid on NO side)
+  if (side === "NO"  && priceDiff >  maxDelta) return "dip";
+
+  // Otherwise: price moved against the bet (too expensive)
+  return "moved";
+}
+
+function computeIsActionable(currentPrice: number, avgEntry: number, side: "YES" | "NO"): boolean {
+  const status = computePriceStatus(currentPrice, avgEntry, side);
+  return status === "actionable" || status === "dip"; // dip = better price than sharps got = still act on it
 }
 
 /** Score for "big play": how large is this bet */
@@ -1523,6 +1542,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           wallet,
           isTracked,
           isSportsLb: trader?.isSportsLb ?? false,
+          qualityScore: trader?.qualityScore ?? 0,
+          roi: trader?.roi ?? 0,
           market: title.slice(0, 80),
           slug: trade.slug,
           conditionId: alertCondId,
@@ -1531,9 +1552,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           price: Math.round(price * 1000) / 1000,
           americanOdds: toAmericanOdds(price),
           gameStatus: categoriseMarket(title, alertEndDate, alertDbEntry?.gameStartTime),
+          gameStartTime: alertDbEntry?.gameStartTime,
           endDate: alertEndDate,
           timestamp: ts,
           minutesAgo: Math.round((now - ts) / 60_000),
+          outcomeLabel: computeOutcomeLabel(title, side),
           sharpAction: signalsByMarket.get(alertCondId) ?? null,
         });
 
@@ -1556,7 +1579,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/signals", async (req, res) => {
     try {
       const sportsOnly = req.query.sports !== "false";
-      const cKey = `signals-elite-v19-${sportsOnly ? "sp" : "all"}`;
+      const cKey = `signals-elite-v20-${sportsOnly ? "sp" : "all"}`;
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -1857,7 +1880,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
         const avgROI     = dominant.reduce((s, e) => s + e.traderInfo.roi, 0) / dominant.length;
         const avgQuality = dominant.reduce((s, e) => s + e.traderInfo.qualityScore, 0) / dominant.length;
-        const avgEntry   = dominant.reduce((s, e) => s + (e.prices.reduce((a, b) => a + b, 0) / e.prices.length), 0) / dominant.length;
+        // Weighted avg entry price: weight each trader's avg price by their total position size
+        const totalDominantWeight = dominant.reduce((s, e) => s + e.totalSize, 0) || 1;
+        const avgEntry   = dominant.reduce((s, e) => s + (e.prices.reduce((a, b) => a + b, 0) / e.prices.length) * e.totalSize, 0) / totalDominantWeight;
         const avgSize    = totalDominantSize / dominant.length;
 
         // ── Live price via CLOB ────────────────────────────────────────────────
@@ -1893,17 +1918,22 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const marketCategory = classifyMarketType(mw.question);
         // Specific game markets (moneyline/spread/total) should be PREGAME, not FUTURES
         const mType = (mTypeRaw2 === "futures" && marketCategory !== "futures") ? "pregame" : mTypeRaw2;
-        const isActionable = computeIsActionable(currentPrice, avgEntry, side);
+        const priceStatus  = computePriceStatus(currentPrice, avgEntry, side);
+        const isActionable = priceStatus === "actionable" || priceStatus === "dip";
         const bigPlayScore = computeBigPlayScore(totalDominantSize, dominant.length);
+        const dominantSorted = [...dominant].sort((a, b) => b.totalSize - a.totalSize);
 
         signals.push({
           id, marketId: condId,
           marketQuestion: mw.question,
           slug: mw.slug,
+          endDate: mw.endDate || mInfo?.endDate,
+          gameStartTime: mInfo?.gameStartTime,
           outcome: side, side,
           confidence, tier, marketType: mType, isSports,
           marketCategory,
           isActionable,
+          priceStatus,
           bigPlayScore,
           consensusPct: Math.round(consensusPct),
           valueDelta: Math.round(valueDelta * 1000) / 1000,
@@ -1916,7 +1946,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           sportsLbCount,
           avgQuality: Math.round(avgQuality),
           scoreBreakdown: breakdown,
-          traders: dominant.slice(0, 8).map(e => ({
+          traders: dominantSorted.slice(0, 8).map(e => ({
             address: e.address,
             name: e.traderInfo.name,
             entryPrice: Math.round((e.prices.reduce((a, b) => a + b, 0) / e.prices.length) * 1000) / 1000,
@@ -2113,7 +2143,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const minPrice = isFutures ? 0.05 : 0.10;
           if (avgCurPrice < minPrice || avgCurPrice > 0.95) continue;
 
-          const avgEntry = pg.traders.reduce((s, t) => s + t.entryPrice, 0) / pg.traders.length;
+          // Weighted avg entry price: weight each trader's entry by their current position value
+          const totalPosWeight = pg.traders.reduce((s, t) => s + t.currentValue, 0) || 1;
+          const avgEntry = pg.traders.reduce((s, t) => s + t.entryPrice * t.currentValue, 0) / totalPosWeight;
           const avgSize  = pg.totalValue / pg.traders.length;
           const valueDelta = pg.side === "YES"
             ? (avgEntry - avgCurPrice - 0.02)
@@ -2135,13 +2167,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           // Specific game markets (moneyline/spread/total) should show as PREGAME, not FUTURES
           // even if the game is > 7 days away. FUTURES badge is reserved for season/championship bets.
           const mType = (mTypeRaw === "futures" && marketCategory !== "futures") ? "pregame" : mTypeRaw;
-          const isActionable = computeIsActionable(avgCurPrice, avgEntry, pg.side);
+          const priceStatus  = computePriceStatus(avgCurPrice, avgEntry, pg.side);
+          const isActionable = priceStatus === "actionable" || priceStatus === "dip";
           const bigPlayScore = computeBigPlayScore(pg.totalValue, pg.traders.length);
           const id = `pos-${pg.conditionId}-${pg.side}`;
           const isNew = !seenSignalIds.has(id);
           seenSignalIds.add(id);
           const pgYesTokenId = pg.yesAsset || pgMarket?.tokenIds?.[0];
           const pgNoTokenId  = pg.noAsset  || pgMarket?.tokenIds?.[1];
+          const tradersSorted = [...pg.traders].sort((a, b) => b.currentValue - a.currentValue);
 
           signals.push({
             id, marketId: pg.conditionId,
@@ -2154,6 +2188,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             marketType: mType, isSports: true,
             marketCategory,
             isActionable,
+            priceStatus,
             bigPlayScore,
             consensusPct: 100,
             valueDelta: Math.round(valueDelta * 1000) / 1000,
@@ -2168,7 +2203,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               ? Math.round(pg.traders.reduce((s, t) => s + (lbMap.get(t.wallet)?.qualityScore ?? 20), 0) / pg.traders.length)
               : 20,
             scoreBreakdown: breakdown,
-            traders: pg.traders.slice(0, 8).map(t => {
+            traders: tradersSorted.slice(0, 8).map(t => {
               const tm = lbMap.get(t.wallet);
               return {
                 address: t.wallet,

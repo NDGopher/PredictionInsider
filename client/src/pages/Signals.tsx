@@ -80,6 +80,17 @@ function formatUsdc(val: number): string {
   return `$${val.toFixed(0)}`;
 }
 
+function timeAgoShort(ts: number): string {
+  if (!ts) return "";
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
 function MarketTypePill({ type }: { type?: string }) {
   if (!type) return null;
   if (type === "live")    return <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/20"><Radio className="w-2.5 h-2.5" />LIVE</span>;
@@ -209,6 +220,24 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
                   data-testid={`signal-outcome-${signal.id}`}>
                   {outcomeLabel} <span className="font-normal text-muted-foreground">@ {(signal.currentPrice * 100).toFixed(1)}¢</span>
                 </div>
+                {/* Game date/time for pregame signals */}
+                {((signal as any).marketType === "pregame" || (signal as any).marketType === "live") && ((signal as any).gameStartTime || (signal as any).endDate) && (() => {
+                  const dt = new Date((signal as any).gameStartTime || (signal as any).endDate);
+                  const now2 = Date.now();
+                  const diffMs = dt.getTime() - now2;
+                  const diffH = Math.round(diffMs / 3_600_000);
+                  const label = diffMs < 0
+                    ? "In progress"
+                    : diffH < 1 ? "< 1h away"
+                    : diffH < 24 ? `${diffH}h away`
+                    : dt.toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }) + " ET";
+                  return (
+                    <div className="flex items-center gap-1 mt-0.5 text-[10px] text-muted-foreground" data-testid={`signal-gametime-${signal.id}`}>
+                      <CalendarClock className="w-3 h-3 shrink-0" />
+                      <span>{label}</span>
+                    </div>
+                  );
+                })()}
                 <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                   <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${confidenceLabel.cls}`}>
                     {confidenceLabel.label} CONFIDENCE
@@ -231,15 +260,26 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
                   )}
                   {/* Market type */}
                   <MarketTypePill type={(signal as any).marketType} />
-                  {/* Actionability indicator */}
-                  {(signal as any).isActionable === true && (
-                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 flex items-center gap-0.5" title="Current price is still close to average entry — actionable now">
+                  {/* Actionability indicator — 3-state */}
+                  {(signal as any).priceStatus === "actionable" && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 flex items-center gap-0.5" title="Current price is still close to average sharp entry — actionable now">
                       <Target className="w-2.5 h-2.5" /> ACTIONABLE
                     </span>
                   )}
-                  {(signal as any).isActionable === false && (
-                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border" title="Price has moved significantly from avg entry — may have already priced in">
-                      PRICE MOVED
+                  {(signal as any).priceStatus === "dip" && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/20 flex items-center gap-0.5" title="Price has dipped BELOW what sharps paid — potentially a better entry than the smart money got">
+                      <TrendingDown className="w-2.5 h-2.5" /> PRICE DIP ↓
+                    </span>
+                  )}
+                  {(signal as any).priceStatus === "moved" && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border" title="Price has moved UP significantly past sharp avg entry — sharps got a better price than you can get now">
+                      PRICE MOVED ↑
+                    </span>
+                  )}
+                  {/* Legacy fallback for signals without priceStatus */}
+                  {!(signal as any).priceStatus && (signal as any).isActionable === true && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 flex items-center gap-0.5">
+                      <Target className="w-2.5 h-2.5" /> ACTIONABLE
                     </span>
                   )}
                   {/* Big play indicator */}
@@ -396,16 +436,17 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
             {/* Expanded trader list */}
             {expanded && signal.traders.length > 0 && (
               <div className="mt-3 space-y-1.5">
-                <div className="grid grid-cols-4 text-[10px] text-muted-foreground font-medium px-2.5 py-1">
-                  <span>Trader</span>
+                <div className="grid grid-cols-5 text-[10px] text-muted-foreground font-medium px-2.5 py-1">
+                  <span className="col-span-2">Trader (sorted by size)</span>
                   <span className="text-right">Entry</span>
-                  <span className="text-right">Net Pos.</span>
-                  <span className="text-right">ROI / Quality</span>
+                  <span className="text-right">Size</span>
+                  <span className="text-right">Quality / Time</span>
                 </div>
                 {signal.traders.map((t, i) => (
-                  <div key={i} className="grid grid-cols-4 items-center bg-muted/40 rounded px-2.5 py-1.5 text-xs gap-1">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <Users className="w-3 h-3 text-muted-foreground shrink-0" />
+                  <div key={i} className="grid grid-cols-5 items-center bg-muted/40 rounded px-2.5 py-1.5 text-xs gap-1">
+                    {/* Rank + name */}
+                    <div className="col-span-2 flex items-center gap-1.5 min-w-0">
+                      <span className="shrink-0 text-[9px] font-bold text-muted-foreground w-3.5 text-center">#{i + 1}</span>
                       {t.address ? (
                         <a
                           href={`https://polymarket.com/profile/${t.address}`}
@@ -419,15 +460,13 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
                           <ExternalLink className="w-2.5 h-2.5 shrink-0 opacity-50" />
                         </a>
                       ) : (
-                        <span className="font-mono truncate">
-                          {t.name || "Trader"}
-                        </span>
+                        <span className="font-mono truncate">{t.name || "Trader"}</span>
                       )}
                       {(t as any).isSportsLb && (
-                        <span className="text-[9px] font-bold bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-1 rounded shrink-0" title="Top sports leaderboard trader">SPORTS</span>
+                        <span className="text-[9px] font-bold bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-1 rounded shrink-0" title="Top sports leaderboard">🏆</span>
                       )}
                       {(t as any).isLeaderboard && !(t as any).isSportsLb && (
-                        <span className="text-[9px] font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 px-1 rounded shrink-0" title="Top PNL leaderboard trader">LB</span>
+                        <span className="text-[9px] font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 px-1 rounded shrink-0" title="General leaderboard">LB</span>
                       )}
                     </div>
                     <div className="text-right text-muted-foreground tabular-nums">
@@ -436,13 +475,18 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
                     <div className="text-right font-medium tabular-nums">
                       {(t as any).netUsdc ? formatUsdc((t as any).netUsdc) : `${t.size.toLocaleString()} shr`}
                     </div>
-                    <div className="text-right flex items-center justify-end gap-1.5">
-                      {t.roi > 0 && (
-                        <span className={`${t.roi >= 20 ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
-                          {t.roi >= 0 ? "+" : ""}{t.roi.toFixed(1)}%
-                        </span>
+                    <div className="text-right flex flex-col items-end gap-0.5">
+                      <div className="flex items-center gap-1">
+                        {t.roi !== 0 && (
+                          <span className={`text-[9px] ${t.roi >= 20 ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
+                            {t.roi >= 0 ? "+" : ""}{t.roi.toFixed(0)}% ROI
+                          </span>
+                        )}
+                        {(t as any).qualityScore ? <QualityPip score={(t as any).qualityScore} /> : null}
+                      </div>
+                      {(t as any).tradeTime > 0 && (
+                        <span className="text-[9px] text-muted-foreground">{timeAgoShort((t as any).tradeTime)}</span>
                       )}
-                      {(t as any).qualityScore ? <QualityPip score={(t as any).qualityScore} /> : null}
                     </div>
                   </div>
                 ))}
@@ -537,44 +581,58 @@ function SharpMovesPanel() {
               </div>
             ) : (
               <>
-                {multiAlerts.slice(0, 5).map((a: any) => (
-                  <div
-                    key={a.id}
-                    className="flex items-center gap-2 text-[11px] bg-orange-500/8 border border-orange-500/20 rounded-md px-2.5 py-1.5"
-                    data-testid={`sharp-move-multi-${a.id}`}
-                  >
-                    <span className="shrink-0 font-bold px-1 py-0.5 rounded text-[9px] bg-orange-500/20 text-orange-600 dark:text-orange-400">
-                      MULTI SHARP
-                    </span>
-                    <span className={`shrink-0 font-bold w-7 text-center rounded text-[10px] ${a.side === "YES" ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
-                      {a.side}
-                    </span>
-                    <span className="flex-1 truncate text-foreground/80" title={a.market}>{a.market}</span>
-                    <span className="shrink-0 font-bold tabular-nums">${a.size.toLocaleString()}</span>
-                    <span className="shrink-0 text-muted-foreground tabular-nums">{fmtMinsAgo(a.minutesAgo)}</span>
-                    <span className="shrink-0 text-primary font-medium">{a.americanOdds}</span>
-                  </div>
-                ))}
-                {bigAlerts.slice(0, 8 - Math.min(multiAlerts.length, 5)).map((a: any) => (
-                  <div
-                    key={a.id}
-                    className="flex items-center gap-2 text-[11px] bg-muted/40 rounded-md px-2.5 py-1.5"
-                    data-testid={`sharp-move-${a.id}`}
-                  >
-                    {a.isTracked && (
-                      <span className="shrink-0 font-semibold text-[9px] px-1 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-                        {a.trader}
+                {multiAlerts.slice(0, 5).map((a: any) => {
+                  const alertOutcomeLabel = a.outcomeLabel || getOutcomeLabel(a.market, a.side);
+                  const alertTimeStr = a.timestamp ? timeAgoShort(a.timestamp) : fmtMinsAgo(a.minutesAgo);
+                  return (
+                    <div
+                      key={a.id}
+                      className="flex items-start gap-2 text-[11px] bg-orange-500/8 border border-orange-500/20 rounded-md px-2.5 py-1.5"
+                      data-testid={`sharp-move-multi-${a.id}`}
+                    >
+                      <span className="shrink-0 font-bold px-1 py-0.5 rounded text-[9px] bg-orange-500/20 text-orange-600 dark:text-orange-400 mt-0.5">
+                        MULTI SHARP
                       </span>
-                    )}
-                    <span className={`shrink-0 font-bold w-7 text-center rounded text-[10px] ${a.side === "YES" ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
-                      {a.side}
-                    </span>
-                    <span className="flex-1 truncate text-muted-foreground" title={a.market}>{a.market}</span>
-                    <span className="shrink-0 font-bold tabular-nums">${a.size.toLocaleString()}</span>
-                    <span className="shrink-0 text-muted-foreground tabular-nums">{fmtMinsAgo(a.minutesAgo)}</span>
-                    <span className="shrink-0 text-muted-foreground">{a.americanOdds}</span>
-                  </div>
-                ))}
+                      <div className="flex-1 min-w-0">
+                        <div className={`font-bold text-[11px] ${a.side === "YES" ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                          {alertOutcomeLabel}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground truncate" title={a.market}>{a.market}</div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="font-bold tabular-nums">${a.size.toLocaleString()}</div>
+                        <div className="text-muted-foreground text-[10px]">{alertTimeStr} · {a.americanOdds}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+                {bigAlerts.slice(0, 8 - Math.min(multiAlerts.length, 5)).map((a: any) => {
+                  const alertOutcomeLabel = a.outcomeLabel || getOutcomeLabel(a.market, a.side);
+                  const alertTimeStr = a.timestamp ? timeAgoShort(a.timestamp) : fmtMinsAgo(a.minutesAgo);
+                  return (
+                    <div
+                      key={a.id}
+                      className="flex items-start gap-2 text-[11px] bg-muted/40 rounded-md px-2.5 py-1.5"
+                      data-testid={`sharp-move-${a.id}`}
+                    >
+                      {a.isTracked && (
+                        <span className="shrink-0 font-semibold text-[9px] px-1 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 mt-0.5">
+                          {a.trader}
+                        </span>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className={`font-bold text-[11px] ${a.side === "YES" ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                          {alertOutcomeLabel}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground truncate" title={a.market}>{a.market}</div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="font-bold tabular-nums">${a.size.toLocaleString()}</div>
+                        <div className="text-muted-foreground text-[10px]">{alertTimeStr} · {a.americanOdds}</div>
+                      </div>
+                    </div>
+                  );
+                })}
               </>
             )}
           </div>

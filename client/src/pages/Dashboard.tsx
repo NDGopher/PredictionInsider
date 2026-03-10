@@ -140,12 +140,27 @@ function SignalExpandedPanel({ signal, onClose }: { signal: Signal; onClose: () 
       {/* Game status + actionability */}
       <div className="flex items-center gap-1.5 flex-wrap">
         <GameStatusBadge type={s.marketType} />
-        {s.isActionable === true && (
+        {s.priceStatus === "actionable" && (
           <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
             <Target className="w-2.5 h-2.5" />ACTIONABLE
           </span>
         )}
-        {s.isActionable === false && (
+        {s.priceStatus === "dip" && (
+          <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/20" title="Price dipped BELOW sharp avg entry — better deal than smart money got">
+            <TrendingDown className="w-2.5 h-2.5" />PRICE DIP ↓
+          </span>
+        )}
+        {s.priceStatus === "moved" && (
+          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border" title="Price moved UP past sharp avg entry">
+            PRICE MOVED ↑
+          </span>
+        )}
+        {!s.priceStatus && s.isActionable === true && (
+          <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+            <Target className="w-2.5 h-2.5" />ACTIONABLE
+          </span>
+        )}
+        {!s.priceStatus && s.isActionable === false && (
           <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border">
             PRICE MOVED
           </span>
@@ -289,7 +304,17 @@ function SignalRow({ signal }: { signal: Signal }) {
                 <Radio className="w-2.5 h-2.5" />LIVE
               </span>
             )}
-            {s.isActionable === true && (
+            {s.priceStatus === "actionable" && (
+              <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1 py-0 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 shrink-0">
+                <Target className="w-2.5 h-2.5" />ACT
+              </span>
+            )}
+            {s.priceStatus === "dip" && (
+              <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1 py-0 rounded bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20 shrink-0" title="Price dipped below what sharps paid">
+                <TrendingDown className="w-2.5 h-2.5" />DIP
+              </span>
+            )}
+            {!s.priceStatus && s.isActionable === true && (
               <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1 py-0 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 shrink-0">
                 <Target className="w-2.5 h-2.5" />ACT
               </span>
@@ -579,9 +604,22 @@ export default function Dashboard() {
                         <div className="text-[10px] text-muted-foreground truncate mt-0.5">{alert.market}</div>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-[10px] font-medium text-muted-foreground">{alert.trader}</span>
+                          {alert.isSportsLb && (
+                            <span className="text-[9px] font-bold text-green-600 dark:text-green-400">🏆 SPORTS LB</span>
+                          )}
                           <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                            <Clock className="w-2.5 h-2.5" />{alert.minutesAgo}m ago
+                            <Clock className="w-2.5 h-2.5" />{alert.timestamp ? timeAgo(alert.timestamp) : `${alert.minutesAgo}m ago`}
                           </span>
+                          {alert.gameStartTime && (() => {
+                            const dt = new Date(alert.gameStartTime);
+                            const diffH = Math.round((dt.getTime() - Date.now()) / 3_600_000);
+                            return diffH > 0 && diffH < 168 ? (
+                              <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                                <CalendarClock className="w-2.5 h-2.5" />
+                                {diffH < 24 ? `${diffH}h away` : dt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                              </span>
+                            ) : null;
+                          })()}
                         </div>
                       </div>
                       {/* Size + expand chevron */}
@@ -605,9 +643,41 @@ export default function Dashboard() {
                       const lp = alert.conditionId ? livePrices[alert.conditionId] : undefined;
                       const isFetching = alert.conditionId ? fetchingPrice.has(alert.conditionId) : false;
                       const entryOdds = alert.americanOdds || toAmericanOdds(alert.price);
+                      const tradeTimeStr = alert.timestamp ? timeAgo(alert.timestamp) : `${alert.minutesAgo}m ago`;
                       return (
                       <div className="mb-2 mx-1 p-3 rounded-md bg-muted/50 border border-border space-y-2 text-xs">
+                        {/* Full market title */}
                         <div className="font-semibold text-foreground">{alert.market}</div>
+
+                        {/* Trader quality row */}
+                        <div className="flex items-center gap-2 flex-wrap text-[11px]">
+                          <span className="font-medium text-foreground">{alert.trader}</span>
+                          {alert.isSportsLb && (
+                            <span className="px-1 py-0.5 rounded bg-green-500/15 text-green-700 dark:text-green-300 border border-green-500/20 font-semibold">🏆 Sports LB</span>
+                          )}
+                          {alert.qualityScore > 0 && (
+                            <span className={`px-1 py-0.5 rounded border font-semibold ${alert.qualityScore >= 70 ? "bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/20" : alert.qualityScore >= 40 ? "bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 border-yellow-500/20" : "bg-muted text-muted-foreground border-border"}`}>
+                              Quality {alert.qualityScore}
+                            </span>
+                          )}
+                          {alert.roi > 0 && (
+                            <span className="text-muted-foreground">+{alert.roi.toFixed(0)}% ROI</span>
+                          )}
+                          <span className="text-muted-foreground">{tradeTimeStr}</span>
+                        </div>
+
+                        {/* Match time (pregame) */}
+                        {alert.gameStartTime && (() => {
+                          const gdt = new Date(alert.gameStartTime);
+                          return (
+                            <div className="flex items-center gap-1.5 text-[11px] text-blue-600 dark:text-blue-400 font-medium">
+                              <CalendarClock className="w-3.5 h-3.5" />
+                              Game: {gdt.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" })} ET
+                            </div>
+                          );
+                        })()}
+
+                        {/* Bet details row */}
                         <div className="flex items-center gap-3 flex-wrap">
                           <div className="flex items-center gap-1">
                             <span className="text-muted-foreground">Bet:</span>
@@ -625,7 +695,7 @@ export default function Dashboard() {
                           </div>
                           {/* Live price cell */}
                           <div className="flex items-center gap-1">
-                            <span className="text-muted-foreground">Live price:</span>
+                            <span className="text-muted-foreground">Live:</span>
                             {lp ? (
                               <span className="font-bold tabular-nums text-blue-600 dark:text-blue-400">
                                 {Math.round(lp.price * 100)}¢ ({lp.americanOdds})
@@ -666,13 +736,13 @@ export default function Dashboard() {
                             </div>
                             <div>
                               Avg entry: {Math.round(sharp.avgEntry * 100)}¢ ({toAmericanOdds(sharp.avgEntry)}) · 
-                              Signal price: {Math.round(sharp.currentPrice * 100)}¢ ({toAmericanOdds(sharp.currentPrice)})
-                              {sharp.isActionable ? " · Still actionable" : " · Price has moved"}
+                              Live price: {Math.round(sharp.currentPrice * 100)}¢ ({toAmericanOdds(sharp.currentPrice)})
+                              {sharp.priceStatus === "dip" ? " · PRICE DIP — better entry than sharps got" : sharp.isActionable ? " · Still at entry price" : " · Price has moved past entry"}
                             </div>
                           </div>
                         ) : (
                           <div className="text-muted-foreground text-[11px]">
-                            No consensus signal yet for this market — this is an individual tracked-trader bet.
+                            No consensus signal for this market yet — individual tracked-trader bet.
                           </div>
                         )}
 
