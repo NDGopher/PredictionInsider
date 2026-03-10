@@ -75,6 +75,12 @@ function formatUsdc(v: number) {
   return `$${v.toFixed(0)}`;
 }
 
+function toAmericanOdds(p: number): string {
+  if (!p || p <= 0 || p >= 1) return "N/A";
+  if (p >= 0.5) return `-${Math.round((p / (1 - p)) * 100)}`;
+  return `+${Math.round(((1 - p) / p) * 100)}`;
+}
+
 function SignalExpandedPanel({ signal, onClose }: { signal: Signal; onClose: () => void }) {
   const s = signal as any;
   const outcomeLabel = s.outcomeLabel || getOutcomeLabel(signal.marketQuestion, signal.side as "YES" | "NO");
@@ -268,8 +274,28 @@ function StatCard({
 }
 
 export default function Dashboard() {
-  const [signalTypeFilter, setSignalTypeFilter] = useState<"all" | "live" | "pregame" | "nofutures">("all");
+  const [signalTypeFilter, setSignalTypeFilter] = useState<"all" | "live" | "pregame" | "nofutures" | "actionable">("all");
   const [expandedAlerts, setExpandedAlerts] = useState<Set<string>>(new Set());
+  const [livePrices, setLivePrices] = useState<Record<string, { price: number; americanOdds: string; fetchedAt: number }>>({});
+  const [fetchingPrice, setFetchingPrice] = useState<Set<string>>(new Set());
+
+  const refreshLivePrice = async (conditionId: string) => {
+    if (!conditionId || fetchingPrice.has(conditionId)) return;
+    setFetchingPrice(prev => new Set(prev).add(conditionId));
+    try {
+      const res = await fetch(`/api/market/price-by-condition/${conditionId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setLivePrices(prev => ({
+          ...prev,
+          [conditionId]: { price: data.currentPrice, americanOdds: data.americanOdds, fetchedAt: data.fetchedAt },
+        }));
+      }
+    } finally {
+      setFetchingPrice(prev => { const n = new Set(prev); n.delete(conditionId); return n; });
+    }
+  };
+
   const toggleAlert = (id: string) => setExpandedAlerts(prev => {
     const next = new Set(prev);
     next.has(id) ? next.delete(id) : next.add(id);
@@ -332,9 +358,10 @@ export default function Dashboard() {
   const filteredSignals = signals.filter(s => {
     const mType = (s as any).marketType as string | undefined;
     const cat   = ((s as any).marketCategory || "").toLowerCase();
-    if (signalTypeFilter === "live")     return mType === "live";
-    if (signalTypeFilter === "pregame")  return mType === "pregame";
-    if (signalTypeFilter === "nofutures") return cat !== "futures" && mType !== "futures";
+    if (signalTypeFilter === "live")       return mType === "live";
+    if (signalTypeFilter === "pregame")    return mType === "pregame";
+    if (signalTypeFilter === "nofutures")  return cat !== "futures" && mType !== "futures";
+    if (signalTypeFilter === "actionable") return (s as any).isActionable === true;
     return true;
   });
   const topSignals = filteredSignals.slice(0, 8);
@@ -484,7 +511,7 @@ export default function Dashboard() {
                             ${alert.size >= 1000 ? `${(alert.size / 1000).toFixed(1)}K` : alert.size}
                           </div>
                           <div className="text-[10px] text-muted-foreground tabular-nums">
-                            @ {Math.round(alert.price * 100)}¢
+                            {Math.round(alert.price * 100)}¢ · {alert.americanOdds || toAmericanOdds(alert.price)}
                           </div>
                         </div>
                         {isExpanded
@@ -494,7 +521,11 @@ export default function Dashboard() {
                     </div>
 
                     {/* Expanded detail panel */}
-                    {isExpanded && (
+                    {isExpanded && (() => {
+                      const lp = alert.conditionId ? livePrices[alert.conditionId] : undefined;
+                      const isFetching = alert.conditionId ? fetchingPrice.has(alert.conditionId) : false;
+                      const entryOdds = alert.americanOdds || toAmericanOdds(alert.price);
+                      return (
                       <div className="mb-2 mx-1 p-3 rounded-md bg-muted/50 border border-border space-y-2 text-xs">
                         <div className="font-semibold text-foreground">{alert.market}</div>
                         <div className="flex items-center gap-3 flex-wrap">
@@ -509,12 +540,37 @@ export default function Dashboard() {
                             <span className="font-bold">${alert.size >= 1000 ? `${(alert.size / 1000).toFixed(1)}K` : alert.size}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <span className="text-muted-foreground">Entry price:</span>
-                            <span className="font-bold tabular-nums">{Math.round(alert.price * 100)}¢</span>
+                            <span className="text-muted-foreground">Entry:</span>
+                            <span className="font-bold tabular-nums">{Math.round(alert.price * 100)}¢ ({entryOdds})</span>
                           </div>
+                          {/* Live price cell */}
                           <div className="flex items-center gap-1">
-                            <span className="text-muted-foreground">Implied odds:</span>
-                            <span className="font-bold">{(1 / alert.price).toFixed(1)}x</span>
+                            <span className="text-muted-foreground">Live price:</span>
+                            {lp ? (
+                              <span className="font-bold tabular-nums text-blue-600 dark:text-blue-400">
+                                {Math.round(lp.price * 100)}¢ ({lp.americanOdds})
+                              </span>
+                            ) : (
+                              <button
+                                onClick={e => { e.stopPropagation(); refreshLivePrice(alert.conditionId); }}
+                                disabled={isFetching || !alert.conditionId}
+                                data-testid={`btn-refresh-price-${alert.id}`}
+                                className="text-primary hover:underline disabled:opacity-50 font-medium"
+                              >
+                                {isFetching ? "Loading…" : "Fetch ↺"}
+                              </button>
+                            )}
+                            {lp && (
+                              <button
+                                onClick={e => { e.stopPropagation(); refreshLivePrice(alert.conditionId); }}
+                                disabled={isFetching}
+                                data-testid={`btn-refresh-price-live-${alert.id}`}
+                                className="text-muted-foreground hover:text-foreground ml-0.5 disabled:opacity-50"
+                                title="Refresh live price"
+                              >
+                                {isFetching ? "…" : "↺"}
+                              </button>
+                            )}
                           </div>
                         </div>
 
@@ -529,8 +585,8 @@ export default function Dashboard() {
                               Sharp consensus: {sharp.traderCount} tracked traders → {sharp.side} · {sharp.confidence}/100
                             </div>
                             <div>
-                              Avg entry: {Math.round(sharp.avgEntry * 100)}¢ · 
-                              Current price: {Math.round(sharp.currentPrice * 100)}¢
+                              Avg entry: {Math.round(sharp.avgEntry * 100)}¢ ({toAmericanOdds(sharp.avgEntry)}) · 
+                              Signal price: {Math.round(sharp.currentPrice * 100)}¢ ({toAmericanOdds(sharp.currentPrice)})
                               {sharp.isActionable ? " · Still actionable" : " · Price has moved"}
                             </div>
                           </div>
@@ -553,7 +609,8 @@ export default function Dashboard() {
                           </a>
                         )}
                       </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 );
               })}
@@ -569,9 +626,10 @@ export default function Dashboard() {
             <h2 className="font-semibold text-sm">Top Signals</h2>
             <div className="flex items-center gap-1.5 flex-wrap">
               {/* Signal type filter toggles */}
-              {(["all", "live", "pregame", "nofutures"] as const).map(f => {
+              {(["all", "live", "pregame", "nofutures", "actionable"] as const).map(f => {
                 const labels: Record<typeof f, string> = {
                   all: "All", live: "Live", pregame: "Pregame", nofutures: "No Futures",
+                  actionable: `Actionable (${actionable.length})`,
                 };
                 return (
                   <button
@@ -584,6 +642,8 @@ export default function Dashboard() {
                           ? "bg-red-500 text-white border-red-500"
                           : f === "pregame"
                           ? "bg-blue-500 text-white border-blue-500"
+                          : f === "actionable"
+                          ? "bg-green-600 text-white border-green-600"
                           : "bg-primary text-primary-foreground border-primary"
                         : "bg-muted border-border text-muted-foreground hover:text-foreground"
                     }`}

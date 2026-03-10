@@ -19,6 +19,13 @@ function setCache(key: string, data: unknown, ttlMs: number) {
 }
 const seenSignalIds = new Set<string>();
 
+// ─── American odds helper ─────────────────────────────────────────────────────
+function toAmericanOdds(price: number): string {
+  const p = Math.max(0.01, Math.min(0.99, price));
+  if (p >= 0.5) return `-${Math.round((p / (1 - p)) * 100)}`;
+  return `+${Math.round(((1 - p) / p) * 100)}`;
+}
+
 // ─── SSE client registry ──────────────────────────────────────────────────────
 // Each connected client gets a Response object stored here.
 // We broadcast fresh data to all clients whenever our live-alerts cache refreshes.
@@ -773,15 +780,16 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const isTracked = lbMap.has(wallet);
         const size = parseFloat(trade.size || trade.amount || "0");
         if (!isTracked && size < 5000) continue;
-        if (size < 200) continue;
+        if (size < 1000) continue; // minimum $1K plays only
         const title = trade.title || trade.market || "";
         if (!isSportsRelated(title) || !title) continue;
+        const price = parseFloat(trade.price || "0.5");
+        if (price < 0.10 || price > 0.90) continue; // filter extreme prices
         const key = `${trade.conditionId || "?"}-${wallet}`;
         if (seen.has(key)) continue;
         seen.add(key);
         const trader = lbMap.get(wallet);
         const side = (trade.outcomeIndex === 0 || trade.outcome === "Yes") ? "YES" : "NO";
-        const price = parseFloat(trade.price || "0.5");
         const ts = trade.timestamp ? trade.timestamp * 1000 : (trade.createdAt ? new Date(trade.createdAt).getTime() : now);
         alerts.push({
           id: `alert-${trade.id || key}`,
@@ -789,6 +797,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           wallet, isTracked, isSportsLb: trader?.isSportsLb ?? false,
           market: title.slice(0, 80), slug: trade.slug, conditionId: trade.conditionId,
           side, size: Math.round(size), price: Math.round(price * 1000) / 1000,
+          americanOdds: toAmericanOdds(price),
           timestamp: ts, minutesAgo: Math.round((now - ts) / 60_000),
           sharpAction: signalsByMarket.get(trade.conditionId || "") ?? null,
         });
@@ -1034,11 +1043,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
         // Only tracked traders OR very large anonymous bets ($5K+)
         if (!isTracked && size < 5000) continue;
-        if (size < 200) continue;
+        if (size < 1000) continue; // minimum $1K plays
 
         const title = trade.title || trade.market || "";
         if (!isSportsRelated(title)) continue;
         if (!title) continue;
+
+        const price = parseFloat(trade.price || "0.5");
+        if (price < 0.10 || price > 0.90) continue; // skip extreme/junk prices
 
         const key = `${trade.conditionId || "?"}-${wallet}`;
         if (seen.has(key)) continue;
@@ -1046,7 +1058,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
         const trader = lbMap.get(wallet);
         const side = (trade.outcomeIndex === 0 || trade.outcome === "Yes") ? "YES" : "NO";
-        const price = parseFloat(trade.price || "0.5");
         const ts    = trade.timestamp ? trade.timestamp * 1000 : (trade.createdAt ? new Date(trade.createdAt).getTime() : now);
 
         alerts.push({
@@ -1061,6 +1072,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           side,
           size: Math.round(size),
           price: Math.round(price * 1000) / 1000,
+          americanOdds: toAmericanOdds(price),
           timestamp: ts,
           minutesAgo: Math.round((now - ts) / 60_000),
           sharpAction: signalsByMarket.get(trade.conditionId || "") ?? null,
@@ -1378,7 +1390,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       // These reflect actual money they have deployed RIGHT NOW.
       // Use all traders from multi-window LB (up to 60) for richer position coverage
       const topSportsWallets = [...new Set(
-        allSportsLb.slice(0, 60).map((t: any) => (t.proxyWallet || "").toLowerCase()).filter(Boolean)
+        allSportsLb.slice(0, 100).map((t: any) => (t.proxyWallet || "").toLowerCase()).filter(Boolean)
       )];
       if (topSportsWallets.length > 0) {
         const positionBatches = await Promise.all(topSportsWallets.map(w => fetchTraderPositions(w)));
@@ -1410,22 +1422,25 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             const mapKey = `${condId}-${side}`;
 
             if (!posMap.has(mapKey)) {
+              // Fall back to marketDb endDate if pos.endDate is missing
+              const dbEntry = marketDb.get(condId);
+              const resolvedEndDate = pos.endDate || dbEntry?.endDate;
               posMap.set(mapKey, {
                 conditionId: condId, side,
                 question: title,
                 slug: pos.slug || pos.eventSlug,
-                endDate: pos.endDate,
+                endDate: resolvedEndDate,
                 traders: [], totalValue: 0,
               });
               // Register in shared game market registry for /api/markets
               upsertGameMarket(condId, {
                 question: title,
                 slug: pos.slug || pos.eventSlug,
-                endDate: pos.endDate,
+                endDate: resolvedEndDate,
                 currentPrice: curPrice,
                 volume: 0, liquidity: 0, active: true,
                 marketType: classifyMarketType(title),
-                gameStatus: categoriseMarket(title, pos.endDate),
+                gameStatus: categoriseMarket(title, resolvedEndDate),
               });
             }
             const pg = posMap.get(mapKey)!;
@@ -1826,6 +1841,60 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     try {
       const mid = await fetchMidpoint(req.params.tokenId);
       res.json({ tokenId: req.params.tokenId, midpoint: mid, fetchedAt: Date.now() });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── GET /api/market/price-by-condition/:conditionId ──────────────────────────
+  // Returns the current live YES price for a condition ID by looking up the
+  // signal cache or fetching fresh from Gamma API.
+  app.get("/api/market/price-by-condition/:conditionId", async (req, res) => {
+    try {
+      const condId = req.params.conditionId;
+      // 1. Check signal registry first (most up-to-date)
+      const sig = signalsByMarket.get(condId);
+      if (sig) {
+        return res.json({
+          conditionId: condId,
+          currentPrice: sig.currentPrice,
+          americanOdds: toAmericanOdds(sig.currentPrice),
+          side: sig.side,
+          fetchedAt: Date.now(),
+          source: "signal_cache",
+        });
+      }
+      // 2. Check game market registry
+      const entry = gameMarketRegistry.get(condId);
+      if (entry?.currentPrice) {
+        return res.json({
+          conditionId: condId,
+          currentPrice: entry.currentPrice,
+          americanOdds: toAmericanOdds(entry.currentPrice),
+          fetchedAt: Date.now(),
+          source: "market_registry",
+        });
+      }
+      // 3. Hit Gamma API to get tokens
+      const gmRes = await fetch(`${GAMMA_API}/markets?condition_id=${condId}&limit=1`);
+      if (gmRes.ok) {
+        const gmData = await gmRes.json();
+        const mkt = Array.isArray(gmData) ? gmData[0] : gmData?.markets?.[0];
+        if (mkt) {
+          const priceStr = mkt.lastTradePrice || mkt.bestAsk || mkt.midpoint;
+          const price = priceStr ? parseFloat(priceStr) : null;
+          if (price && price > 0) {
+            return res.json({
+              conditionId: condId,
+              currentPrice: price,
+              americanOdds: toAmericanOdds(price),
+              fetchedAt: Date.now(),
+              source: "gamma",
+            });
+          }
+        }
+      }
+      res.status(404).json({ error: "Price not found", conditionId: condId });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }

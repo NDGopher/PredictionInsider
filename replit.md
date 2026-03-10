@@ -19,10 +19,13 @@ A sports prediction market intelligence dashboard that surfaces consensus signal
 
 - `GET /api/traders?category=sports` — Sports-specific leaderboard (default). Use `category=all` for overall leaderboard
 - `GET /api/markets?type=upcoming|all|moneyline|spread|total|futures` — Sports markets with type filtering
-- `GET /api/signals?sports=true/false` — Elite signals: large bets ($200+) + positions from top sports traders
+- `GET /api/signals?sports=true/false` — Elite signals: large bets ($1K+, price 10¢–90¢) + positions from top sports traders
 - `GET /api/signals/fast?sports=true/false` — Live Feed: consensus from recent 5000 trades
 - `GET /api/orderbook?tokenId=...` — Live CLOB order book data (15s cache)
 - `GET /api/trader/:address/positions` — Individual trader's current positions
+- `GET /api/alerts/live` — Recent large bets ($1K+, 10¢–90¢) by tracked traders
+- `GET /api/market/price-by-condition/:conditionId` — Live YES price for a market (checks signal cache → market registry → Gamma API)
+- `GET /api/stream?channel=alerts` — SSE stream; pushes alert batch every 15s
 
 ## Signal Computation Logic
 
@@ -36,7 +39,7 @@ A sports prediction market intelligence dashboard that surfaces consensus signal
 5. Fetch live CLOB midpoint; compute value delta and confidence score
 
 **Phase 4: Positions-based signals**
-1. Fetch top 60 sports leaderboard wallets
+1. Fetch top 100 sports leaderboard wallets
 2. Fetch current open positions for each wallet (parallel `Promise.all`)
 3. Group by (conditionId, outcomeIndex=0→YES/1→NO)
 4. Filter: curPrice 0.08–0.95, currentValue > $50 per trader, sports keywords match
