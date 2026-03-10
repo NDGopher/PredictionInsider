@@ -115,13 +115,26 @@ All API responses cached in-memory:
 
 ## Curated Elite Traders
 
-`CURATED_ELITES` is a hardcoded list of known high-calibre sports traders who don't appear in the official Polymarket sports leaderboard (API cap issue). Each entry: `{ addr, name, estimatedPnl, qualityScore? }`.
+`CURATED_ELITES` is a minimal list of known high-calibre sports traders verified on Polymarket who are worth fetching trade history for. Entry shape: `{ addr: string; name: string }` — no hardcoded PNL or quality scores.
 
 `fetchEliteTraderTrades(wallet, limit=100)` fetches recent trades per curated wallet via `DATA_API/trades?user=wallet`. These are merged into `allTrades` (deduped by transactionHash) before signal processing. Curated traders are pre-populated in `lbMap` at the start of Phase 1 with `isSportsLb: true`.
 
-**qualityScore override**: If `qualityScore` is set on a CURATED_ELITE entry, it bypasses the `traderQualityScore()` formula (which requires accurate ROI). This ensures curated traders get appropriate scores without needing volume data.
+**INTEGRITY RULE**: Only add wallets that are verified on Polymarket. No placeholder or fabricated entries. No hardcoded quality scores or PNL figures.
 
-Current curated list: kch123 (qualityScore=65), SportsBetPro (qualityScore=55), SharpAction (qualityScore=50).
+**Dynamic quality scoring**: qualityScore is computed from the wallet's actual sports trade history (fetched during signal computation): `volScore (45%) + countScore (30%) + avgBetScore (25%)`, capped at 90.
+
+Current curated list: kch123 (addr: 0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee). Scores ~90 from $450K sports volume, 99 sports trades.
+
+## Trader Discovery (Positions Phase Expansion)
+
+In addition to leaderboard traders, the positions scan now includes **discovered sports bettors** found in the recent 10K trades scan:
+
+- Threshold: `totalSize >= $3,000 OR (count >= 3 trades AND totalSize >= $1,000)`  
+- Sort: by total volume descending; cap at 120 discovered wallets  
+- This captures whales who make single large sports bets (e.g., $48K single bet = 1 trade)  
+- Typical expansion: +5-20 wallets per cycle beyond the ~50 leaderboard traders
+
+Quality scores for discovered traders use a three-factor formula from their observed activity in the 10K trade window.
 
 ## Trader Recency Scoring
 

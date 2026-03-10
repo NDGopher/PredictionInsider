@@ -1,0 +1,24 @@
+To do better: Multi-source scraping + subgraph analytics for 200+.Logic to Match OddsJam: Deep Analytics for Selection/WeightingOddsJam selects "insiders" via:Proven Track Record: >500 trades, >50% win rate, consistent ROI (>10-20%), high volume (avoid one-hits).
+Sports Specialization: >60% positions in sports (NBA/NFL/soccer/etc.), category ROI.
+Consistency Over Luck: Low variance (std dev of returns <20%), win streaks, no bots (erratic sizing/freq).
+Weighting: Higher for elites (e.g., score = (PNL * win_rate * volume) / variance; top 20% get 2x weight in consensus).
+
+No hardcodes—use subgraph queries for deep analytics:Query Goldsky PNL subgraph: realizedPnL, investedAmount, positionCount, unrealizedPnL → Calc ROI = (realizedPnL + unrealizedPnL) / investedAmount * 100; win rate = wins / total; variance = std dev of trade returns.
+Filter sports: Use market tags/slugs (e.g., "nba", "nfl") in positions/trades.
+For hundreds: Scrape 500+ from Analytics/Polysights/Predicting.top, verify/filter to 200-300 real.
+Daily Update: Replit loop (every 24h) rescrapes/queries, adds new via "new wallets" logic.
+
+Sources from Research:PolymarketAnalytics: Extract 100-200+ with wallets (e.g., Theo4 0x56687bf..., but filter sports).
+Polysights/Predicting.top: Leaderboards with sports filters, wallets.
+X/Reddit: Real examples (e.g., DrPufferfish ~$5-6M sports PNL, wallet from profiles; SecondWindCapital $1.6M, 53% win, sports whale).
+Subgraph: For analytics on any wallet (e.g., 432614799197: 4100+ trades, high NHL/NBA).
+
+Weight: In consensus, multiply trader contribution by score (e.g., high-score = stronger signal if they agree).How to Implement in ReplitUse a prompt to refine: Multi-scrape for lists/wallets, subgraph for analytics/weighting, DB for daily persistence.Updated Prompt for Replit:Enhance PredictionMarketScanner to fix trader list: Source 200-300 verified sports specialists with real 0x wallets (extract from profiles/links), deep analytics (subgraph: ROI, win rate, volume, variance, sports %). No hardcodes—calculate metrics dynamically. Update daily via loop. Weight traders in consensus (score = (PNL * win_rate * volume) / variance; higher = more influence). Exclude bad (low score/variance>20%, <60% sports), include good (high consistency/volume). Verify data (API/subgraph cross-check), filter noise ($1 positions).Key Changes:Trader Sourcing: Scrape PolymarketAnalytics (full URL, pagination, extract usernames/wallets/PNL/win/positions). Add scrapes: https://polysights.xyz/leaderboards?category=sports, https://predicting.top/ (extract wallets/stats). Merge with API leaderboard?category=SPORTS&limit=200. Seeds with known wallets (research/add 0x... for DrPufferfish, weflyhigh, etc.). Update daily (loop in scanner.py).
+Deep Analytics: Subgraph query per trader: realizedPnL/invested/positions/unrealized → ROI, win rate = wins/total, variance = std(returns), sports % = sports markets/total. Rank/weight by score. Filter: win>55%, volume>100, variance<20%, sports>60%, PNL>100k.
+Signal/Consensus: Weight by score (e.g., high-score trader counts 2x in # on side). Ignore balanced/low-weight.
+Filters: Min net $50, no $1 noise. Active markets only, expand to all sports (Gamma ?category=sports&active=true, aim 50+).
+UI: Trader list with wallets/links (Polymarket/Analytics profiles). Expandables show analytics (ROI/variance/sports %).
+Robustness: Log "excluded bad" (reasons). Mocks for 200 traders/50 markets.
+
+Implement: Refine scraper.py for wallets/multi-sources, analyzer.py for subgraph metrics/weighting. Test abundant real signals.
+

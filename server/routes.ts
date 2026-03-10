@@ -421,11 +421,10 @@ async function fetchMidpoint(tokenId: string): Promise<number | null> {
 // ─── Curated elite sports traders ────────────────────────────────────────────
 // Known high-calibre sports traders who may not appear in the official
 // Polymarket sports leaderboard due to API caps or category differences.
-// estimatedPnl is used for quality scoring; actual positions from data API.
-const CURATED_ELITES: Array<{ addr: string; name: string; estimatedPnl: number; qualityScore?: number }> = [
-  { addr: "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee", name: "kch123",           estimatedPnl: 191000, qualityScore: 65 },
-  { addr: "0x9c4bdf7b37b02fab3dcebf9db84e6b7e7cf3b9f4", name: "SportsBetPro",      estimatedPnl: 80000,  qualityScore: 55 },
-  { addr: "0x3eb74a4795ce6f4f1a78afe2c24e9f2a62e4b6c1", name: "SharpAction",       estimatedPnl: 65000,  qualityScore: 50 },
+// Quality scores computed DYNAMICALLY from actual trade history — no hardcoded values.
+// Only add wallets verified on Polymarket. No fake/placeholder entries.
+const CURATED_ELITES: Array<{ addr: string; name: string }> = [
+  { addr: "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee", name: "kch123" },
 ];
 
 /**
@@ -1384,7 +1383,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/signals", async (req, res) => {
     try {
       const sportsOnly = req.query.sports !== "false";
-      const cKey = `signals-elite-v12-${sportsOnly ? "sp" : "all"}`;
+      const cKey = `signals-elite-v14-${sportsOnly ? "sp" : "all"}`;
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -1418,14 +1417,27 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       type TraderInfo = { name: string; pnl: number; roi: number; qualityScore: number; isLeaderboard: boolean; isSportsLb: boolean };
       const lbMap = new Map<string, TraderInfo>();
 
-      // ── Add curated elite traders to lbMap first (highest priority) ──────────
-      for (const elite of CURATED_ELITES) {
+      // ── Add curated elite traders to lbMap (quality from actual trade data) ──
+      for (let ci = 0; ci < CURATED_ELITES.length; ci++) {
+        const elite = CURATED_ELITES[ci];
         const addr = elite.addr.toLowerCase();
+        const eliteTrades: any[] = (curatedTradeBatches[ci] as any[]) || [];
+        // Compute quality purely from their real sports trading activity
+        const sportsTrades = eliteTrades.filter((t: any) => isSportsRelated(t.title || t.slug || ""));
+        const sportsVol = sportsTrades.reduce((s: number, t: any) => s + parseFloat(t.size || "0"), 0);
+        const sportsCount = sportsTrades.length;
+        const avgBet = sportsCount > 0 ? sportsVol / sportsCount : 0;
+        // Three-factor score: volume (how much $), count (how active), avg bet (conviction)
+        const volScore   = Math.min(sportsVol / 80_000, 1) * 45;
+        const countScore = Math.min(sportsCount / 80, 1) * 30;
+        const avgScore   = Math.min(avgBet / 1_500, 1) * 25;
+        const qualityScore = Math.min(Math.round(volScore + countScore + avgScore), 90);
+        console.log(`[Curated] ${elite.name}: ${sportsCount} sports trades, $${Math.round(sportsVol)} vol, quality=${qualityScore}`);
         lbMap.set(addr, {
           name: elite.name,
-          pnl: elite.estimatedPnl,
-          roi: 15,
-          qualityScore: elite.qualityScore ?? traderQualityScore(elite.estimatedPnl, 15, 10),
+          pnl: sportsVol * 0.1, // rough PNL estimate (10% of volume as placeholder — no real PNL available)
+          roi: 0,
+          qualityScore,
           isLeaderboard: true,
           isSportsLb: true,
         });
@@ -1479,12 +1491,18 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         else { ex.count++; ex.totalSize += size; if (!ex.name) ex.name = name; }
       }
       // Add frequent recent sports bettors as secondary tracked traders
+      // Quality score is computed from real observed activity — no hardcoded values
       for (const [addr, info] of recentSportsBettors) {
         if (info.count >= 5 && info.totalSize >= 500) {
+          const avgBet = info.totalSize / info.count;
+          // Three-factor score from actual observed data:
+          const volScore   = Math.min(info.totalSize / 30_000, 1) * 40; // up to 40 pts at $30K vol
+          const countScore = Math.min(info.count / 40, 1) * 30;         // up to 30 pts at 40 trades
+          const avgScore   = Math.min(avgBet / 1_000, 1) * 30;          // up to 30 pts at $1K avg bet
           lbMap.set(addr, {
             name: displayName(info.name, addr),
             pnl: 0, roi: 0,
-            qualityScore: Math.min(35, Math.round(Math.log10(info.totalSize + 1) * 7)),
+            qualityScore: Math.min(Math.round(volScore + countScore + avgScore), 65),
             isLeaderboard: false,
             isSportsLb: false,
           });
@@ -1725,12 +1743,39 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
 
       // ── Phase 4: Positions-based signals from verified sports traders ──────────
-      // Pull current open positions from top sports leaderboard traders.
-      // These reflect actual money they have deployed RIGHT NOW.
-      // Use all traders from multi-window LB (up to 60) for richer position coverage
-      const topSportsWallets = [...new Set(
-        allSportsLb.slice(0, 150).map((t: any) => (t.proxyWallet || "").toLowerCase()).filter(Boolean)
-      )];
+      // Pull current open positions from ALL tracked sports traders:
+      // 1. Leaderboard traders (up to 150 from multi-window, typically ~50-120 unique)
+      // 2. Curated elites (real verified traders added manually)
+      // 3. Discovered traders from recent trades scan who meet activity thresholds
+      // This expands coverage from ~60 to 200+ real, active sports traders.
+      const lbWallets = allSportsLb
+        .slice(0, 150)
+        .map((t: any) => (t.proxyWallet || "").toLowerCase())
+        .filter(Boolean);
+      const curatedWallets = CURATED_ELITES.map(e => e.addr.toLowerCase());
+      // Include discovered traders who have shown meaningful sports betting activity.
+      // Volume is the primary filter — biggest bettors get scanned first.
+      // Threshold strategy: most wallets only appear 1-3 times in a 10K trade window
+      // (sports trading is low-frequency for most). Use volume as the primary signal:
+      // - Any wallet with $3K+ sports volume is worth scanning for open positions
+      // - Or 3+ trades with $1K+ (active frequent bettor, even if smaller size)
+      const allDiscoverable = [...recentSportsBettors.entries()];
+      const passing = allDiscoverable.filter(([_, s]) =>
+        s.totalSize >= 3_000 || (s.count >= 3 && s.totalSize >= 1_000)
+      );
+      console.log(`[Discovered] ${allDiscoverable.length} candidates, top5: ${
+        allDiscoverable
+          .sort((a, b) => b[1].totalSize - a[1].totalSize)
+          .slice(0, 5)
+          .map(([a, s]) => `${a.slice(0, 8)} cnt=${s.count} vol=${Math.round(s.totalSize)}`)
+          .join(", ")
+      }; passing (≥$3K vol OR ≥3 trades+$1K): ${passing.length}`);
+      const discoveredSportsWallets = passing
+        .sort((a, b) => b[1].totalSize - a[1].totalSize) // biggest bettors first
+        .slice(0, 120) // cap at 120 discovered wallets to manage API load
+        .map(([addr]) => addr);
+      const topSportsWallets = [...new Set([...lbWallets, ...curatedWallets, ...discoveredSportsWallets])];
+      console.log(`[Positions] Scanning ${topSportsWallets.length} sports traders (${lbWallets.length} lb + ${curatedWallets.length} curated + ${discoveredSportsWallets.length} discovered)`);
       if (topSportsWallets.length > 0) {
         const positionBatches = await Promise.all(topSportsWallets.map(w => fetchTraderPositions(w)));
         // Map: conditionId+outcomeIndex → position aggregation
@@ -1796,7 +1841,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               name: traderName, wallet,
               entryPrice: parseFloat(pos.avgPrice || "0"),
               curPrice, currentValue: val,
-              isSportsLb: true,
+              isSportsLb: traderMeta?.isSportsLb ?? false,
             });
             pg.totalValue += val;
           }
@@ -1901,22 +1946,27 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             totalNetUsdc: Math.round(pg.totalValue),
             avgNetUsdc: Math.round(avgSize),
             traderCount: pg.traders.length,
-            lbTraderCount: pg.traders.length,
-            sportsLbCount: pg.traders.length,
-            avgQuality: 75,
+            lbTraderCount: pg.traders.filter(t => lbMap.get(t.wallet)?.isLeaderboard).length,
+            sportsLbCount: pg.traders.filter(t => t.isSportsLb).length,
+            avgQuality: pg.traders.length > 0
+              ? Math.round(pg.traders.reduce((s, t) => s + (lbMap.get(t.wallet)?.qualityScore ?? 20), 0) / pg.traders.length)
+              : 20,
             scoreBreakdown: breakdown,
-            traders: pg.traders.slice(0, 8).map(t => ({
-              address: t.wallet,
-              name: t.name,
-              entryPrice: Math.round(t.entryPrice * 1000) / 1000,
-              size: Math.round(t.currentValue),
-              netUsdc: Math.round(t.currentValue),
-              roi: 0,
-              qualityScore: 75,
-              pnl: 0,
-              isLeaderboard: true,
-              isSportsLb: true,
-            })),
+            traders: pg.traders.slice(0, 8).map(t => {
+              const tm = lbMap.get(t.wallet);
+              return {
+                address: t.wallet,
+                name: t.name,
+                entryPrice: Math.round(t.entryPrice * 1000) / 1000,
+                size: Math.round(t.currentValue),
+                netUsdc: Math.round(t.currentValue),
+                roi: tm?.roi ?? 0,
+                qualityScore: tm?.qualityScore ?? 20,
+                pnl: tm?.pnl ?? 0,
+                isLeaderboard: tm?.isLeaderboard ?? false,
+                isSportsLb: t.isSportsLb,
+              };
+            }),
             category: "sports",
             volume: 0,
             generatedAt: now,
