@@ -1,13 +1,13 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 
-const GAMMA_API = "https://gamma-api.polymarket.com";
-const DATA_API = "https://data-api.polymarket.com";
-const CLOB_API = "https://clob.polymarket.com";
+const GAMMA_API   = "https://gamma-api.polymarket.com";
+const DATA_API    = "https://data-api.polymarket.com";
+const CLOB_API    = "https://clob.polymarket.com";
 const SUBGRAPH_URL =
   "https://api.goldsky.com/api/public/project_cl6mb8i9h0003e201j6li0diw/subgraphs/pnl-subgraph/0.0.14/gn";
 
-// ─── Shared in-memory cache ───────────────────────────────────────────────────
+// ─── Cache ────────────────────────────────────────────────────────────────────
 const cache: Record<string, { data: unknown; ts: number; ttl: number }> = {};
 function getCache<T>(key: string): T | null {
   const e = cache[key];
@@ -17,39 +17,28 @@ function getCache<T>(key: string): T | null {
 function setCache(key: string, data: unknown, ttlMs: number) {
   cache[key] = { data, ts: Date.now(), ttl: ttlMs };
 }
-
-// ─── High-confidence signal history for alert diffing ─────────────────────────
 const seenSignalIds = new Set<string>();
 
 // ─── Fetch helpers ────────────────────────────────────────────────────────────
-async function fetchWithRetry(
-  url: string,
-  options: RequestInit = {},
-  retries = 3
-): Promise<Response> {
+async function fetchWithRetry(url: string, options: RequestInit = {}, retries = 3): Promise<Response> {
   for (let i = 0; i < retries; i++) {
     try {
       const res = await fetch(url, {
         ...options,
-        headers: {
-          Accept: "application/json",
-          "User-Agent": "Mozilla/5.0 (compatible; PredictionInsider/2.0)",
-          ...(options.headers || {}),
-        },
-        signal: AbortSignal.timeout(12000),
+        headers: { Accept: "application/json", "User-Agent": "PredictionInsider/3.0", ...(options.headers || {}) },
+        signal: AbortSignal.timeout(14000),
       });
-      if (res.status === 429) {
-        await new Promise((r) => setTimeout(r, 2500 * (i + 1)));
-        continue;
-      }
+      if (res.status === 429) { await sleep(2500 * (i + 1)); continue; }
       return res;
     } catch (e) {
       if (i === retries - 1) throw e;
-      await new Promise((r) => setTimeout(r, 1000 * (i + 1)));
+      await sleep(1000 * (i + 1));
     }
   }
   throw new Error(`Failed after ${retries} retries`);
 }
+
+async function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 
 async function graphqlQuery(query: string): Promise<any> {
   try {
@@ -60,56 +49,91 @@ async function graphqlQuery(query: string): Promise<any> {
     });
     if (!res.ok) return null;
     return await res.json();
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-const SPORTS_KEYWORDS = [
-  "nfl","nba","mlb","nhl","mls","ncaa","super bowl","world cup",
-  "champions league","premier league","bundesliga","la liga","serie a",
-  "playoff","championship","stanley cup","finals","semifinal","tournament",
-  "ufc","boxing","tennis","golf","pga","wimbledon","us open",
-  "f1","formula 1","nascar","olympics","world series",
+// ─── Sports detection ─────────────────────────────────────────────────────────
+const SPORTS_KW = [
+  "nfl","nba","mlb","nhl","mls","ncaa","ufc","mma","boxing","tennis","golf","pga",
+  "super bowl","world cup","champions league","premier league","bundesliga","la liga",
+  "serie a","playoff","championship","stanley cup","finals","semifinal","tournament",
+  "wimbledon","us open","australian open","french open","roland garros",
+  "f1","formula 1","nascar","olympics","world series","march madness",
   " vs "," vs.","match ","game ","season ","league ","draft ","transfer ",
-  "quarterback","pitcher","goalkeeper","mvp","title bet","winner","beat the",
-  "score ","goals ","touchdown","points ","atp","wta","bnp",
+  "quarterback","pitcher","goalkeeper","mvp","title","winner","beat the",
+  "score ","goals ","touchdown","points ","atp","wta","bnp","open ","cup ",
   "super bowl","stanley cup","nba finals","world series","champions league final",
+  "college football","college basketball","march madness","ncaab","ncaaf",
+  "premier league","efl","fa cup","el classico","derby","grand prix","open championship",
+  "masters ","ryder cup","solheim cup","futsal","volleyball","handball","cricket",
+  "rugby","ashes","ipl","carabao","euros ","copa ","ligue 1","eredivisie","6 nations",
 ];
 function isSportsRelated(text: string): boolean {
   const t = (text || "").toLowerCase();
-  return SPORTS_KEYWORDS.some((k) => t.includes(k));
+  return SPORTS_KW.some(k => t.includes(k));
 }
 
+// ─── Categorise as Pregame / Live / Futures ───────────────────────────────────
+function categoriseMarket(question: string, endDate?: string): "live" | "pregame" | "futures" {
+  const q = (question || "").toLowerCase();
+  // Live signals: in-game phrases
+  if (/(lead|trailing|winning|losing|currently|live|in-game|halftime|first half|second half|quarter|overtime|period)/.test(q)) return "live";
+  if (!endDate) return "pregame";
+  const ms = new Date(endDate).getTime() - Date.now();
+  if (ms < 0) return "pregame";          // already ended → still show, was recent
+  if (ms < 4 * 3600 * 1000) return "live";     // ending within 4h
+  if (ms < 7 * 24 * 3600 * 1000) return "pregame"; // ending within 7 days
+  return "futures";
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function truncAddr(addr: string) {
   if (!addr || addr.length < 10) return addr || "Unknown";
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 }
 
-// Subgraph scale: avgPrice in 0–1_000_000 range; amount in 1e6 share units
-const PRICE_SCALE = 1_000_000;
+const PRICE_SCALE  = 1_000_000;
 const AMOUNT_SCALE = 1_000_000;
 
-/** Compute a quality score 0–100 for a leaderboard trader.
- *  Penalises: very low ROI (arbs), tiny PNL, single-position wonders.
- */
+/** Trader quality 0–100 */
 function traderQualityScore(pnl: number, roi: number, positionCount: number): number {
-  const pnlScore = Math.min(pnl / 5_000_000, 1) * 100;   // max at $5M PNL
-  const roiScore = Math.min(Math.max(roi, 0) / 80, 1) * 100; // max at 80% ROI
-  const countScore = Math.min(positionCount / 20, 1) * 100;  // max at 20 positions
+  const pnlScore   = Math.min(pnl / 2_000_000, 1) * 100;         // max at $2M PNL
+  const roiScore   = Math.min(Math.max(roi, 0) / 60, 1) * 100;   // max at 60% ROI
+  const countScore = Math.min(positionCount / 15, 1) * 100;       // max at 15 positions
   return Math.round(pnlScore * 0.35 + roiScore * 0.45 + countScore * 0.20);
 }
 
-/** Confidence formula (spec-aligned):
- *  40% avg trader ROI, 30% consensus %, 20% value delta, 10% avg net size
+/**
+ * Tiered confidence formula with explicit breakdown.
+ * Returns { total, breakdown: { roiPct, consensusPct, valuePct, sizePct, tierBonus } }
  */
-function computeConfidence(avgROI: number, consensusPct: number, valueDelta: number, avgNetUsdc: number): number {
-  const roiScore   = Math.min(Math.max(avgROI / 80, 0), 1) * 100;
-  const consScore  = Math.min(Math.max(consensusPct, 50), 100);
-  const valueScore = valueDelta > 0 ? Math.min(valueDelta * 500, 100) : 0;
-  const sizeScore  = Math.min(avgNetUsdc / 20_000, 1) * 100;  // max at $20k net
-  return Math.round(roiScore * 0.40 + consScore * 0.30 + valueScore * 0.20 + sizeScore * 0.10);
+function computeConfidence(
+  avgROI: number,
+  consensusPct: number,
+  valueDelta: number,
+  avgNetUsdc: number,
+  traderCount: number,
+  avgQuality: number,
+): { score: number; breakdown: Record<string, number> } {
+  const roiPct      = Math.round(Math.min(Math.max(avgROI / 60, 0), 1) * 100 * 0.40);
+  const consPct     = Math.round(Math.min(Math.max(consensusPct - 50, 0) / 50, 1) * 100 * 0.30);
+  const valuePct    = valueDelta > 0 ? Math.round(Math.min(valueDelta * 600, 1) * 100 * 0.20) : 0;
+  const sizePct     = Math.round(Math.min(avgNetUsdc / 15_000, 1) * 100 * 0.10);
+
+  // Tier bonus: more qualified traders = higher ceiling
+  const tierBonus   = traderCount >= 3 && avgQuality >= 50 ? 8
+                    : traderCount >= 2 ? 4
+                    : avgQuality >= 75 ? 3
+                    : 0;
+
+  const base = roiPct + consPct + valuePct + sizePct;
+  // Single-trader signals: cap at 62 regardless of formula
+  const score = traderCount === 1 ? Math.min(base + tierBonus, 62) : Math.min(base + tierBonus, 95);
+
+  return {
+    score: Math.max(score, 5),
+    breakdown: { roiPct, consensusPct: consPct, valuePct, sizePct, tierBonus },
+  };
 }
 
 // ─── Data fetchers ────────────────────────────────────────────────────────────
@@ -128,7 +152,7 @@ async function fetchOfficialLeaderboard(timePeriod = "ALL", limit = 100): Promis
   return traders;
 }
 
-async function fetchSportsMarkets(limit = 200): Promise<any[]> {
+async function fetchSportsMarkets(limit = 300): Promise<any[]> {
   const key = `sports-markets-${limit}`;
   const hit = getCache<any[]>(key);
   if (hit) return hit;
@@ -154,7 +178,7 @@ async function fetchMidpoint(tokenId: string): Promise<number | null> {
   return null;
 }
 
-async function fetchRecentTrades(limit = 1000): Promise<any[]> {
+async function fetchRecentTrades(limit = 2000): Promise<any[]> {
   const key = `trades-${limit}`;
   const hit = getCache<any[]>(key);
   if (hit) return hit;
@@ -167,22 +191,130 @@ async function fetchRecentTrades(limit = 1000): Promise<any[]> {
 }
 
 /**
- * Build a map from tokenId (string) → market info for all sports markets.
- * Each token knows its conditionId, which outcome it is (Yes/No), and which index.
+ * Fetch the largest open positions globally from the subgraph,
+ * ordered by amount descending. This surfaces the most committed traders
+ * regardless of leaderboard status. Uses pagination for broader coverage.
+ * min_amount: ~$100 in base units (100 * 1e6 = 1e8) to filter tiny positions.
  */
-function buildTokenMap(markets: any[]): Map<string, {
+async function fetchTopOpenPositions(minAmountBase = 50_000_000): Promise<any[]> {
+  const key = `sg-top-pos-${minAmountBase}`;
+  const hit = getCache<any[]>(key);
+  if (hit) return hit;
+
+  const all: any[] = [];
+  const PAGE = 1000;
+  let skip = 0;
+  for (let page = 0; page < 3; page++) {
+    const query = `{
+      userPositions(
+        first: ${PAGE}, skip: ${skip},
+        orderBy: amount, orderDirection: desc,
+        where: { amount_gt: "${minAmountBase}" }
+      ) {
+        user tokenId amount avgPrice realizedPnl totalBought
+      }
+    }`;
+    const resp = await graphqlQuery(query);
+    const rows: any[] = resp?.data?.userPositions || [];
+    all.push(...rows);
+    if (rows.length < PAGE) break;
+    skip += PAGE;
+  }
+  setCache(key, all, 8 * 60 * 1000);
+  return all;
+}
+
+/**
+ * Reverse-lookup: given tokenIds from subgraph positions, fetch the
+ * corresponding Polymarket market data from the Gamma API.
+ * Returns a Map: tokenId → market info.
+ */
+async function fetchMarketsByTokenIds(tokenIds: string[]): Promise<Map<string, {
   conditionId: string; question: string; slug?: string;
   outcomeIndex: number; outcome: string; currentPrice: number;
-  volume: number; category: string; tokenIds: string[];
+  volume: number; category: string; tokenIds: string[]; endDate?: string;
+}>> {
+  const result = new Map<string, any>();
+  if (tokenIds.length === 0) return result;
+
+  const BATCH = 60;
+  for (let i = 0; i < tokenIds.length; i += BATCH) {
+    const batch = tokenIds.slice(i, i + BATCH);
+    const idsParam = encodeURIComponent(batch.join(","));
+    try {
+      const res = await fetchWithRetry(`${GAMMA_API}/markets?clob_token_ids=${idsParam}&limit=${BATCH}`);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const markets: any[] = Array.isArray(data) ? data : (data.data || data.markets || []);
+
+      for (const m of markets) {
+        let tokens: any[] = [];
+        if (typeof m.tokens === "string") { try { tokens = JSON.parse(m.tokens); } catch {} }
+        else if (Array.isArray(m.tokens)) { tokens = m.tokens; }
+
+        // Fallback: clobTokenIds field
+        if (tokens.length === 0 && Array.isArray(m.clobTokenIds)) {
+          tokens = m.clobTokenIds.map((id: string, idx: number) => ({
+            token_id: id, outcome: idx === 0 ? "Yes" : "No",
+          }));
+        }
+
+        let prices: number[] = [];
+        try { prices = JSON.parse(m.outcomePrices || "[]").map(parseFloat); } catch {}
+        if (prices.length === 0 && m.outcomePrices && typeof m.outcomePrices === "object") {
+          prices = Object.values(m.outcomePrices).map(Number);
+        }
+
+        const tIds = tokens.map((t: any) => String(t.token_id || t.tokenId || "")).filter(Boolean);
+
+        for (let j = 0; j < tokens.length; j++) {
+          const tokenId = String(tokens[j].token_id || tokens[j].tokenId || "");
+          if (!tokenId) continue;
+          result.set(tokenId, {
+            conditionId: m.conditionId || m.id || "",
+            question: m.question || m.title || "",
+            slug: m.slug,
+            outcomeIndex: j,
+            outcome: tokens[j].outcome || (j === 0 ? "Yes" : "No"),
+            currentPrice: prices[j] ?? (j === 0 ? 0.5 : 0.5),
+            volume: parseFloat(m.volume || m.volumeNum || "0"),
+            category: m.groupItemTagSlug || m.category || "sports",
+            tokenIds: tIds,
+            endDate: m.endDate,
+            active: m.active !== false && m.closed !== true,
+          });
+        }
+      }
+    } catch (err: any) {
+      console.warn(`fetchMarketsByTokenIds batch failed: ${err.message}`);
+    }
+  }
+  return result;
+}
+
+/**
+ * Build token map from a batch of raw Gamma markets.
+ * Handles both JSON-string and already-parsed formats.
+ */
+function buildTokenMapFromRaw(markets: any[]): Map<string, {
+  conditionId: string; question: string; slug?: string;
+  outcomeIndex: number; outcome: string; currentPrice: number;
+  volume: number; category: string; tokenIds: string[]; endDate?: string;
 }> {
   const map = new Map();
   for (const m of markets) {
-    if (!isSportsRelated(m.question || m.title || "")) continue;
     let tokens: any[] = [];
+    if (typeof m.tokens === "string") { try { tokens = JSON.parse(m.tokens); } catch {} }
+    else if (Array.isArray(m.tokens)) { tokens = m.tokens; }
+    if (tokens.length === 0 && Array.isArray(m.clobTokenIds)) {
+      tokens = m.clobTokenIds.map((id: string, idx: number) => ({ token_id: id, outcome: idx === 0 ? "Yes" : "No" }));
+    }
+
     let prices: number[] = [];
-    try { tokens = JSON.parse(m.tokens || "[]"); } catch {}
     try { prices = JSON.parse(m.outcomePrices || "[]").map(parseFloat); } catch {}
-    const tokenIds = tokens.map((t: any) => String(t.token_id || t.tokenId)).filter(Boolean);
+
+    const tIds = tokens.map((t: any) => String(t.token_id || t.tokenId || "")).filter(Boolean);
+
     for (let i = 0; i < tokens.length; i++) {
       const tokenId = String(tokens[i].token_id || tokens[i].tokenId || "");
       if (!tokenId) continue;
@@ -195,112 +327,64 @@ function buildTokenMap(markets: any[]): Map<string, {
         currentPrice: prices[i] ?? 0.5,
         volume: parseFloat(m.volume || m.volumeNum || "0"),
         category: m.groupItemTagSlug || m.category || "sports",
-        tokenIds,
+        tokenIds: tIds,
+        endDate: m.endDate,
+        active: m.active !== false && m.closed !== true,
       });
     }
   }
   return map;
 }
 
-/**
- * Query subgraph for OPEN (amount > 0) positions in the given tokenIds
- * for the given elite trader addresses. Returns raw subgraph rows.
- */
-async function fetchSubgraphPositions(
-  addresses: string[],
-  tokenIds: string[]
-): Promise<any[]> {
-  if (addresses.length === 0 || tokenIds.length === 0) return [];
-
-  // Subgraph has a field size limit — split token IDs into batches of 200
-  const TOKEN_BATCH = 200;
-  const all: any[] = [];
-  for (let i = 0; i < tokenIds.length; i += TOKEN_BATCH) {
-    const batch = tokenIds.slice(i, i + TOKEN_BATCH);
-    const addrList = addresses.map(a => `"${a.toLowerCase()}"`).join(",");
-    const tokenList = batch.map(t => `"${t}"`).join(",");
-    const query = `{
-      userPositions(
-        first: 1000,
-        where: {
-          user_in: [${addrList}],
-          tokenId_in: [${tokenList}],
-          amount_gt: "0"
-        }
-      ) {
-        user tokenId amount avgPrice realizedPnl totalBought
-      }
-    }`;
-    const resp = await graphqlQuery(query);
-    const rows: any[] = resp?.data?.userPositions || [];
-    all.push(...rows);
-  }
-  return all;
-}
-
-/**
- * Enriched per-trader ROI/count from subgraph (all their positions).
- */
-async function fetchSubgraphROI(
-  addresses: string[]
-): Promise<Record<string, { roi: number; positionCount: number }>> {
+async function fetchSubgraphROI(addresses: string[]): Promise<Record<string, { roi: number; positionCount: number }>> {
   if (addresses.length === 0) return {};
-  const key = `sg-roi-${addresses.slice(0, 3).join("-")}`;
+  const key = `sg-roi-${addresses.slice(0, 3).join("-")}-${addresses.length}`;
   const hit = getCache<Record<string, { roi: number; positionCount: number }>>(key);
   if (hit) return hit;
 
-  const addrList = addresses.slice(0, 40).map(a => `"${a.toLowerCase()}"`).join(",");
-  const resp = await graphqlQuery(`{
-    userPositions(first:1000, where:{user_in:[${addrList}]}) {
-      user realizedPnl totalBought
-    }
-  }`);
-  const rows: any[] = resp?.data?.userPositions || [];
+  const BATCH = 30;
   const agg: Record<string, { pnl: number; bought: number; count: number }> = {};
-  for (const r of rows) {
-    const addr = (r.user || "").toLowerCase();
-    if (!agg[addr]) agg[addr] = { pnl: 0, bought: 0, count: 0 };
-    agg[addr].pnl += parseFloat(r.realizedPnl || "0");
-    agg[addr].bought += parseFloat(r.totalBought || "0");
-    agg[addr].count++;
+
+  for (let i = 0; i < addresses.length; i += BATCH) {
+    const batch = addresses.slice(i, i + BATCH);
+    const addrList = batch.map(a => `"${a}"`).join(",");
+    const resp = await graphqlQuery(`{
+      userPositions(first:1000, where:{user_in:[${addrList}]}) {
+        user realizedPnl totalBought
+      }
+    }`);
+    const rows: any[] = resp?.data?.userPositions || [];
+    for (const r of rows) {
+      const addr = (r.user || "").toLowerCase();
+      if (!agg[addr]) agg[addr] = { pnl: 0, bought: 0, count: 0 };
+      agg[addr].pnl   += parseFloat(r.realizedPnl || "0");
+      agg[addr].bought += parseFloat(r.totalBought || "0");
+      agg[addr].count++;
+    }
   }
+
   const result: Record<string, { roi: number; positionCount: number }> = {};
   for (const [addr, s] of Object.entries(agg)) {
-    result[addr] = {
-      roi: s.bought > 0 ? (s.pnl / s.bought) * 100 : 0,
-      positionCount: s.count,
-    };
+    result[addr] = { roi: s.bought > 0 ? (s.pnl / s.bought) * 100 : 0, positionCount: s.count };
   }
   setCache(key, result, 15 * 60 * 1000);
   return result;
 }
 
-// ─── Trader quality filtering ─────────────────────────────────────────────────
-
-function isArbitrageur(pnl: number, vol: number): boolean {
-  if (vol === 0) return false;
-  const roiOnVol = pnl / vol;
-  // Near-riskless ROI <2% on huge volume = likely arbitrageur
-  return roiOnVol < 0.02 && vol > 5_000_000;
-}
-
-function isOneHitWonder(positionCount: number, pnl: number): boolean {
-  // Only 1-2 subgraph positions but huge PNL = one lucky bet, not skilled
-  return positionCount <= 2 && pnl > 2_000_000;
-}
-
+// ─── Trader filters ───────────────────────────────────────────────────────────
 function isLikelyBot(t: any): boolean {
   const name = (t.userName || "").toLowerCase();
-  const vol = parseFloat(t.vol || "0");
-  const pnl = parseFloat(t.pnl || "0");
+  const vol  = parseFloat(t.vol || "0");
+  const pnl  = parseFloat(t.pnl || "0");
   if (name.startsWith("0x") && name.length > 30) return true;
   if (/^\d{10,}$/.test(name)) return true;
   if (vol > 2_000_000_000) return true;
-  if (isArbitrageur(pnl, vol)) return true;
+  // Arbitrageur: <2% ROI on >$20M volume
+  if (vol > 20_000_000 && pnl / vol < 0.02) return true;
   return false;
 }
 
-// ─── Shared market parser ─────────────────────────────────────────────────────
+// ─── Market parser ────────────────────────────────────────────────────────────
 function parseMarket(m: any) {
   let outcomePrices: number[] = [];
   let tokenIds: string[] = [];
@@ -309,6 +393,7 @@ function parseMarket(m: any) {
     const toks = JSON.parse(m.tokens || "[]");
     tokenIds = toks.map((t: any) => String(t.token_id || t.tokenId)).filter(Boolean);
   } catch {}
+  if (tokenIds.length === 0 && Array.isArray(m.clobTokenIds)) tokenIds = m.clobTokenIds.map(String);
   return {
     id: m.id || m.conditionId || "",
     question: m.question || m.title || "",
@@ -326,7 +411,6 @@ function parseMarket(m: any) {
 }
 
 // ─── Route registration ───────────────────────────────────────────────────────
-
 export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
 
   // ── GET /api/traders ────────────────────────────────────────────────────────
@@ -345,25 +429,19 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const traders = raw
         .filter((t: any) => !isLikelyBot(t))
         .map((t: any, i: number) => {
-          const addr  = (t.proxyWallet || "").toLowerCase();
-          const pnl   = parseFloat(t.pnl || "0");
-          const vol   = parseFloat(t.vol || "0");
-          const sg    = sgData[addr];
-          const roi   = sg ? sg.roi : (vol > 0 ? (pnl / vol) * 100 : 0);
-          const posC  = sg?.positionCount ?? 0;
-
-          // Filter after enrichment
-          if (isOneHitWonder(posC, pnl)) return null;
-
+          const addr = (t.proxyWallet || "").toLowerCase();
+          const pnl  = parseFloat(t.pnl || "0");
+          const vol  = parseFloat(t.vol || "0");
+          const sg   = sgData[addr];
+          const roi  = sg ? sg.roi : (vol > 0 ? (pnl / vol) * 100 : 0);
+          const posC = sg?.positionCount ?? 0;
           const qualityScore = traderQualityScore(pnl, roi, posC);
           return {
             address: t.proxyWallet || "",
             name: t.userName || truncAddr(t.proxyWallet || ""),
             xUsername: t.xUsername || undefined,
             verifiedBadge: t.verifiedBadge || false,
-            pnl,
-            roi,
-            positionCount: posC,
+            pnl, roi, positionCount: posC,
             winRate: 0,
             avgSize: posC > 0 ? vol / posC : 0,
             volume: vol,
@@ -374,7 +452,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         .filter(Boolean)
         .slice(0, limit);
 
-      const result = { traders, fetchedAt: Date.now(), window: period, source: "official_leaderboard_v2" };
+      const result = { traders, fetchedAt: Date.now(), window: period, source: "official_leaderboard_v3" };
       setCache(cKey, result, 10 * 60 * 1000);
       res.json(result);
     } catch (err: any) {
@@ -388,200 +466,230 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     try {
       const limit      = Math.min(parseInt((req.query.limit as string) || "100"), 200);
       const sportsOnly = req.query.sports !== "false";
-      const raw = await fetchSportsMarkets(200);
+      const raw = await fetchSportsMarkets(300);
       const markets = raw
         .map(parseMarket)
-        .filter((m) => m.id && m.question && m.active && (!sportsOnly || isSportsRelated(m.question)));
+        .filter(m => m.id && m.question && m.active && (!sportsOnly || isSportsRelated(m.question)));
       res.json({ markets: markets.slice(0, limit), fetchedAt: Date.now(), total: markets.length });
     } catch (err: any) {
       res.status(500).json({ error: err.message, markets: [], fetchedAt: Date.now(), total: 0 });
     }
   });
 
-  // ── GET /api/signals ─── Elite leaderboard signals via subgraph positions ───
+  // ── GET /api/signals ─── Elite signals: large-bet trades ($200+) with leaderboard enrichment ──
   app.get("/api/signals", async (req, res) => {
     try {
-      const cKey = "signals-elite-v4";
+      const sportsOnly = req.query.sports !== "false";
+      const cKey = `signals-elite-v10-${sportsOnly ? "sp" : "all"}`;
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
-      // 1. Top 50 elite traders
-      const [rawLb, rawMarkets] = await Promise.all([
-        fetchOfficialLeaderboard("ALL", 100),
-        fetchSportsMarkets(200),
+      // ── Phase 1: Leaderboard quality map + large-bet trades ─────────────────
+      // Elite signals = large recent bets ($500+) enriched with leaderboard PNL data.
+      // This approach always has data and surfaces high-conviction trades.
+      const [rawLbAll, rawLbMonth, allTrades] = await Promise.all([
+        fetchOfficialLeaderboard("ALL",   200),
+        fetchOfficialLeaderboard("MONTH", 100),
+        fetchRecentTrades(8000),
       ]);
 
-      const addresses = rawLb
-        .filter((t: any) => !isLikelyBot(t))
-        .map((t: any) => (t.proxyWallet || "").toLowerCase())
-        .filter(Boolean)
-        .slice(0, 50);
-
-      const sgROI = await fetchSubgraphROI(addresses);
-
-      // Build trader map with quality scores
-      const traderMap: Record<string, { name: string; pnl: number; roi: number; positionCount: number; qualityScore: number }> = {};
-      for (const t of rawLb) {
-        const addr  = (t.proxyWallet || "").toLowerCase();
-        if (!addresses.includes(addr)) continue;
-        const pnl   = parseFloat(t.pnl || "0");
-        const vol   = parseFloat(t.vol || "0");
-        const sg    = sgROI[addr];
-        const roi   = sg ? sg.roi : (vol > 0 ? (pnl / vol) * 100 : 0);
-        const posC  = sg?.positionCount ?? 0;
-        if (isOneHitWonder(posC, pnl)) continue;
-        traderMap[addr] = {
-          name: t.userName || truncAddr(t.proxyWallet || ""),
-          pnl,
-          roi,
-          positionCount: posC,
-          qualityScore: traderQualityScore(pnl, roi, posC),
-        };
+      type TraderInfo = { name: string; pnl: number; roi: number; qualityScore: number; isLeaderboard: boolean };
+      const lbMap = new Map<string, TraderInfo>();
+      for (const t of [...rawLbAll, ...rawLbMonth]) {
+        const addr = (t.proxyWallet || "").toLowerCase();
+        if (!addr || lbMap.has(addr)) continue;
+        const pnl = parseFloat(t.pnl || "0");
+        const vol = parseFloat(t.vol || "0");
+        const roi = vol > 0 ? (pnl / vol) * 100 : 0;
+        lbMap.set(addr, {
+          name: t.userName || truncAddr(addr),
+          pnl, roi,
+          qualityScore: traderQualityScore(pnl, roi, 10),
+          isLeaderboard: true,
+        });
       }
+      console.log(`[Elite] ${lbMap.size} leaderboard traders | ${allTrades.length} trades`);
 
-      // 2. Build token → market info map for all sports markets
-      const tokenMap = buildTokenMap(rawMarkets);
-      const allTokenIds = Array.from(tokenMap.keys());
-      const qualifiedAddresses = Object.keys(traderMap);
+      // ── Phase 2: Aggregate large bets per (conditionId, wallet) ─────────────
+      // Min bet: $200 per trade. Higher threshold than fast signals ($0).
+      const ELITE_MIN_BET = 200;
 
-      // 3. Query subgraph for open sports positions held by elite traders
-      const subgraphRows = await fetchSubgraphPositions(qualifiedAddresses, allTokenIds);
-
-      // 4. Aggregate: per (conditionId, user, side) → net position
-      // The subgraph already aggregates per tokenId, so we just group by conditionId+user
-      type AggPosition = {
-        netShares: number;   // shares held (amount / AMOUNT_SCALE)
-        avgPrice: number;    // cost basis (avgPrice / PRICE_SCALE)
-        netUsdc: number;     // approximate net USDC invested
-        side: "YES" | "NO";
-        traderInfo: typeof traderMap[string];
-        address: string;
+      type WalletPos = {
+        side: "YES"|"NO"; totalSize: number; prices: number[];
+        name: string; traderInfo: TraderInfo; address: string;
       };
-
-      const marketPositions = new Map<string, {
-        info: ReturnType<typeof tokenMap.get>;
-        yesPositions: AggPosition[];
-        noPositions: AggPosition[];
+      const marketWallets = new Map<string, {
+        question: string; slug?: string; condId: string;
+        endDate?: string;
+        yesTokenId?: string; noTokenId?: string;
+        wallets: Map<string, WalletPos>;
       }>();
 
-      for (const row of subgraphRows) {
-        const tokenId   = String(row.tokenId);
-        const mInfo     = tokenMap.get(tokenId);
-        if (!mInfo) continue;
+      for (const trade of allTrades) {
+        const size = parseFloat(trade.size || "0");
+        if (size < ELITE_MIN_BET) continue; // large bets only
 
-        const addr      = (row.user || "").toLowerCase();
-        const trader    = traderMap[addr];
-        if (!trader) continue;
+        const title = (trade.title || trade.slug || "").toLowerCase();
+        if (sportsOnly && !isSportsRelated(title)) continue;
+        // Filter noisy short-term crypto markets (minute/hour Up-or-Down markets)
+        if (title.includes("up or down")) continue;
 
-        const netShares = parseFloat(row.amount) / AMOUNT_SCALE;
-        const avgPrice  = parseFloat(row.avgPrice) / PRICE_SCALE;
-        const netUsdc   = netShares * avgPrice; // USDC invested in this position
+        const condId = trade.conditionId || "";
+        if (!condId) continue;
 
-        if (netShares < 1 || avgPrice < 0.01 || avgPrice > 0.99) continue; // dust / invalid
+        const wallet = (trade.proxyWallet || "").toLowerCase();
+        const outcomeIdx = trade.outcomeIndex ?? (trade.outcome === "Yes" ? 0 : 1);
+        const side: "YES"|"NO" = outcomeIdx === 0 ? "YES" : "NO";
+        const price = parseFloat(trade.price || "0.5");
+        const asset = String(trade.asset || "");
 
-        const side: "YES" | "NO" = mInfo.outcomeIndex === 0 ? "YES" : "NO";
-        const condId = mInfo.conditionId;
+        // Quality info: leaderboard traders get full score; others get size-based score
+        const lb = lbMap.get(wallet);
+        const traderInfo: TraderInfo = lb ?? {
+          name: trade.pseudonym || trade.name || truncAddr(wallet),
+          pnl: 0, roi: 0, isLeaderboard: false,
+          qualityScore: Math.min(40, Math.round(Math.log10(size + 1) * 9)),
+        };
 
-        if (!marketPositions.has(condId)) {
-          marketPositions.set(condId, { info: mInfo, yesPositions: [], noPositions: [] });
+        if (!marketWallets.has(condId)) {
+          marketWallets.set(condId, {
+            question: trade.title || condId,
+            slug: trade.slug,
+            condId,
+            endDate: undefined,
+            wallets: new Map(),
+          });
         }
-        const mp = marketPositions.get(condId)!;
-        const pos: AggPosition = { netShares, avgPrice, netUsdc, side, traderInfo: trader, address: addr };
-        if (side === "YES") mp.yesPositions.push(pos);
-        else mp.noPositions.push(pos);
+        const mw = marketWallets.get(condId)!;
+        // Store tokenId by side so we can fetch live midpoints later
+        if (asset) {
+          if (side === "YES" && !mw.yesTokenId) mw.yesTokenId = asset;
+          if (side === "NO"  && !mw.noTokenId)  mw.noTokenId  = asset;
+        }
+
+        const ex = mw.wallets.get(wallet);
+        if (!ex) {
+          mw.wallets.set(wallet, { side, totalSize: size, prices: [price], name: traderInfo.name, traderInfo, address: wallet });
+        } else {
+          if (ex.side === side) { ex.totalSize += size; ex.prices.push(price); }
+          else if (size > ex.totalSize) { ex.side = side; ex.totalSize = size; ex.prices = [price]; }
+        }
       }
 
-      // 5. Generate signals
+      console.log(`[Elite] ${marketWallets.size} markets with large bets`);
+
+      // ── Phase 3: Generate signals ─────────────────────────────────────────
       const signals: any[] = [];
-      const newSignalIds: string[] = [];
+      const SLIPPAGE = 0.02;
 
-      for (const [condId, mp] of marketPositions.entries()) {
-        const total    = mp.yesPositions.length + mp.noPositions.length;
-        if (total < 2) continue;
+      for (const [condId, mw] of marketWallets.entries()) {
+        if (!mw.question || mw.question === condId) continue;
 
-        const yPct = (mp.yesPositions.length / total) * 100;
-        const nPct = (mp.noPositions.length / total) * 100;
-        const dominant = yPct >= nPct ? mp.yesPositions : mp.noPositions;
-        const side: "YES" | "NO" = yPct >= nPct ? "YES" : "NO";
-        const consensusPct = Math.max(yPct, nPct);
+        const entries = Array.from(mw.wallets.values());
+        if (entries.length === 0) continue;
 
-        if (consensusPct < 55 || dominant.length < 2) continue;
+        const yesE = entries.filter(e => e.side === "YES");
+        const noE  = entries.filter(e => e.side === "NO");
+        const dominant: typeof entries  = yesE.length >= noE.length ? yesE : noE;
+        const side: "YES"|"NO" = yesE.length >= noE.length ? "YES" : "NO";
 
-        const avgROI       = dominant.reduce((s, p) => s + p.traderInfo.roi, 0) / dominant.length;
-        const avgEntryPrice = dominant.reduce((s, p) => s + p.avgPrice, 0) / dominant.length;
-        const totalNetUsdc = dominant.reduce((s, p) => s + p.netUsdc, 0);
-        const avgNetUsdc   = totalNetUsdc / dominant.length;
+        if (dominant.length === 0) continue;
 
-        const info = mp.info!;
-        let currentPrice = info.currentPrice ?? 0.5;
-
-        // Fetch live midpoint for the dominant side's token
-        if (info.tokenIds?.length > 0) {
-          const tokenIdx = side === "YES" ? 0 : 1;
-          const mid = await fetchMidpoint(info.tokenIds[tokenIdx] || info.tokenIds[0]);
-          if (mid !== null && mid > 0) currentPrice = mid;
+        // Quality gate: single-trader signals need either leaderboard status OR $2k+ bet
+        if (dominant.length === 1) {
+          const e = dominant[0];
+          if (!e.traderInfo.isLeaderboard && e.totalSize < 2000) continue;
         }
 
-        const SLIPPAGE = 0.02;
-        const valueDelta = side === "YES"
-          ? (avgEntryPrice - currentPrice - SLIPPAGE)
-          : ((1 - avgEntryPrice) - (1 - currentPrice) - SLIPPAGE);
+        const consensusPct = entries.length > 1
+          ? (dominant.length / entries.length) * 100 : 100;
 
-        const confidence = computeConfidence(avgROI, consensusPct, valueDelta, avgNetUsdc);
-        const id = `elite-${condId}-${side}`;
-        const isNew = !seenSignalIds.has(id) && confidence >= 70;
-        if (isNew) newSignalIds.push(id);
+        const avgROI     = dominant.reduce((s, e) => s + e.traderInfo.roi, 0) / dominant.length;
+        const avgQuality = dominant.reduce((s, e) => s + e.traderInfo.qualityScore, 0) / dominant.length;
+        const avgEntry   = dominant.reduce((s, e) => s + (e.prices.reduce((a, b) => a + b, 0) / e.prices.length), 0) / dominant.length;
+        const avgSize    = dominant.reduce((s, e) => s + e.totalSize, 0) / dominant.length;
+        const totalSize  = dominant.reduce((s, e) => s + e.totalSize, 0);
+        const lbCount    = dominant.filter(e => e.traderInfo.isLeaderboard).length;
+
+        // Fetch live CLOB midpoint using the tokenId from the trade's asset field
+        let currentPrice = avgEntry; // fallback: use avg entry price
+        const liveTokenId = side === "YES" ? mw.yesTokenId : mw.noTokenId;
+        if (liveTokenId) {
+          const mid = await fetchMidpoint(liveTokenId);
+          if (mid !== null && mid > 0.01 && mid < 0.99) currentPrice = mid;
+        }
+        currentPrice = Math.min(0.99, Math.max(0.01, currentPrice));
+
+        const valueDelta = side === "YES"
+          ? (avgEntry - currentPrice - SLIPPAGE)
+          : ((1 - avgEntry) - (1 - currentPrice) - SLIPPAGE);
+
+        const { score: confidence, breakdown } = computeConfidence(
+          avgROI, consensusPct, valueDelta, avgSize, dominant.length, avgQuality
+        );
+
+        const tier = dominant.length >= 3 && avgQuality >= 45 ? "HIGH"
+                   : dominant.length >= 2 ? "MED" : "SINGLE";
+
+        const id    = `elite-${condId}-${side}`;
+        const isNew = !seenSignalIds.has(id) && confidence >= 55;
         seenSignalIds.add(id);
 
+        const isSports = isSportsRelated(mw.question);
+        const mType = categoriseMarket(mw.question, mw.endDate);
+
         signals.push({
-          id,
-          marketId: condId,
-          marketQuestion: info.question,
-          slug: info.slug,
-          outcome: side,
-          side,
-          confidence,
+          id, marketId: condId,
+          marketQuestion: mw.question,
+          slug: mw.slug,
+          outcome: side, side,
+          confidence, tier, marketType: mType, isSports,
           consensusPct: Math.round(consensusPct),
           valueDelta: Math.round(valueDelta * 1000) / 1000,
           currentPrice: Math.round(currentPrice * 1000) / 1000,
-          avgEntryPrice: Math.round(avgEntryPrice * 1000) / 1000,
-          totalNetUsdc: Math.round(totalNetUsdc),
-          avgNetUsdc: Math.round(avgNetUsdc),
+          avgEntryPrice: Math.round(avgEntry * 1000) / 1000,
+          totalNetUsdc: Math.round(totalSize),
+          avgNetUsdc: Math.round(avgSize),
           traderCount: dominant.length,
-          traders: dominant.slice(0, 5).map((p) => ({
-            address: p.address,
-            name: p.traderInfo.name,
-            entryPrice: Math.round(p.avgPrice * 1000) / 1000,
-            size: Math.round(p.netShares),
-            netUsdc: Math.round(p.netUsdc),
-            roi: Math.round(p.traderInfo.roi * 10) / 10,
-            qualityScore: p.traderInfo.qualityScore,
+          lbTraderCount: lbCount,
+          avgQuality: Math.round(avgQuality),
+          scoreBreakdown: breakdown,
+          traders: dominant.slice(0, 8).map(e => ({
+            address: e.address,
+            name: e.traderInfo.name,
+            entryPrice: Math.round((e.prices.reduce((a, b) => a + b, 0) / e.prices.length) * 1000) / 1000,
+            size: Math.round(e.totalSize),
+            netUsdc: Math.round(e.totalSize),
+            roi: Math.round(e.traderInfo.roi * 10) / 10,
+            qualityScore: e.traderInfo.qualityScore,
+            pnl: Math.round(e.traderInfo.pnl),
+            isLeaderboard: e.traderInfo.isLeaderboard,
           })),
-          category: info.category,
-          volume: info.volume,
+          category: isSports ? "sports" : "other",
+          volume: 0,
           generatedAt: Date.now(),
-          isValue: valueDelta > 0,
-          isNew,
+          isValue: valueDelta > 0, isNew,
         });
       }
 
       signals.sort((a, b) => b.confidence - a.confidence);
+      console.log(`[Elite] ${signals.length} signals (${signals.filter(s=>s.isSports).length} sports, ${signals.filter(s=>s.traderInfo?.isLeaderboard||s.lbTraderCount>0).length} lb-enriched)`);
 
       const response = {
         signals,
-        topTraderCount: qualifiedAddresses.length,
-        marketsScanned: tokenMap.size / 2,  // divide by 2 since YES+NO both counted
-        newSignalCount: newSignalIds.length,
+        topTraderCount: lbMap.size,
+        marketsScanned: marketWallets.size,
+        newSignalCount: signals.filter(s => s.isNew).length,
         fetchedAt: Date.now(),
-        source: "subgraph_elite_v4",
+        source: "large_bets_v10",
       };
-
       setCache(cKey, response, 5 * 60 * 1000);
       res.json(response);
     } catch (err: any) {
       console.error("Signals error:", err.message);
       res.status(500).json({
-        error: err.message, signals: [], topTraderCount: 0, marketsScanned: 0, fetchedAt: Date.now(),
+        error: err.message, signals: [], topTraderCount: 0,
+        marketsScanned: 0, fetchedAt: Date.now(),
       });
     }
   });
@@ -589,42 +697,40 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   // ── GET /api/signals/fast ─── Real-time consensus from recent trades ─────────
   app.get("/api/signals/fast", async (req, res) => {
     try {
-      const cKey = "signals-fast-v3";
+      const cKey = "signals-fast-v4";
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
       const [allTrades, rawMarkets] = await Promise.all([
-        fetchRecentTrades(1000),
-        fetchSportsMarkets(200),
+        fetchRecentTrades(2000),
+        fetchSportsMarkets(300),
       ]);
 
-      const tokenMap = buildTokenMap(rawMarkets);
+      // Build token map from raw markets (includes all token formats)
+      const tokenMap = buildTokenMapFromRaw(rawMarkets);
 
-      // Filter to sports trades only and aggregate per wallet+conditionId
-      type WalletPosition = { side: "YES"|"NO"; totalSize: number; prices: number[]; name: string };
+      // Aggregate trades per conditionId+wallet
+      type WalletPos = { side: "YES"|"NO"; totalSize: number; prices: number[]; name: string };
       const marketWallets = new Map<string, {
         info: ReturnType<typeof tokenMap.get>;
-        wallets: Map<string, WalletPosition>;
+        wallets: Map<string, WalletPos>;
+        endDate?: string;
       }>();
 
       for (const trade of allTrades) {
         const title = (trade.title || trade.slug || "").toLowerCase();
         if (!isSportsRelated(title)) continue;
-
         const condId = trade.conditionId || "";
         if (!condId) continue;
         const wallet = trade.proxyWallet || "";
         if (!wallet) continue;
-
-        // Skip obvious noise: crypto up/down short-term bets
-        if (title.includes("up or down") && (title.includes("5m") || title.includes("15m") || title.includes("1h"))) continue;
+        if (title.includes("up or down") && /\d+m/.test(title)) continue;
 
         const side: "YES"|"NO" = (trade.outcome === "Yes" || trade.outcomeIndex === 0) ? "YES" : "NO";
         const price = parseFloat(trade.price || "0.5");
         const size  = parseFloat(trade.size  || "0");
 
         if (!marketWallets.has(condId)) {
-          // Try to find market info from token map via conditionId
           let info: any = null;
           for (const [, mInfo] of tokenMap) {
             if (mInfo.conditionId === condId) { info = mInfo; break; }
@@ -632,62 +738,76 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           marketWallets.set(condId, {
             info: info || { conditionId: condId, question: trade.title || condId, slug: trade.slug, currentPrice: 0.5, volume: 0, tokenIds: [] },
             wallets: new Map(),
+            endDate: (info as any)?.endDate,
           });
         }
         const mw = marketWallets.get(condId)!;
-        const existing = mw.wallets.get(wallet);
-        if (!existing) {
+        const ex  = mw.wallets.get(wallet);
+        if (!ex) {
           mw.wallets.set(wallet, { side, totalSize: size, prices: [price], name: trade.pseudonym || truncAddr(wallet) });
         } else {
-          // Accumulate same-side, or override if new side has larger size
-          if (existing.side === side) {
-            existing.totalSize += size;
-            existing.prices.push(price);
-          } else if (size > existing.totalSize) {
-            // Trader flipped or sells — use net dominant position
-            existing.side = side;
-            existing.totalSize = size;
-            existing.prices = [price];
-          }
+          if (ex.side === side) { ex.totalSize += size; ex.prices.push(price); }
+          else if (size > ex.totalSize) { ex.side = side; ex.totalSize = size; ex.prices = [price]; }
         }
       }
 
       const signals: any[] = [];
+      const SLIPPAGE = 0.02;
+
       for (const [condId, mw] of marketWallets.entries()) {
         const entries = Array.from(mw.wallets.values());
-        if (entries.length < 2) continue;
+        if (entries.length === 0) continue;
 
         const yesE = entries.filter(e => e.side === "YES");
         const noE  = entries.filter(e => e.side === "NO");
+        const dominant = yesE.length >= noE.length ? yesE : noE;
         const side: "YES"|"NO" = yesE.length >= noE.length ? "YES" : "NO";
-        const dominant = side === "YES" ? yesE : noE;
-        const consensusPct = (dominant.length / entries.length) * 100;
-        if (consensusPct < 60 || dominant.length < 2) continue;
 
-        const avgEntry  = dominant.reduce((s, e) => s + (e.prices.reduce((a, b) => a + b, 0) / e.prices.length), 0) / dominant.length;
-        const avgSize   = dominant.reduce((s, e) => s + e.totalSize, 0) / dominant.length;
+        // Allow single-trader signals (lower confidence, still useful)
+        if (dominant.length === 0) continue;
+        const consensusPct = entries.length > 1
+          ? (dominant.length / entries.length) * 100
+          : 100; // single-trader: show as 100% but with reduced confidence
+
+        // For single-trader: require decent trade size (>$100)
+        if (dominant.length === 1) {
+          const totalSize = dominant[0].totalSize;
+          if (totalSize < 100) continue;
+        }
+        // For 2+ traders: no minimum size
+        if (entries.length > 1 && dominant.length / entries.length < 0.5) continue;
+
+        const avgEntry = dominant.reduce((s, e) => s + (e.prices.reduce((a, b) => a + b, 0) / e.prices.length), 0) / dominant.length;
+        const avgSize  = dominant.reduce((s, e) => s + e.totalSize, 0) / dominant.length;
 
         const info = mw.info!;
-        let currentPrice = info.currentPrice ?? avgEntry;
+        let currentPrice = (info as any).currentPrice ?? avgEntry;
         if ((info as any).tokenIds?.length > 0) {
           const mid = await fetchMidpoint((info as any).tokenIds[side === "YES" ? 0 : 1] || (info as any).tokenIds[0]);
           if (mid !== null && mid > 0) currentPrice = mid;
         }
 
         const valueDelta = side === "YES"
-          ? (avgEntry - currentPrice - 0.02)
-          : ((1 - avgEntry) - (1 - currentPrice) - 0.02);
+          ? (avgEntry - currentPrice - SLIPPAGE)
+          : ((1 - avgEntry) - (1 - currentPrice) - SLIPPAGE);
 
-        const confidence = computeConfidence(15, consensusPct, valueDelta, avgSize);
+        // Fast mode ROI is unknown — use 15% as proxy
+        const { score: confidence, breakdown } = computeConfidence(
+          15, consensusPct, valueDelta, avgSize, dominant.length, 40
+        );
+
+        const tier = dominant.length >= 3 ? "HIGH" : dominant.length >= 2 ? "MED" : "SINGLE";
+        const marketType = categoriseMarket((info as any).question || condId, mw.endDate);
 
         signals.push({
           id: `fast-${condId}-${side}`,
           marketId: condId,
           marketQuestion: (info as any).question || condId,
           slug: (info as any).slug,
-          outcome: side,
-          side,
+          outcome: side, side,
           confidence,
+          tier,
+          marketType,
           consensusPct: Math.round(consensusPct),
           valueDelta: Math.round(valueDelta * 1000) / 1000,
           currentPrice: Math.round(currentPrice * 1000) / 1000,
@@ -695,14 +815,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           totalNetUsdc: Math.round(dominant.reduce((s, e) => s + e.totalSize * avgEntry, 0)),
           avgNetUsdc: Math.round(avgSize * avgEntry),
           traderCount: dominant.length,
-          traders: dominant.slice(0, 5).map(e => ({
+          avgQuality: 40,
+          scoreBreakdown: breakdown,
+          traders: dominant.slice(0, 8).map(e => ({
             address: "",
             name: e.name,
             entryPrice: Math.round((e.prices.reduce((a, b) => a + b, 0) / e.prices.length) * 1000) / 1000,
             size: Math.round(e.totalSize),
             netUsdc: Math.round(e.totalSize * avgEntry),
-            roi: 0,
-            qualityScore: 0,
+            roi: 0, qualityScore: 0,
           })),
           category: (info as any).category || "sports",
           volume: (info as any).volume || 0,
@@ -713,12 +834,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
 
       const uniqueTraders = new Set(allTrades.map((t: any) => t.proxyWallet).filter(Boolean)).size;
-      const sportsTradeCount = new Set(Array.from(marketWallets.keys())).size;
       signals.sort((a, b) => b.confidence - a.confidence);
+
       const response = {
-        signals, topTraderCount: uniqueTraders,
-        marketsScanned: sportsTradeCount,
-        newSignalCount: 0, fetchedAt: Date.now(), source: "live_activity_v3",
+        signals,
+        topTraderCount: uniqueTraders,
+        marketsScanned: marketWallets.size,
+        newSignalCount: 0,
+        fetchedAt: Date.now(),
+        source: "live_activity_v4",
       };
       setCache(cKey, response, 90_000);
       res.json(response);
@@ -728,7 +852,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
-  // ── GET /api/trader/:address/positions ─── Aggregate positions for one trader
+  // ── GET /api/trader/:address/positions ─────────────────────────────────────
   app.get("/api/trader/:address/positions", async (req, res) => {
     try {
       const addr = req.params.address.toLowerCase();
@@ -736,11 +860,17 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
-      const rawMarkets = await fetchSportsMarkets(200);
-      const tokenMap   = buildTokenMap(rawMarkets);
-      const allTokenIds = Array.from(tokenMap.keys());
+      const rows = await fetchAllElitePositions([addr]);
+      if (rows.length === 0) { res.json({ address: addr, positions: [], fetchedAt: Date.now() }); return; }
 
-      const rows = await fetchSubgraphPositions([addr], allTokenIds);
+      const tokenIds = [...new Set(rows.map(r => String(r.tokenId)))];
+      const rawMarkets = await fetchSportsMarkets(300);
+      let tokenMap = buildTokenMapFromRaw(rawMarkets);
+      const missing = tokenIds.filter(id => !tokenMap.has(id));
+      if (missing.length > 0) {
+        const extra = await fetchMarketsByTokenIds(missing);
+        for (const [k, v] of extra) tokenMap.set(k, v);
+      }
 
       const positions = rows.map(row => {
         const tokenId  = String(row.tokenId);
@@ -772,7 +902,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
-  // ── GET /api/market/:tokenId/price ──────────────────────────────────────────
+  // ── GET /api/market/:tokenId/price ─────────────────────────────────────────
   app.get("/api/market/:tokenId/price", async (req, res) => {
     try {
       const mid = await fetchMidpoint(req.params.tokenId);
@@ -784,4 +914,3 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
   return httpServer;
 }
-

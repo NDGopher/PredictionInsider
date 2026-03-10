@@ -11,7 +11,8 @@ import {
 import {
   Zap, Search, ExternalLink, TrendingUp, TrendingDown, AlertCircle,
   RefreshCw, Users, Target, ChevronDown, ChevronUp, Star, Activity,
-  Bell, BellOff, Clock, DollarSign, ShieldCheck, AlertTriangle
+  Bell, BellOff, Clock, DollarSign, ShieldCheck, AlertTriangle, Radio,
+  Hourglass, CalendarClock, BarChart2
 } from "lucide-react";
 import type { SignalsResponse, Signal } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -78,8 +79,47 @@ function formatUsdc(val: number): string {
   return `$${val.toFixed(0)}`;
 }
 
+function MarketTypePill({ type }: { type?: string }) {
+  if (!type) return null;
+  if (type === "live")    return <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/20"><Radio className="w-2.5 h-2.5" />LIVE</span>;
+  if (type === "pregame") return <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20"><Hourglass className="w-2.5 h-2.5" />PREGAME</span>;
+  return <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border"><CalendarClock className="w-2.5 h-2.5" />FUTURES</span>;
+}
+
+function ScoreBreakdown({ breakdown, confidence }: { breakdown: Record<string, number>; confidence: number }) {
+  const items = [
+    { label: "ROI (40%)",      val: breakdown.roiPct ?? 0,       color: "bg-blue-500" },
+    { label: "Consensus (30%)",val: breakdown.consensusPct ?? 0,  color: "bg-green-500" },
+    { label: "Value (20%)",    val: breakdown.valuePct ?? 0,      color: "bg-yellow-500" },
+    { label: "Size (10%)",     val: breakdown.sizePct ?? 0,       color: "bg-purple-500" },
+    { label: "Tier Bonus",     val: breakdown.tierBonus ?? 0,     color: "bg-orange-500" },
+  ].filter(i => i.val > 0);
+
+  return (
+    <div className="mt-3 pt-3 border-t border-border/40">
+      <div className="flex items-center gap-1.5 mb-2">
+        <BarChart2 className="w-3 h-3 text-muted-foreground" />
+        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Score Breakdown</span>
+      </div>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+        {items.map(item => (
+          <div key={item.label} className="flex items-center justify-between text-[10px]">
+            <span className="text-muted-foreground">{item.label}</span>
+            <span className="font-semibold">{item.val}pts</span>
+          </div>
+        ))}
+        <div className="flex items-center justify-between text-[10px] col-span-2 border-t border-border/30 pt-1 mt-0.5">
+          <span className="font-semibold">Total Score</span>
+          <span className="font-bold text-primary">{confidence}/100</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }) {
   const [expanded, setExpanded] = useState(false);
+  const [showBreakdown, setShowBreakdown] = useState(false);
 
   const borderCls = signal.side === "YES"
     ? "border-green-500/30 bg-green-500/5"
@@ -118,6 +158,24 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
                   <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${confidenceLabel.cls}`}>
                     {confidenceLabel.label} CONFIDENCE
                   </span>
+                  {/* Tier badge */}
+                  {(signal as any).tier === "HIGH" && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-green-500/15 text-green-600 dark:text-green-400 border border-green-500/20 flex items-center gap-0.5">
+                      <Users className="w-2.5 h-2.5" />{signal.traderCount} TRADERS
+                    </span>
+                  )}
+                  {(signal as any).tier === "MED" && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center gap-0.5">
+                      <Users className="w-2.5 h-2.5" />{signal.traderCount} TRADERS
+                    </span>
+                  )}
+                  {(signal as any).tier === "SINGLE" && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border">
+                      WHALE SIGNAL
+                    </span>
+                  )}
+                  {/* Market type */}
+                  <MarketTypePill type={(signal as any).marketType} />
                   {signal.isValue && (
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
                       VALUE EDGE
@@ -133,7 +191,6 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
                       <Star className="w-2.5 h-2.5" /> ELITE
                     </span>
                   )}
-                  <span className="text-[10px] text-muted-foreground capitalize">{signal.category}</span>
                 </div>
               </div>
               {/* Net USDC aggregate */}
@@ -194,15 +251,27 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
             )}
 
             {/* Footer row */}
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
-              <button
-                onClick={() => setExpanded(!expanded)}
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                data-testid={`button-expand-${signal.id}`}
-              >
-                {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                {expanded ? "Hide" : "Show"} traders ({signal.traderCount})
-              </button>
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50 flex-wrap gap-2">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setExpanded(!expanded)}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  data-testid={`button-expand-${signal.id}`}
+                >
+                  {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                  {expanded ? "Hide" : "Show"} traders ({signal.traderCount})
+                </button>
+                {(signal as any).scoreBreakdown && (
+                  <button
+                    onClick={() => setShowBreakdown(!showBreakdown)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    data-testid={`button-breakdown-${signal.id}`}
+                  >
+                    <BarChart2 className="w-3 h-3" />
+                    {showBreakdown ? "Hide" : "Show"} score
+                  </button>
+                )}
+              </div>
               {polyUrl && (
                 <a
                   href={polyUrl}
@@ -215,6 +284,11 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
                 </a>
               )}
             </div>
+
+            {/* Score breakdown */}
+            {showBreakdown && (signal as any).scoreBreakdown && (
+              <ScoreBreakdown breakdown={(signal as any).scoreBreakdown} confidence={signal.confidence} />
+            )}
 
             {/* Expanded trader list */}
             {expanded && signal.traders.length > 0 && (
@@ -232,6 +306,9 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
                       <span className="font-mono truncate">
                         {t.name || (t.address ? `${t.address.slice(0, 6)}...${t.address.slice(-4)}` : "Trader")}
                       </span>
+                      {(t as any).isLeaderboard && (
+                        <span className="text-[9px] font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 px-1 rounded shrink-0" title="Top PNL leaderboard trader">LB</span>
+                      )}
                     </div>
                     <div className="text-right text-muted-foreground tabular-nums">
                       {(t.entryPrice * 100).toFixed(1)}¢
@@ -276,6 +353,7 @@ export default function Signals() {
   const [filter, setFilter]       = useState("all");
   const [sort, setSort]           = useState("confidence");
   const [mode, setMode]           = useState<"elite" | "fast">("elite");
+  const [sportsOnly, setSportsOnly] = useState(true);
   const [notifEnabled, setNotifEnabled] = useState(Notification?.permission === "granted");
   const [countdown, setCountdown] = useState(mode === "elite" ? ELITE_REFRESH_SEC : FAST_REFRESH_SEC);
   const [alertHistory, setAlertHistory] = useState<Array<{ id: string; question: string; confidence: number; ts: number }>>([]);
@@ -287,7 +365,8 @@ export default function Signals() {
   const countdownRef = useRef<ReturnType<typeof setInterval>>();
 
   const refreshInterval = mode === "elite" ? ELITE_REFRESH_SEC : FAST_REFRESH_SEC;
-  const queryKey = mode === "elite" ? ["/api/signals"] : ["/api/signals/fast"];
+  const eliteUrl  = sportsOnly ? "/api/signals?sports=true" : "/api/signals?sports=false";
+  const queryKey  = mode === "elite" ? [eliteUrl] : ["/api/signals/fast"];
 
   // ── Query ────────────────────────────────────────────────────────────────────
   const { data, isLoading, error } = useQuery<SignalsResponse>({
@@ -366,10 +445,15 @@ export default function Signals() {
   const filtered = signals
     .filter(s => {
       if (search && !s.marketQuestion.toLowerCase().includes(search.toLowerCase())) return false;
-      if (filter === "value")  return s.isValue;
-      if (filter === "high")   return s.confidence >= 70;
-      if (filter === "yes")    return s.side === "YES";
-      if (filter === "no")     return s.side === "NO";
+      if (filter === "value")   return s.isValue;
+      if (filter === "high")    return s.confidence >= 70;
+      if (filter === "multi")   return s.traderCount >= 2;
+      if (filter === "single")  return (s as any).tier === "SINGLE";
+      if (filter === "live")    return (s as any).marketType === "live";
+      if (filter === "pregame") return (s as any).marketType === "pregame";
+      if (filter === "futures") return (s as any).marketType === "futures";
+      if (filter === "yes")     return s.side === "YES";
+      if (filter === "no")      return s.side === "NO";
       return true;
     })
     .sort((a, b) => {
@@ -474,28 +558,54 @@ export default function Signals() {
         </Card>
       )}
 
-      {/* Mode toggle */}
-      <div className="flex items-center gap-1.5 p-1 bg-muted rounded-lg w-fit">
-        <button
-          onClick={() => setMode("elite")}
-          data-testid="button-mode-elite"
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-            mode === "elite" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <Star className="w-3.5 h-3.5" />
-          Elite Signals
-        </button>
-        <button
-          onClick={() => setMode("fast")}
-          data-testid="button-mode-fast"
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-            mode === "fast" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <Activity className="w-3.5 h-3.5" />
-          Live Feed
-        </button>
+      {/* Mode toggle + category filter */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-1.5 p-1 bg-muted rounded-lg">
+          <button
+            onClick={() => setMode("elite")}
+            data-testid="button-mode-elite"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+              mode === "elite" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Star className="w-3.5 h-3.5" />
+            Elite Signals
+          </button>
+          <button
+            onClick={() => setMode("fast")}
+            data-testid="button-mode-fast"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+              mode === "fast" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Activity className="w-3.5 h-3.5" />
+            Live Feed
+          </button>
+        </div>
+
+        {/* Sports-only toggle (Elite mode only) */}
+        {mode === "elite" && (
+          <div className="flex items-center gap-1.5 p-1 bg-muted rounded-lg">
+            <button
+              onClick={() => setSportsOnly(true)}
+              data-testid="button-sports-only"
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                sportsOnly ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Sports Only
+            </button>
+            <button
+              onClick={() => setSportsOnly(false)}
+              data-testid="button-all-categories"
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                !sportsOnly ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              All Categories
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Filters */}
@@ -511,13 +621,18 @@ export default function Signals() {
           />
         </div>
         <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-36 h-8 text-sm" data-testid="select-filter">
+          <SelectTrigger className="w-40 h-8 text-sm" data-testid="select-filter">
             <SelectValue placeholder="Filter" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Signals</SelectItem>
             <SelectItem value="value">Value Edge Only</SelectItem>
             <SelectItem value="high">High Confidence (70+)</SelectItem>
+            <SelectItem value="multi">Multi-Trader (2+)</SelectItem>
+            <SelectItem value="single">Whale Signals</SelectItem>
+            <SelectItem value="live">Live Markets</SelectItem>
+            <SelectItem value="pregame">Pregame</SelectItem>
+            <SelectItem value="futures">Futures</SelectItem>
             <SelectItem value="yes">YES Positions</SelectItem>
             <SelectItem value="no">NO Positions</SelectItem>
           </SelectContent>
@@ -598,13 +713,25 @@ export default function Signals() {
               </div>
               <div className="text-sm text-muted-foreground mt-1 max-w-sm">
                 {signals.length === 0
-                  ? mode === "elite"
-                    ? "Elite signals are built from open on-chain positions of the top-50 Polymarket traders in sports markets. This requires them to hold open positions — try Live Feed for faster results."
-                    : "Live feed signals appear when 2+ active traders share a sports market position in the last 1,000 trades."
+                  ? mode === "elite" && sportsOnly
+                    ? "Top PNL traders mostly hold positions in politics/crypto markets. Try 'All Categories' to see their full signal set, or use Live Feed for real-time sports signals."
+                    : mode === "elite"
+                    ? "No open on-chain positions found for the elite trader pool. Try Live Feed for real-time signals."
+                    : "Live feed signals appear when active traders share a sports market position in the last 2,000 trades."
                   : "Try adjusting your filters."}
               </div>
             </div>
-            {signals.length === 0 && mode === "elite" && (
+            {signals.length === 0 && mode === "elite" && sportsOnly && (
+              <div className="flex gap-2 flex-wrap justify-center">
+                <Button variant="outline" size="sm" onClick={() => setSportsOnly(false)} className="gap-2">
+                  <Target className="w-3.5 h-3.5" /> All Categories
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setMode("fast")} className="gap-2">
+                  <Activity className="w-3.5 h-3.5" /> Live Feed
+                </Button>
+              </div>
+            )}
+            {signals.length === 0 && mode === "elite" && !sportsOnly && (
               <Button variant="outline" size="sm" onClick={() => setMode("fast")} className="gap-2">
                 <Activity className="w-3.5 h-3.5" /> Switch to Live Feed
               </Button>
