@@ -12,7 +12,7 @@ A sports prediction market intelligence dashboard that surfaces consensus signal
 
 - `/` — Dashboard: Signal overview, top stats, trader mini-list, how it works. Signals are clickable rows that expand inline to show live price vs entry, actionability, traders, and Polymarket link. 90s auto-refresh.
 - `/signals` — Signals: Two modes — Elite (large bets + positions) and Live Feed (consensus from recent trades). Shows ACTIONABLE/PRICE MOVED/BIG PLAY badges. Elite refreshes 120s, Fast 45s.
-- `/traders` — Top Traders: Active sports traders from multi-window leaderboard (ALL + WEEK + MONTH)
+- `/traders` — Top Traders: Unified pool of 150+ traders — Sports LB + Curated elites + Discovered (from 20K trade scan) + General LB active in sports. Source badges show origin (📌 Curated, 🔍 Discovered, 🔥 Hot). Pool breakdown shown in footer.
 - `/markets` — Sports Markets: Filter tabs (Upcoming/Moneyline/Spread/Total/Futures/All). Shows LIVE/PREGAME/FUTURES badges. 30s auto-refresh. Game markets populated from positions registry.
 
 ## Key API Routes

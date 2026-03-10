@@ -13,7 +13,7 @@ import {
   Zap, Search, ExternalLink, TrendingUp, TrendingDown, AlertCircle,
   RefreshCw, Users, Target, ChevronDown, ChevronUp, Star, Activity,
   Bell, BellOff, Clock, DollarSign, ShieldCheck, AlertTriangle, Radio,
-  Hourglass, CalendarClock, BarChart2
+  Hourglass, CalendarClock, BarChart2, Flame, ChevronRight
 } from "lucide-react";
 import type { SignalsResponse, Signal } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -467,6 +467,123 @@ function RefreshCountdown({ secondsLeft }: { secondsLeft: number }) {
   );
 }
 
+// ─── Sharp Moves feed ──────────────────────────────────────────────────────────
+function fmtMinsAgo(mins: number): string {
+  if (mins < 1)  return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const h = Math.floor(mins / 60);
+  return `${h}h ago`;
+}
+
+function SharpMovesPanel() {
+  const [collapsed, setCollapsed] = useState(false);
+  const { data, isLoading, refetch } = useQuery<{ alerts: any[]; fetchedAt: number }>({
+    queryKey: ["/api/alerts/live"],
+    queryFn: () => fetch("/api/alerts/live").then(r => r.json()),
+    staleTime: 30_000,
+    refetchInterval: 30_000,
+  });
+  const alerts = data?.alerts || [];
+  const multiAlerts = alerts.filter((a: any) => a.sharpAction?.traderCount >= 2);
+  const bigAlerts   = alerts.filter((a: any) => !multiAlerts.includes(a));
+
+  return (
+    <Card className="border-orange-500/20 bg-gradient-to-r from-orange-500/5 to-transparent">
+      <CardContent className="p-3">
+        <div
+          className="flex items-center justify-between cursor-pointer"
+          onClick={() => setCollapsed(!collapsed)}
+          data-testid="button-toggle-sharp-moves"
+        >
+          <div className="flex items-center gap-2">
+            <Flame className="w-4 h-4 text-orange-500" />
+            <span className="text-sm font-bold">Sharp Moves</span>
+            <Badge variant="secondary" className="text-[10px] h-4 px-1">Live</Badge>
+            {!isLoading && alerts.length > 0 && (
+              <span className="text-[10px] text-muted-foreground">{alerts.length} trades</span>
+            )}
+            {multiAlerts.length > 0 && (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-600 dark:text-orange-400 border border-orange-500/20">
+                {multiAlerts.length} MULTI SHARP
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground">30s auto-refresh</span>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0"
+              onClick={e => { e.stopPropagation(); refetch(); }}
+              data-testid="button-refresh-sharp-moves"
+            >
+              <RefreshCw className="w-3 h-3" />
+            </Button>
+            {collapsed ? <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />}
+          </div>
+        </div>
+
+        {!collapsed && (
+          <div className="mt-2.5 space-y-1.5" data-testid="sharp-moves-list">
+            {isLoading ? (
+              <div className="space-y-1.5">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
+              </div>
+            ) : alerts.length === 0 ? (
+              <div className="text-xs text-muted-foreground py-2 text-center">
+                No sharp moves detected in recent trades
+              </div>
+            ) : (
+              <>
+                {multiAlerts.slice(0, 5).map((a: any) => (
+                  <div
+                    key={a.id}
+                    className="flex items-center gap-2 text-[11px] bg-orange-500/8 border border-orange-500/20 rounded-md px-2.5 py-1.5"
+                    data-testid={`sharp-move-multi-${a.id}`}
+                  >
+                    <span className="shrink-0 font-bold px-1 py-0.5 rounded text-[9px] bg-orange-500/20 text-orange-600 dark:text-orange-400">
+                      MULTI SHARP
+                    </span>
+                    <span className={`shrink-0 font-bold w-7 text-center rounded text-[10px] ${a.side === "YES" ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                      {a.side}
+                    </span>
+                    <span className="flex-1 truncate text-foreground/80" title={a.market}>{a.market}</span>
+                    <span className="shrink-0 font-bold tabular-nums">${a.size.toLocaleString()}</span>
+                    <span className="shrink-0 text-muted-foreground tabular-nums">{fmtMinsAgo(a.minutesAgo)}</span>
+                    <span className="shrink-0 text-primary font-medium">{a.americanOdds}</span>
+                  </div>
+                ))}
+                {bigAlerts.slice(0, 8 - Math.min(multiAlerts.length, 5)).map((a: any) => (
+                  <div
+                    key={a.id}
+                    className="flex items-center gap-2 text-[11px] bg-muted/40 rounded-md px-2.5 py-1.5"
+                    data-testid={`sharp-move-${a.id}`}
+                  >
+                    {a.isTracked && (
+                      <span className="shrink-0 font-semibold text-[9px] px-1 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                        {a.trader}
+                      </span>
+                    )}
+                    <span className={`shrink-0 font-bold w-7 text-center rounded text-[10px] ${a.side === "YES" ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                      {a.side}
+                    </span>
+                    <span className="flex-1 truncate text-muted-foreground" title={a.market}>{a.market}</span>
+                    <span className="shrink-0 font-bold tabular-nums">${a.size.toLocaleString()}</span>
+                    <span className="shrink-0 text-muted-foreground tabular-nums">{fmtMinsAgo(a.minutesAgo)}</span>
+                    <span className="shrink-0 text-muted-foreground">{a.americanOdds}</span>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 // ─── Main page ─────────────────────────────────────────────────────────────────
 export default function Signals() {
   const [search, setSearch]       = useState("");
@@ -684,6 +801,9 @@ export default function Signals() {
           </CardContent>
         </Card>
       )}
+
+      {/* Sharp Moves real-time feed */}
+      <SharpMovesPanel />
 
       {/* Mode toggle + category filter */}
       <div className="flex items-center gap-3 flex-wrap">

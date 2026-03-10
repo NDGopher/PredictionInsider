@@ -84,6 +84,18 @@ function RecentFormBadge({ form }: { form?: string }) {
   if (!form || form === "all-time") return null;
   const isHot = form.includes("Hot");
   const isWeek = form.includes("week");
+  const isCurated = form.includes("Curated");
+  const isDiscovered = form.includes("Discovered");
+  if (isCurated) return (
+    <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold px-1.5 py-0.5 rounded border bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/25" data-testid="badge-recent-form">
+      {form}
+    </span>
+  );
+  if (isDiscovered) return (
+    <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold px-1.5 py-0.5 rounded border bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/25" data-testid="badge-recent-form">
+      {form}
+    </span>
+  );
   return (
     <span
       className={`inline-flex items-center gap-0.5 text-[9px] font-semibold px-1.5 py-0.5 rounded border ${
@@ -237,8 +249,8 @@ export default function Traders() {
 
   const { data, isLoading, error, refetch } = useQuery<LeaderboardResponse>({
     queryKey: ["/api/traders", category],
-    queryFn: () => fetch(`/api/traders?category=${category}`).then(r => r.json()),
-    staleTime: 8 * 60 * 1000,
+    queryFn: () => fetch(`/api/traders?category=${category}&limit=150`).then(r => r.json()),
+    staleTime: 5 * 60 * 1000,
   });
 
   const traders = data?.traders || [];
@@ -455,20 +467,34 @@ export default function Traders() {
       )}
 
       {!isLoading && data && (
-        <div className="flex items-center justify-center gap-3 pt-2">
-          <div className="text-center text-[11px] text-muted-foreground">
-            Source: Polymarket {category === "sports" ? "Sports" : "Overall"} Leaderboard — updated every 10 min
+        <div className="flex flex-col items-center gap-1.5 pt-2">
+          <div className="flex items-center gap-3">
+            <div className="text-center text-[11px] text-muted-foreground">
+              {traders.length} traders · Unified pool: Leaderboard + Curated + Discovered — 5 min cache
+            </div>
+            <a
+              href="https://polymarketanalytics.com/traders"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
+              data-testid="link-polymarketanalytics"
+            >
+              <BarChart3 className="w-3 h-3" />
+              Polymarket Analytics
+            </a>
           </div>
-          <a
-            href="https://polymarketanalytics.com/traders"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
-            data-testid="link-polymarketanalytics"
-          >
-            <BarChart3 className="w-3 h-3" />
-            Polymarket Analytics
-          </a>
+          {(data as any).breakdown && (
+            <div className="flex items-center gap-3 flex-wrap justify-center">
+              {Object.entries((data as any).breakdown as Record<string, number>).map(([src, cnt]) => (
+                <span key={src} className="text-[10px] text-muted-foreground">
+                  <span className="font-medium text-foreground/70">{src.replace("_", " ")}</span>: {cnt as number}
+                </span>
+              ))}
+              {(data as any).sharedMapAge && (
+                <span className="text-[10px] text-muted-foreground">· signal pool: {(data as any).sharedMapAge}</span>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

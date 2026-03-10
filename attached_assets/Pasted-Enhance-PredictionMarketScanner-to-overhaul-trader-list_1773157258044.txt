@@ -1,0 +1,10 @@
+Enhance PredictionMarketScanner to overhaul trader list: Source 200-500 verified sports specialists with real 0x wallets (extract/verify from multi-sites), deep subgraph analytics (ROI, win rate, volume, variance, sports %—no hardcodes). Update daily via loop. Weight in consensus (score = PNL * win_rate * volume / variance; higher influence). Exclude bad (low score/variance>20%, <60% sports), include good (high consistency/volume>100). Fix small noise ($1 positions/markets). Expand markets (all active sports, 50+).Key Changes:Trader Sourcing: Multi-scrape: PolymarketAnalytics (URL, pagination, extract usernames/wallets/PNL/win/positions). Polysights.xyz/leaderboards?category=sports (extract 100+ wallets/stats). Predicting.top (daily top 50 wallets). Merge with API leaderboard?category=SPORTS&limit=500. Seeds from user list (DrPufferfish, weflyhigh, 432614799197, JuicySlots, joosangyoo, nz7, ewelmealt, RN1) + researched wallets (e.g., kch123 0x6a72f618..., majorexploiter 0x94f199fb..., DrPufferfish from profiles). Update daily (scanner.py loop).
+Deep Analytics: Subgraph query batch (Goldsky PNL/orderbook: realizedPnL/invested/positions/unrealized/trades → ROI = (realized+unrealized)/invested*100; win = wins/total; variance = std(returns); sports % = sports markets/total. Filter: win>50%, volume>100, variance<20%, sports>60%, PNL>50k. Rank/weight by score.
+Verification: Cross-check API/subgraph (exclude unverified/fake names/small PNL). Use wallets for deeplinks/profiles.
+Signal/Consensus: Weight by score (high = more in # on side). Ignore balanced/low-weight. Live: $200+ min, no $1.
+Filters: Min net $50. Active sports markets (Gamma ?category=sports&active=true, aim 50+).
+UI: Trader list with wallets/links/Analytics profiles. Expandables show analytics (ROI/variance/sports %).
+Robustness: Log exclusions ("bad: high variance"). Mocks for 300 traders/50 markets.
+
+Implement: Refine scraper.py for multi-sources/wallets/verification, analyzer.py for subgraph metrics/weighting. Test abundant real signals.
+
