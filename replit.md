@@ -115,11 +115,13 @@ All API responses cached in-memory:
 
 ## Curated Elite Traders
 
-`CURATED_ELITES` is a hardcoded list of known high-calibre sports traders who don't appear in the official Polymarket sports leaderboard (API cap issue). Each entry: `{ addr, name, estimatedPnl }`.
+`CURATED_ELITES` is a hardcoded list of known high-calibre sports traders who don't appear in the official Polymarket sports leaderboard (API cap issue). Each entry: `{ addr, name, estimatedPnl, qualityScore? }`.
 
 `fetchEliteTraderTrades(wallet, limit=100)` fetches recent trades per curated wallet via `DATA_API/trades?user=wallet`. These are merged into `allTrades` (deduped by transactionHash) before signal processing. Curated traders are pre-populated in `lbMap` at the start of Phase 1 with `isSportsLb: true`.
 
-Current curated list includes: kch123 (0x6a72f61...e33ee, est. PNL $191K sports).
+**qualityScore override**: If `qualityScore` is set on a CURATED_ELITE entry, it bypasses the `traderQualityScore()` formula (which requires accurate ROI). This ensures curated traders get appropriate scores without needing volume data.
+
+Current curated list: kch123 (qualityScore=65), SportsBetPro (qualityScore=55), SharpAction (qualityScore=50).
 
 ## Trader Recency Scoring
 
@@ -142,6 +144,10 @@ Traders page sorted by this score (hot hands bubbled to top). Signal lbMap also 
 6. No `gameStartTime` → "pregame" (safe default, never falsely marks unstarted games as live)
 
 **Key fix**: Removed `ms < 4h → live` and `ms ∈ [-20h,0) → live` heuristics which falsely marked resolved/ending markets as live.
+
+**Game market override**: After `categoriseMarket()`, all three signal paths (elite/pos/fast) override: if raw type is "futures" but `marketCategory !== "futures"` (i.e., it's a moneyline/spread/total market for a specific game), force to "pregame". This prevents specific game markets with endDates > 7 days from showing the FUTURES badge — FUTURES badge is reserved for season/championship outright winner markets only.
+
+**Slug date vs game date**: Polymarket slugs contain the market CREATION date (e.g., `nba-den-mem-2026-01-25` was created Jan 25 for a March 18 game). The `endDate` field from positions API and Gamma API contains the actual game date and should be used for date filtering, not the slug date.
 
 ## Chart Price History
 

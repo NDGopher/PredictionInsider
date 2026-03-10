@@ -422,10 +422,10 @@ async function fetchMidpoint(tokenId: string): Promise<number | null> {
 // Known high-calibre sports traders who may not appear in the official
 // Polymarket sports leaderboard due to API caps or category differences.
 // estimatedPnl is used for quality scoring; actual positions from data API.
-const CURATED_ELITES: Array<{ addr: string; name: string; estimatedPnl: number }> = [
-  { addr: "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee", name: "kch123",           estimatedPnl: 191000 },
-  { addr: "0x9c4bdf7b37b02fab3dcebf9db84e6b7e7cf3b9f4", name: "SportsBetPro",      estimatedPnl: 80000  },
-  { addr: "0x3eb74a4795ce6f4f1a78afe2c24e9f2a62e4b6c1", name: "SharpAction",       estimatedPnl: 65000  },
+const CURATED_ELITES: Array<{ addr: string; name: string; estimatedPnl: number; qualityScore?: number }> = [
+  { addr: "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee", name: "kch123",           estimatedPnl: 191000, qualityScore: 65 },
+  { addr: "0x9c4bdf7b37b02fab3dcebf9db84e6b7e7cf3b9f4", name: "SportsBetPro",      estimatedPnl: 80000,  qualityScore: 55 },
+  { addr: "0x3eb74a4795ce6f4f1a78afe2c24e9f2a62e4b6c1", name: "SharpAction",       estimatedPnl: 65000,  qualityScore: 50 },
 ];
 
 /**
@@ -1384,7 +1384,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/signals", async (req, res) => {
     try {
       const sportsOnly = req.query.sports !== "false";
-      const cKey = `signals-elite-v11-${sportsOnly ? "sp" : "all"}`;
+      const cKey = `signals-elite-v12-${sportsOnly ? "sp" : "all"}`;
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -1425,7 +1425,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           name: elite.name,
           pnl: elite.estimatedPnl,
           roi: 15,
-          qualityScore: traderQualityScore(elite.estimatedPnl, 15, 10),
+          qualityScore: elite.qualityScore ?? traderQualityScore(elite.estimatedPnl, 15, 10),
           isLeaderboard: true,
           isSportsLb: true,
         });
@@ -1560,6 +1560,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         if (!marketWallets.has(condId)) {
           const mSlug = mInfo?.slug || trade.slug;
           const mEndDate = mInfo?.endDate || trade.endDate || slugDateFallback(mSlug);
+          // Skip markets whose end date has passed — these are resolved games
+          if (mEndDate && new Date(mEndDate).getTime() < now) continue;
           marketWallets.set(condId, {
             question: mInfo?.question || trade.title || condId,
             slug: mSlug,
@@ -1648,7 +1650,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const liveTokenId = side === "YES" ? mw.yesTokenId : mw.noTokenId;
         if (liveTokenId) {
           const mid = await fetchMidpoint(liveTokenId);
-          if (mid !== null && mid > 0.01 && mid < 0.99) currentPrice = mid;
+          if (mid !== null) currentPrice = mid; // accept ANY non-null price, including near-0/1 for resolved markets
         }
         currentPrice = Math.min(0.99, Math.max(0.01, currentPrice));
 
@@ -1672,8 +1674,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         seenSignalIds.add(id);
 
         const isSports = isSportsRelated(mw.question);
-        const mType = categoriseMarket(mw.question, mw.endDate || mInfo?.endDate, mInfo?.gameStartTime);
+        const mTypeRaw2 = categoriseMarket(mw.question, mw.endDate || mInfo?.endDate, mInfo?.gameStartTime);
         const marketCategory = classifyMarketType(mw.question);
+        // Specific game markets (moneyline/spread/total) should be PREGAME, not FUTURES
+        const mType = (mTypeRaw2 === "futures" && marketCategory !== "futures") ? "pregame" : mTypeRaw2;
         const isActionable = computeIsActionable(currentPrice, avgEntry, side);
         const bigPlayScore = computeBigPlayScore(totalDominantSize, dominant.length);
 
@@ -1761,9 +1765,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             const noAssetFromPos  = outcomeIdx === 0 ? String(pos.oppositeAsset || "") : String(pos.asset || "");
 
             if (!posMap.has(mapKey)) {
-              // Fall back to marketDb endDate if pos.endDate is missing
+              // Fall back to marketDb endDate if pos.endDate is missing, then slug date
               const dbEntry = marketDb.get(condId);
-              const resolvedEndDate = pos.endDate || dbEntry?.endDate;
+              const mSlug = pos.slug || pos.eventSlug || "";
+              const resolvedEndDate = pos.endDate || dbEntry?.endDate || slugDateFallback(mSlug);
+              // Skip positions for markets that have already ended (resolved games)
+              if (resolvedEndDate && new Date(resolvedEndDate).getTime() < now) continue;
               posMap.set(mapKey, {
                 conditionId: condId, side,
                 question: title,
@@ -1839,9 +1846,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           if (conflictedConds.has(pg.conditionId)) continue;
           if (suppressedSides.has(dedupeKey)) continue;
 
+          // Skip positions for markets whose end date has already passed
+          const endMs = pg.endDate ? new Date(pg.endDate).getTime() : Infinity;
+          if (pg.endDate && endMs < now) continue;
+
           // Check price range strictly for game-day markets, loosely for futures
           const avgCurPrice = pg.traders.reduce((s, t) => s + t.curPrice, 0) / pg.traders.length;
-          const endMs = pg.endDate ? new Date(pg.endDate).getTime() : Infinity;
           const isFutures = endMs - now > 14 * 24 * 3600_000; // more than 14 days out
           const minPrice = isFutures ? 0.05 : 0.10;
           if (avgCurPrice < minPrice || avgCurPrice > 0.95) continue;
@@ -1858,8 +1868,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             avgROI, consensusPct, valueDelta, avgSize, pg.traders.length, 70
           );
 
-          const mType = categoriseMarket(pg.question, pg.endDate, marketDb.get(pg.conditionId)?.gameStartTime);
+          const mTypeRaw = categoriseMarket(pg.question, pg.endDate, marketDb.get(pg.conditionId)?.gameStartTime);
           const marketCategory = classifyMarketType(pg.question);
+          // Specific game markets (moneyline/spread/total) should show as PREGAME, not FUTURES
+          // even if the game is > 7 days away. FUTURES badge is reserved for season/championship bets.
+          const mType = (mTypeRaw === "futures" && marketCategory !== "futures") ? "pregame" : mTypeRaw;
           const isActionable = computeIsActionable(avgCurPrice, avgEntry, pg.side);
           const bigPlayScore = computeBigPlayScore(pg.totalValue, pg.traders.length);
           const id = `pos-${pg.conditionId}-${pg.side}`;
@@ -2076,8 +2089,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         );
 
         const tier = dominant.length >= 3 ? "HIGH" : "MED";
-        const marketType = categoriseMarket(info.question || condId, info.endDate, info.gameStartTime);
+        const marketTypeRaw = categoriseMarket(info.question || condId, info.endDate, info.gameStartTime);
         const marketCategory = classifyMarketType(info.question || condId);
+        // Specific game markets should be PREGAME, not FUTURES regardless of time horizon
+        const marketType = (marketTypeRaw === "futures" && marketCategory !== "futures") ? "pregame" : marketTypeRaw;
         const isActionable = computeIsActionable(currentPrice, avgEntry, side);
         const bigPlayScore = computeBigPlayScore(totalDominantSize, dominant.length);
 
