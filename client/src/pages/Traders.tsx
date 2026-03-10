@@ -80,8 +80,30 @@ function Avatar({ name, tier }: { name: string; tier?: string }) {
   );
 }
 
+function RecentFormBadge({ form }: { form?: string }) {
+  if (!form || form === "all-time") return null;
+  const isHot = form.includes("Hot");
+  const isWeek = form.includes("week");
+  return (
+    <span
+      className={`inline-flex items-center gap-0.5 text-[9px] font-semibold px-1.5 py-0.5 rounded border ${
+        isHot
+          ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/25"
+          : isWeek
+          ? "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/25"
+          : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
+      }`}
+      title="Recency form"
+      data-testid="badge-recent-form"
+    >
+      {form}
+    </span>
+  );
+}
+
 function TraderCard({ trader, rank }: { trader: Trader; rank: number }) {
   const tier = (trader as any).tier as TierKey | undefined;
+  const recentForm = (trader as any).recentForm as string | undefined;
   const addr = trader.address;
   const shortAddr = addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : "";
   const polyLink = `https://polymarket.com/profile/${addr}`;
@@ -115,6 +137,7 @@ function TraderCard({ trader, rank }: { trader: Trader; rank: number }) {
                     <BadgeCheck className="w-3.5 h-3.5 text-primary shrink-0" />
                   )}
                   <TierBadge tier={tier} />
+                  <RecentFormBadge form={recentForm} />
                 </div>
                 <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{shortAddr}</div>
               </div>
@@ -203,6 +226,7 @@ const TIER_FILTER_OPTIONS = [
   { value: "elite",  label: "Elite ($100K+)" },
   { value: "pro",    label: "Pro ($30K+)" },
   { value: "active", label: "Active" },
+  { value: "hot",    label: "🔥 Hot This Week" },
 ];
 
 export default function Traders() {
@@ -221,7 +245,10 @@ export default function Traders() {
 
   const filtered = traders
     .filter(t => {
-      if (tierFilter !== "all" && (t as any).tier !== tierFilter) return false;
+      if (tierFilter === "hot") {
+        const rf = (t as any).recentForm as string | undefined;
+        if (!rf || rf === "all-time") return false;
+      } else if (tierFilter !== "all" && (t as any).tier !== tierFilter) return false;
       if (!search) return true;
       const q = search.toLowerCase();
       return (t.address || "").toLowerCase().includes(q) || (t.name || "").toLowerCase().includes(q);
@@ -255,7 +282,7 @@ export default function Traders() {
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
             {category === "sports"
-              ? "Ranked by all-time sports PNL on Polymarket"
+              ? "Ranked by recency-weighted quality score — recent hot streaks boosted"
               : "Overall leaderboard ranked by PNL"}
           </p>
         </div>

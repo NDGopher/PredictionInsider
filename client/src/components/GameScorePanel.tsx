@@ -21,14 +21,21 @@ interface Props {
   marketQuestion?: string;
 }
 
-function formatChartTime(ts: number): string {
+function formatChartTime(ts: number, allTimes?: number[]): string {
   const d = new Date(ts);
-  const h = d.getHours().toString().padStart(2, "0");
-  const m = d.getMinutes().toString().padStart(2, "0");
-  return `${h}:${m}`;
+  if (!allTimes || allTimes.length < 2) {
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+  }
+  const spanMs = allTimes[allTimes.length - 1] - allTimes[0];
+  if (spanMs > 20 * 3600_000) {
+    // Multi-day: show "Mar 10 14:30"
+    return d.toLocaleDateString([], { month: "short", day: "numeric" }) + " " +
+      d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+  }
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
-function CustomTooltip({ active, payload }: any) {
+function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   const val = payload[0]?.value;
   if (val == null) return null;
@@ -36,8 +43,14 @@ function CustomTooltip({ active, payload }: any) {
   const odds = val >= 0.5
     ? `-${Math.round((val / (1 - val)) * 100)}`
     : `+${Math.round(((1 - val) / val) * 100)}`;
+  const ts = typeof label === "number" ? new Date(label) : null;
+  const dateStr = ts ? ts.toLocaleString([], {
+    month: "short", day: "numeric",
+    hour: "2-digit", minute: "2-digit", hour12: false,
+  }) : null;
   return (
     <div className="bg-background border border-border rounded px-2 py-1 text-xs shadow">
+      {dateStr && <div className="text-muted-foreground mb-0.5">{dateStr}</div>}
       <span className="font-semibold">{pct}¢</span>
       <span className="text-muted-foreground ml-1.5">{odds}</span>
     </div>
@@ -102,6 +115,8 @@ export default function GameScorePanel({ slug, conditionId, yesTokenId, noTokenI
 
   const isLive = score && !score.completed && score.status?.includes("IN_PROGRESS");
   const lastP = history.length > 0 ? history[history.length - 1].p : null;
+  const allTimes = history.map(h => h.t);
+  const tickFmt = (ts: number) => formatChartTime(ts, allTimes);
 
   return (
     <div className="rounded-lg border border-border/60 bg-muted/20 overflow-hidden" data-testid="game-score-panel">
@@ -161,7 +176,7 @@ export default function GameScorePanel({ slug, conditionId, yesTokenId, noTokenI
               </defs>
               <XAxis
                 dataKey="t"
-                tickFormatter={formatChartTime}
+                tickFormatter={tickFmt}
                 tick={{ fontSize: 9 }}
                 interval="preserveStartEnd"
                 tickLine={false}

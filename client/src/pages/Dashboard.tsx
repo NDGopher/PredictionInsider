@@ -865,7 +865,7 @@ export default function Dashboard() {
             {[
               {
                 icon: Users,
-                title: "150+ Tracked Traders",
+                title: `${traders.length > 0 ? traders.length + "+" : "150+"} Tracked Traders`,
                 desc: "We pull from ALL, WEEK, and MONTH Polymarket leaderboards to build a database of elite sports traders — capturing both all-time greats and hot streaks.",
               },
               {

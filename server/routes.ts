@@ -47,6 +47,7 @@ function broadcastSSE(channel: string, event: string, data: unknown) {
 // don't appear in the Gamma API's top-800 popularity sort.
 interface GameMarketEntry {
   question: string; slug?: string; endDate?: string;
+  gameStartTime?: string; // Polymarket's actual game start time (UTC ISO)
   currentPrice?: number; volume: number; liquidity: number;
   marketType?: string; gameStatus?: string; active: boolean;
 }
@@ -122,38 +123,39 @@ function isSportsRelated(text: string): boolean {
 }
 
 // ─── Categorise as Pregame / Live / Futures ───────────────────────────────────
-function categoriseMarket(question: string, endDate?: string): "live" | "pregame" | "futures" {
+/**
+ * Categorise a market as live / pregame / futures.
+ * Uses Polymarket's own `gameStartTime` when available — this is the most accurate method.
+ * Falls back to simple endDate heuristics only when gameStartTime is unknown.
+ */
+function categoriseMarket(question: string, endDate?: string, gameStartTime?: string): "live" | "pregame" | "futures" {
   const q = (question || "").toLowerCase();
-  // Definitive live signals from question text
+  // Definitive live signals from question text (e.g. in-play markets)
   if (/(lead|trailing|winning|losing|currently|live|in-game|halftime|first half|second half|quarter|overtime|period|inning)/.test(q)) return "live";
   if (!endDate) return "pregame";
   const now = Date.now();
-  const ms = new Date(endDate).getTime() - now;
+  const endMs = new Date(endDate).getTime();
+  const ms = endMs - now;
 
-  // Recently ended (within 20h of endDate passing) — resolution still pending, treat as live
-  if (ms >= -20 * 3600_000 && ms < 0) return "live";
-  if (ms < -20 * 3600_000) return "pregame";     // ended long ago, definitely resolved
-  if (ms < 4 * 3600_000) return "live";           // ending within 4h = in progress / overtime
+  // Resolved/expired checks
+  if (ms >= -20 * 3600_000 && ms < 0) return "live";  // recently ended, awaiting resolution
+  if (ms < -20 * 3600_000) return "pregame";            // ended long ago
+  if (ms > 7 * 24 * 3600_000) return "futures";         // >7 days out
 
-  if (ms < 7 * 24 * 3600_000) {
-    // Game markets within 7 days: infer live vs pregame from time-of-day.
-    // Sports prime window: 19:00–11:00 UTC (2 PM–6 AM ET) covers:
-    //   afternoon college basketball, evening NBA/NHL, late-night west-coast games.
-    // Polymarket sets endDate to next calendar day in UTC as resolution buffer,
-    // so a same-day game often has endDate 20-48h away.
-    const utcHour = new Date().getUTCHours();
-    const inSportsPrimeTime = utcHour >= 19 || utcHour < 11; // 7 PM – 11 AM UTC
-    // Standard game markets: 48h window
-    if (ms < 48 * 3600_000 && inSportsPrimeTime) return "live";
-    // Match-win markets (tennis, boxing, MMA): e.g. "Elena Rybakina WIN"
-    // Polymarket sets endDate to end-of-round which can be 2-4 days out.
-    // Widen live window to 96h for these single-match outcome markets.
-    const isMatchWin = /\bwin\b/i.test(q) && !/(champion|finals?|series|season|\b202[78]\b)/.test(q)
-      && !q.includes(" vs ") && !q.includes(" vs."); // exclude head-to-head markets
-    if (isMatchWin && ms < 96 * 3600_000 && inSportsPrimeTime) return "live";
-    return "pregame";
+  // ── Best path: Polymarket's actual game start time ─────────────────────────
+  // gameStartTime = when the game actually tips off / kicks off.
+  // If now < gameStartTime: hasn't started yet = PREGAME
+  // If now >= gameStartTime (and market not ended): in progress = LIVE
+  if (gameStartTime) {
+    const startMs = new Date(gameStartTime).getTime();
+    if (now < startMs) return "pregame";
+    return "live"; // started but not yet resolved
   }
-  return "futures";
+
+  // ── Fallback heuristics (no gameStartTime available) ───────────────────────
+  // Only mark as LIVE if very close to endDate (game nearly over) or text is explicit.
+  if (ms < 4 * 3600_000) return "live"; // ending within 4h = likely in OT/final minutes
+  return "pregame"; // default to pregame — safer than falsely showing LIVE
 }
 
 // ─── Market type classifiers ─────────────────────────────────────────────────
@@ -225,12 +227,25 @@ function truncAddr(addr: string) {
 const PRICE_SCALE  = 1_000_000;
 const AMOUNT_SCALE = 1_000_000;
 
-/** Trader quality 0–100 */
-function traderQualityScore(pnl: number, roi: number, positionCount: number): number {
+/** Trader quality 0–100 with recency-decay weighting.
+ *  Traders active in WEEK window get a 1.4x multiplier (hot hand),
+ *  MONTH-only gets 1.1x, ALL-only is base. Multi-window appearance adds further.
+ */
+function traderQualityScore(
+  pnl: number, roi: number, positionCount: number,
+  windows?: { inAll?: boolean; inWeek?: boolean; inMonth?: boolean },
+): number {
   const pnlScore   = Math.min(pnl / 2_000_000, 1) * 100;         // max at $2M PNL
   const roiScore   = Math.min(Math.max(roi, 0) / 60, 1) * 100;   // max at 60% ROI
   const countScore = Math.min(positionCount / 15, 1) * 100;       // max at 15 positions
-  return Math.round(pnlScore * 0.35 + roiScore * 0.45 + countScore * 0.20);
+  const base = Math.round(pnlScore * 0.35 + roiScore * 0.45 + countScore * 0.20);
+  // Recency multiplier
+  let recency = 1.0;
+  if (windows?.inWeek && windows?.inMonth) recency = 1.5;   // dominant right now
+  else if (windows?.inWeek) recency = 1.40;                  // hot this week
+  else if (windows?.inMonth) recency = 1.10;                 // recent form
+  // else all-time only — no boost (may be cold)
+  return Math.min(Math.round(base * recency), 100);
 }
 
 /**
@@ -289,21 +304,46 @@ async function fetchMultiWindowSportsLB(): Promise<any[]> {
   const hit = getCache<any[]>(key);
   if (hit) return hit;
   const [allW, weekW, monthW] = await Promise.all([
-    fetchOfficialLeaderboard("ALL",   50, "sports"),
-    fetchOfficialLeaderboard("WEEK",  50, "sports"),
-    fetchOfficialLeaderboard("MONTH", 50, "sports"),
+    fetchOfficialLeaderboard("ALL",   200, "sports"), // was 50 — more all-time winners
+    fetchOfficialLeaderboard("WEEK",  100, "sports"), // was 50 — current hot hands
+    fetchOfficialLeaderboard("MONTH", 100, "sports"), // was 50 — recent form
   ]);
-  const seen = new Set<string>();
-  const merged: any[] = [];
-  for (const t of [...allW, ...weekW, ...monthW]) {
+  // Build per-wallet window membership for recency scoring
+  const byWallet = new Map<string, any>();
+  const windowFlags = new Map<string, { inAll: boolean; inWeek: boolean; inMonth: boolean }>();
+  for (const t of allW) {
     const w = (t.proxyWallet || "").toLowerCase();
-    if (!w || seen.has(w)) continue;
-    seen.add(w);
-    // Use the highest PNL across windows for the same trader
-    const existing = merged.find(x => (x.proxyWallet || "").toLowerCase() === w);
-    if (!existing) { merged.push(t); }
-    else { existing.pnl = String(Math.max(parseFloat(existing.pnl || "0"), parseFloat(t.pnl || "0"))); }
+    if (!w) continue;
+    byWallet.set(w, t);
+    windowFlags.set(w, { inAll: true, inWeek: false, inMonth: false });
   }
+  for (const t of weekW) {
+    const w = (t.proxyWallet || "").toLowerCase();
+    if (!w) continue;
+    const flags = windowFlags.get(w) || { inAll: false, inWeek: false, inMonth: false };
+    flags.inWeek = true;
+    const existing = byWallet.get(w);
+    if (!existing) { byWallet.set(w, t); windowFlags.set(w, flags); }
+    else {
+      // prefer higher PNL
+      if (parseFloat(t.pnl || "0") > parseFloat(existing.pnl || "0")) byWallet.set(w, { ...t, ...flags });
+      else windowFlags.set(w, flags);
+    }
+  }
+  for (const t of monthW) {
+    const w = (t.proxyWallet || "").toLowerCase();
+    if (!w) continue;
+    const flags = windowFlags.get(w) || { inAll: false, inWeek: false, inMonth: false };
+    flags.inMonth = true;
+    const existing = byWallet.get(w);
+    if (!existing) { byWallet.set(w, t); windowFlags.set(w, flags); }
+    else { windowFlags.set(w, flags); }
+  }
+  // Annotate each trader with their window flags for recency scoring downstream
+  const merged = Array.from(byWallet.entries()).map(([w, t]) => ({
+    ...t,
+    _windows: windowFlags.get(w) || { inAll: false, inWeek: false, inMonth: false },
+  }));
   setCache(key, merged, 10 * 60 * 1000);
   return merged;
 }
@@ -345,12 +385,17 @@ async function enrichGameMarketsFromGamma(): Promise<void> {
         try { outcomePrices = JSON.parse(m.outcomePrices || "[]").map(parseFloat); } catch {}
         const volume    = parseFloat(m.volume    || m.volumeNum    || "0");
         const liquidity = parseFloat(m.liquidity || m.liquidityNum || "0");
+        let enrichedGst: string | undefined = existing.gameStartTime;
+        if (m.gameStartTime && !enrichedGst) {
+          enrichedGst = String(m.gameStartTime).replace(" ", "T").replace("+00", "Z");
+        }
         gameMarketRegistry.set(condId, {
           ...existing,
-          volume:       volume    > 0 ? volume    : existing.volume,
-          liquidity:    liquidity > 0 ? liquidity : existing.liquidity,
-          currentPrice: outcomePrices[0] > 0 ? outcomePrices[0] : existing.currentPrice,
-          slug: m.slug || existing.slug,
+          volume:        volume    > 0 ? volume    : existing.volume,
+          liquidity:     liquidity > 0 ? liquidity : existing.liquidity,
+          currentPrice:  outcomePrices[0] > 0 ? outcomePrices[0] : existing.currentPrice,
+          slug:          m.slug || existing.slug,
+          gameStartTime: enrichedGst,
         });
       }
     } catch (e: any) {
@@ -438,19 +483,33 @@ function computeOutcomeLabel(title: string, side: "YES" | "NO"): string {
     const spd  = spreadMatch[2];
     return side === "YES" ? `${team} ${spd} covers` : `${team} doesn't cover`;
   }
-  // "Will [the] Team win ..." futures
-  const willMatch = t.match(/will\s+(?:the\s+)?(.+?)\s+win/i);
-  if (willMatch) {
+  // DRAW markets: "Will X vs Y end in a draw?" OR "X vs Y: draw" OR "draw"
+  if (/end(s)?\s+in\s+a\s+draw|result.*draw|draw.*result/i.test(t)) {
+    return side === "YES" ? "DRAW" : "No Draw";
+  }
+  if (/:\s*draw\s*$/i.test(t)) {
+    return side === "YES" ? "DRAW" : "No Draw";
+  }
+  // BTTS: "Both Teams to Score" or "BTTS"
+  if (/both\s+teams?\s+to\s+score|\bbtts\b/i.test(t)) {
+    return side === "YES" ? "BTTS — Yes" : "BTTS — No";
+  }
+  // "Will [the] Team win ..." futures — but NOT "Will X vs Y ...end in..."
+  // Must not have "vs" to avoid matching draw/head-to-head markets
+  const willMatch = t.match(/^will\s+(?:the\s+)?(.+?)\s+win/i);
+  if (willMatch && !willMatch[1].match(/\s+vs\.?\s+/i)) {
     const team = willMatch[1].trim();
     return side === "YES" ? `${team} WIN` : `${team} won't win`;
   }
-  // "Team1 vs. Team2" game winner (no colon = winner market)
+  // "Team1 vs. Team2" game winner (no colon = head-to-head winner market)
   if (!t.includes(":")) {
-    const vsMatch = t.match(/^(.+?)\s+vs\.?\s+(.+)$/i);
+    // Strip leading "Will " prefix if present
+    const clean = t.replace(/^will\s+/i, "");
+    const vsMatch = clean.match(/^(.+?)\s+vs\.?\s+([^?]+)/i);
     if (vsMatch) {
-      return side === "YES"
-        ? `${vsMatch[1].trim()} WIN`
-        : `${vsMatch[2].trim()} WIN`;
+      const t1 = vsMatch[1].trim().replace(/\s+(win|beat|cover).*$/i, "");
+      const t2 = vsMatch[2].trim().replace(/\s+(win|beat|cover).*$/i, "").replace(/\?$/, "");
+      return side === "YES" ? `${t1} WIN` : `${t2} WIN`;
     }
   }
   // "Team1 vs. Team2: Sub-market" — e.g. "Warriors vs. Jazz: O/U 225.5"
@@ -459,13 +518,15 @@ function computeOutcomeLabel(title: string, side: "YES" | "NO"): string {
     const sub = colonAfterVs[3].trim();
     const subOu = sub.match(/o\/?u\s*([\d.]+)/i);
     if (subOu) return side === "YES" ? `Over ${subOu[1]}` : `Under ${subOu[1]}`;
+    if (/draw/i.test(sub)) return side === "YES" ? "DRAW" : "No Draw";
+    if (/btts|both\s+teams/i.test(sub)) return side === "YES" ? "BTTS — Yes" : "BTTS — No";
     return `${sub} — ${side}`;
   }
   // "Tournament: Player1 vs. Player2" — colon before vs (tennis, soccer, etc.)
   const tourneyVs = t.match(/^.+?:\s*(.+?)\s+vs\.?\s+(.+)$/i);
   if (tourneyVs) {
     const p1 = tourneyVs[1].trim();
-    const p2 = tourneyVs[2].trim();
+    const p2 = tourneyVs[2].trim().replace(/\?$/, "");
     return side === "YES" ? `${p1} WIN` : `${p2} WIN`;
   }
   return side;
@@ -509,10 +570,13 @@ async function buildMarketDatabase(limit = 800): Promise<Map<string, {
     }
     const tIds = tokens.map((t: any) => String(t.token_id || t.tokenId || "")).filter(Boolean);
 
+    let gst: string | undefined;
+    if (m.gameStartTime) gst = String(m.gameStartTime).replace(" ", "T").replace("+00", "Z");
     db.set(condId, {
       question: m.question || m.title || condId,
       slug: m.slug,
       endDate: m.endDate,
+      gameStartTime: gst,
       active: m.active !== false && m.closed !== true,
       tokenIds: tIds,
       category: m.groupItemTagSlug || m.category || "other",
@@ -734,6 +798,14 @@ function parseMarket(m: any) {
       if (Array.isArray(parsed)) tokenIds = parsed.map(String).filter(Boolean);
     } catch {}
   }
+  // gameStartTime: Polymarket's exact game start (ISO UTC). Format varies: "2026-03-11 00:30:00+00"
+  // Normalize to standard ISO so Date() can parse it reliably
+  let gameStartTime: string | undefined;
+  const rawGST = m.gameStartTime;
+  if (rawGST) {
+    const normalized = String(rawGST).replace(" ", "T").replace("+00", "Z");
+    gameStartTime = normalized;
+  }
   return {
     id: m.id || m.conditionId || "",
     question: m.question || m.title || "",
@@ -743,6 +815,7 @@ function parseMarket(m: any) {
     volume: parseFloat(m.volume || m.volumeNum || "0"),
     liquidity: parseFloat(m.liquidity || m.liquidityNum || "0"),
     endDate: m.endDate,
+    gameStartTime,
     active: m.active !== false && m.closed !== true,
     traderCount: parseInt(m.uniqueTraders || m.traderCount || "0"),
     conditionId: m.conditionId || m.id || "",
@@ -970,7 +1043,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           market: title.slice(0, 80), slug: trade.slug, conditionId: condId,
           side, size: Math.round(size), price: Math.round(price * 1000) / 1000,
           americanOdds: toAmericanOdds(price),
-          gameStatus: categoriseMarket(title, mEndDate),
+          gameStatus: categoriseMarket(title, mEndDate, dbEntry?.gameStartTime),
           endDate: mEndDate,
           timestamp: ts, minutesAgo: Math.round((now - ts) / 60_000),
           sharpAction: signalsByMarket.get(condId) ?? null,
@@ -1028,11 +1101,17 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const pnl = parseFloat(t.pnl || "0");
           const vol = parseFloat(t.vol || "0");
           const roi = vol > 0 ? (pnl / vol) * 100 : 0;
-          const qualityScore = traderQualityScore(pnl, roi, 0);
+          const windows = t._windows as { inAll?: boolean; inWeek?: boolean; inMonth?: boolean } | undefined;
+          const qualityScore = traderQualityScore(pnl, roi, 0, windows);
           const tier =
             pnl >= 100_000 ? "elite"
             : pnl >= 30_000 ? "pro"
             : "active";
+          // Compute human-readable recent form label
+          const recentForm = windows?.inWeek && windows?.inMonth ? "🔥 Hot"
+            : windows?.inWeek ? "⚡ This week"
+            : windows?.inMonth ? "📈 This month"
+            : "all-time";
           // If userName is a hex+timestamp auto-generated name, display as truncated wallet
           const rawName = t.userName || "";
           const displayedName = isHexTimestampUsername(rawName) || !rawName
@@ -1051,9 +1130,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             rank:          parseInt(t.rank || String(i + 1)),
             qualityScore,
             tier,
+            recentForm,
             polyAnalyticsUrl: `https://polymarketanalytics.com/traders/${t.proxyWallet || ""}`,
           };
         })
+        .sort((a, b) => b.qualityScore - a.qualityScore) // rank by recency-weighted score
         .slice(0, limit);
 
       const result = { traders, fetchedAt: Date.now(), window: "ALL+WEEK+MONTH", category, source: "sports_leaderboard_v5_multiwindow" };
@@ -1080,7 +1161,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       let markets = raw.map(m => {
         const parsed = parseMarket(m);
         const mType  = classifyMarketType(parsed.question);
-        const gameStatus = categoriseMarket(parsed.question, parsed.endDate);
+        const gameStatus = categoriseMarket(parsed.question, parsed.endDate, parsed.gameStartTime);
         const sharpAction = signalsByMarket.get(parsed.id || parsed.conditionId || "") ?? null;
         return { ...parsed, marketType: mType, gameStatus, sharpAction };
       }).filter(m => {
@@ -1250,7 +1331,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           size: Math.round(size),
           price: Math.round(price * 1000) / 1000,
           americanOdds: toAmericanOdds(price),
-          gameStatus: categoriseMarket(title, alertEndDate),
+          gameStatus: categoriseMarket(title, alertEndDate, alertDbEntry?.gameStartTime),
           endDate: alertEndDate,
           timestamp: ts,
           minutesAgo: Math.round((now - ts) / 60_000),
@@ -1305,9 +1386,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const vol = parseFloat(t.vol || "0");
         const roi = vol > 0 ? (pnl / vol) * 100 : 0;
         const name = t.userName || truncAddr(addr);
+        // Use _windows from multi-window merge for recency weighting
+        const windows = t._windows as { inAll?: boolean; inWeek?: boolean; inMonth?: boolean } | undefined;
         lbMap.set(addr, {
           name, pnl, roi,
-          qualityScore: traderQualityScore(pnl, roi, 10),
+          qualityScore: traderQualityScore(pnl, roi, 10, windows),
           isLeaderboard: true,
           isSportsLb: true,
         });
@@ -1536,7 +1619,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         seenSignalIds.add(id);
 
         const isSports = isSportsRelated(mw.question);
-        const mType = categoriseMarket(mw.question, mw.endDate || mInfo?.endDate);
+        const mType = categoriseMarket(mw.question, mw.endDate || mInfo?.endDate, mInfo?.gameStartTime);
         const marketCategory = classifyMarketType(mw.question);
         const isActionable = computeIsActionable(currentPrice, avgEntry, side);
         const bigPlayScore = computeBigPlayScore(totalDominantSize, dominant.length);
@@ -1645,7 +1728,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                 currentPrice: curPrice,
                 volume: 0, liquidity: 0, active: true,
                 marketType: classifyMarketType(title),
-                gameStatus: categoriseMarket(title, resolvedEndDate),
+                gameStatus: categoriseMarket(title, resolvedEndDate, marketDb.get(condId)?.gameStartTime),
               });
             }
             const pg = posMap.get(mapKey)!;
@@ -1722,7 +1805,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             avgROI, consensusPct, valueDelta, avgSize, pg.traders.length, 70
           );
 
-          const mType = categoriseMarket(pg.question, pg.endDate);
+          const mType = categoriseMarket(pg.question, pg.endDate, marketDb.get(pg.conditionId)?.gameStartTime);
           const marketCategory = classifyMarketType(pg.question);
           const isActionable = computeIsActionable(avgCurPrice, avgEntry, pg.side);
           const bigPlayScore = computeBigPlayScore(pg.totalValue, pg.traders.length);
@@ -1940,7 +2023,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         );
 
         const tier = dominant.length >= 3 ? "HIGH" : "MED";
-        const marketType = categoriseMarket(info.question || condId, info.endDate);
+        const marketType = categoriseMarket(info.question || condId, info.endDate, info.gameStartTime);
         const marketCategory = classifyMarketType(info.question || condId);
         const isActionable = computeIsActionable(currentPrice, avgEntry, side);
         const bigPlayScore = computeBigPlayScore(totalDominantSize, dominant.length);

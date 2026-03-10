@@ -109,7 +109,27 @@ All API responses cached in-memory:
 
 ## Multi-Window Leaderboard
 
-`fetchMultiWindowSportsLB()` runs three parallel leaderboard fetches (ALL, WEEK, MONTH with category=sports), deduplicates by proxyWallet keeping highest PNL, and returns 150+ unique traders. Cache key: `lb-multi-sports` (10 min).
+`fetchMultiWindowSportsLB()` runs three parallel leaderboard fetches (ALL×200, WEEK×100, MONTH×100 with category=sports), deduplicates by proxyWallet, and annotates each trader with `_windows: { inAll, inWeek, inMonth }` for recency scoring. Cache key: `lb-multi-sports` (10 min).
+
+## Trader Recency Scoring
+
+`traderQualityScore(pnl, roi, posCount, windows)` applies a recency multiplier:
+- WEEK + MONTH appearance → ×1.5 ("🔥 Hot")
+- WEEK only → ×1.4 ("⚡ This week")
+- MONTH only → ×1.1 ("📈 This month")
+- ALL-time only → ×1.0 (no badge, "all-time")
+
+Traders page sorted by this score (hot hands bubbled to top). Signal lbMap also uses recency-weighted scores.
+
+## LIVE/PREGAME Status
+
+`categoriseMarket(question, endDate, gameStartTime)` uses `gameStartTime` (from Gamma API `gameStartTime` field, normalized to ISO) to accurately determine pregame status: if `now < gameStartTime`, returns "pregame" regardless of endDate proximity.
+
+`buildMarketDatabase` and `enrichGameMarketsFromGamma` both store `gameStartTime` from Gamma API market objects.
+
+## Chart Price History
+
+`GameScorePanel` price chart uses `formatChartTime(ts, allTimes)` which detects multi-day spans (>20h) and shows "Mar 10 14:30" format vs "14:30" for same-day. Tooltip shows full date+time for each point.
 
 ## Design
 
