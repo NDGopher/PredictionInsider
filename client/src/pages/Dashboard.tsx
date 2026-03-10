@@ -8,7 +8,8 @@ import { Link } from "wouter";
 import {
   Zap, Users, BarChart3, TrendingUp, TrendingDown, ArrowRight,
   Activity, Target, AlertCircle, RefreshCw, ExternalLink, X,
-  Radio, Hourglass, CalendarClock, DollarSign, ShieldCheck, ChevronDown, ChevronUp
+  Radio, Hourglass, CalendarClock, DollarSign, ShieldCheck, ChevronDown, ChevronUp,
+  Bell, Clock, Flame
 } from "lucide-react";
 import type { SignalsResponse, LeaderboardResponse, MarketsResponse, Signal } from "@shared/schema";
 
@@ -285,6 +286,13 @@ export default function Dashboard() {
       refetchInterval: 30_000,
     });
 
+  const { data: alertsData, isLoading: alertsLoading } =
+    useQuery<{ alerts: any[]; fetchedAt: number }>({
+      queryKey: ["/api/alerts/live"],
+      staleTime: 40_000,
+      refetchInterval: 45_000,
+    });
+
   const signals = signalsData?.signals || [];
   const topSignals = signals.slice(0, 8);
   const highConfidence = signals.filter(s => s.confidence >= 70);
@@ -477,6 +485,76 @@ export default function Dashboard() {
           </Card>
         </div>
       </div>
+
+      {/* Live Big Action Panel */}
+      <Card>
+        <CardHeader className="pb-2 pt-4 px-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Flame className="w-4 h-4 text-orange-500" />
+              <CardTitle className="text-sm font-semibold">Live Big Action</CardTitle>
+              <span className="text-[10px] text-muted-foreground">— large tracked-trader bets · 45s refresh</span>
+            </div>
+            {alertsData?.alerts?.length ? (
+              <Badge variant="secondary" className="text-[10px]">{alertsData.alerts.length}</Badge>
+            ) : null}
+          </div>
+        </CardHeader>
+        <CardContent className="px-4 pb-4 pt-0">
+          {alertsLoading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-10 w-full" />
+              ))}
+            </div>
+          ) : !alertsData?.alerts?.length ? (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground py-4 justify-center">
+              <Bell className="w-3.5 h-3.5" />
+              No large tracked-trader bets found in recent data
+            </div>
+          ) : (
+            <div className="divide-y divide-border/50">
+              {alertsData.alerts.slice(0, 12).map((alert: any) => (
+                <div key={alert.id} className="flex items-center gap-3 py-2" data-testid={`live-alert-${alert.id}`}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-xs font-medium truncate max-w-[280px]" title={alert.market}>
+                        {alert.market}
+                      </span>
+                      {alert.isSportsLb && (
+                        <span className="text-[10px] px-1 py-0 rounded bg-primary/10 text-primary border border-primary/20 font-semibold shrink-0">LB</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[10px] text-muted-foreground">{alert.trader}</span>
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                        <Clock className="w-2.5 h-2.5" />{alert.minutesAgo}m ago
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
+                      alert.side === "YES"
+                        ? "bg-green-500/10 text-green-700 dark:text-green-300"
+                        : "bg-red-500/10 text-red-700 dark:text-red-300"
+                    }`}>
+                      {alert.side}
+                    </span>
+                    <div className="text-right">
+                      <div className="text-xs font-bold tabular-nums">
+                        ${alert.size >= 1000 ? `${(alert.size / 1000).toFixed(1)}K` : alert.size}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground tabular-nums">
+                        @ {Math.round(alert.price * 100)}¢
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* How It Works */}
       <Card>

@@ -90,10 +90,39 @@ function formatTimeLeft(endDate: string | null | undefined): string {
   return `${d}d ${h % 24}h`;
 }
 
-function MarketCard({ market }: { market: Market & { marketType?: string; gameStatus?: string } }) {
+function SharpActionBanner({ action }: { action: any }) {
+  if (!action) return null;
+  return (
+    <div className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs border ${
+      action.isActionable
+        ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-700 dark:text-emerald-300"
+        : action.bigPlayScore >= 2
+        ? "bg-amber-500/10 border-amber-500/25 text-amber-700 dark:text-amber-300"
+        : "bg-primary/8 border-primary/20 text-primary"
+    }`} data-testid="sharp-action-banner">
+      <div className="flex items-center gap-1.5 font-semibold">
+        <TrendingUp className="w-3 h-3" />
+        <span>SHARPS → {action.side}</span>
+        {action.isActionable && (
+          <span className="text-[10px] px-1 py-0.5 rounded bg-emerald-500/20 font-bold">ACTIONABLE</span>
+        )}
+        {!action.isActionable && action.bigPlayScore >= 2 && (
+          <span className="text-[10px] px-1 py-0.5 rounded bg-amber-500/20 font-bold">BIG PLAY</span>
+        )}
+      </div>
+      <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
+        <span>{action.traderCount} trader{action.traderCount !== 1 ? "s" : ""}</span>
+        <span className="font-bold text-foreground">{action.confidence}/100</span>
+      </div>
+    </div>
+  );
+}
+
+function MarketCard({ market }: { market: Market & { marketType?: string; gameStatus?: string; sharpAction?: any } }) {
   const pct = Math.round(market.currentPrice * 100);
   const timeLeft = formatTimeLeft(market.endDate);
   const gameStatus = market.gameStatus as string | undefined;
+  const sharpAction = (market as any).sharpAction;
 
   return (
     <Card className="hover-elevate" data-testid={`market-card-${market.id}`}>
@@ -120,6 +149,12 @@ function MarketCard({ market }: { market: Market & { marketType?: string; gameSt
         </div>
 
         <PriceBar price={market.currentPrice} />
+
+        {sharpAction && (
+          <div className="mt-3">
+            <SharpActionBanner action={sharpAction} />
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-3 mt-3">
           <div>
@@ -192,6 +227,11 @@ export default function Markets() {
       if (sort === "liquidity")  return b.liquidity - a.liquidity;
       if (sort === "price-high") return b.currentPrice - a.currentPrice;
       if (sort === "price-low")  return a.currentPrice - b.currentPrice;
+      if (sort === "sharps") {
+        const aConf = (a as any).sharpAction?.confidence ?? -1;
+        const bConf = (b as any).sharpAction?.confidence ?? -1;
+        return bConf - aConf;
+      }
       if (sort === "soonest") {
         const aEnd = a.endDate ? new Date(a.endDate).getTime() : Infinity;
         const bEnd = b.endDate ? new Date(b.endDate).getTime() : Infinity;
@@ -309,6 +349,7 @@ export default function Markets() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="soonest">Soonest First</SelectItem>
+            <SelectItem value="sharps">Sharp Action</SelectItem>
             <SelectItem value="volume">Volume</SelectItem>
             <SelectItem value="liquidity">Liquidity</SelectItem>
             <SelectItem value="price-high">Price High</SelectItem>

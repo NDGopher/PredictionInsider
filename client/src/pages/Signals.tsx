@@ -425,6 +425,7 @@ export default function Signals() {
   const [sort, setSort]           = useState("confidence");
   const [mode, setMode]           = useState<"elite" | "fast">("elite");
   const [sportsOnly, setSportsOnly] = useState(true);
+  const [betType, setBetType]     = useState<"all" | "moneyline" | "spread" | "total" | "futures">("all");
   const [notifEnabled, setNotifEnabled] = useState(Notification?.permission === "granted");
   const [countdown, setCountdown] = useState(mode === "elite" ? ELITE_REFRESH_SEC : FAST_REFRESH_SEC);
   const [alertHistory, setAlertHistory] = useState<Array<{ id: string; question: string; confidence: number; ts: number }>>([]);
@@ -525,6 +526,12 @@ export default function Signals() {
       if (filter === "futures") return (s as any).marketType === "futures";
       if (filter === "yes")     return s.side === "YES";
       if (filter === "no")      return s.side === "NO";
+      // Bet-type filter
+      if (betType !== "all") {
+        const cat = ((s as any).marketCategory || "other").toLowerCase();
+        if (betType === "futures") return cat === "futures";
+        return cat === betType;
+      }
       return true;
     })
     .sort((a, b) => {
@@ -677,6 +684,39 @@ export default function Signals() {
             </button>
           </div>
         )}
+      </div>
+
+      {/* Bet-type filter tabs */}
+      <div className="flex items-center gap-1 flex-wrap">
+        {(["all", "moneyline", "spread", "total", "futures"] as const).map(bt => {
+          const label: Record<typeof bt, string> = {
+            all: "All Types", moneyline: "Moneyline", spread: "Spread",
+            total: "Over/Under", futures: "Futures",
+          };
+          const count = bt === "all" ? signals.length : signals.filter(s => {
+            const cat = ((s as any).marketCategory || "other").toLowerCase();
+            return cat === bt;
+          }).length;
+          return (
+            <button
+              key={bt}
+              onClick={() => setBetType(bt)}
+              data-testid={`button-bet-type-${bt}`}
+              className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-all border ${
+                betType === bt
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-muted border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
+              }`}
+            >
+              {label[bt]}
+              {count > 0 && (
+                <span className={`ml-0.5 px-1 rounded text-[10px] font-bold ${
+                  betType === bt ? "bg-primary-foreground/20 text-primary-foreground" : "bg-background text-muted-foreground"
+                }`}>{count}</span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Filters */}

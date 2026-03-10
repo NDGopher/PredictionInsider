@@ -37,6 +37,14 @@ function upsertGameMarket(conditionId: string, entry: GameMarketEntry) {
   }
 }
 
+// ─── Signal-per-market registry (for /api/markets sharp action overlay) ───────
+interface SharpAction {
+  side: "YES" | "NO"; confidence: number; traderCount: number;
+  totalUsdc: number; isActionable: boolean; bigPlayScore: number;
+  avgEntry: number; currentPrice: number; marketCategory?: string;
+}
+const signalsByMarket = new Map<string, SharpAction>();
+
 // ─── Fetch helpers ────────────────────────────────────────────────────────────
 async function fetchWithRetry(url: string, options: RequestInit = {}, retries = 3): Promise<Response> {
   for (let i = 0; i < retries; i++) {
@@ -261,6 +269,46 @@ async function fetchSportsMarkets(limit = 800): Promise<any[]> {
   const markets: any[] = Array.isArray(data) ? data : data.data || [];
   setCache(key, markets, 3 * 60 * 1000);
   return markets;
+}
+
+/** Enrich game market registry with volume/liquidity/price from Gamma API by conditionId.
+ *  Called non-blocking after signal generation populates the registry. */
+async function enrichGameMarketsFromGamma(): Promise<void> {
+  const cKey = "gmr-enriched";
+  if (getCache<boolean>(cKey)) return; // skip if enriched recently
+  const ids = Array.from(gameMarketRegistry.keys());
+  if (ids.length === 0) return;
+
+  const BATCH = 20;
+  for (let i = 0; i < ids.length; i += BATCH) {
+    const batch = ids.slice(i, i + BATCH);
+    const query = batch.map(id => `condition_ids=${encodeURIComponent(id)}`).join("&");
+    try {
+      const res = await fetchWithRetry(`${GAMMA_API}/markets?${query}&limit=${BATCH + 5}`);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const markets: any[] = Array.isArray(data) ? data : data.data || [];
+      for (const m of markets) {
+        const condId = m.conditionId || m.id;
+        if (!condId || !gameMarketRegistry.has(condId)) continue;
+        const existing = gameMarketRegistry.get(condId)!;
+        let outcomePrices: number[] = [];
+        try { outcomePrices = JSON.parse(m.outcomePrices || "[]").map(parseFloat); } catch {}
+        const volume    = parseFloat(m.volume    || m.volumeNum    || "0");
+        const liquidity = parseFloat(m.liquidity || m.liquidityNum || "0");
+        gameMarketRegistry.set(condId, {
+          ...existing,
+          volume:       volume    > 0 ? volume    : existing.volume,
+          liquidity:    liquidity > 0 ? liquidity : existing.liquidity,
+          currentPrice: outcomePrices[0] > 0 ? outcomePrices[0] : existing.currentPrice,
+          slug: m.slug || existing.slug,
+        });
+      }
+    } catch (e: any) {
+      console.warn(`enrichGameMarketsFromGamma batch ${i} failed:`, e.message);
+    }
+  }
+  setCache(cKey, true, 4 * 60_000);
 }
 
 async function fetchMidpoint(tokenId: string): Promise<number | null> {
@@ -745,7 +793,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const parsed = parseMarket(m);
         const mType  = classifyMarketType(parsed.question);
         const gameStatus = categoriseMarket(parsed.question, parsed.endDate);
-        return { ...parsed, marketType: mType, gameStatus };
+        const sharpAction = signalsByMarket.get(parsed.id || parsed.conditionId || "") ?? null;
+        return { ...parsed, marketType: mType, gameStatus, sharpAction };
       }).filter(m => {
         if (!m.id || !m.question || !m.active) return false;
         if (sportsOnly && !isSportsRelated(m.question)) return false;
@@ -787,6 +836,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           if (type === "spread" && entry.marketType !== "spread") continue;
           if (type === "total" && entry.marketType !== "total") continue;
 
+          const sharpForReg = signalsByMarket.get(condId);
           markets.push({
             id: condId,
             question: entry.question,
@@ -799,6 +849,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             marketType: entry.marketType,
             gameStatus: entry.gameStatus,
             category: "sports",
+            sharpAction: sharpForReg ?? null,
           } as any);
         }
       }
@@ -841,6 +892,87 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       res.json(data);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── GET /api/alerts/live ─── Recent big trades from tracked traders ──────────
+  app.get("/api/alerts/live", async (req, res) => {
+    try {
+      const cKey = "live-alerts-v2";
+      const hit  = getCache<unknown>(cKey);
+      if (hit) { res.json(hit); return; }
+
+      const now = Date.now();
+      const [allTrades, allSportsLb] = await Promise.all([
+        fetchRecentTrades(3000),
+        fetchMultiWindowSportsLB(),
+      ]);
+
+      const lbMap = new Map<string, { name: string; pnl: number; isSportsLb: boolean }>();
+      for (const t of allSportsLb) {
+        const w = (t.proxyWallet || "").toLowerCase();
+        if (!w || lbMap.has(w)) continue;
+        lbMap.set(w, {
+          name: t.userName || truncAddr(w),
+          pnl: parseFloat(t.pnl || "0"),
+          isSportsLb: true,
+        });
+      }
+
+      const alerts: any[] = [];
+      const seen = new Set<string>();
+
+      for (const trade of allTrades) {
+        const wallet = (trade.proxyWallet || "").toLowerCase();
+        const isTracked = lbMap.has(wallet);
+        const size = parseFloat(trade.size || trade.amount || "0");
+
+        // Only tracked traders OR very large anonymous bets ($5K+)
+        if (!isTracked && size < 5000) continue;
+        if (size < 200) continue;
+
+        const title = trade.title || trade.market || "";
+        if (!isSportsRelated(title)) continue;
+        if (!title) continue;
+
+        const key = `${trade.conditionId || "?"}-${wallet}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        const trader = lbMap.get(wallet);
+        const side = (trade.outcomeIndex === 0 || trade.outcome === "Yes") ? "YES" : "NO";
+        const price = parseFloat(trade.price || "0.5");
+        const ts    = trade.timestamp ? trade.timestamp * 1000 : (trade.createdAt ? new Date(trade.createdAt).getTime() : now);
+
+        alerts.push({
+          id: `alert-${trade.id || key}`,
+          trader: trader?.name || truncAddr(wallet),
+          wallet,
+          isTracked,
+          isSportsLb: trader?.isSportsLb ?? false,
+          market: title.slice(0, 80),
+          slug: trade.slug,
+          conditionId: trade.conditionId,
+          side,
+          size: Math.round(size),
+          price: Math.round(price * 1000) / 1000,
+          timestamp: ts,
+          minutesAgo: Math.round((now - ts) / 60_000),
+          sharpAction: signalsByMarket.get(trade.conditionId || "") ?? null,
+        });
+
+        if (alerts.length >= 40) break;
+      }
+
+      // Sort by size (largest first), then by time (most recent)
+      alerts.sort((a, b) => b.size - a.size);
+
+      const result = { alerts: alerts.slice(0, 30), fetchedAt: now };
+      setCache(cKey, result, 45_000); // 45s cache
+      res.json(result);
+    } catch (err: any) {
+      console.error("Live alerts error:", err.message);
+      res.status(500).json({ alerts: [], fetchedAt: Date.now(), error: err.message });
     }
   });
 
@@ -1321,6 +1453,25 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       signals.sort((a, b) => b.confidence - a.confidence);
       console.log(`[Elite v11] ${signals.length} signals total (trades + positions)`);
 
+      // ── Populate signal-per-market registry for /api/markets sharp overlay ────
+      signalsByMarket.clear();
+      for (const s of signals) {
+        const existing = signalsByMarket.get(s.marketId);
+        if (!existing || s.confidence > existing.confidence) {
+          signalsByMarket.set(s.marketId, {
+            side: s.side as "YES" | "NO",
+            confidence: s.confidence,
+            traderCount: s.traderCount,
+            totalUsdc: s.totalNetUsdc,
+            isActionable: s.isActionable,
+            bigPlayScore: s.bigPlayScore,
+            avgEntry: s.avgEntryPrice,
+            currentPrice: s.currentPrice,
+            marketCategory: s.marketCategory,
+          });
+        }
+      }
+
       const response = {
         signals,
         topTraderCount: lbMap.size,
@@ -1329,7 +1480,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         fetchedAt: now,
         source: "verified_sports_v11",
       };
-      setCache(cKey, response, 2 * 60 * 1000); // 2 min cache for faster updates
+      setCache(cKey, response, 2 * 60 * 1000);
+
+      // Enrich game market registry non-blocking (fills volume/liquidity for /api/markets)
+      enrichGameMarketsFromGamma().catch(e => console.warn("enrichGMR:", e.message));
+
       res.json(response);
     } catch (err: any) {
       console.error("Signals error:", err.message);
