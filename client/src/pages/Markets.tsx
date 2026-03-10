@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,57 @@ import {
 } from "@/components/ui/select";
 import {
   BarChart3, Search, ExternalLink, RefreshCw, AlertCircle,
-  TrendingUp, TrendingDown, Clock, Droplets
+  Clock, Droplets, Radio, Hourglass, CalendarClock, TrendingUp
 } from "lucide-react";
 import type { MarketsResponse, Market } from "@shared/schema";
+
+const AUTO_REFRESH_MS = 30_000; // 30s
+
+type MarketType = "upcoming" | "all" | "moneyline" | "spread" | "total" | "futures";
+
+const TYPE_TABS: { value: MarketType; label: string }[] = [
+  { value: "upcoming", label: "Upcoming" },
+  { value: "moneyline", label: "Moneyline" },
+  { value: "spread", label: "Spread" },
+  { value: "total", label: "Total (O/U)" },
+  { value: "futures", label: "Futures" },
+  { value: "all", label: "All" },
+];
+
+function GameStatusBadge({ status }: { status?: string }) {
+  if (status === "live") return (
+    <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/20 animate-pulse">
+      <Radio className="w-2.5 h-2.5" />LIVE
+    </span>
+  );
+  if (status === "pregame") return (
+    <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+      <Hourglass className="w-2.5 h-2.5" />PREGAME
+    </span>
+  );
+  return (
+    <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border">
+      <CalendarClock className="w-2.5 h-2.5" />FUTURES
+    </span>
+  );
+}
+
+function MarketTypeBadge({ type }: { type?: string }) {
+  if (!type || type === "other") return null;
+  const map: Record<string, { label: string; cls: string }> = {
+    moneyline: { label: "MONEYLINE", cls: "bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/20" },
+    spread:    { label: "SPREAD",    cls: "bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20" },
+    total:     { label: "TOTAL",     cls: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20" },
+    futures:   { label: "FUTURES",   cls: "bg-muted text-muted-foreground border-border" },
+  };
+  const cfg = map[type];
+  if (!cfg) return null;
+  return (
+    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${cfg.cls}`}>
+      {cfg.label}
+    </span>
+  );
+}
 
 function PriceBar({ price }: { price: number }) {
   const pct = Math.round(price * 100);
@@ -30,10 +78,22 @@ function PriceBar({ price }: { price: number }) {
   );
 }
 
-function MarketCard({ market }: { market: Market }) {
+function formatTimeLeft(endDate: string | null | undefined): string {
+  if (!endDate) return "";
+  const ms = new Date(endDate).getTime() - Date.now();
+  if (ms < 0) return "Ended";
+  const h = Math.floor(ms / 3600_000);
+  const m = Math.floor((ms % 3600_000) / 60_000);
+  if (h === 0) return `${m}m`;
+  if (h < 24) return `${h}h ${m}m`;
+  const d = Math.floor(h / 24);
+  return `${d}d ${h % 24}h`;
+}
+
+function MarketCard({ market }: { market: Market & { marketType?: string; gameStatus?: string } }) {
   const pct = Math.round(market.currentPrice * 100);
-  const endDate = market.endDate ? new Date(market.endDate) : null;
-  const daysLeft = endDate ? Math.max(0, Math.ceil((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null;
+  const timeLeft = formatTimeLeft(market.endDate);
+  const gameStatus = market.gameStatus as string | undefined;
 
   return (
     <Card className="hover-elevate" data-testid={`market-card-${market.id}`}>
@@ -43,21 +103,12 @@ function MarketCard({ market }: { market: Market }) {
             <div className="text-sm font-medium leading-snug line-clamp-2" data-testid={`market-question-${market.id}`}>
               {market.question}
             </div>
-            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              {market.category && (
-                <Badge variant="secondary" className="text-[10px] py-0 px-1.5 h-4 capitalize">
-                  {market.category}
-                </Badge>
-              )}
-              {(market as any).source === "kalshi" && (
-                <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4 border-blue-500/30 text-blue-600 dark:text-blue-400">
-                  Kalshi
-                </Badge>
-              )}
-              {daysLeft !== null && (
+            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+              <GameStatusBadge status={gameStatus} />
+              <MarketTypeBadge type={market.marketType} />
+              {timeLeft && (
                 <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                  <Clock className="w-3 h-3" />
-                  {daysLeft}d left
+                  <Clock className="w-3 h-3" />{timeLeft}
                 </span>
               )}
             </div>
@@ -94,27 +145,15 @@ function MarketCard({ market }: { market: Market }) {
 
         {market.slug && (
           <div className="mt-3 pt-2.5 border-t border-border/50">
-            {(market as any).source === "kalshi" ? (
-              <a
-                href={`https://kalshi.com/markets/${market.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-[11px] text-primary"
-                data-testid={`link-market-${market.id}`}
-              >
-                Trade on Kalshi <ExternalLink className="w-3 h-3" />
-              </a>
-            ) : (
-              <a
-                href={`https://polymarket.com/market/${market.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-[11px] text-primary"
-                data-testid={`link-market-${market.id}`}
-              >
-                Trade on Polymarket <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
+            <a
+              href={`https://polymarket.com/market/${market.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-[11px] text-primary hover:underline"
+              data-testid={`link-market-${market.id}`}
+            >
+              Trade on Polymarket <ExternalLink className="w-3 h-3" />
+            </a>
           </div>
         )}
       </CardContent>
@@ -123,36 +162,47 @@ function MarketCard({ market }: { market: Market }) {
 }
 
 export default function Markets() {
-  const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("volume");
+  const queryClient = useQueryClient();
+  const [search, setSearch]         = useState("");
+  const [sort, setSort]             = useState("soonest");
   const [priceFilter, setPriceFilter] = useState("all");
+  const [marketType, setMarketType] = useState<MarketType>("upcoming");
+
+  const queryKey = ["/api/markets", marketType];
 
   const { data, isLoading, error, refetch } = useQuery<MarketsResponse>({
-    queryKey: ["/api/markets"],
-    staleTime: 3 * 60 * 1000,
+    queryKey,
+    queryFn: () => fetch(`/api/markets?type=${marketType}&limit=150`).then(r => r.json()),
+    staleTime: 25_000,
+    refetchInterval: AUTO_REFRESH_MS,
   });
 
-  const markets = data?.markets || [];
+  const markets = (data?.markets || []) as (Market & { marketType?: string; gameStatus?: string })[];
 
   const filtered = markets
     .filter(m => {
       if (search && !m.question.toLowerCase().includes(search.toLowerCase())) return false;
-      if (priceFilter === "long") return m.currentPrice < 0.4;
+      if (priceFilter === "long")  return m.currentPrice < 0.4;
       if (priceFilter === "short") return m.currentPrice > 0.6;
-      if (priceFilter === "coin") return m.currentPrice >= 0.4 && m.currentPrice <= 0.6;
+      if (priceFilter === "coin")  return m.currentPrice >= 0.4 && m.currentPrice <= 0.6;
       return true;
     })
     .sort((a, b) => {
-      if (sort === "volume") return b.volume - a.volume;
-      if (sort === "liquidity") return b.liquidity - a.liquidity;
+      if (sort === "volume")     return b.volume - a.volume;
+      if (sort === "liquidity")  return b.liquidity - a.liquidity;
       if (sort === "price-high") return b.currentPrice - a.currentPrice;
-      if (sort === "price-low") return a.currentPrice - b.currentPrice;
+      if (sort === "price-low")  return a.currentPrice - b.currentPrice;
+      if (sort === "soonest") {
+        const aEnd = a.endDate ? new Date(a.endDate).getTime() : Infinity;
+        const bEnd = b.endDate ? new Date(b.endDate).getTime() : Infinity;
+        return aEnd - bEnd;
+      }
       return 0;
     });
 
-  const totalVolume = markets.reduce((s, m) => s + m.volume, 0);
-  const avgPrice = markets.length > 0 ? markets.reduce((s, m) => s + m.currentPrice, 0) / markets.length : 0;
-  const overFifty = markets.filter(m => m.currentPrice > 0.5).length;
+  const liveCount    = markets.filter(m => m.gameStatus === "live").length;
+  const pregameCount = markets.filter(m => m.gameStatus === "pregame").length;
+  const totalVolume  = markets.reduce((s, m) => s + m.volume, 0);
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-5">
@@ -166,7 +216,7 @@ export default function Markets() {
             )}
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Active sports prediction markets on Polymarket
+            Live & upcoming sports markets — moneylines, spreads, and totals
           </p>
         </div>
         <Button
@@ -196,19 +246,39 @@ export default function Markets() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="pt-3 pb-3 px-4">
-              <div className="text-[10px] text-muted-foreground mb-1">Markets Listed</div>
-              <div className="text-lg font-bold">{markets.length}</div>
+            <CardContent className="pt-3 pb-3 px-4 flex items-center gap-2">
+              <div>
+                <div className="text-[10px] text-muted-foreground mb-1">Live Now</div>
+                <div className="text-lg font-bold text-red-500">{liveCount}</div>
+              </div>
+              {liveCount > 0 && <Radio className="w-4 h-4 text-red-500 animate-pulse" />}
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-3 pb-3 px-4">
-              <div className="text-[10px] text-muted-foreground mb-1">Favored YES</div>
-              <div className="text-lg font-bold">{overFifty}/{markets.length}</div>
+              <div className="text-[10px] text-muted-foreground mb-1">Pregame</div>
+              <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{pregameCount}</div>
             </CardContent>
           </Card>
         </div>
       )}
+
+      {/* Market Type Tabs */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {TYPE_TABS.map(tab => (
+          <button
+            key={tab.value}
+            onClick={() => setMarketType(tab.value)}
+            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors border
+              ${marketType === tab.value
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-background text-muted-foreground border-border hover:text-foreground hover:border-border/80"}`}
+            data-testid={`tab-market-type-${tab.value}`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
       {/* Filters */}
       <div className="flex items-center gap-2 flex-wrap">
@@ -238,12 +308,16 @@ export default function Markets() {
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="soonest">Soonest First</SelectItem>
             <SelectItem value="volume">Volume</SelectItem>
             <SelectItem value="liquidity">Liquidity</SelectItem>
             <SelectItem value="price-high">Price High</SelectItem>
             <SelectItem value="price-low">Price Low</SelectItem>
           </SelectContent>
         </Select>
+        <span className="text-xs text-muted-foreground ml-auto">
+          Auto-refreshes every 30s
+        </span>
       </div>
 
       {isLoading ? (
@@ -287,8 +361,8 @@ export default function Markets() {
               </div>
               <div className="text-sm text-muted-foreground mt-1">
                 {markets.length === 0
-                  ? "Sports markets are loading from Polymarket."
-                  : "Try adjusting your filters."}
+                  ? `No ${marketType === "upcoming" ? "upcoming game" : marketType} markets right now. Try "All" to see everything.`
+                  : "Try adjusting your filters or switching tabs."}
               </div>
             </div>
             {search && (
@@ -299,7 +373,7 @@ export default function Markets() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
           {filtered.map(market => (
-            <MarketCard key={market.id} market={market} />
+            <MarketCard key={market.id} market={market as any} />
           ))}
         </div>
       )}

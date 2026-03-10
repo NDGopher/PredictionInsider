@@ -1,14 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import {
   Zap, Users, BarChart3, TrendingUp, TrendingDown, ArrowRight,
-  Activity, Target, AlertCircle, RefreshCw, ExternalLink
+  Activity, Target, AlertCircle, RefreshCw, ExternalLink, X,
+  Radio, Hourglass, CalendarClock, DollarSign, ShieldCheck, ChevronDown, ChevronUp
 } from "lucide-react";
 import type { SignalsResponse, LeaderboardResponse, MarketsResponse, Signal } from "@shared/schema";
+
+const SIGNAL_REFRESH_MS = 90_000; // 90s auto-refresh
 
 function getOutcomeLabel(title: string, side: "YES" | "NO"): string {
   const t = title.trim();
@@ -46,48 +50,195 @@ function ConfidenceBadge({ score }: { score: number }) {
   );
 }
 
-function SignalRow({ signal }: { signal: Signal }) {
-  const [, nav] = useLocation();
-  const outcomeLabel = (signal as any).outcomeLabel || getOutcomeLabel(signal.marketQuestion, signal.side as "YES" | "NO");
-  const polyUrl = (signal as any).slug
-    ? `https://polymarket.com/market/${(signal as any).slug}`
-    : null;
+function GameStatusBadge({ type }: { type?: string }) {
+  if (type === "live") return (
+    <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/20 animate-pulse">
+      <Radio className="w-2.5 h-2.5" />LIVE
+    </span>
+  );
+  if (type === "pregame") return (
+    <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+      <Hourglass className="w-2.5 h-2.5" />PREGAME
+    </span>
+  );
+  return (
+    <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border">
+      <CalendarClock className="w-2.5 h-2.5" />FUTURES
+    </span>
+  );
+}
 
-  const handleClick = () => {
-    if (polyUrl) { window.open(polyUrl, "_blank", "noopener,noreferrer"); }
-    else { nav("/signals"); }
-  };
+function formatUsdc(v: number) {
+  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1000)      return `$${(v / 1000).toFixed(1)}K`;
+  return `$${v.toFixed(0)}`;
+}
+
+function SignalExpandedPanel({ signal, onClose }: { signal: Signal; onClose: () => void }) {
+  const s = signal as any;
+  const outcomeLabel = s.outcomeLabel || getOutcomeLabel(signal.marketQuestion, signal.side as "YES" | "NO");
+  const polyUrl = s.slug ? `https://polymarket.com/market/${s.slug}` : null;
+  const priceDiff = ((signal.currentPrice - signal.avgEntryPrice) * 100).toFixed(1);
+  const priceUp = signal.currentPrice > signal.avgEntryPrice;
+
+  return (
+    <div className="mt-2 rounded-lg border border-border bg-muted/30 p-3 space-y-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="text-xs font-semibold leading-snug text-foreground mb-1">{signal.marketQuestion}</div>
+          <div className={`text-sm font-bold ${signal.side === "YES" ? "text-green-600 dark:text-green-400" : "text-red-500 dark:text-red-400"}`}>
+            {outcomeLabel}
+          </div>
+        </div>
+        <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-0.5">
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* Game status + actionability */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <GameStatusBadge type={s.marketType} />
+        {s.isActionable === true && (
+          <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+            <Target className="w-2.5 h-2.5" />ACTIONABLE
+          </span>
+        )}
+        {s.isActionable === false && (
+          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border">
+            PRICE MOVED
+          </span>
+        )}
+        {(s.bigPlayScore ?? 0) >= 2 && (
+          <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+            <DollarSign className="w-2.5 h-2.5" />BIG PLAY
+          </span>
+        )}
+        {s.sportsLbCount > 0 && (
+          <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-green-500/15 text-green-700 dark:text-green-300 border border-green-500/20">
+            <ShieldCheck className="w-2.5 h-2.5" />SPORTS LB
+          </span>
+        )}
+      </div>
+
+      {/* Price comparison */}
+      <div className="grid grid-cols-3 gap-2">
+        <div className="bg-background rounded-md p-2 text-center border border-border/50">
+          <div className="text-[10px] text-muted-foreground">Live Price</div>
+          <div className="text-base font-bold text-foreground">{(signal.currentPrice * 100).toFixed(1)}¢</div>
+        </div>
+        <div className="bg-background rounded-md p-2 text-center border border-border/50">
+          <div className="text-[10px] text-muted-foreground">Avg Entry</div>
+          <div className="text-base font-bold">{(signal.avgEntryPrice * 100).toFixed(1)}¢</div>
+        </div>
+        <div className="bg-background rounded-md p-2 text-center border border-border/50">
+          <div className="text-[10px] text-muted-foreground">Move</div>
+          <div className={`text-base font-bold ${priceUp ? "text-red-500" : "text-green-600 dark:text-green-400"}`}>
+            {priceUp ? "+" : ""}{priceDiff}¢
+          </div>
+        </div>
+      </div>
+
+      {/* Value line */}
+      {signal.valueDelta !== 0 && (
+        <div className={`flex items-center gap-1.5 text-xs ${signal.valueDelta > 0 ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
+          {signal.valueDelta > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+          {signal.valueDelta > 0
+            ? `${(signal.valueDelta * 100).toFixed(1)}¢ value edge vs current price`
+            : `Price moved ${Math.abs(signal.valueDelta * 100).toFixed(1)}¢ past entry`}
+        </div>
+      )}
+
+      {/* Traders */}
+      {s.traders && s.traders.length > 0 && (
+        <div>
+          <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
+            Traders ({s.traders.length})
+          </div>
+          <div className="space-y-1">
+            {s.traders.slice(0, 4).map((t: any, i: number) => (
+              <div key={i} className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground truncate flex-1">{t.name}</span>
+                <span className="font-semibold ml-2">{formatUsdc(t.size)} @ {(t.entryPrice * 100).toFixed(0)}¢</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Confidence */}
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-muted-foreground">Confidence: <span className="font-bold text-foreground">{signal.confidence}/100</span></span>
+        <span className="text-muted-foreground">{s.traderCount} trader{s.traderCount !== 1 ? "s" : ""} · {formatUsdc(s.totalNetUsdc || 0)} total</span>
+      </div>
+
+      {polyUrl && (
+        <a
+          href={polyUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
+          data-testid={`link-polymarket-${signal.id}`}
+        >
+          View on Polymarket <ExternalLink className="w-3 h-3" />
+        </a>
+      )}
+    </div>
+  );
+}
+
+function SignalRow({ signal }: { signal: Signal }) {
+  const [expanded, setExpanded] = useState(false);
+  const outcomeLabel = (signal as any).outcomeLabel || getOutcomeLabel(signal.marketQuestion, signal.side as "YES" | "NO");
+  const s = signal as any;
 
   const outcomeColor = signal.side === "YES"
     ? "text-green-600 dark:text-green-400"
     : "text-red-500 dark:text-red-400";
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={handleClick}
-      onKeyDown={e => e.key === "Enter" && handleClick()}
-      className="flex items-center gap-3 py-2.5 px-3 rounded-md hover-elevate cursor-pointer border border-transparent hover:border-border"
-      data-testid={`signal-row-${signal.id}`}
-    >
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-medium truncate">{signal.marketQuestion}</span>
-          {signal.isValue && (
-            <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 shrink-0">VALUE</Badge>
-          )}
-          {polyUrl && <ExternalLink className="w-3 h-3 text-muted-foreground shrink-0" />}
+    <div data-testid={`signal-row-${signal.id}`}>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => setExpanded(e => !e)}
+        onKeyDown={e => e.key === "Enter" && setExpanded(prev => !prev)}
+        className="flex items-center gap-3 py-2.5 px-3 rounded-md hover-elevate cursor-pointer border border-transparent hover:border-border"
+      >
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-medium truncate">{signal.marketQuestion}</span>
+            {s.marketType === "live" && (
+              <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1 py-0 rounded bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/20 animate-pulse shrink-0">
+                <Radio className="w-2.5 h-2.5" />LIVE
+              </span>
+            )}
+            {s.isActionable === true && (
+              <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1 py-0 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 shrink-0">
+                <Target className="w-2.5 h-2.5" />ACT
+              </span>
+            )}
+            {(s.bigPlayScore ?? 0) >= 2 && (
+              <span className="text-[10px] font-semibold px-1 py-0 rounded bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 shrink-0">🔥</span>
+            )}
+          </div>
+          <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+            <span className={`text-xs font-semibold ${outcomeColor}`}>
+              {outcomeLabel}
+            </span>
+            <span className="text-xs text-muted-foreground">@ {(signal.currentPrice * 100).toFixed(1)}¢</span>
+            <span className="text-xs text-muted-foreground">{signal.traderCount} traders</span>
+          </div>
         </div>
-        <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-          <span className={`text-xs font-semibold ${outcomeColor}`}>
-            {outcomeLabel}
-          </span>
-          <span className="text-xs text-muted-foreground">@ {(signal.currentPrice * 100).toFixed(1)}¢</span>
-          <span className="text-xs text-muted-foreground">{signal.traderCount} traders</span>
+        <div className="flex items-center gap-2 shrink-0">
+          <ConfidenceBadge score={signal.confidence} />
+          {expanded ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />}
         </div>
       </div>
-      <ConfidenceBadge score={signal.confidence} />
+      {expanded && (
+        <div className="px-3 pb-2">
+          <SignalExpandedPanel signal={signal} onClose={() => setExpanded(false)} />
+        </div>
+      )}
     </div>
   );
 }
@@ -117,18 +268,27 @@ function StatCard({
 
 export default function Dashboard() {
   const { data: signalsData, isLoading: signalsLoading, error: signalsError, refetch: refetchSignals } =
-    useQuery<SignalsResponse>({ queryKey: ["/api/signals"], staleTime: 3 * 60 * 1000 });
+    useQuery<SignalsResponse>({
+      queryKey: ["/api/signals"],
+      staleTime: 80_000,
+      refetchInterval: SIGNAL_REFRESH_MS,
+    });
 
   const { data: tradersData, isLoading: tradersLoading } =
     useQuery<LeaderboardResponse>({ queryKey: ["/api/traders"], staleTime: 5 * 60 * 1000 });
 
   const { data: marketsData, isLoading: marketsLoading } =
-    useQuery<MarketsResponse>({ queryKey: ["/api/markets"], staleTime: 3 * 60 * 1000 });
+    useQuery<MarketsResponse>({
+      queryKey: ["/api/markets", "upcoming"],
+      queryFn: () => fetch("/api/markets?type=upcoming&limit=50").then(r => r.json()),
+      staleTime: 25_000,
+      refetchInterval: 30_000,
+    });
 
   const signals = signalsData?.signals || [];
-  const topSignals = signals.slice(0, 6);
+  const topSignals = signals.slice(0, 8);
   const highConfidence = signals.filter(s => s.confidence >= 70);
-  const valueSignals = signals.filter(s => s.isValue);
+  const actionable = signals.filter(s => (s as any).isActionable === true);
   const traders = tradersData?.traders || [];
 
   const loading = signalsLoading || tradersLoading || marketsLoading;
@@ -139,7 +299,7 @@ export default function Dashboard() {
         <div>
           <h1 className="text-xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Sports prediction market intelligence from top Polymarket traders
+            Sports betting intelligence — live signals from top Polymarket traders
           </p>
         </div>
         <Button
@@ -165,28 +325,28 @@ export default function Dashboard() {
             <StatCard
               icon={Zap}
               label="Active Signals"
-              value={signalsLoading ? "—" : String(signals.length)}
+              value={String(signals.length)}
               sub={`${highConfidence.length} high confidence`}
               color="bg-primary/10 text-primary"
             />
             <StatCard
               icon={Target}
-              label="Value Signals"
-              value={signalsLoading ? "—" : String(valueSignals.length)}
-              sub="Current price beats entry"
-              color="bg-green-500/10 text-green-600 dark:text-green-400"
+              label="Actionable Now"
+              value={String(actionable.length)}
+              sub="Price still near entry"
+              color="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
             />
             <StatCard
               icon={Users}
-              label="Top Traders"
-              value={tradersLoading ? "—" : String(traders.length)}
-              sub="Filtered by PNL & ROI"
+              label="Tracked Traders"
+              value={String(signalsData?.topTraderCount || traders.length)}
+              sub="Multi-window LB"
               color="bg-blue-500/10 text-blue-600 dark:text-blue-400"
             />
             <StatCard
               icon={BarChart3}
               label="Markets Scanned"
-              value={signalsLoading ? "—" : String(signalsData?.marketsScanned || marketsData?.total || 0)}
+              value={String(signalsData?.marketsScanned || 0)}
               sub="Active sports markets"
               color="bg-purple-500/10 text-purple-600 dark:text-purple-400"
             />
@@ -199,18 +359,21 @@ export default function Dashboard() {
         <div className="lg:col-span-2 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-sm">Top Signals</h2>
-            <Link href="/signals">
-              <Button size="sm" variant="ghost" className="gap-1.5 h-7 text-xs" data-testid="link-all-signals">
-                View all <ArrowRight className="w-3 h-3" />
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-muted-foreground">Click to expand · auto-refresh 90s</span>
+              <Link href="/signals">
+                <Button size="sm" variant="ghost" className="gap-1.5 h-7 text-xs" data-testid="link-all-signals">
+                  View all <ArrowRight className="w-3 h-3" />
+                </Button>
+              </Link>
+            </div>
           </div>
 
           <Card>
             <CardContent className="p-2">
               {signalsLoading ? (
                 <div className="space-y-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
+                  {Array.from({ length: 6 }).map((_, i) => (
                     <div key={i} className="px-3 py-2.5">
                       <Skeleton className="h-4 w-3/4 mb-1.5" />
                       <Skeleton className="h-3 w-1/2" />
@@ -325,18 +488,18 @@ export default function Dashboard() {
             {[
               {
                 icon: Users,
-                title: "Identify Top Traders",
-                desc: "We scan Polymarket's public leaderboard and filter for traders with strong PNL, high ROI, and meaningful trade volume.",
+                title: "150+ Tracked Traders",
+                desc: "We pull from ALL, WEEK, and MONTH Polymarket leaderboards to build a database of elite sports traders — capturing both all-time greats and hot streaks.",
               },
               {
                 icon: Activity,
-                title: "Find Consensus",
-                desc: "When 50%+ of top traders share the same position on a sports market, we flag it as a consensus signal worth watching.",
+                title: "Consensus + Actionability",
+                desc: "When 50%+ of tracked traders share a position, we flag it. ACTIONABLE means the current market price is still close to where they entered — you can still get in.",
               },
               {
                 icon: Target,
-                title: "Detect Value",
-                desc: "We compare current market prices to the average entry price of top traders to surface opportunities where value may remain.",
+                title: "Big Play Detection",
+                desc: "Signals with large capital deployed (BIG PLAY) indicate high conviction. We weight signals by bet size, trader quality, and consensus strength.",
               },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="flex gap-3">

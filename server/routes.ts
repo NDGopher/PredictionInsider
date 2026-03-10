@@ -19,6 +19,24 @@ function setCache(key: string, data: unknown, ttlMs: number) {
 }
 const seenSignalIds = new Set<string>();
 
+// ─── Game Market Registry ─────────────────────────────────────────────────────
+// Shared registry populated by positions-based signal generation.
+// Lets the /api/markets route show today's game markets even when they
+// don't appear in the Gamma API's top-800 popularity sort.
+interface GameMarketEntry {
+  question: string; slug?: string; endDate?: string;
+  currentPrice?: number; volume: number; liquidity: number;
+  marketType?: string; gameStatus?: string; active: boolean;
+}
+const gameMarketRegistry = new Map<string, GameMarketEntry>();
+
+function upsertGameMarket(conditionId: string, entry: GameMarketEntry) {
+  const existing = gameMarketRegistry.get(conditionId);
+  if (!existing || (entry.currentPrice && !existing.currentPrice)) {
+    gameMarketRegistry.set(conditionId, entry);
+  }
+}
+
 // ─── Fetch helpers ────────────────────────────────────────────────────────────
 async function fetchWithRetry(url: string, options: RequestInit = {}, retries = 3): Promise<Response> {
   for (let i = 0; i < retries; i++) {
@@ -76,14 +94,69 @@ function isSportsRelated(text: string): boolean {
 // ─── Categorise as Pregame / Live / Futures ───────────────────────────────────
 function categoriseMarket(question: string, endDate?: string): "live" | "pregame" | "futures" {
   const q = (question || "").toLowerCase();
-  // Live signals: in-game phrases
-  if (/(lead|trailing|winning|losing|currently|live|in-game|halftime|first half|second half|quarter|overtime|period)/.test(q)) return "live";
+  // Definitive live signals from question text
+  if (/(lead|trailing|winning|losing|currently|live|in-game|halftime|first half|second half|quarter|overtime|period|inning)/.test(q)) return "live";
   if (!endDate) return "pregame";
   const ms = new Date(endDate).getTime() - Date.now();
   if (ms < 0) return "pregame";          // already ended → still show, was recent
-  if (ms < 4 * 3600 * 1000) return "live";     // ending within 4h
-  if (ms < 7 * 24 * 3600 * 1000) return "pregame"; // ending within 7 days
+  if (ms < 5 * 3600 * 1000) return "live";     // ending within 5h = game in progress
+  if (ms < 7 * 24 * 3600 * 1000) return "pregame"; // ending within 7 days = upcoming game
   return "futures";
+}
+
+// ─── Market type classifiers ─────────────────────────────────────────────────
+function isMoneylineMarket(q: string): boolean {
+  const t = q.toLowerCase();
+  // "Team A vs Team B" with no sub-market modifier
+  if (!(t.includes(" vs ") || t.includes(" vs."))) return false;
+  // Exclude spread/total markers
+  if (/o\/?u\s*[\d.]|total\s*[\d.]|spread|ats|\([+-]\d/.test(t)) return false;
+  // Exclude colon that would indicate a sub-market (unless it's "Tournament: P1 vs P2")
+  const colonIdx = t.indexOf(":");
+  const vsIdx = t.indexOf(" vs");
+  if (colonIdx !== -1 && colonIdx > vsIdx) return false; // "Warriors vs Jazz: O/U 225"
+  return true;
+}
+
+function isSpreadMarket(q: string): boolean {
+  return /spread|ats/i.test(q) || /\([+-]\d+\.?\d*\)/.test(q) || /[+-]\d+\.?\d*\s*(pts?|point)/i.test(q);
+}
+
+function isTotalMarket(q: string): boolean {
+  return /o\/?u\s*[\d.]+/i.test(q) || /total[\s:]+[\d.]+/i.test(q) || /over\/under/i.test(q);
+}
+
+function isFuturesMarket(q: string): boolean {
+  return /\bwill\b.+\b(win|make|reach|appear|advance|go to|qualify)\b/i.test(q)
+    || /\b(season|finals|championship|title|playoffs?|super bowl|nba finals|stanley cup|world series)\b/i.test(q)
+    || /\b(who will win|most wins|league winner|conference winner)\b/i.test(q);
+}
+
+function classifyMarketType(q: string): "moneyline" | "spread" | "total" | "futures" | "other" {
+  if (isTotalMarket(q))     return "total";
+  if (isSpreadMarket(q))    return "spread";
+  if (isMoneylineMarket(q)) return "moneyline";
+  if (isFuturesMarket(q))   return "futures";
+  return "other";
+}
+
+/** Compute actionability: price is still close enough to avg entry to be worth acting on */
+function computeIsActionable(currentPrice: number, avgEntry: number, side: "YES" | "NO"): boolean {
+  const priceDiff = Math.abs(currentPrice - avgEntry);
+  if (currentPrice < 0.08 || currentPrice > 0.90) return false; // out of range
+  // Moved significantly against the signal = stale
+  if (side === "YES" && currentPrice > avgEntry + 0.10) return false; // price jumped, late
+  if (side === "NO"  && currentPrice < avgEntry - 0.10) return false; // price fell, late
+  return priceDiff <= 0.12; // within 12¢ of entry = still actionable
+}
+
+/** Score for "big play": how large is this bet */
+function computeBigPlayScore(totalUsdc: number, traderCount: number): number {
+  const avg = totalUsdc / Math.max(traderCount, 1);
+  if (totalUsdc >= 30_000 || avg >= 15_000) return 3; // huge
+  if (totalUsdc >= 10_000 || avg >= 5_000)  return 2; // big
+  if (totalUsdc >= 3_000  || avg >= 1_500)  return 1; // notable
+  return 0;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -144,13 +217,38 @@ async function fetchOfficialLeaderboard(timePeriod = "ALL", limit = 100, categor
   if (hit) return hit;
   const catParam = category ? `&category=${encodeURIComponent(category)}` : "";
   const res = await fetchWithRetry(
-    `${DATA_API}/v1/leaderboard?window=all&limit=${limit}${catParam}`
+    `${DATA_API}/v1/leaderboard?window=${timePeriod.toLowerCase()}&limit=${limit}${catParam}`
   );
   if (!res.ok) return [];
   const data = await res.json();
   const traders: any[] = Array.isArray(data) ? data : data.data || [];
   setCache(key, traders, 10 * 60 * 1000);
   return traders;
+}
+
+/** Combine ALL + WEEK + MONTH sports leaderboards, deduplicated by proxyWallet */
+async function fetchMultiWindowSportsLB(): Promise<any[]> {
+  const key = "lb-multi-sports";
+  const hit = getCache<any[]>(key);
+  if (hit) return hit;
+  const [allW, weekW, monthW] = await Promise.all([
+    fetchOfficialLeaderboard("ALL",   50, "sports"),
+    fetchOfficialLeaderboard("WEEK",  50, "sports"),
+    fetchOfficialLeaderboard("MONTH", 50, "sports"),
+  ]);
+  const seen = new Set<string>();
+  const merged: any[] = [];
+  for (const t of [...allW, ...weekW, ...monthW]) {
+    const w = (t.proxyWallet || "").toLowerCase();
+    if (!w || seen.has(w)) continue;
+    seen.add(w);
+    // Use the highest PNL across windows for the same trader
+    const existing = merged.find(x => (x.proxyWallet || "").toLowerCase() === w);
+    if (!existing) { merged.push(t); }
+    else { existing.pnl = String(Math.max(parseFloat(existing.pnl || "0"), parseFloat(t.pnl || "0"))); }
+  }
+  setCache(key, merged, 10 * 60 * 1000);
+  return merged;
 }
 
 async function fetchSportsMarkets(limit = 800): Promise<any[]> {
@@ -174,7 +272,7 @@ async function fetchMidpoint(tokenId: string): Promise<number | null> {
     if (!res.ok) return null;
     const data = await res.json();
     const mid = parseFloat(data.mid ?? data.midpoint ?? "0");
-    if (!isNaN(mid) && mid > 0) { setCache(key, mid, 60_000); return mid; }
+    if (!isNaN(mid) && mid > 0) { setCache(key, mid, 30_000); return mid; }
   } catch {}
   return null;
 }
@@ -556,11 +654,27 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     try {
       const category = (req.query.category as string) || "sports";
       const limit    = Math.min(parseInt((req.query.limit as string) || "50"), 100);
-      const cKey     = `traders-v4-${category}-${limit}`;
+      const cKey     = `traders-v5-${category}-${limit}`;
       const hit      = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
-      const raw = await fetchOfficialLeaderboard("ALL", limit * 3, category === "all" ? "" : category);
+      // Use multi-window sports LB for sports category; single window for "all"
+      let raw: any[];
+      if (category === "sports") {
+        raw = await fetchMultiWindowSportsLB();
+      } else {
+        const [allW, weekW] = await Promise.all([
+          fetchOfficialLeaderboard("ALL",  100, category === "all" ? "" : category),
+          fetchOfficialLeaderboard("WEEK", 50,  "sports"),
+        ]);
+        const seen = new Set<string>();
+        raw = [];
+        for (const t of [...allW, ...weekW]) {
+          const w = (t.proxyWallet || "").toLowerCase();
+          if (!w || seen.has(w)) continue;
+          seen.add(w); raw.push(t);
+        }
+      }
 
       // Filter out low-quality / pure arb traders
       const filtered = raw.filter((t: any) => {
@@ -606,7 +720,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         })
         .slice(0, limit);
 
-      const result = { traders, fetchedAt: Date.now(), window: "ALL", category, source: "sports_leaderboard_v4" };
+      const result = { traders, fetchedAt: Date.now(), window: "ALL+WEEK+MONTH", category, source: "sports_leaderboard_v5_multiwindow" };
       setCache(cKey, result, 10 * 60 * 1000);
       res.json(result);
     } catch (err: any) {
@@ -618,15 +732,115 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   // ── GET /api/markets ────────────────────────────────────────────────────────
   app.get("/api/markets", async (req, res) => {
     try {
-      const limit      = Math.min(parseInt((req.query.limit as string) || "100"), 200);
+      const limit      = Math.min(parseInt((req.query.limit as string) || "150"), 300);
+      const type       = (req.query.type as string) || "upcoming"; // upcoming|all|moneyline|spread|total|futures
+      const days       = parseInt((req.query.days as string) || "30"); // wider window — game markets are near-term
       const sportsOnly = req.query.sports !== "false";
       const raw = await fetchSportsMarkets();
-      const markets = raw
-        .map(parseMarket)
-        .filter(m => m.id && m.question && m.active && (!sportsOnly || isSportsRelated(m.question)));
+      const now = Date.now();
+      const maxEndMs = now + days * 24 * 3600_000;
+
+      // ── Build markets from Gamma API ─────────────────────────────────────────
+      let markets = raw.map(m => {
+        const parsed = parseMarket(m);
+        const mType  = classifyMarketType(parsed.question);
+        const gameStatus = categoriseMarket(parsed.question, parsed.endDate);
+        return { ...parsed, marketType: mType, gameStatus };
+      }).filter(m => {
+        if (!m.id || !m.question || !m.active) return false;
+        if (sportsOnly && !isSportsRelated(m.question)) return false;
+        const endMs = m.endDate ? new Date(m.endDate).getTime() : Infinity;
+        if (endMs < now - 30 * 60_000) return false; // ended 30+ min ago
+
+        if (type === "futures") {
+          return endMs > maxEndMs || isFuturesMarket(m.question);
+        } else if (type === "upcoming") {
+          if (isFuturesMarket(m.question) && endMs > now + 7 * 24 * 3600_000) return false;
+          if (endMs > now + 7 * 24 * 3600_000) return false;
+          return true;
+        } else if (type === "all") {
+          return true;
+        } else {
+          // moneyline / spread / total — wide window (7 days)
+          if (endMs > now + 7 * 24 * 3600_000) return false;
+          return true;
+        }
+      });
+
+      // ── Supplement with game markets from position registry ──────────────────
+      // The Gamma API sorts by popularity; today's game markets often don't appear.
+      // The game market registry is populated from elite trader positions (see signals route).
+      if (type !== "futures" && gameMarketRegistry.size > 0) {
+        const existingIds = new Set(markets.map(m => m.id));
+        for (const [condId, entry] of gameMarketRegistry.entries()) {
+          if (existingIds.has(condId)) continue;
+          const endMs = entry.endDate ? new Date(entry.endDate).getTime() : Infinity;
+          if (endMs < now - 30 * 60_000) continue;
+          if (sportsOnly && !isSportsRelated(entry.question)) continue;
+
+          // For upcoming/game tabs, only include near-term markets
+          if (type === "upcoming" && endMs > now + 7 * 24 * 3600_000) continue;
+          if ((type === "moneyline" || type === "spread" || type === "total") && endMs > now + 7 * 24 * 3600_000) continue;
+
+          // Apply market type filter
+          if (type === "moneyline" && entry.marketType !== "moneyline") continue;
+          if (type === "spread" && entry.marketType !== "spread") continue;
+          if (type === "total" && entry.marketType !== "total") continue;
+
+          markets.push({
+            id: condId,
+            question: entry.question,
+            slug: entry.slug,
+            endDate: entry.endDate,
+            currentPrice: entry.currentPrice ?? 0.5,
+            volume: entry.volume ?? 0,
+            liquidity: entry.liquidity ?? 0,
+            active: entry.active,
+            marketType: entry.marketType,
+            gameStatus: entry.gameStatus,
+            category: "sports",
+          } as any);
+        }
+      }
+
+      // Apply specific market type filter (Gamma API results only — registry already filtered above)
+      if (type === "moneyline") markets = markets.filter(m => m.marketType === "moneyline");
+      else if (type === "spread")    markets = markets.filter(m => m.marketType === "spread");
+      else if (type === "total")     markets = markets.filter(m => m.marketType === "total");
+
+      // Sort by soonest ending first for upcoming, then by volume
+      if (type === "upcoming" || type === "moneyline" || type === "spread" || type === "total") {
+        markets.sort((a, b) => {
+          const aEnd = a.endDate ? new Date(a.endDate).getTime() : Infinity;
+          const bEnd = b.endDate ? new Date(b.endDate).getTime() : Infinity;
+          if (aEnd === Infinity && bEnd === Infinity) return (b.volume || 0) - (a.volume || 0);
+          return aEnd - bEnd;
+        });
+      } else {
+        markets.sort((a, b) => (b.volume || 0) - (a.volume || 0));
+      }
+
       res.json({ markets: markets.slice(0, limit), fetchedAt: Date.now(), total: markets.length });
     } catch (err: any) {
       res.status(500).json({ error: err.message, markets: [], fetchedAt: Date.now(), total: 0 });
+    }
+  });
+
+  // ── GET /api/orderbook ─── Live CLOB order book for a token ────────────────
+  app.get("/api/orderbook", async (req, res) => {
+    try {
+      const tokenId = req.query.tokenId as string;
+      if (!tokenId) { res.status(400).json({ error: "tokenId required" }); return; }
+      const cKey = `ob-${tokenId}`;
+      const hit  = getCache<unknown>(cKey);
+      if (hit) { res.json(hit); return; }
+      const r = await fetchWithRetry(`${CLOB_API}/book?token_id=${tokenId}`);
+      if (!r.ok) { res.status(r.status).json({ error: "No orderbook for this token" }); return; }
+      const data = await r.json();
+      setCache(cKey, data, 15_000); // 15s cache
+      res.json(data);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
     }
   });
 
@@ -642,19 +856,19 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       // ── Phase 1: Build verified trader quality map ───────────────────────────
       // Pull from: sports leaderboard (category=sports) + general leaderboard
-      const [rawSportsLb, rawGeneralLb, rawSportsMonth, allTrades, marketDb] = await Promise.all([
-        fetchOfficialLeaderboard("ALL", 100, "sports"),
+      const [allSportsLb, rawGeneralLb, allTrades, marketDb] = await Promise.all([
+        fetchMultiWindowSportsLB(),          // ALL + WEEK + MONTH, deduped
         fetchOfficialLeaderboard("ALL", 100, ""),
-        fetchOfficialLeaderboard("MONTH", 50, "sports"),
         fetchRecentTrades(5000),
         buildMarketDatabase(800),
       ]);
+      const rawSportsLb = allSportsLb; // keep alias for positions section
 
       type TraderInfo = { name: string; pnl: number; roi: number; qualityScore: number; isLeaderboard: boolean; isSportsLb: boolean };
       const lbMap = new Map<string, TraderInfo>();
 
-      // Add sports leaderboard traders (highest quality for sports)
-      for (const t of [...rawSportsLb, ...rawSportsMonth]) {
+      // Add sports leaderboard traders (ALL + WEEK + MONTH windows combined)
+      for (const t of allSportsLb) {
         const addr = (t.proxyWallet || "").toLowerCase();
         if (!addr || lbMap.has(addr)) continue;
         const pnl = parseFloat(t.pnl || "0");
@@ -878,6 +1092,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
         const isSports = isSportsRelated(mw.question);
         const mType = categoriseMarket(mw.question, mInfo?.endDate);
+        const marketCategory = classifyMarketType(mw.question);
+        const isActionable = computeIsActionable(currentPrice, avgEntry, side);
+        const bigPlayScore = computeBigPlayScore(totalDominantSize, dominant.length);
 
         signals.push({
           id, marketId: condId,
@@ -885,6 +1102,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           slug: mw.slug,
           outcome: side, side,
           confidence, tier, marketType: mType, isSports,
+          marketCategory,
+          isActionable,
+          bigPlayScore,
           consensusPct: Math.round(consensusPct),
           valueDelta: Math.round(valueDelta * 1000) / 1000,
           currentPrice: Math.round(currentPrice * 1000) / 1000,
@@ -919,7 +1139,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       // ── Phase 4: Positions-based signals from verified sports traders ──────────
       // Pull current open positions from top sports leaderboard traders.
       // These reflect actual money they have deployed RIGHT NOW.
-      const topSportsWallets = rawSportsLb.slice(0, 30).map((t: any) => (t.proxyWallet || "").toLowerCase()).filter(Boolean);
+      // Use all traders from multi-window LB (up to 60) for richer position coverage
+      const topSportsWallets = [...new Set(
+        allSportsLb.slice(0, 60).map((t: any) => (t.proxyWallet || "").toLowerCase()).filter(Boolean)
+      )];
       if (topSportsWallets.length > 0) {
         const positionBatches = await Promise.all(topSportsWallets.map(w => fetchTraderPositions(w)));
         // Map: conditionId+outcomeIndex → position aggregation
@@ -956,6 +1179,16 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                 slug: pos.slug || pos.eventSlug,
                 endDate: pos.endDate,
                 traders: [], totalValue: 0,
+              });
+              // Register in shared game market registry for /api/markets
+              upsertGameMarket(condId, {
+                question: title,
+                slug: pos.slug || pos.eventSlug,
+                endDate: pos.endDate,
+                currentPrice: curPrice,
+                volume: 0, liquidity: 0, active: true,
+                marketType: classifyMarketType(title),
+                gameStatus: categoriseMarket(title, pos.endDate),
               });
             }
             const pg = posMap.get(mapKey)!;
@@ -1033,6 +1266,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           );
 
           const mType = categoriseMarket(pg.question, pg.endDate);
+          const marketCategory = classifyMarketType(pg.question);
+          const isActionable = computeIsActionable(avgCurPrice, avgEntry, pg.side);
+          const bigPlayScore = computeBigPlayScore(pg.totalValue, pg.traders.length);
           const id = `pos-${pg.conditionId}-${pg.side}`;
           const isNew = !seenSignalIds.has(id);
           seenSignalIds.add(id);
@@ -1044,6 +1280,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             outcome: pg.side, side: pg.side,
             confidence, tier: pg.traders.length >= 3 ? "HIGH" : "MED",
             marketType: mType, isSports: true,
+            marketCategory,
+            isActionable,
+            bigPlayScore,
             consensusPct: 100,
             valueDelta: Math.round(valueDelta * 1000) / 1000,
             currentPrice: Math.round(avgCurPrice * 1000) / 1000,
@@ -1090,7 +1329,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         fetchedAt: now,
         source: "verified_sports_v11",
       };
-      setCache(cKey, response, 5 * 60 * 1000);
+      setCache(cKey, response, 2 * 60 * 1000); // 2 min cache for faster updates
       res.json(response);
     } catch (err: any) {
       console.error("Signals error:", err.message);
@@ -1215,6 +1454,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
         const tier = dominant.length >= 3 ? "HIGH" : "MED";
         const marketType = categoriseMarket(info.question || condId, info.endDate);
+        const marketCategory = classifyMarketType(info.question || condId);
+        const isActionable = computeIsActionable(currentPrice, avgEntry, side);
+        const bigPlayScore = computeBigPlayScore(totalDominantSize, dominant.length);
 
         signals.push({
           id: `fast-${condId}-${side}`,
@@ -1222,7 +1464,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           marketQuestion: info.question || condId,
           slug: info.slug,
           outcome: side, side,
-          confidence, tier, marketType,
+          confidence, tier, marketType, marketCategory,
+          isActionable, bigPlayScore,
           consensusPct: Math.round(consensusPct),
           valueDelta: Math.round(valueDelta * 1000) / 1000,
           currentPrice: Math.round(currentPrice * 1000) / 1000,
@@ -1245,6 +1488,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           generatedAt: now,
           isValue: valueDelta > 0,
           isNew: false,
+          outcomeLabel: computeOutcomeLabel(info.question || condId, side),
         });
       }
 
@@ -1275,7 +1519,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
-      const rows = await fetchAllElitePositions([addr]);
+      const rows = await fetchTraderPositions(addr);
       if (rows.length === 0) { res.json({ address: addr, positions: [], fetchedAt: Date.now() }); return; }
 
       const tokenIds = [...new Set(rows.map(r => String(r.tokenId)))];

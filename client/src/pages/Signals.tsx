@@ -18,8 +18,8 @@ import type { SignalsResponse, Signal } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
 // ─── Auto-refresh intervals ────────────────────────────────────────────────────
-const ELITE_REFRESH_SEC = 5 * 60;    // 5 minutes
-const FAST_REFRESH_SEC  = 90;        // 90 seconds
+const ELITE_REFRESH_SEC = 120;       // 2 minutes (was 5 min)
+const FAST_REFRESH_SEC  = 45;        // 45 seconds (was 90s)
 
 // ─── Alert history (localStorage) ─────────────────────────────────────────────
 const ALERT_KEY = "pi_alert_ids";
@@ -217,6 +217,23 @@ function SignalCard({ signal, mode }: { signal: Signal; mode: "elite" | "fast" }
                   )}
                   {/* Market type */}
                   <MarketTypePill type={(signal as any).marketType} />
+                  {/* Actionability indicator */}
+                  {(signal as any).isActionable === true && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 flex items-center gap-0.5" title="Current price is still close to average entry — actionable now">
+                      <Target className="w-2.5 h-2.5" /> ACTIONABLE
+                    </span>
+                  )}
+                  {(signal as any).isActionable === false && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border" title="Price has moved significantly from avg entry — may have already priced in">
+                      PRICE MOVED
+                    </span>
+                  )}
+                  {/* Big play indicator */}
+                  {((signal as any).bigPlayScore ?? 0) >= 2 && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20 flex items-center gap-0.5" title="Large capital deployed — significant bet">
+                      <DollarSign className="w-2.5 h-2.5" /> BIG PLAY
+                    </span>
+                  )}
                   {signal.isValue && (
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
                       VALUE EDGE
