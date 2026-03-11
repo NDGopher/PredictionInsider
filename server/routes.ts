@@ -1625,150 +1625,64 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/traders", async (req, res) => {
     try {
       const category = (req.query.category as string) || "sports";
-      const limit    = Math.min(parseInt((req.query.limit as string) || "300"), 600);
-      const cKey     = `traders-v7-${category}-${limit}`;
+      const cKey     = `traders-curated-v1-${category}`;
       const hit      = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
-      // ── Step 1: Fetch the primary leaderboard for this category ──────────────
-      // Sports: paginated multi-window approach for 500+ unique traders
-      // All: paginated general leaderboard
-      let raw: any[];
-      if (category === "sports") {
-        raw = await fetchMultiWindowSportsLB(); // already paginated: 500 ALL + 200 WEEK + 200 MONTH
-      } else {
-        const [allW, weekW] = await Promise.all([
-          fetchPaginatedLeaderboard("ALL",  300, ""),
-          fetchPaginatedLeaderboard("WEEK", 150, ""),
-        ]);
-        const seen = new Set<string>();
-        raw = [];
-        for (const t of [...allW, ...weekW]) {
-          const w = (t.proxyWallet || "").toLowerCase();
-          if (!w || seen.has(w)) continue;
-          seen.add(w); raw.push(t);
-        }
-      }
+      // ── Curated-only: Return ALL 42 hand-picked elite traders from DB ──────
+      // Query every profile in elite_trader_profiles — these are all curated.
+      const profileRows = await elitePool.query<{
+        wallet: string; username: string; metrics: any;
+      }>(`SELECT wallet, username, metrics FROM elite_trader_profiles ORDER BY (metrics->>'overallPNL')::numeric DESC NULLS LAST`);
 
-      // ── Step 2: Build verified trader set from the leaderboard ───────────────
-      const seenAddrs = new Set<string>();
       const traders: any[] = [];
+      for (let i = 0; i < profileRows.rows.length; i++) {
+        const row  = profileRows.rows[i];
+        const m    = row.metrics ?? {};
+        const addr = row.wallet;
 
-      const addLbTrader = (t: any, idx: number) => {
-        const addr = (t.proxyWallet || "").toLowerCase();
-        if (!addr || seenAddrs.has(addr)) return;
-        const pnl = parseFloat(t.pnl || "0");
-        const vol = parseFloat(t.vol || "0");
-        if (vol > 500_000 && pnl / vol < 0.025) return; // skip arb bots
-        if (pnl < 500) return; // skip low-PNL
-        seenAddrs.add(addr);
-        const roi = vol > 0 ? (pnl / vol) * 100 : 0;
-        const windows = t._windows as { inAll?: boolean; inWeek?: boolean; inMonth?: boolean } | undefined;
-        const qualityScore = traderQualityScore(pnl, roi, 0, windows);
+        const pnl      = parseFloat(m.overallPNL ?? "0");
+        const vol      = parseFloat(m.totalUSDC ?? "0");
+        const roi      = parseFloat(m.overallROI ?? (vol > 0 ? String((pnl / vol) * 100) : "0"));
+        const winRate  = parseFloat(m.winRate ?? "0");
+        const avgSize  = parseFloat(m.avgBetSize ?? "0");
+        const totalTrades = parseInt(m.totalTrades ?? "0");
+        const qs       = Math.min(90, Math.max(1,
+          Math.round((Math.min(Math.abs(pnl) / 50_000, 1) * 40) +
+                     (Math.min(winRate / 70, 1) * 30) +
+                     (Math.min(totalTrades / 500, 1) * 20) + 10)
+        ));
         const tier = pnl >= 100_000 ? "elite" : pnl >= 30_000 ? "pro" : "active";
-        const recentForm = windows?.inWeek && windows?.inMonth ? "🔥 Hot"
-          : windows?.inWeek ? "⚡ This week"
-          : windows?.inMonth ? "📈 This month"
-          : "all-time";
-        const rawName = t.userName || "";
-        const displayedName = isHexTimestampUsername(rawName) || !rawName
-          ? truncAddr(t.proxyWallet || "") : rawName;
-        traders.push({
-          address: t.proxyWallet || "", name: displayedName,
-          xUsername: t.xUsername || undefined,
-          verifiedBadge: t.verifiedBadge || false,
-          pnl, roi, positionCount: 0, winRate: 0, avgSize: 0, volume: vol,
-          rank: parseInt(t.rank || String(idx + 1)),
-          qualityScore, tier, recentForm,
-          source: "sports_lb",
-          polyAnalyticsUrl: `https://polymarketanalytics.com/traders/${t.proxyWallet || ""}`,
-        });
-      };
 
-      for (let i = 0; i < raw.length; i++) addLbTrader(raw[i], i);
-
-      // ── Step 3a: Always inject CURATED_ELITES regardless of sharedTraderMap state ──
-      // These are hand-picked traders that MUST appear in the tab.
-      // If sharedTraderMap has their data (populated by signals run), use it.
-      // If not yet computed, show a stub entry with "📌 Curated" badge.
-      for (const elite of CURATED_ELITES) {
-        const addr = elite.addr.toLowerCase();
-        if (seenAddrs.has(addr)) continue;
-        seenAddrs.add(addr);
-        const mapInfo = sharedTraderMap.get(addr);
-        const pnl = mapInfo?.pnl ?? 0;
-        const roi = mapInfo?.roi ?? 0;
-        const vol = mapInfo?.volume ?? 0;
-        const qs  = mapInfo?.qualityScore ?? 50; // default 50 until computed
-        const tier = pnl >= 100_000 ? "elite" : pnl >= 30_000 ? "pro" : "active";
         traders.push({
-          address: elite.addr,
-          name: elite.name,
+          address: addr,
+          name: row.username,
           xUsername: undefined,
           verifiedBadge: true,
-          pnl, roi,
-          positionCount: 0, winRate: 0, avgSize: 0,
+          pnl, roi, winRate, avgSize,
+          positionCount: 0,
           volume: vol,
-          rank: 9999,
+          totalTrades,
+          rank: i + 1,
           qualityScore: qs,
           tier,
           recentForm: "📌 Curated",
           source: "curated",
-          polyAnalyticsUrl: `https://polymarketanalytics.com/traders/${elite.addr}`,
+          polyAnalyticsUrl: `https://polymarketanalytics.com/traders/${addr}`,
         });
       }
 
-      // ── Step 3b: Merge discovered traders from sharedTraderMap ──────────────
-      if (sharedTraderMap.size > 0) {
-        for (const [addr, info] of sharedTraderMap) {
-          if (seenAddrs.has(addr)) continue;
-          if (info.source === "curated") continue; // already handled above
-          // Only show non-LB traders if they have meaningful quality
-          if (info.source === "discovered" && info.qualityScore < 10) continue;
-          if (info.source === "general_lb" && info.pnl < 500) continue;
-          seenAddrs.add(addr);
-          const tier = info.pnl >= 100_000 ? "elite" : info.pnl >= 30_000 ? "pro" : "active";
-          const recentForm = info.source === "discovered" ? "🔍 Discovered" : "all-time";
-          traders.push({
-            address: addr,
-            name: info.name,
-            xUsername: undefined,
-            verifiedBadge: false,
-            pnl: info.pnl,
-            roi: info.roi,
-            positionCount: 0,
-            winRate: 0,
-            avgSize: 0,
-            volume: info.volume,
-            rank: 9998,
-            qualityScore: info.qualityScore,
-            tier,
-            recentForm,
-            source: info.source,
-            polyAnalyticsUrl: `https://polymarketanalytics.com/traders/${addr}`,
-          });
-        }
-      }
-
-      const sorted = traders
-        .sort((a, b) => b.qualityScore - a.qualityScore)
-        .slice(0, limit);
-
-      const bySource = sorted.reduce((acc: any, t: any) => {
-        acc[t.source || "sports_lb"] = (acc[t.source || "sports_lb"] || 0) + 1;
-        return acc;
-      }, {});
+      const sorted = traders;
 
       const result = {
         traders: sorted,
         fetchedAt: Date.now(),
-        window: "ALL+WEEK+MONTH",
+        window: "ALL",
         category,
-        source: "unified_trader_pool_v6",
-        breakdown: bySource,
-        sharedMapAge: sharedTraderMapUpdatedAt ? Math.round((Date.now() - sharedTraderMapUpdatedAt) / 1000) + "s ago" : "not yet populated",
+        source: "curated_elites_v1",
+        breakdown: { curated: sorted.length },
       };
-      setCache(cKey, result, 5 * 60 * 1000); // 5-min cache (shorter since pool is richer now)
+      setCache(cKey, result, 5 * 60 * 1000);
       res.json(result);
     } catch (err: any) {
       console.error("Traders error:", err.message);
