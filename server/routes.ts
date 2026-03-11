@@ -1,5 +1,12 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { Pool } from "pg";
+import {
+  seedCuratedTraders, startPeriodicRefresh, runAnalysisForTrader,
+  resolveUsernameToWallet, generateTraderCSV, curatedWalletSet, curatedWalletToUsername
+} from "./eliteAnalysis";
+
+const elitePool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 const GAMMA_API   = "https://gamma-api.polymarket.com";
 const DATA_API    = "https://data-api.polymarket.com";
@@ -1134,6 +1141,190 @@ async function fetchESPNGameScore(slug: string): Promise<GameScore | null> {
 
 // ─── Route registration ───────────────────────────────────────────────────────
 export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
+
+  // ── Elite trader seeding + periodic refresh ───────────────────────────────
+  seedCuratedTraders().then(() => {
+    console.log("[Elite] Curated traders seeded");
+    startPeriodicRefresh();
+  }).catch((e: Error) => console.error("[Elite] Seed error:", e.message));
+
+  // ── GET /api/elite/traders ─────────────────────────────────────────────────
+  app.get("/api/elite/traders", async (_req, res) => {
+    try {
+      const { rows } = await elitePool.query(`
+        SELECT t.wallet, t.username, t.added_at, t.last_analyzed_at, t.wallet_resolved,
+               t.polymarket_url, t.notes,
+               p.quality_score, p.tags, p.computed_at,
+               p.metrics->>'totalTrades' as total_trades,
+               p.metrics->>'overallROI' as overall_roi,
+               p.metrics->>'last90dROI' as last90d_roi,
+               p.metrics->>'winRate' as win_rate,
+               p.metrics->>'sharpeScore' as sharpe_score,
+               p.metrics->>'avgBetSize' as avg_bet_size,
+               p.metrics->>'tradesPerDay' as trades_per_day,
+               p.metrics->>'topSport' as top_sport,
+               p.metrics->>'topMarketType' as top_market_type,
+               p.metrics->>'consistencyRating' as consistency_rating,
+               p.metrics->>'overallPNL' as overall_pnl,
+               p.metrics->>'totalUSDC' as total_usdc
+        FROM elite_traders t
+        LEFT JOIN elite_trader_profiles p ON p.wallet = t.wallet
+        ORDER BY COALESCE(p.quality_score, 0) DESC
+      `);
+      res.json({ traders: rows, fetchedAt: Date.now() });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── GET /api/elite/traders/:wallet ────────────────────────────────────────
+  app.get("/api/elite/traders/:wallet", async (req, res) => {
+    try {
+      const wallet = req.params.wallet.toLowerCase();
+      const [traderRow, profileRow, tradeCount] = await Promise.all([
+        elitePool.query(`SELECT * FROM elite_traders WHERE wallet = $1`, [wallet]),
+        elitePool.query(`SELECT * FROM elite_trader_profiles WHERE wallet = $1`, [wallet]),
+        elitePool.query(`SELECT COUNT(*) as cnt FROM elite_trader_trades WHERE wallet = $1 AND is_buy = TRUE`, [wallet]),
+      ]);
+      if (!traderRow.rows[0]) return res.status(404).json({ error: "Trader not found" });
+      res.json({
+        trader: traderRow.rows[0],
+        profile: profileRow.rows[0] || null,
+        rawTradeCount: parseInt(tradeCount.rows[0]?.cnt || "0"),
+        fetchedAt: Date.now(),
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── POST /api/elite/traders ────────────────────────────────────────────────
+  app.post("/api/elite/traders", async (req, res) => {
+    try {
+      const { url, wallet: rawWallet, username: rawUsername } = req.body || {};
+
+      let wallet = "";
+      let username = rawUsername || "";
+
+      // Extract from URL
+      if (url) {
+        const urlMatch = url.match(/polymarket\.com\/@([^/\s?]+)/);
+        if (urlMatch) {
+          const handle = urlMatch[1];
+          if (/^0x[a-fA-F0-9]{40}/.test(handle)) {
+            wallet = handle.toLowerCase().slice(0, 42);
+            username = username || handle;
+          } else {
+            username = username || handle;
+          }
+        }
+      }
+      if (!wallet && rawWallet) wallet = rawWallet.toLowerCase().slice(0, 42);
+
+      // Attempt resolution if no wallet yet
+      let resolved = !!wallet;
+      if (!wallet && username) {
+        const found = await resolveUsernameToWallet(username);
+        if (found) { wallet = found; resolved = true; }
+      }
+
+      const effectiveWallet = resolved ? wallet : `pending-${(username || "unknown").toLowerCase()}-${Date.now()}`;
+
+      await elitePool.query(`
+        INSERT INTO elite_traders (wallet, username, wallet_resolved, polymarket_url)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (wallet) DO UPDATE SET username = EXCLUDED.username, polymarket_url = EXCLUDED.polymarket_url
+      `, [effectiveWallet, username || effectiveWallet.slice(0, 12), resolved, url || null]);
+
+      if (resolved) {
+        curatedWalletSet.add(wallet);
+        curatedWalletToUsername.set(wallet, username || wallet);
+        // Kick off background analysis
+        setImmediate(() => runAnalysisForTrader(wallet));
+      }
+
+      res.json({
+        wallet: effectiveWallet,
+        username,
+        resolved,
+        message: resolved
+          ? "Trader added — analysis starting in background"
+          : "Trader added — wallet not resolved. Use PATCH to provide wallet address.",
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── PATCH /api/elite/traders/:wallet ─ Set wallet for unresolved traders ─
+  app.patch("/api/elite/traders/:wallet", async (req, res) => {
+    try {
+      const oldKey = req.params.wallet;
+      const { newWallet, username } = req.body || {};
+      const cleanWallet = (newWallet || "").toLowerCase();
+
+      if (!cleanWallet || !/^0x[a-fA-F0-9]{40}$/.test(cleanWallet)) {
+        return res.status(400).json({ error: "Invalid wallet address" });
+      }
+
+      // Move old record to new wallet key
+      await elitePool.query(`
+        UPDATE elite_traders SET wallet = $1, wallet_resolved = TRUE, username = COALESCE($2, username)
+        WHERE wallet = $3
+      `, [cleanWallet, username || null, oldKey]);
+
+      curatedWalletSet.add(cleanWallet);
+      const { rows } = await elitePool.query(`SELECT username FROM elite_traders WHERE wallet = $1`, [cleanWallet]);
+      curatedWalletToUsername.set(cleanWallet, rows[0]?.username || cleanWallet);
+
+      setImmediate(() => runAnalysisForTrader(cleanWallet));
+      res.json({ wallet: cleanWallet, resolved: true, message: "Wallet updated — analysis starting" });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── DELETE /api/elite/traders/:wallet ─────────────────────────────────────
+  app.delete("/api/elite/traders/:wallet", async (req, res) => {
+    try {
+      const wallet = req.params.wallet.toLowerCase();
+      await elitePool.query(`DELETE FROM elite_traders WHERE wallet = $1`, [wallet]);
+      await elitePool.query(`DELETE FROM elite_trader_profiles WHERE wallet = $1`, [wallet]);
+      curatedWalletSet.delete(wallet);
+      curatedWalletToUsername.delete(wallet);
+      res.json({ deleted: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── POST /api/elite/traders/:wallet/refresh ───────────────────────────────
+  app.post("/api/elite/traders/:wallet/refresh", async (req, res) => {
+    try {
+      const wallet = req.params.wallet.toLowerCase();
+      const { rows } = await elitePool.query(`SELECT wallet FROM elite_traders WHERE wallet = $1`, [wallet]);
+      if (!rows.length) return res.status(404).json({ error: "Trader not found" });
+      setImmediate(() => runAnalysisForTrader(wallet));
+      res.json({ message: "Refresh started", wallet });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── GET /api/elite/traders/:wallet/csv ────────────────────────────────────
+  app.get("/api/elite/traders/:wallet/csv", async (req, res) => {
+    try {
+      const wallet = req.params.wallet.toLowerCase();
+      const csv = await generateTraderCSV(wallet);
+      const { rows } = await elitePool.query(`SELECT username FROM elite_traders WHERE wallet = $1`, [wallet]);
+      const name = rows[0]?.username || wallet.slice(0, 8);
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", `attachment; filename="${name}-trades.csv"`);
+      res.send(csv);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
 
   // ── GET /api/stream ─── Server-Sent Events push channel ──────────────────
   // Subscribe: `new EventSource('/api/stream?channel=alerts')`
@@ -2387,6 +2578,45 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           }
           const lines = [...overSigs, ...underSigs].map(s => s.marketQuestion?.match(/[\d.]+\??$/)?.[0] || "?");
           console.log(`[CrossOU] Split O/U on same game (${extractGameKey(overSigs[0].marketQuestion || "")}): lines ${lines.join(", ")} — flagging ${overSigs.length + underSigs.length} signals`);
+        }
+      }
+
+      // ── Elite trader detection (T005) ────────────────────────────────────────
+      // Post-process every signal to detect curated elite traders on either side
+      if (curatedWalletSet.size > 0) {
+        // Build a market → { YES: elites[], NO: elites[] } index
+        const mktEliteMap = new Map<string, { yes: {wallet:string;username:string}[]; no: {wallet:string;username:string}[] }>();
+        for (const sig of signals) {
+          const mid = sig.marketId;
+          if (!mktEliteMap.has(mid)) mktEliteMap.set(mid, { yes: [], no: [] });
+          const bucket = mktEliteMap.get(mid)!;
+          for (const t of (sig.traders || [])) {
+            const w = (t.address || "").toLowerCase();
+            if (curatedWalletSet.has(w)) {
+              const username = curatedWalletToUsername.get(w) || t.name || w.slice(0, 8);
+              (sig.side === "YES" ? bucket.yes : bucket.no).push({ wallet: w, username });
+            }
+          }
+        }
+        // Enrich signals
+        for (const sig of signals) {
+          const mid = sig.marketId;
+          const bucket = mktEliteMap.get(mid) || { yes: [], no: [] };
+          const sideElites = sig.side === "YES" ? bucket.yes : bucket.no;
+          const oppElites  = sig.side === "YES" ? bucket.no  : bucket.yes;
+          const hasSplit = sideElites.length > 0 && oppElites.length > 0;
+          if (sideElites.length > 0 || hasSplit) {
+            (sig as any).hasCuratedElite = sideElites.length > 0;
+            (sig as any).curatedEliteSplit = hasSplit;
+            (sig as any).curatedElites = sideElites;
+            if (hasSplit) {
+              (sig as any).curatedEliteSplitNote = `⚡ ELITE SPLIT: ${sideElites.map(e => e.username).join(",")} ${sig.side} vs ${oppElites.map(e => e.username).join(",")} ${sig.side === "YES" ? "NO" : "YES"}`;
+              sig.confidence = Math.max(sig.confidence - 15, 20);
+            } else {
+              // Boost confidence +8pts per curated elite, capped at 95
+              sig.confidence = Math.min(95, sig.confidence + sideElites.length * 8);
+            }
+          }
         }
       }
 

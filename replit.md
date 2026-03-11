@@ -11,10 +11,11 @@ A sports prediction market intelligence dashboard that surfaces consensus signal
 ## Pages
 
 - `/` — Dashboard: Signal overview, top stats, trader mini-list, how it works. Signals are clickable rows that expand inline to show live price vs entry, actionability, traders, and Polymarket link. 90s auto-refresh.
-- `/signals` — Signals: Two modes — Elite (large bets + positions) and Live Feed (consensus from recent trades). Shows ACTIONABLE/PRICE MOVED/BIG PLAY badges. Elite refreshes 120s, Fast 45s.
+- `/signals` — Signals: Two modes — Elite (large bets + positions) and Live Feed (consensus from recent trades). Shows ACTIONABLE/PRICE MOVED/BIG PLAY/ELITE PICK/ELITE SPLIT badges. Elite refreshes 120s, Fast 45s.
 - `/traders` — Top Traders: Unified pool of 300+ traders — Sports LB + Curated elites + Discovered (from 20K trade scan) + General LB active in sports. Source filter pills (All/Sports LB/Curated/Discovered) above search bar. Source badges show origin (📌 Curated, 🔍 Discovered, 🔥 Hot). Pool breakdown shown in footer.
 - `/markets` — Sports Markets: Filter tabs (Upcoming/Moneyline/Spread/Total/Futures/All). Shows LIVE/PREGAME/FUTURES badges. 30s auto-refresh. Game markets populated from positions registry.
 - `/bets` — My Bets: localStorage bet tracker. Log bets from signal cards ("Track" button), enter amount, resolve as Won/Lost with auto PNL calculation. Stats: Open count, Win Rate, Total PNL, At Risk.
+- `/elite` — Elite Traders: Deep-analysis page for 44 hand-curated traders. Shows quality score (0-100), auto-tags (sport expertise, bet type, behavior), ROI by sport/market type/price tier/YES-NO, monthly Sharpe consistency chart, bet sizing analysis, best trades. Add trader form (URL/wallet/username). CSV export per trader. Wallet resolver for pending traders. Data stored in PostgreSQL (elite_traders, elite_trader_trades, elite_trader_profiles). 24h background refresh.
 
 ## Key API Routes
 
@@ -28,6 +29,13 @@ A sports prediction market intelligence dashboard that surfaces consensus signal
 - `GET /api/market/price-by-condition/:conditionId` — Live YES price for a market (checks signal cache → market registry → Gamma API)
 - `GET /api/market/resolve/:conditionId` — Auto-grade endpoint: returns `{ resolved, outcome, finalPrice }` for bet tracking
 - `GET /api/stream?channel=alerts` — SSE stream; pushes alert batch every 15s
+- `GET /api/elite/traders` — All curated traders with quality_score, tags, wallet_resolved status, key metrics
+- `GET /api/elite/traders/:wallet` — Full trader profile with metrics JSONB
+- `POST /api/elite/traders` — Add trader (body: {url?, wallet?, username?}) — auto-resolves wallet, kicks off analysis
+- `PATCH /api/elite/traders/:wallet` — Set wallet address for unresolved traders
+- `DELETE /api/elite/traders/:wallet` — Remove trader
+- `POST /api/elite/traders/:wallet/refresh` — Re-trigger full analysis
+- `GET /api/elite/traders/:wallet/csv` — Download trade history CSV
 
 ## Signal Computation Logic
 

@@ -410,11 +410,22 @@ function SignalCard({ signal, mode, onSnoozed }: { signal: Signal; mode: "elite"
                       <AlertTriangle className="w-2.5 h-2.5" /> NEW
                     </span>
                   )}
-                  {mode === "elite" && (
+                  {mode === "elite" && !(signal as any).hasCuratedElite && !(signal as any).curatedEliteSplit && (
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20 flex items-center gap-0.5">
                       <Star className="w-2.5 h-2.5" /> ELITE
                     </span>
                   )}
+                  {(signal as any).curatedEliteSplit ? (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-700 dark:text-orange-300 border border-orange-500/20 flex items-center gap-0.5"
+                      title={(signal as any).curatedEliteSplitNote || "Curated elites are split on this market — conflicting signal"}>
+                      ⚡ ELITE SPLIT
+                    </span>
+                  ) : (signal as any).hasCuratedElite ? (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20 flex items-center gap-0.5"
+                      title={`Curated elite traders: ${(signal as any).curatedElites?.map((e: any) => e.username).join(", ")}`}>
+                      <Star className="w-2.5 h-2.5" /> ELITE PICK
+                    </span>
+                  ) : null}
                   {(signal as any).sportsLbCount > 0 && (
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-green-500/15 text-green-700 dark:text-green-300 border border-green-500/20 flex items-center gap-0.5" title="At least one verified sports leaderboard trader">
                       <ShieldCheck className="w-2.5 h-2.5" /> SPORTS LB
@@ -506,6 +517,16 @@ function SignalCard({ signal, mode, onSnoozed }: { signal: Signal; mode: "elite"
                       <span className="text-[10px] text-muted-foreground">Insiders</span>
                       <span className="text-xs font-bold text-foreground">{signal.traderCount}</span>
                     </div>
+                    {(signal as any).hasCuratedElite && (signal as any).curatedElites?.length > 0 && (
+                      <div className="flex items-start justify-between gap-1">
+                        <span className="text-[10px] text-yellow-600 dark:text-yellow-400 flex items-center gap-0.5 shrink-0">
+                          <Star className="w-2.5 h-2.5" /> Elites
+                        </span>
+                        <span className="text-[10px] font-bold text-yellow-600 dark:text-yellow-400 text-right leading-tight">
+                          {(signal as any).curatedElites.map((e: any) => e.username).join(", ")}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                         {livePrice !== null && <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />}

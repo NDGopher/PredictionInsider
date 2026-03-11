@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Zap, BarChart3, TrendingUp, BookOpen } from "lucide-react";
+import { LayoutDashboard, Users, Zap, BarChart3, TrendingUp, BookOpen, Star } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -20,6 +20,7 @@ const navItems = [
   { title: "Top Traders", url: "/traders", icon: Users, badge: null },
   { title: "Markets", url: "/markets", icon: BarChart3, badge: null },
   { title: "My Bets", url: "/bets", icon: BookOpen, badge: null },
+  { title: "Elite Traders", url: "/elite", icon: Star, badge: "NEW" },
 ];
 
 export function AppSidebar() {
