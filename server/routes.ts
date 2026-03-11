@@ -6,7 +6,7 @@ import {
   resolveUsernameToWallet, generateTraderCSV, curatedWalletSet, curatedWalletToUsername,
   settleUnresolvedTrades, fetchFullTradeHistory, computeTraderProfile,
   settleAllUnresolvedTradesGlobal, fetchAllActivity, computeTraderProfileFromActivity,
-  CURATED_TRADERS
+  CURATED_TRADERS, classifySport
 } from "./eliteAnalysis";
 
 const elitePool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -601,7 +601,7 @@ async function fetchTraderPositions(wallet: string): Promise<any[]> {
   const hit = getCache<any[]>(key);
   if (hit) return hit;
   try {
-    const r = await fetchWithRetry(`${DATA_API}/positions?user=${wallet}&limit=500`);
+    const r = await fetchWithRetry(`${DATA_API}/positions?user=${wallet}&limit=500&sizeThreshold=0`);
     if (!r.ok) return [];
     const d = await r.json();
     const positions: any[] = Array.isArray(d) ? d : d.data || [];
@@ -2246,9 +2246,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             tradeTime: (e as any).lastTimestamp || 0,
           })),
           category: isSports ? "sports" : "other",
+          sport: classifySport(mw.slug || "", mw.question || ""),
           volume: 0,
           generatedAt: now,
           isValue: valueDelta > 0, isNew,
+          source: "trades",
           outcomeLabel: computeOutcomeLabel(mw.question, side),
           yesTokenId: mw.yesTokenId,
           noTokenId: mw.noTokenId,
@@ -2506,6 +2508,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               };
             }),
             category: "sports",
+            sport: classifySport(pg.slug || pgMarket?.slug || "", pg.question || ""),
             volume: 0,
             generatedAt: now,
             isValue: valueDelta > 0,
@@ -2796,10 +2799,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             roi: 0, qualityScore: 0,
           })),
           category: info.category || "sports",
+          sport: classifySport(info.slug || "", info.question || condId),
           volume: info.volume || 0,
           generatedAt: now,
           isValue: valueDelta > 0,
           isNew: false,
+          source: "trades",
           outcomeLabel: computeOutcomeLabel(info.question || condId, side),
         });
       }
