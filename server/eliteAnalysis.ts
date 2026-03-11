@@ -321,7 +321,7 @@ export async function settleAllUnresolvedTradesGlobal(): Promise<number> {
           UPDATE elite_trader_trades SET
             settled_at = $1,
             settled_outcome = CASE WHEN side = 'YES' THEN 'won' ELSE 'lost' END,
-            settled_pnl = CASE WHEN side = 'YES' THEN size * (1.0 / NULLIF(price, 0) - 1.0) ELSE -size END
+            settled_pnl = CASE WHEN side = 'YES' THEN size * (1.0 - price) ELSE -(size * price) END
           WHERE is_buy = TRUE AND settled_outcome IS NULL AND condition_id IN (${ph})
         `, [now, ...yesIds]);
         totalUpdated += rowCount ?? 0;
@@ -332,7 +332,7 @@ export async function settleAllUnresolvedTradesGlobal(): Promise<number> {
           UPDATE elite_trader_trades SET
             settled_at = $1,
             settled_outcome = CASE WHEN side = 'NO' THEN 'won' ELSE 'lost' END,
-            settled_pnl = CASE WHEN side = 'NO' THEN size * (1.0 / NULLIF(price, 0) - 1.0) ELSE -size END
+            settled_pnl = CASE WHEN side = 'NO' THEN size * (1.0 - price) ELSE -(size * price) END
           WHERE is_buy = TRUE AND settled_outcome IS NULL AND condition_id IN (${ph})
         `, [now, ...noIds]);
         totalUpdated += rowCount ?? 0;
@@ -407,7 +407,7 @@ export async function settleUnresolvedTrades(wallet: string): Promise<number> {
       UPDATE elite_trader_trades SET
         settled_at = $1,
         settled_outcome = CASE WHEN side = 'YES' THEN 'won' ELSE 'lost' END,
-        settled_pnl = CASE WHEN side = 'YES' THEN size * (1.0 / NULLIF(price, 0) - 1.0) ELSE -size END
+        settled_pnl = CASE WHEN side = 'YES' THEN size * (1.0 - price) ELSE -(size * price) END
       WHERE wallet = $2 AND is_buy = TRUE AND settled_outcome IS NULL AND condition_id IN (${placeholders})
     `, [settledAt, w, ...yesWonIds]);
     totalUpdated += rowCount ?? 0;
@@ -420,7 +420,7 @@ export async function settleUnresolvedTrades(wallet: string): Promise<number> {
       UPDATE elite_trader_trades SET
         settled_at = $1,
         settled_outcome = CASE WHEN side = 'NO' THEN 'won' ELSE 'lost' END,
-        settled_pnl = CASE WHEN side = 'NO' THEN size * (1.0 / NULLIF(price, 0) - 1.0) ELSE -size END
+        settled_pnl = CASE WHEN side = 'NO' THEN size * (1.0 - price) ELSE -(size * price) END
       WHERE wallet = $2 AND is_buy = TRUE AND settled_outcome IS NULL AND condition_id IN (${placeholders})
     `, [settledAt, w, ...noWonIds]);
     totalUpdated += rowCount ?? 0;
@@ -436,7 +436,7 @@ export async function settleUnresolvedTrades(wallet: string): Promise<number> {
 export async function fetchAllActivity(
   wallet: string,
   sinceTs?: number, // Unix seconds — stop fetching events older than this
-  maxPages = 20 // Cap at 10,000 events to prevent multi-minute hangs
+  maxPages = 1 // Activity API 'before' cursor is broken (always returns same page); fetch 1 page for recent REDEEMs only
 ): Promise<number> {
   const PAGE = 500;
   let before: number | null = null;
@@ -901,11 +901,26 @@ function median(arr: number[]): number {
 export async function computeTraderProfile(wallet: string): Promise<any> {
   const w = wallet.toLowerCase();
 
-  // Try activity-based computation first (CORRECT PNL via REDEEM events)
+  // Try activity-based computation ONLY if it covers significantly more settled bets
+  // than the trades DB. Since we now fetch only 1 page (500 events) from the activity
+  // API, the trades-based computation from elite_trader_trades is usually more complete.
+  // The trades formula is now correct: win = size*(1-price), loss = -(size*price).
   const activityResult = await computeTraderProfileFromActivity(w);
-  if (activityResult) return activityResult;
 
-  // Fallback: trades-based computation (legacy, less accurate)
+  // Count settled trades in DB for comparison
+  const { rows: dbSettledRows } = await pool.query(
+    `SELECT COUNT(*) as cnt FROM elite_trader_trades WHERE wallet = $1 AND is_buy = TRUE AND settled_outcome IS NOT NULL`,
+    [w]
+  );
+  const dbSettledCount = parseInt(dbSettledRows[0]?.cnt || "0");
+  const activitySettledCount = activityResult?.metrics?.settledBets ?? 0;
+
+  // Use activity result only if it has more settled bets than our trades DB
+  if (activityResult && activitySettledCount > dbSettledCount && (activityResult.metrics?.overallPNL ?? 0) !== 0) {
+    return activityResult;
+  }
+
+  // Primary: trades-based computation (uses correctly-settled elite_trader_trades)
 
   // Get username
   const uRow = await pool.query(`SELECT username FROM elite_traders WHERE wallet = $1`, [w]);

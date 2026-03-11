@@ -5,7 +5,8 @@ import {
   seedCuratedTraders, startPeriodicRefresh, runAnalysisForTrader,
   resolveUsernameToWallet, generateTraderCSV, curatedWalletSet, curatedWalletToUsername,
   settleUnresolvedTrades, fetchFullTradeHistory, computeTraderProfile,
-  settleAllUnresolvedTradesGlobal, fetchAllActivity, computeTraderProfileFromActivity
+  settleAllUnresolvedTradesGlobal, fetchAllActivity, computeTraderProfileFromActivity,
+  CURATED_TRADERS
 } from "./eliteAnalysis";
 
 const elitePool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -492,13 +493,13 @@ async function fetchMidpoint(tokenId: string): Promise<number | null> {
 }
 
 // ─── Curated elite sports traders ────────────────────────────────────────────
-// Known high-calibre sports traders who may not appear in the official
-// Polymarket sports leaderboard due to API caps or category differences.
-// Quality scores computed DYNAMICALLY from actual trade history — no hardcoded values.
-// Only add wallets verified on Polymarket. No fake/placeholder entries.
-const CURATED_ELITES: Array<{ addr: string; name: string }> = [
-  { addr: "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee", name: "kch123" },
-];
+// Derived directly from CURATED_TRADERS (the single source of truth for all 42
+// hand-picked elite traders). Used for BOTH the main signals function AND the
+// elite analytics system — so updating CURATED_TRADERS in eliteAnalysis.ts
+// automatically propagates to both systems.
+const CURATED_ELITES: Array<{ addr: string; name: string }> = CURATED_TRADERS
+  .filter(t => t.wallet && t.wallet.length > 0 && !t.wallet.startsWith("pending-"))
+  .map(t => ({ addr: t.wallet, name: t.username }));
 
 // ─── Shared trader intelligence store ─────────────────────────────────────────
 // Populated during signal computation and shared with /api/traders.
@@ -1147,19 +1148,18 @@ async function runActivitySyncForAll(wallets: string[], label = "Activity") {
   const CONCURRENCY = 8;
   let done = 0;
   const total = wallets.length;
-  console.log(`[${label}] Starting parallel sync for ${total} wallets (concurrency=${CONCURRENCY})`);
+  console.log(`[${label}] Starting full analysis for ${total} wallets (concurrency=${CONCURRENCY})`);
 
   const processWallet = async (wallet: string) => {
     try {
-      const { rows: sinceRows } = await elitePool.query(
-        `SELECT MAX(event_timestamp) as since FROM elite_trader_activity WHERE wallet = $1`,
-        [wallet.toLowerCase()]
-      );
-      const sinceTs = sinceRows[0]?.since ? Number(sinceRows[0].since) : undefined;
-      const actCount = await fetchAllActivity(wallet, sinceTs);
-      await computeTraderProfile(wallet);
+      // runAnalysisForTrader runs the FULL correct pipeline:
+      //   1. fetchFullTradeHistory (offset-based pagination — works for 3000+ trades)
+      //   2. fetchAllActivity (first page only — for recent REDEEM events)
+      //   3. settleUnresolvedTrades (Gamma API settlement with correct PNL formula)
+      //   4. computeTraderProfile (aggregates stats from settled trades)
+      await runAnalysisForTrader(wallet);
       done++;
-      console.log(`[${label}] ${done}/${total} ${wallet.slice(0, 8)}: +${actCount} new events`);
+      console.log(`[${label}] ${done}/${total} ${wallet.slice(0, 8)}: full analysis complete`);
     } catch (e: any) {
       done++;
       console.error(`[${label}] Failed for ${wallet.slice(0, 8)}:`, e.message);
@@ -1385,6 +1385,45 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           console.log(`[Admin] All profiles recomputed`);
         } catch (e: any) {
           console.error(`[Admin] settle-all error:`, e.message);
+        }
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── POST /api/elite/admin/reset-pnl ──────────────────────────────────────
+  // Clears ALL settled PNL data and re-settles with the CORRECT formula:
+  //   WIN: size * (1 - price)   [profit = payout - cost = shares - shares*price]
+  //   LOSS: -(size * price)     [cost paid = shares * price per share]
+  // This fixes the prior bug where size was mistakenly treated as USDC, not shares.
+  app.post("/api/elite/admin/reset-pnl", async (_req, res) => {
+    try {
+      res.json({ message: "PNL reset and re-settlement started" });
+      setImmediate(async () => {
+        try {
+          // Step 1: Clear ALL settled data so re-settlement runs on every trade
+          const { rowCount: cleared } = await elitePool.query(`
+            UPDATE elite_trader_trades
+            SET settled_outcome = NULL, settled_pnl = NULL, settled_at = NULL
+            WHERE is_buy = TRUE
+          `);
+          console.log(`[Admin/reset-pnl] Cleared ${cleared} settled trades`);
+
+          // Step 2: Re-settle with correct formula
+          const totalSettled = await settleAllUnresolvedTradesGlobal();
+          console.log(`[Admin/reset-pnl] Re-settled ${totalSettled} trades with correct formula`);
+
+          // Step 3: Recompute all trader profiles
+          const { rows } = await elitePool.query(
+            `SELECT wallet FROM elite_traders WHERE wallet NOT LIKE 'pending-%' ORDER BY wallet`
+          );
+          for (const r of rows) {
+            try { await computeTraderProfile(r.wallet); } catch {}
+          }
+          console.log(`[Admin/reset-pnl] Done — recomputed ${rows.length} trader profiles`);
+        } catch (e: any) {
+          console.error(`[Admin/reset-pnl] error:`, e.message);
         }
       });
     } catch (err: any) {
@@ -1964,21 +2003,17 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const now = Date.now();
 
       // ── Phase 1: Build verified trader quality map ───────────────────────────
-      // Pull from: sports leaderboard (category=sports) + general leaderboard + curated elites
-      const [allSportsLb, rawGeneralLb, generalWeek, generalMonth, allTrades, marketDb, ...curatedTradeBatches] = await Promise.all([
-        fetchMultiWindowSportsLB(),                    // ALL + WEEK + MONTH sports, deduped
-        fetchPaginatedLeaderboard("ALL",   300, ""),    // top 300 all-time general (paginated)
-        fetchPaginatedLeaderboard("WEEK",  150, ""),   // top 150 weekly general (paginated)
-        fetchPaginatedLeaderboard("MONTH", 150, ""),   // top 150 monthly general (paginated)
-        fetchRecentTrades(20000),                      // 20K trades for broad wallet discovery
+      // CURATED-ONLY: Use only our 42 hand-picked elite traders as the signal source.
+      // Fetch market database + recent trades for each curated trader in parallel.
+      const [marketDb, ...curatedTradeBatches] = await Promise.all([
         buildMarketDatabase(800),
         // Fetch recent trades for each curated elite in parallel
         ...CURATED_ELITES.map(e => fetchEliteTraderTrades(e.addr, 100)),
       ]);
-      const rawSportsLb = allSportsLb; // keep alias for positions section
 
-      // Merge curated elite trades into allTrades (deduplicate by transactionHash)
-      const seenTxHashes = new Set<string>(allTrades.map((t: any) => t.transactionHash).filter(Boolean));
+      // allTrades = merged trades from all curated elite traders (deduplicated)
+      const allTrades: any[] = [];
+      const seenTxHashes = new Set<string>();
       for (const batch of curatedTradeBatches) {
         for (const trade of (batch as any[])) {
           const txHash = trade.transactionHash;
@@ -2006,7 +2041,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const countScore = Math.min(sportsCount / 80, 1) * 30;
         const avgScore   = Math.min(avgBet / 1_500, 1) * 25;
         const qualityScore = Math.min(Math.round(volScore + countScore + avgScore), 90);
-        console.log(`[Curated] ${elite.name}: ${sportsCount} sports trades, $${Math.round(sportsVol)} vol, quality=${qualityScore}`);
         lbMap.set(addr, {
           name: elite.name,
           pnl: sportsVol * 0.1,
@@ -2019,73 +2053,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         });
       }
 
-      // Add sports leaderboard traders (ALL + WEEK + MONTH windows combined)
-      for (const t of allSportsLb) {
-        const addr = (t.proxyWallet || "").toLowerCase();
-        if (!addr || lbMap.has(addr)) continue;
-        const pnl = parseFloat(t.pnl || "0");
-        const vol = parseFloat(t.vol || "0");
-        const roi = vol > 0 ? (pnl / vol) * 100 : 0;
-        const name = t.userName || truncAddr(addr);
-        const windows = t._windows as { inAll?: boolean; inWeek?: boolean; inMonth?: boolean } | undefined;
-        lbMap.set(addr, {
-          name, pnl, roi, volume: vol,
-          qualityScore: traderQualityScore(pnl, roi, 10, windows),
-          isLeaderboard: true,
-          isSportsLb: true,
-          source: "sports_lb",
-        });
-      }
-      // Add general leaderboard traders (ALL + WEEK + MONTH windows)
-      for (const t of [...rawGeneralLb, ...generalWeek, ...generalMonth]) {
-        const addr = (t.proxyWallet || "").toLowerCase();
-        if (!addr || lbMap.has(addr)) continue;
-        const pnl = parseFloat(t.pnl || "0");
-        const vol = parseFloat(t.vol || "0");
-        const roi = vol > 0 ? (pnl / vol) * 100 : 0;
-        const name = t.userName || truncAddr(addr);
-        if (isAutoPseudonym(name)) continue;
-        lbMap.set(addr, {
-          name, pnl, roi, volume: vol,
-          qualityScore: traderQualityScore(pnl, roi, 10),
-          isLeaderboard: true,
-          isSportsLb: false,
-          source: "general_lb",
-        });
-      }
-
-      // Also identify active sports bettors from recent trades (5+ sports bets)
-      const recentSportsBettors = new Map<string, { count: number; totalSize: number; name: string }>();
-      for (const trade of allTrades) {
-        const title = (trade.title || trade.slug || "").toLowerCase();
-        if (!isSportsRelated(title)) continue;
-        const wallet = (trade.proxyWallet || "").toLowerCase();
-        if (!wallet || lbMap.has(wallet)) continue; // already covered
-        const name = trade.name || trade.pseudonym || "";
-        const size = parseFloat(trade.size || "0");
-        const ex = recentSportsBettors.get(wallet);
-        if (!ex) recentSportsBettors.set(wallet, { count: 1, totalSize: size, name });
-        else { ex.count++; ex.totalSize += size; if (!ex.name) ex.name = name; }
-      }
-      // Add active sports bettors from recent trades as secondary tracked traders.
-      // Lower threshold: even a single $500+ bet is worth tracking for positions.
-      // Quality score is computed from real observed activity — no hardcoded values.
-      for (const [addr, info] of recentSportsBettors) {
-        if (info.count >= 3 && info.totalSize >= 300 || info.totalSize >= 500) {
-          const avgBet = info.totalSize / info.count;
-          const volScore   = Math.min(info.totalSize / 30_000, 1) * 40;
-          const countScore = Math.min(info.count / 40, 1) * 30;
-          const avgScore   = Math.min(avgBet / 1_000, 1) * 30;
-          lbMap.set(addr, {
-            name: displayName(info.name, addr),
-            pnl: 0, roi: 0, volume: info.totalSize,
-            qualityScore: Math.min(Math.round(volScore + countScore + avgScore), 65),
-            isLeaderboard: false,
-            isSportsLb: false,
-            source: "discovered",
-          });
-        }
-      }
+      // recentSportsBettors — empty since we don't scan 20K random trades anymore
+      const recentSportsBettors = new Map<string, { count: number; totalSize: number; name: string; source?: string }>();
 
       console.log(`[Elite v11] ${lbMap.size} tracked traders (${[...lbMap.values()].filter(t=>t.source==='sports_lb').length} sportsLB, ${[...lbMap.values()].filter(t=>t.source==='general_lb').length} generalLB, ${[...lbMap.values()].filter(t=>t.source==='curated').length} curated, ${[...lbMap.values()].filter(t=>t.source==='discovered').length} discovered) | ${allTrades.length} trades | ${marketDb.size} markets`);
 
@@ -2373,39 +2342,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
 
       // ── Phase 4: Positions-based signals from verified sports traders ──────────
-      // Pull open positions from ALL tracked traders in the intelligence pool:
-      // 1. Sports LB wallets (definitely sports bettors)
-      // 2. Curated elites (verified manually)
-      // 3. Discovered from trades scan (recently seen making sports bets)
-      // 4. High-quality general LB traders who passed the sports activity filter
-      const lbWallets = allSportsLb
-        .slice(0, 150)
-        .map((t: any) => (t.proxyWallet || "").toLowerCase())
-        .filter(Boolean);
+      // CURATED-ONLY: Scan only our 42 hand-picked elite traders for open positions.
       const curatedWallets = CURATED_ELITES.map(e => e.addr.toLowerCase());
-      // Include discovered traders from trade scan — any with $500+ sports volume
-      // (single large bet OR multiple smaller ones)
-      const allDiscoverable = [...recentSportsBettors.entries()];
-      const passing = allDiscoverable.filter(([_, s]) =>
-        s.totalSize >= 500 || (s.count >= 2 && s.totalSize >= 200)
-      );
-      console.log(`[Discovered] ${allDiscoverable.length} candidates, top5: ${
-        allDiscoverable
-          .sort((a, b) => b[1].totalSize - a[1].totalSize)
-          .slice(0, 5)
-          .map(([a, s]) => `${a.slice(0, 8)} cnt=${s.count} vol=${Math.round(s.totalSize)}`)
-          .join(", ")
-      }; passing (≥$500 vol OR ≥2 trades+$200): ${passing.length}`);
-      const discoveredSportsWallets = passing
-        .sort((a, b) => b[1].totalSize - a[1].totalSize)
-        .slice(0, 150) // cap at 150 discovered wallets
-        .map(([addr]) => addr);
-      // Include general LB traders who also have sports activity in the scan window
-      const generalSportsActive = [...lbMap.entries()]
-        .filter(([addr, info]) => info.source === "general_lb" && recentSportsBettors.has(addr))
-        .map(([addr]) => addr);
-      const topSportsWallets = [...new Set([...lbWallets, ...curatedWallets, ...discoveredSportsWallets, ...generalSportsActive])];
-      console.log(`[Positions] Scanning ${topSportsWallets.length} traders (${lbWallets.length} sportsLB + ${curatedWallets.length} curated + ${discoveredSportsWallets.length} discovered + ${generalSportsActive.length} genLB-active)`);
+      const topSportsWallets = [...new Set(curatedWallets)];
+      console.log(`[Positions] Scanning ${topSportsWallets.length} curated traders for open positions`);
       if (topSportsWallets.length > 0) {
         const positionBatches = await Promise.all(topSportsWallets.map(w => fetchTraderPositions(w)));
         // Map: conditionId+outcomeIndex → position aggregation
