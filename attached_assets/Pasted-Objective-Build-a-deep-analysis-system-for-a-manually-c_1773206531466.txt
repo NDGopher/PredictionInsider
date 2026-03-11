@@ -1,0 +1,69 @@
+Objective
+Build a deep analysis system for a manually curated list of elite traders. For each trader: pull full trade history (paginated until complete), compute deep analytics (ROI by sport/market type, bet sizing consistency, account age, trades/day, specialization tags, Sharpe-like consistency score), store results in PostgreSQL, display in a new Elite Profiles page, and run periodic re-analysis every 24h. Integrate curated trader presence into signal scoring.
+
+Tasks
+T001: Set up PostgreSQL database with Drizzle tables
+Blocked By: []
+Details:
+Use the database skill to provision a Replit PostgreSQL DB and get DATABASE_URL
+Add Drizzle tables to shared/schema.ts:
+eliteTraders — curated watchlist (wallet, name, addedAt, notes, lastAnalyzedAt)
+eliteTraderProfiles — computed analysis snapshot per trader (all metrics as JSON columns)
+eliteTraderTrades — raw trade log per trader (conditionId, side, price, size, timestamp, sport, marketType, question)
+Run npm run db:push to create tables
+Update server/storage.ts with CRUD methods for all three tables
+Acceptance: db:push completes without error; tables visible in DB
+T002: Build trade history fetcher + analysis engine (backend)
+Blocked By: [T001]
+Details:
+Create server/eliteAnalysis.ts with:
+fetchFullTradeHistory(wallet): paginate DATA_API /trades?user={wallet}&limit=1000&offset=N until empty; join each trade with Gamma API for sport/market-type classification; store raw trades in eliteTraderTrades table
+computeTraderProfile(wallet): reads stored trades, computes ALL metrics below, saves to eliteTraderProfiles
+Metrics to compute:
+Volume: totalUSDC, avgBetSize, medianBetSize, betSizeStdDev, betSizeConsistencyScore (1 - stdDev/avg, capped 0-1)
+ROI & PNL: overallROI, overallPNL, last30dROI, last90dROI, winRate, totalTrades
+PNL consistency: rollingROIByMonth (array), sharpeScore (avg monthly ROI / std dev), maxDrawdownStreak (consecutive losing months)
+Sport specialization: roiByTag (NBA, NFL, NHL, MLB, Soccer, UFC, Tennis, eSports, Politics, Other) + tradeCountByTag — only include tags with ≥5 trades
+Market type specialization: roiByMarketType (moneyline, spread, total, futures, other) + tradeCountByMarketType
+Activity: firstTradeDate, daysSinceFirst, tradesPerDay (total / daysSinceFirst), avgTradesPerWeek
+Bet sizing relative to self: identify top 10% largest bets → "big bet ROI" vs "small bet ROI" (does size predict conviction?)
+Tags: auto-assign specialization tags e.g. "NBA Expert", "O/U Specialist", "Soccer Pro", "Futures Whale", "Consistent Grinder" based on top ROI categories with ≥10 trades
+qualityScore: weighted composite (overallROI×0.25 + sharpeScore×0.25 + last90dROI×0.15 + winRate×0.10 + betSizeConsistency×0.10 + tradeCount bonus×0.15)
+Acceptance: calling computeTraderProfile on a real wallet returns a populated profile object with all fields
+T003: Build API routes for curated trader management
+Blocked By: [T001]
+Details:
+Add to server/routes.ts:
+GET /api/elite/traders — list all curated traders with their latest profile
+POST /api/elite/traders — add a new trader by wallet address (triggers immediate background analysis)
+DELETE /api/elite/traders/:wallet — remove from list
+GET /api/elite/traders/:wallet — deep profile for one trader (includes full roiByTag, roiByMarketType, monthly PNL array, top 5 markets won/lost)
+POST /api/elite/traders/:wallet/refresh — manually re-trigger analysis
+Background cron: every 24h, re-run fetchFullTradeHistory for incremental trades (only new since lastAnalyzedAt) + recompute profile for each curated trader
+Acceptance: POST a wallet, GET returns populated profile within 60s
+T004: Build Elite Profiles page (frontend)
+Blocked By: [T002, T003]
+Details:
+New page at /elite — "Elite Traders" in sidebar nav
+Trader list view: cards showing name/wallet, qualityScore badge, overallROI, last90dROI, tradesPerDay, top specialization tags, lastAnalyzedAt
+Single trader deep dive (click to expand or separate route /elite/:wallet):
+Header: name, quality score, account age, trades/day
+Key stats row: Total USDC, Avg Bet, Overall ROI, Win Rate, Sharpe Score
+PNL consistency: small sparkline of monthly ROI (last 12 months), streak indicator
+Specialization radar or bar chart: ROI by sport, ROI by market type (show only categories with ≥5 trades)
+Bet sizing: "Avg Bet: $X | Big bets win at Y% vs small bets Z%"
+Auto-assigned tags as colored badges: "🏀 NBA Expert", "📊 O/U Specialist", etc.
+Top 5 best markets (most profitable individual bets)
+Last analyzed timestamp + Refresh button
+Empty state: instructions to add a wallet address with a simple input form
+Add Trader modal: input field for wallet address or Polymarket profile URL (auto-extract wallet from URL), submit triggers POST /api/elite/traders
+Acceptance: page loads, shows trader cards, deep dive shows all metric sections populated
+T005: Integrate curated traders into signal scoring
+Blocked By: [T002]
+Details:
+In the signal computation pipeline (server/routes.ts), before pushing each signal: check if any trader in dominant or pg.traders is in the curated elite list
+If yes: add hasCuratedElite: true and curatedEliteNames: string[] to signal
+Boost signal confidence by +8pts if curatedElite present (capped at 95)
+In Signals.tsx signal card: show "⭐ ELITE PICK" badge (gold, prominent) when hasCuratedElite is true
+In the WHY THIS BET section: replace estimated insiderSportsROI with the actual computed qualityScore from their elite profile if available
+Acceptance: a signal with a curated trader shows the ELITE PICK badge and uses real profile metrics
