@@ -1,0 +1,184 @@
+building a reliable tracker for these Polymarket traders is a solid idea, but the web/API limitations are a real pain, especially with caps on historical data (like the ~3K record offset you mentioned). That explains the incomplete histories, missing older trades (e.g., RandomPunter's January activity), and downstream errors like inflated/understated PNL from ignoring partial sells or unredeemed positions. The settled count being way off (335 vs. thousands) is classic for only capturing recent unresolved stuff, and the negative ROIs (like KCH's -22.9% when it's actually positive with ~10.6M PNL, 54.1% win rate, and 3,190 positions) scream calculation bugs tied to incomplete data.The good news: Yes, there's a way to get the full picture on-chain, since Polymarket runs on Polygon (chain ID 137), and all trades, positions, splits, merges, and redeems are blockchain events/transactions. No caps there— you can query everything back to the wallet's first interaction. This bypasses Polymarket's web/data API entirely and lets you calculate accurate PNL (sum of redeem payouts minus costs from buys/approvals), ROI (PNL / total invested), win rates (resolved winning positions / total resolved), volume (sum of trade values), average position size, and even categorize by market type (e.g., sports, politics) by cross-referencing market IDs with Polymarket's Gamma API for metadata.Why On-Chain Works Better HereCompleteness: Blockchain logs have every event ever (e.g., Trade on exchange contracts, Redeem on CTF). For RandomPunter, you'd capture that Pistons ML win ($34.6K) and correct the Real Madrid calc by using exact redeem amounts instead of size*(1/price-1).
+Accuracy Fixes: Partial sells/redeems: Track REDEEM events for true settlements.
+Unresolved positions: Filter for resolved markets only when calc'ing win rates/ROI.
+Hot streaks vs. consistency: Timestamp txns to segment performance (e.g., last 30 days vs. all-time).
+Volume/position size: Sum USDC transfers to exchange + share amounts from events.
+Ongoing Tracking: Poll for new txns periodically without scraping limits.
+Verification: Cross-check against Polymarket profiles (partial) and PolymarketAnalytics (full stats like PNL, win rate—e.g., for @kch123
+ at 0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee, it shows the 10.6M PNL you mentioned, so pull from there for quick validates).
+
+Downsides: It's more dev-heavy (need ABIs, RPC), and for usernames not starting with 0x (e.g., @RandomPunter
+), you'll need the underlying proxy wallet address. These aren't public on profiles, but:If it's your own: Check polymarket.com/settings for the proxy address.
+For others: Sometimes searchable via DeBank or on-chain (trace deployments from Polymarket's wallet factory at 0xaB45c5A4B0c941a2F231C04C3f49182e1A254052), but that's tricky. PolymarketAnalytics uses addresses in URLs, so if you can find/match them (e.g., search site for username), use that. Otherwise, skip non-0x ones or manually hunt via tx history if known.
+
+Updated Program FrameworkStick with Python on Replit (cheap if you run sparingly—free tier handles this; schedule daily pulls to avoid costs). Switch from scraping to web3.py for on-chain queries. Install web3 via pip install web3 in Replit shell. Use a free RPC like Alchemy (sign up at alchemy.com for Polygon key) or public https://polygon-rpc.com.Key steps in script:Get ABIs: Download from PolygonScan (export ABI button) or GitHub. For main ones:CTF (0x4D97DCd97eC945f40cF65F87097ACe5EA0476045): Events like PayoutRedemption (for settles), PositionSplit, PositionMerge.
+CTF Exchange (0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E): Events like Fill (for trades).
+(Optional) Neg Risk Exchange (0xC5d563A36AE78145C45a50134d48A1215220f80a) for multi-outcome.
+Query: For each wallet address, get all txns/logs involving Polymarket contracts. Filter events to reconstruct trades.
+Calc Logic:PNL: Sum (redeem payouts - buy costs). Track partials by position ID.
+ROI: PNL / total buy volume * 100.
+Win rate: Winning redeems / total redeems.
+Categories: From trade event's conditionId/market, hit Gamma API (https://gamma-api.polymarket.com/markets?condition_id=...) for category (sports/politics/etc.).
+Hot/lately: Filter txns > recent timestamp.
+Volume/avg size: Sum/avg trade values.
+Storage/Analysis: Pandas DF for histories, compute rankings (e.g., score = 0.4ROI + 0.3win_rate + 0.2volume + 0.1consistency).
+Ongoing: Schedule pulls, diff for new trades.
+
+Sample Script (expand with your wallets; test on one like 0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee for @kch123
+):python
+import os
+import json
+from web3 import Web3
+import pandas as pd
+import requests  # For Gamma API
+from datetime import datetime
+import time
+import schedule
+
+# Config: Get free Alchemy key or use public RPC
+RPC_URL = "https://polygon-rpc.com"  # Or "https://polygon-mainnet.g.alchemy.com/v2/YOUR_KEY"
+w3 = Web3(Web3.HTTPProvider(RPC_URL))
+
+# Polymarket contracts
+CTF_ADDRESS = "0x4D97DCd97eC945f40cF65F87097ACe5EA0476045"
+EXCHANGE_ADDRESS = "0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E"
+NEG_EXCHANGE_ADDRESS = "0xC5d563A36AE78145C45a50134d48A1215220f80a"
+USDC_ADDRESS = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"
+
+# ABIs: Paste from PolygonScan (Export ABI > JSON). Here's placeholders; replace with full.
+CTF_ABI = [  # From Gnosis repo or PolygonScan
+    {"anonymous": False, "inputs": [{"indexed": True, "name": "stakeholder", "type": "address"}, ...], "name": "PayoutRedemption", "type": "event"},
+    # Add full ABI array here (long, ~50 entries)
+]
+EXCHANGE_ABI = [  # From GitHub/Polymarket repo or PolygonScan
+    {"anonymous": False, "inputs": [{"indexed": True, "name": "maker", "type": "address"}, ...], "name": "Fill", "type": "event"},
+    # Full ABI here
+]
+
+ctf_contract = w3.eth.contract(address=CTF_ADDRESS, abi=CTF_ABI)
+exchange_contract = w3.eth.contract(address=EXCHANGE_ADDRESS, abi=EXCHANGE_ABI)
+
+# Wallets: Use addresses (for usernames, add if found; e.g., kch123: '0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee')
+wallets = {
+    'kch123': '0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee',
+    # Add others like '0xd9e0aaca471f48f91a26e8669a805f2': '0xd9e0aaca471f48f91a26e8669a805f2',
+    # For RandomPunter, if found via analytics search or manual
+}
+
+# Function to get all events for a wallet
+def get_trade_history(wallet):
+    data = {'trades': [], 'redeems': []}
+    from_block = 0  # Or wallet creation block for efficiency (get from PolygonScan)
+    to_block = 'latest'
+    
+    # Get Exchange Fill events (trades)
+    fill_logs = exchange_contract.events.Fill.get_logs(
+        fromBlock=from_block, toBlock=to_block,
+        argument_filters={'maker': wallet}  # Or 'taker' if needed
+    )
+    for log in fill_logs:
+        # Decode: amount, price, outcome, market (conditionId), timestamp
+        trade = {
+            'timestamp': w3.eth.get_block(log.blockNumber).timestamp,
+            'market_id': log.args.conditionId,  # Or whatever key
+            'outcome': log.args.outcomeIndex,
+            'size': log.args.amount / 10**6,  # USDC decimals
+            'cost': log.args.cost / 10**6,
+            'type': 'buy' if log.args.isBuy else 'sell'
+        }
+        data['trades'].append(trade)
+    
+    # Get CTF PayoutRedemption (settles)
+    redeem_logs = ctf_contract.events.PayoutRedemption.get_logs(
+        fromBlock=from_block, toBlock=to_block,
+        argument_filters={'stakeholder': wallet}
+    )
+    for log in redeem_logs:
+        redeem = {
+            'timestamp': w3.eth.get_block(log.blockNumber).timestamp,
+            'market_id': log.args.conditionId,
+            'payout': sum(log.args.payouts) / 10**6,  # Total redeemed
+        }
+        data['redeems'].append(redeem)
+    
+    # Add USDC transfers/approvals if needed for volume
+    time.sleep(1)  # Rate limit
+    return data
+
+# Enrich with categories (via Gamma API)
+def get_market_category(condition_id):
+    try:
+        resp = requests.get(f"https://gamma-api.polymarket.com/markets?condition_id={condition_id}")
+        if resp.ok:
+            market = resp.json()[0]
+            return market['category']  # e.g., 'sports', 'politics'
+    except:
+        return 'unknown'
+
+# Analyze per wallet
+def analyze_wallet(wallet, history):
+    df_trades = pd.DataFrame(history['trades'])
+    df_redeems = pd.DataFrame(history['redeems'])
+    
+    # PNL: Sum redeems - sum buy costs (filter sells separately)
+    total_pnl = df_redeems['payout'].sum() - df_trades[df_trades['type'] == 'buy']['cost'].sum() + df_trades[df_trades['type'] == 'sell']['cost'].sum()  # Adjust for sells
+    total_volume = df_trades['cost'].abs().sum()
+    roi = (total_pnl / total_volume) * 100 if total_volume else 0
+    win_rate = (df_redeems[df_redeems['payout'] > 0].shape[0] / df_redeems.shape[0]) * 100 if df_redeems.shape[0] else 0
+    avg_size = df_trades['size'].mean()
+    predictions = len(df_trades) + len(df_redeems)  # Approx
+    
+    # Categories: Group by
+    df_trades['category'] = df_trades['market_id'].apply(get_market_category)
+    category_breakdown = df_trades.groupby('category')['cost'].sum().to_dict()
+    
+    # Hot lately: Last 30 days
+    recent = datetime.now().timestamp() - (30 * 86400)
+    recent_pnl = df_redeems[df_redeems['timestamp'] > recent]['payout'].sum() - df_trades[(df_trades['timestamp'] > recent) & (df_trades['type'] == 'buy')]['cost'].sum()
+    
+    return {
+        'pnl': total_pnl,
+        'roi': roi,
+        'win_rate': win_rate,
+        'volume': total_volume,
+        'avg_size': avg_size,
+        'predictions': predictions,
+        'categories': category_breakdown,
+        'recent_pnl': recent_pnl,
+        # Add expertise: Top category by volume
+        'expertise': max(category_breakdown, key=category_breakdown.get) if category_breakdown else 'mixed'
+    }
+
+# Full track
+def track_all():
+    results = {}
+    for name, addr in wallets.items():
+        history = get_trade_history(addr)
+        analysis = analyze_wallet(addr, history)
+        results[name] = analysis
+        time.sleep(5)  # Avoid RPC throttling
+    
+    # Save
+    pd.DataFrame(results).T.to_csv('polymarket_analysis.csv')
+    
+    # Rank: Custom score
+    df = pd.DataFrame(results).T
+    df['score'] = 0.4 * df['roi'] + 0.3 * df['win_rate'] + 0.2 * (df['volume'] / 1e6) + 0.1 * (df['recent_pnl'] / df['pnl'] if df['pnl'] else 0)
+    df.sort_values('score', ascending=False).to_csv('ranked_traders.csv')
+    print("Done - check CSVs for rankings.")
+
+# Run initial
+track_all()
+
+# Schedule daily
+schedule.every().day.at("02:00").do(track_all)
+
+while True:
+    schedule.run_pending()
+    time.sleep(60)
+
+Next Steps to Make It WorkFill ABIs: Go to polygonscan.com/address/<contract>#code > Contract ABI > Copy JSON. Paste into script.
+Add Wallets: For 0x ones, use directly. For handles, hunt addresses via PolymarketAnalytics search or DeBank traces.
+Test/Fix: Run on kch123—should match ~10.6M PNL, 54.1% win, etc. Tweak filters if missing events.
+Enhance: Add error handling, pagination for large logs (use block ranges), verify vs. PolymarketAnalytics (requests.get their pages for stats).
+

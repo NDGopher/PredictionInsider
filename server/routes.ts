@@ -5,7 +5,7 @@ import {
   seedCuratedTraders, startPeriodicRefresh, runAnalysisForTrader,
   resolveUsernameToWallet, generateTraderCSV, curatedWalletSet, curatedWalletToUsername,
   settleUnresolvedTrades, fetchFullTradeHistory, computeTraderProfile,
-  settleAllUnresolvedTradesGlobal
+  settleAllUnresolvedTradesGlobal, fetchAllActivity, computeTraderProfileFromActivity
 } from "./eliteAnalysis";
 
 const elitePool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -1141,13 +1141,60 @@ async function fetchESPNGameScore(slug: string): Promise<GameScore | null> {
 }
 
 
+// ─── Incremental activity sync helper ────────────────────────────────────────
+// Fetches only NEW events since last known timestamp — safe to call on every restart
+async function runActivitySyncForAll(wallets: string[], label = "Activity") {
+  const CONCURRENCY = 8;
+  let done = 0;
+  const total = wallets.length;
+  console.log(`[${label}] Starting parallel sync for ${total} wallets (concurrency=${CONCURRENCY})`);
+
+  const processWallet = async (wallet: string) => {
+    try {
+      const { rows: sinceRows } = await elitePool.query(
+        `SELECT MAX(event_timestamp) as since FROM elite_trader_activity WHERE wallet = $1`,
+        [wallet.toLowerCase()]
+      );
+      const sinceTs = sinceRows[0]?.since ? Number(sinceRows[0].since) : undefined;
+      const actCount = await fetchAllActivity(wallet, sinceTs);
+      await computeTraderProfile(wallet);
+      done++;
+      console.log(`[${label}] ${done}/${total} ${wallet.slice(0, 8)}: +${actCount} new events`);
+    } catch (e: any) {
+      done++;
+      console.error(`[${label}] Failed for ${wallet.slice(0, 8)}:`, e.message);
+    }
+  };
+
+  // Process in parallel batches of CONCURRENCY
+  for (let i = 0; i < wallets.length; i += CONCURRENCY) {
+    const batch = wallets.slice(i, i + CONCURRENCY);
+    await Promise.all(batch.map(processWallet));
+  }
+  console.log(`[${label}] Sync complete: ${done}/${total} traders`);
+}
+
 // ─── Route registration ───────────────────────────────────────────────────────
 export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
 
   // ── Elite trader seeding + periodic refresh ───────────────────────────────
-  seedCuratedTraders().then(() => {
+  seedCuratedTraders().then(async () => {
     console.log("[Elite] Curated traders seeded");
     startPeriodicRefresh();
+    // Auto-sync activity for all wallets on every server start (incremental, safe)
+    try {
+      const { rows } = await elitePool.query(
+        `SELECT wallet FROM elite_traders WHERE wallet NOT LIKE 'pending-%' ORDER BY wallet`
+      );
+      if (rows.length > 0) {
+        console.log(`[Startup] Syncing activity for ${rows.length} wallets...`);
+        runActivitySyncForAll(rows.map((r: any) => r.wallet), "Startup").catch((e: Error) =>
+          console.error("[Startup] Activity sync error:", e.message)
+        );
+      }
+    } catch (e: any) {
+      console.error("[Startup] Failed to start activity sync:", e.message);
+    }
   }).catch((e: Error) => console.error("[Elite] Seed error:", e.message));
 
   // ── GET /api/elite/traders ─────────────────────────────────────────────────
@@ -1346,28 +1393,50 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   });
 
   // ── POST /api/elite/admin/refetch-all ────────────────────────────────────
-  // Clears and re-fetches ALL trade history for every trader (full refresh)
+  // Clears and re-fetches ALL activity history for every trader (full refresh)
   app.post("/api/elite/admin/refetch-all", async (_req, res) => {
     try {
       const { rows } = await elitePool.query(
         `SELECT wallet FROM elite_traders WHERE wallet NOT LIKE 'pending-%' ORDER BY wallet`
       );
-      res.json({ message: "Full re-fetch started", wallets: rows.length });
+      res.json({ message: "Full re-fetch started (activity + trades)", wallets: rows.length });
       setImmediate(async () => {
         for (const r of rows) {
           try {
-            // Clear existing trades for this wallet so we do a clean full fetch
+            // Clear existing data for full fresh fetch
+            await elitePool.query(`DELETE FROM elite_trader_activity WHERE wallet = $1`, [r.wallet]);
             await elitePool.query(`DELETE FROM elite_trader_trades WHERE wallet = $1`, [r.wallet]);
             await elitePool.query(`UPDATE elite_traders SET last_analyzed_at = NULL WHERE wallet = $1`, [r.wallet]);
-            await runAnalysisForTrader(r.wallet);
-            console.log(`[Admin] Re-fetched & analyzed ${r.wallet}`);
+            // Fetch activity (accurate PNL via REDEEM events + cursor pagination)
+            const actCount = await fetchAllActivity(r.wallet);
+            // Fetch trades (for signal detection)
+            await fetchFullTradeHistory(r.wallet);
+            // Settle trades and compute profile
+            await settleUnresolvedTrades(r.wallet);
+            await computeTraderProfile(r.wallet);
+            await elitePool.query(`UPDATE elite_traders SET last_analyzed_at = NOW() WHERE wallet = $1`, [r.wallet]);
+            console.log(`[Admin] Re-fetched & analyzed ${r.wallet}: ${actCount} activity events`);
           } catch (e: any) {
             console.error(`[Admin] Re-fetch failed for ${r.wallet}:`, e.message);
           }
-          await new Promise(res => setTimeout(res, 1000));
+          await new Promise(res => setTimeout(res, 1500));
         }
         console.log(`[Admin] refetch-all complete`);
       });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── POST /api/elite/admin/refetch-activity ─────────────────────────────────
+  // Incrementally fetches activity for all wallets (no delete = survives restarts)
+  app.post("/api/elite/admin/refetch-activity", async (_req, res) => {
+    try {
+      const { rows } = await elitePool.query(
+        `SELECT wallet FROM elite_traders WHERE wallet NOT LIKE 'pending-%' ORDER BY wallet`
+      );
+      res.json({ message: "Activity re-fetch started", wallets: rows.length });
+      setImmediate(() => runActivitySyncForAll(rows.map((r: any) => r.wallet)));
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }

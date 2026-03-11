@@ -102,7 +102,13 @@ export function classifyMarketType(slug: string, title: string, outcome: string)
 
 async function fetchJson(url: string): Promise<any> {
   try {
-    const res = await fetch(url, { headers: { "User-Agent": "PredictionInsider/1.0" } });
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    const res = await fetch(url, {
+      headers: { "User-Agent": "PredictionInsider/1.0" },
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -423,6 +429,452 @@ export async function settleUnresolvedTrades(wallet: string): Promise<number> {
   return totalUpdated;
 }
 
+// ─── Fetch ALL activity (trades + redeems) using cursor pagination ────────────
+// Uses before=timestamp cursor to bypass the 3000 offset limit.
+// Stores TRADE (buy/sell) and REDEEM events in elite_trader_activity.
+
+export async function fetchAllActivity(
+  wallet: string,
+  sinceTs?: number, // Unix seconds — stop fetching events older than this
+  maxPages = 20 // Cap at 10,000 events to prevent multi-minute hangs
+): Promise<number> {
+  const PAGE = 500;
+  let before: number | null = null;
+  let totalInserted = 0;
+  let pagesFetched = 0;
+  const walletLower = wallet.toLowerCase();
+
+  const batch: any[][] = [];
+  const flushBatch = async () => {
+    if (!batch.length) return;
+    const placeholders = batch.map((_, i) => {
+      const base = i * 15;
+      return `($${base+1},$${base+2},$${base+3},$${base+4},$${base+5},$${base+6},$${base+7},$${base+8},$${base+9},$${base+10},$${base+11},$${base+12},$${base+13},$${base+14},$${base+15})`;
+    }).join(",");
+    const flat = batch.flat();
+    try {
+      await pool.query(`
+        INSERT INTO elite_trader_activity
+          (wallet, condition_id, event_type, side, size, usdc_size, price, outcome_index,
+           event_timestamp, title, slug, outcome, sport, market_type, transaction_hash)
+        VALUES ${placeholders}
+        ON CONFLICT (wallet, transaction_hash) DO NOTHING
+      `, flat);
+      totalInserted += batch.length;
+    } catch (_) {
+      for (const row of batch) {
+        try {
+          await pool.query(`
+            INSERT INTO elite_trader_activity
+              (wallet, condition_id, event_type, side, size, usdc_size, price, outcome_index,
+               event_timestamp, title, slug, outcome, sport, market_type, transaction_hash)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+            ON CONFLICT (wallet, transaction_hash) DO NOTHING
+          `, row);
+          totalInserted++;
+        } catch (__) {}
+      }
+    }
+    batch.length = 0;
+  };
+
+  while (true) {
+    if (pagesFetched >= maxPages) break;
+    pagesFetched++;
+    const url = before
+      ? `${DATA_API}/activity?user=${walletLower}&limit=${PAGE}&before=${before}`
+      : `${DATA_API}/activity?user=${walletLower}&limit=${PAGE}`;
+    const data = await fetchJson(url);
+    if (!Array.isArray(data) || data.length === 0) break;
+
+    let hitSince = false;
+    for (const ev of data) {
+      if (!ev.conditionId) continue;
+
+      // Stop when we reach events older than sinceTs (already fetched)
+      if (sinceTs && ev.timestamp && ev.timestamp < sinceTs) {
+        hitSince = true;
+        break;
+      }
+
+      const sport = classifySport(ev.slug || "", ev.title || "");
+      const mType = classifyMarketType(ev.slug || "", ev.title || "", ev.outcome || "");
+      const side = (ev.side || "").toUpperCase() || null;
+      const usdcSize = parseFloat(ev.usdcSize) || 0;
+      const size = parseFloat(ev.size) || 0;
+      const price = parseFloat(ev.price) || 0;
+      const outcomeIdx = ev.outcomeIndex != null && ev.outcomeIndex !== 999 ? ev.outcomeIndex : -1;
+      const txHash = ev.transactionHash || null;
+
+      batch.push([
+        walletLower, ev.conditionId, ev.type || "TRADE",
+        side, size, usdcSize, price, outcomeIdx,
+        ev.timestamp,
+        (ev.title || "").slice(0, 500), ev.slug || "", ev.outcome || "",
+        sport, mType, txHash,
+      ]);
+
+      if (batch.length >= 100) await flushBatch();
+    }
+
+    await flushBatch();
+    if (hitSince) break;
+    if (data.length < PAGE) break;
+
+    // Cursor: oldest timestamp on this page → get events BEFORE it
+    before = data[data.length - 1].timestamp;
+    await new Promise(r => setTimeout(r, 80));
+  }
+
+  await flushBatch();
+  return totalInserted;
+}
+
+// ─── Compute trader profile from activity (correct PNL via REDEEM events) ─────
+
+export async function computeTraderProfileFromActivity(wallet: string): Promise<any | null> {
+  const w = wallet.toLowerCase();
+
+  const uRow = await pool.query(`SELECT username FROM elite_traders WHERE wallet = $1`, [w]);
+  const username = uRow.rows[0]?.username || w.slice(0, 10);
+
+  const { rows: activity } = await pool.query(`
+    SELECT * FROM elite_trader_activity WHERE wallet = $1 ORDER BY event_timestamp ASC
+  `, [w]);
+
+  if (!activity.length) return null;
+
+  // Group by condition_id → one "position" per market
+  type PosBucket = {
+    conditionId: string; title: string; slug: string; sport: string; marketType: string;
+    costBasis: number; sellProceeds: number; redeemValue: number; redeemCount: number;
+    firstBuyTs: number; lastTs: number;
+    buyPriceSum: number; buyPriceCt: number;
+    outcomeIndex: number; side: string; buyUsdcSizes: number[];
+  };
+
+  const posMap = new Map<string, PosBucket>();
+
+  for (const ev of activity) {
+    const cid = ev.condition_id;
+    if (!posMap.has(cid)) {
+      posMap.set(cid, {
+        conditionId: cid, title: ev.title || "", slug: ev.slug || "",
+        sport: ev.sport || "Other", marketType: ev.market_type || "moneyline",
+        costBasis: 0, sellProceeds: 0, redeemValue: 0, redeemCount: 0,
+        firstBuyTs: Infinity, lastTs: 0,
+        buyPriceSum: 0, buyPriceCt: 0,
+        outcomeIndex: -1, side: "YES", buyUsdcSizes: [],
+      });
+    }
+    const pos = posMap.get(cid)!;
+    pos.lastTs = Math.max(pos.lastTs, Number(ev.event_timestamp));
+
+    if (ev.event_type === "TRADE" && ev.side === "BUY") {
+      const u = parseFloat(ev.usdc_size) || 0;
+      pos.costBasis += u;
+      pos.buyUsdcSizes.push(u);
+      pos.firstBuyTs = Math.min(pos.firstBuyTs, Number(ev.event_timestamp));
+      const p = parseFloat(ev.price) || 0;
+      if (p > 0) { pos.buyPriceSum += p; pos.buyPriceCt++; }
+      if (pos.outcomeIndex === -1 && ev.outcome_index != null && ev.outcome_index >= 0) {
+        pos.outcomeIndex = ev.outcome_index;
+        pos.side = ev.outcome_index === 0 ? "YES" : "NO";
+      }
+    } else if (ev.event_type === "TRADE" && ev.side === "SELL") {
+      pos.sellProceeds += parseFloat(ev.usdc_size) || 0;
+    } else if (ev.event_type === "REDEEM") {
+      pos.redeemValue += parseFloat(ev.usdc_size) || 0;
+      pos.redeemCount++;
+    }
+  }
+
+  // For condition_ids where we have REDEEM/SELL but no BUY (activity API doesn't return old buys),
+  // supplement cost basis from the trades table (which stores BUY trades from /trades API).
+  const condIdsWithNobuys = [...posMap.values()]
+    .filter(p => p.costBasis === 0 && (p.redeemCount > 0 || p.sellProceeds > 0))
+    .map(p => p.conditionId);
+
+  if (condIdsWithNobuys.length > 0) {
+    const { rows: tradeBuys } = await pool.query(`
+      SELECT condition_id, SUM(size) as total_cost, AVG(price) as avg_price,
+             COUNT(*) as cnt, MIN(EXTRACT(EPOCH FROM trade_timestamp)) as first_ts,
+             MAX(outcome_index) as oi
+      FROM elite_trader_trades
+      WHERE wallet = $1 AND is_buy = TRUE AND condition_id = ANY($2)
+      GROUP BY condition_id
+    `, [w, condIdsWithNobuys]);
+
+    for (const tr of tradeBuys) {
+      const pos = posMap.get(tr.condition_id);
+      if (!pos) continue;
+      const cost = parseFloat(tr.total_cost) || 0;
+      pos.costBasis += cost;
+      if (cost > 0) pos.buyUsdcSizes.push(cost);
+      if (tr.avg_price > 0) { pos.buyPriceSum += parseFloat(tr.avg_price) * Number(tr.cnt); pos.buyPriceCt += Number(tr.cnt); }
+      if (tr.first_ts) pos.firstBuyTs = Math.min(pos.firstBuyTs, Number(tr.first_ts));
+      if (pos.outcomeIndex === -1 && tr.oi != null && tr.oi >= 0) {
+        pos.outcomeIndex = Number(tr.oi);
+        pos.side = pos.outcomeIndex === 0 ? "YES" : "NO";
+      }
+    }
+  }
+
+  // Only positions where we actually bought something
+  const positions = [...posMap.values()]
+    .filter(p => p.costBasis > 0)
+    .map(pos => {
+      const cashPnl = pos.sellProceeds + pos.redeemValue - pos.costBasis;
+      const isSettled = pos.redeemCount > 0;
+      const avgPrice = pos.buyPriceCt > 0 ? pos.buyPriceSum / pos.buyPriceCt : 0;
+      return {
+        ...pos,
+        cashPnl,
+        isSettled,
+        isWon: isSettled && cashPnl > 0.01,
+        isLost: isSettled && cashPnl <= 0.01,
+        avgPrice,
+        betSize: pos.costBasis,
+      };
+    });
+
+  if (!positions.length) return null;
+
+  const settled = positions.filter(p => p.isSettled);
+
+  // If activity-based data is sparse (missing BUY events for most REDEEMs),
+  // fall back to trades-based computation which uses settlement outcomes.
+  // This happens for high-frequency traders where the /trades API only covers
+  // a fraction of their history (3500-trade API limit).
+  if (settled.length < 10) return null;
+  const won = settled.filter(p => p.isWon);
+  const open = positions.filter(p => !p.isSettled);
+
+  const betSizes = positions.map(p => p.betSize);
+  const avgBetSize = mean(betSizes);
+  const medianBetSize = median(betSizes);
+  const betSizeStdDev = stdDev(betSizes);
+  const betSizeCV = avgBetSize > 0 ? betSizeStdDev / avgBetSize : 0;
+
+  const totalUSDC = positions.reduce((a, p) => a + p.costBasis, 0);
+
+  const validTs = positions.filter(p => p.firstBuyTs !== Infinity);
+  const firstTs = validTs.length ? Math.min(...validTs.map(p => p.firstBuyTs)) : Date.now() / 1000;
+  const lastTs = Math.max(...positions.map(p => p.lastTs));
+  const accountAgeDays = Math.max((lastTs - firstTs) / 86400, 1);
+  const tradesPerDay = positions.length / accountAgeDays;
+
+  const settledCostBasis = settled.reduce((a, p) => a + p.costBasis, 0);
+  const settledPnl = settled.reduce((a, p) => a + p.cashPnl, 0);
+  const overallROI = settledCostBasis > 0 ? settledPnl / settledCostBasis : 0;
+  const winRate = settled.length > 0 ? won.length / settled.length : 0;
+
+  const nowSec = Date.now() / 1000;
+  const calcROI = (arr: typeof settled) => {
+    const cost = arr.reduce((a, p) => a + p.costBasis, 0);
+    const pnl = arr.reduce((a, p) => a + p.cashPnl, 0);
+    return cost > 0 ? pnl / cost : 0;
+  };
+  const last30dROI = calcROI(settled.filter(p => p.firstBuyTs > nowSec - 30 * 86400));
+  const last90dROI = calcROI(settled.filter(p => p.firstBuyTs > nowSec - 90 * 86400));
+
+  const p90 = [...betSizes].sort((a, b) => a - b)[Math.floor(betSizes.length * 0.9)] || avgBetSize;
+  const bigBetROI = calcROI(settled.filter(p => p.betSize >= p90));
+  const smallBetROI = calcROI(settled.filter(p => p.betSize <= medianBetSize));
+
+  // Monthly ROI
+  const byMonth: Record<string, { pnl: number; invested: number; count: number }> = {};
+  for (const p of settled) {
+    const d = new Date(p.firstBuyTs * 1000);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    if (!byMonth[key]) byMonth[key] = { pnl: 0, invested: 0, count: 0 };
+    byMonth[key].pnl += p.cashPnl;
+    byMonth[key].invested += p.costBasis;
+    byMonth[key].count++;
+  }
+  const monthlyROI = Object.entries(byMonth)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, { pnl, invested, count }]) => ({
+      month, roi: invested > 0 ? pnl / invested : 0,
+      pnl: Math.round(pnl * 100) / 100, tradeCount: count,
+    }));
+  const monthlyROIs = monthlyROI.map(m => m.roi);
+  const avgMROI = mean(monthlyROIs);
+  const stdMROI = stdDev(monthlyROIs);
+  const sharpeScore = stdMROI > 0 ? avgMROI / stdMROI : (avgMROI > 0 ? 2 : 0);
+
+  let maxLosing = 0, curLosing = 0;
+  for (const m of monthlyROI) {
+    if (m.roi < 0) { curLosing++; maxLosing = Math.max(maxLosing, curLosing); } else curLosing = 0;
+  }
+  const consistencyRating =
+    sharpeScore >= 1.5 ? "Excellent" : sharpeScore >= 0.8 ? "Good" : sharpeScore >= 0.3 ? "Moderate" : "Volatile";
+
+  // Sport/market type breakdowns
+  type SportBucket = { invested: number; pnl: number; count: number; won: number; sizes: number[] };
+  const bySport: Record<string, SportBucket> = {};
+  const byMType: Record<string, SportBucket> = {};
+
+  for (const p of positions) {
+    const sp = p.sport || "Other";
+    const mt = p.marketType || "moneyline";
+    if (!bySport[sp]) bySport[sp] = { invested: 0, pnl: 0, count: 0, won: 0, sizes: [] };
+    if (!byMType[mt]) byMType[mt] = { invested: 0, pnl: 0, count: 0, won: 0, sizes: [] };
+    bySport[sp].sizes.push(p.betSize);
+    byMType[mt].sizes.push(p.betSize);
+  }
+  for (const p of settled) {
+    const sp = p.sport || "Other";
+    const mt = p.marketType || "moneyline";
+    bySport[sp].invested += p.costBasis; bySport[sp].pnl += p.cashPnl;
+    bySport[sp].count++; if (p.isWon) bySport[sp].won++;
+    byMType[mt].invested += p.costBasis; byMType[mt].pnl += p.cashPnl;
+    byMType[mt].count++; if (p.isWon) byMType[mt].won++;
+  }
+
+  const buildBreakdown = (map: Record<string, SportBucket>) => {
+    const result: Record<string, any> = {};
+    let top = "", topROI = -Infinity;
+    for (const [key, d] of Object.entries(map)) {
+      if (d.count < 5) continue;
+      const roi = d.invested > 0 ? d.pnl / d.invested : 0;
+      result[key] = {
+        roi: Math.round(roi * 10000) / 100,
+        tradeCount: d.count,
+        pnl: Math.round(d.pnl * 100) / 100,
+        winRate: Math.round((d.won / d.count) * 1000) / 10,
+        avgBet: Math.round(mean(d.sizes || [0])),
+      };
+      if (d.count >= 10 && roi > topROI) { topROI = roi; top = key; }
+    }
+    return { result, top };
+  };
+
+  const { result: roiBySport, top: topSport } = buildBreakdown(bySport);
+  const { result: roiByMarketType, top: topMarketType } = buildBreakdown(byMType);
+
+  const yesBuys = positions.filter(p => p.side === "YES").length;
+  const noBuys = positions.filter(p => p.side === "NO").length;
+  const yesROI = calcROI(settled.filter(p => p.side === "YES"));
+  const noROI = calcROI(settled.filter(p => p.side === "NO"));
+  const preferredSide =
+    yesBuys / Math.max(positions.length, 1) > 0.65 ? "YES" :
+    noBuys / Math.max(positions.length, 1) > 0.65 ? "NO" : "Balanced";
+
+  const longshotSettled = settled.filter(p => p.avgPrice < 0.25);
+  const midSettled = settled.filter(p => p.avgPrice >= 0.25 && p.avgPrice <= 0.75);
+  const guaranteeSettled = settled.filter(p => p.avgPrice > 0.75);
+
+  const sportDistribution: Record<string, number> = {};
+  for (const p of positions) {
+    const sp = p.sport || "Other";
+    sportDistribution[sp] = ((sportDistribution[sp] || 0) + 1);
+  }
+  for (const sp of Object.keys(sportDistribution)) {
+    sportDistribution[sp] = Math.round(sportDistribution[sp] / positions.length * 1000) / 10;
+  }
+
+  const avgBetBySport: Record<string, number> = {};
+  for (const [sp, d] of Object.entries(bySport)) {
+    avgBetBySport[sp] = Math.round(mean(d.sizes || [0]));
+  }
+  const sizingInsights: string[] = [];
+  for (const [sp, avg] of Object.entries(avgBetBySport)) {
+    if (avg > avgBetSize * 1.5) sizingInsights.push(`Bets ${(avg / avgBetSize).toFixed(1)}x more on ${sp}`);
+  }
+
+  // Auto tags
+  const tags: string[] = [];
+  const sportTagMap: Record<string, string> = {
+    "NBA": "🏀 NBA Expert", "NFL": "🏈 NFL Specialist", "NHL": "🏒 NHL Pro",
+    "MLB": "⚾ MLB Expert", "Soccer": "⚽ Soccer Expert", "UFC/MMA": "🥊 UFC Analyst",
+    "Tennis": "🎾 Tennis Pro", "eSports": "🎮 eSports Analyst",
+    "College Sports": "🎓 College Sports", "Golf": "⛳ Golf Expert", "Formula 1": "🏎️ F1 Expert",
+  };
+  for (const [sp, d] of Object.entries(roiBySport)) {
+    if (d.tradeCount >= 10 && d.roi > 5 && sportTagMap[sp]) tags.push(sportTagMap[sp]);
+  }
+  if ((roiByMarketType["total"]?.tradeCount || 0) >= 10 && (roiByMarketType["total"]?.roi || 0) > 5) tags.push("📊 O/U Specialist");
+  if ((roiByMarketType["moneyline"]?.tradeCount || 0) >= 10 && (roiByMarketType["moneyline"]?.roi || 0) > 5) tags.push("📈 Moneyline Pro");
+  if ((roiByMarketType["futures"]?.tradeCount || 0) >= 10 && (roiByMarketType["futures"]?.roi || 0) > 5) tags.push("🔮 Futures Trader");
+  if ((roiByMarketType["spread"]?.tradeCount || 0) >= 10 && (roiByMarketType["spread"]?.roi || 0) > 5) tags.push("↕️ Spread Expert");
+  if (noBuys >= 10 && noROI > yesROI + 0.05) tags.push("❌ NO Bet Specialist");
+  if (yesBuys >= 10 && yesROI > noROI + 0.05) tags.push("✅ YES Specialist");
+  if (longshotSettled.length >= 10 && calcROI(longshotSettled) > 0.1) tags.push("🎲 Long Shot Hunter");
+  if (sharpeScore >= 1.5) tags.push("💎 Consistent Grinder");
+  if (avgBetSize >= 1000) tags.push("🐋 Big Bettor");
+  if (bigBetROI > smallBetROI + 0.1 && settled.filter(p => p.betSize >= p90).length >= 10) tags.push("🎯 High Conviction");
+
+  // Quality score
+  const qualityScore = Math.round(
+    Math.min(Math.max(overallROI / 0.3, 0), 1) * 25 +
+    Math.min(Math.max(sharpeScore / 2, 0), 1) * 20 +
+    Math.min(Math.max(last90dROI / 0.2, 0), 1) * 15 +
+    Math.min(Math.max((winRate - 0.45) / 0.25, 0), 1) * 15 +
+    Math.min(Math.max(Math.log10(Math.max(positions.length, 1)) / Math.log10(1000), 0), 1) * 15 +
+    Math.min(Math.max(1 - betSizeCV, 0), 1) * 10
+  );
+
+  const bestBets = [...settled]
+    .sort((a, b) => b.cashPnl - a.cashPnl)
+    .slice(0, 10)
+    .map(p => ({
+      title: p.title, slug: p.slug, sport: p.sport, marketType: p.marketType,
+      side: p.side, price: Math.round(p.avgPrice * 100) / 100,
+      size: Math.round(p.betSize * 100) / 100,
+      pnl: Math.round(p.cashPnl * 100) / 100,
+      date: new Date(p.firstBuyTs * 1000).toISOString(),
+    }));
+
+  const metrics = {
+    totalUSDC: Math.round(totalUSDC),
+    totalTrades: positions.length,
+    settledTrades: settled.length,
+    openPositions: open.length,
+    avgBetSize: Math.round(avgBetSize * 100) / 100,
+    medianBetSize: Math.round(medianBetSize * 100) / 100,
+    betSizeStdDev: Math.round(betSizeStdDev * 100) / 100,
+    betSizeCV: Math.round(betSizeCV * 1000) / 1000,
+    firstTradeDate: new Date(firstTs * 1000).toISOString(),
+    lastTradeDate: new Date(lastTs * 1000).toISOString(),
+    accountAgeDays: Math.round(accountAgeDays),
+    tradesPerDay: Math.round(tradesPerDay * 100) / 100,
+    avgTradesPerWeek: Math.round(tradesPerDay * 7 * 10) / 10,
+    overallROI: Math.round(overallROI * 10000) / 100,
+    overallPNL: Math.round(settledPnl * 100) / 100,
+    winRate: Math.round(winRate * 1000) / 10,
+    last30dROI: Math.round(last30dROI * 10000) / 100,
+    last90dROI: Math.round(last90dROI * 10000) / 100,
+    bigBetROI: Math.round(bigBetROI * 10000) / 100,
+    smallBetROI: Math.round(smallBetROI * 10000) / 100,
+    sharpeScore: Math.round(sharpeScore * 100) / 100,
+    consistencyRating, maxConsecLosingMonths: maxLosing,
+    monthlyROI, roiBySport, topSport, roiByMarketType, topMarketType,
+    sportDistribution, avgBetBySport, sizingInsights,
+    yesROI: Math.round(yesROI * 10000) / 100,
+    noROI: Math.round(noROI * 10000) / 100,
+    yesTradeCount: yesBuys, noTradeCount: noBuys, preferredSide,
+    longshotROI: Math.round(calcROI(longshotSettled) * 10000) / 100,
+    longshotCount: positions.filter(p => p.avgPrice < 0.25).length,
+    midrangeROI: Math.round(calcROI(midSettled) * 10000) / 100,
+    midrangeCount: positions.filter(p => p.avgPrice >= 0.25 && p.avgPrice <= 0.75).length,
+    guaranteeROI: Math.round(calcROI(guaranteeSettled) * 10000) / 100,
+    guaranteeCount: positions.filter(p => p.avgPrice > 0.75).length,
+    bestBets,
+    dataSource: "activity",
+  };
+
+  await pool.query(`
+    INSERT INTO elite_trader_profiles (wallet, username, computed_at, metrics, tags, quality_score)
+    VALUES ($1, $2, NOW(), $3, $4, $5)
+    ON CONFLICT (wallet) DO UPDATE SET
+      username = EXCLUDED.username, computed_at = NOW(),
+      metrics = EXCLUDED.metrics, tags = EXCLUDED.tags, quality_score = EXCLUDED.quality_score
+  `, [w, username, JSON.stringify(metrics), tags, qualityScore]);
+
+  return { wallet: w, username, qualityScore, tags, metrics };
+}
+
 // ─── Statistics helpers ────────────────────────────────────────────────────────
 
 function mean(arr: number[]): number {
@@ -444,9 +896,16 @@ function median(arr: number[]): number {
 }
 
 // ─── Compute trader profile ───────────────────────────────────────────────────
+// Tries activity-based computation first (accurate REDEEM PNL), falls back to trades.
 
 export async function computeTraderProfile(wallet: string): Promise<any> {
   const w = wallet.toLowerCase();
+
+  // Try activity-based computation first (CORRECT PNL via REDEEM events)
+  const activityResult = await computeTraderProfileFromActivity(w);
+  if (activityResult) return activityResult;
+
+  // Fallback: trades-based computation (legacy, less accurate)
 
   // Get username
   const uRow = await pool.query(`SELECT username FROM elite_traders WHERE wallet = $1`, [w]);
@@ -829,12 +1288,36 @@ export async function seedCuratedTraders(): Promise<void> {
 
 export async function runAnalysisForTrader(wallet: string): Promise<void> {
   try {
-    const { rows } = await pool.query(`SELECT last_analyzed_at FROM elite_traders WHERE wallet = $1`, [wallet]);
-    const since = rows[0]?.last_analyzed_at ? new Date(rows[0].last_analyzed_at).getTime() : undefined;
-    await fetchFullTradeHistory(wallet, since);
-    await settleUnresolvedTrades(wallet);
-    await computeTraderProfile(wallet);
-    console.log(`[Elite] Analysis complete for ${wallet}`);
+    const w = wallet.toLowerCase();
+
+    // Use the newest event we already have as the sinceTs cursor (not last_analyzed_at).
+    // This lets us fetch only NEW events on incremental refresh without stopping on all old events.
+    const { rows: newestRows } = await pool.query(
+      `SELECT MAX(event_timestamp) as newest_ts FROM elite_trader_activity WHERE wallet = $1`, [w]
+    );
+    const newestTs = newestRows[0]?.newest_ts ? Number(newestRows[0].newest_ts) : undefined;
+
+    // Fetch all activity (TRADE + REDEEM events) using cursor pagination — correct PNL source
+    const activityCount = await fetchAllActivity(w, newestTs);
+    console.log(`[Elite] ${w}: fetched ${activityCount} activity events (since ts: ${newestTs || 'beginning'})`);
+
+    // Use the trades table's own newest timestamp as the cutoff for incremental trade fetching
+    // (NOT the activity timestamp — they're different endpoints with different event ranges)
+    const { rows: newestTradeRows } = await pool.query(
+      `SELECT MAX(EXTRACT(EPOCH FROM trade_timestamp)::bigint * 1000) as newest_ms FROM elite_trader_trades WHERE wallet = $1`, [w]
+    );
+    const tradesSinceMs = newestTradeRows[0]?.newest_ms ? Number(newestTradeRows[0].newest_ms) : undefined;
+
+    // Also fetch trades (for signal detection — current open positions)
+    await fetchFullTradeHistory(w, tradesSinceMs);
+
+    // Settle unsettled buy-trades via Gamma (keeps signals up to date)
+    await settleUnresolvedTrades(w);
+
+    // Compute profile (prefers activity data for accurate PNL)
+    await computeTraderProfile(w);
+    await pool.query(`UPDATE elite_traders SET last_analyzed_at = NOW() WHERE wallet = $1`, [w]);
+    console.log(`[Elite] Analysis complete for ${w}`);
   } catch (err: any) {
     console.error(`[Elite] Analysis failed for ${wallet}:`, err.message);
   }
