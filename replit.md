@@ -99,15 +99,37 @@ The Gamma API only returns markets sorted by popularity (mostly long-term future
   - pregame: ends within 7 days (and not futures)
   - futures: ends more than 7 days out
 
+## Canonical PNL System (Critical)
+
+All 42 curated traders have PNL sourced from Polymarket's official closed positions API:
+
+**Method**: `GET /closed-positions?user={wallet}&limit=50&offset=N` → `sum(realizedPnl)` = official realized PNL. Unrealized = `sum(cashPnl)` from `GET /positions`.
+
+**Auto-refresh**: `startCanonicalPNLRefresh()` in `eliteAnalysis.ts` runs 30s after startup, then every 24h. All 42 wallets are patched via `patchProfileWithCanonicalPNL()`.
+
+**JSONB preservation**: The UPSERT SQL in `runAnalysisForTrader()` uses JSONB merge with `CASE WHEN pnlSource='closed_positions_api' THEN preserve_canonical ELSE '{}' END` — so the regular 24h analysis won't overwrite canonical PNL.
+
+**Manual trigger**: `POST /api/elite/admin/refresh-canonical-pnl`
+
+**Key corrections** (trades-based was wrong):
+- kch123: $1.3M → $10.55M ($12.46M realized, -$1.91M unrealized)
+- tcp2: $14K → $3.26M
+- geniusMC: $931K → $2.49M
+- S-Works: $870K → $2.16M
+- TutiFromFactsOfLife: $5.19M realized, -$4.75M unrealized = $437K net
+- TheMangler: correctly -$3.14M
+
+**DB fields in `elite_trader_profiles.metrics`**: `overallPNL`, `realizedPNL`, `unrealizedPNL`, `pnlSource` (="closed_positions_api"), `pnlUpdatedAt`, `closedPositionCount`, `openPositionCount`
+
 ## External APIs Used
 
 - `https://data-api.polymarket.com/trades` — Recent trades with market info + asset field
 - `https://data-api.polymarket.com/positions?user=` — Current open positions per wallet
+- `https://data-api.polymarket.com/closed-positions?user=&limit=50&offset=N` — Canonical realized PNL (paginated)
 - `https://data-api.polymarket.com/v1/leaderboard` — Top PNL traders (ALL/WEEK/MONTH windows)
 - `https://gamma-api.polymarket.com/markets` — Market metadata, prices, tokenIds
 - `https://clob.polymarket.com/midpoint` — Live midpoint prices per token
 - `https://clob.polymarket.com/book?token_id=` — Live order book (for /api/orderbook)
-- `https://api.goldsky.com/api/public/.../pnl-subgraph/...` — On-chain PNL data
 
 ## Caching
 

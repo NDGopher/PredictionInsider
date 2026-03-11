@@ -868,7 +868,20 @@ export async function computeTraderProfileFromActivity(wallet: string): Promise<
     VALUES ($1, $2, NOW(), $3, $4, $5)
     ON CONFLICT (wallet) DO UPDATE SET
       username = EXCLUDED.username, computed_at = NOW(),
-      metrics = EXCLUDED.metrics, tags = EXCLUDED.tags, quality_score = EXCLUDED.quality_score
+      metrics = EXCLUDED.metrics || CASE
+        WHEN elite_trader_profiles.metrics->>'pnlSource' = 'closed_positions_api'
+        THEN jsonb_build_object(
+          'overallPNL', (elite_trader_profiles.metrics->>'overallPNL')::numeric,
+          'realizedPNL', (elite_trader_profiles.metrics->>'realizedPNL')::numeric,
+          'unrealizedPNL', (elite_trader_profiles.metrics->>'unrealizedPNL')::numeric,
+          'pnlSource', 'closed_positions_api',
+          'pnlUpdatedAt', elite_trader_profiles.metrics->>'pnlUpdatedAt',
+          'closedPositionCount', (elite_trader_profiles.metrics->>'closedPositionCount')::integer,
+          'openPositionCount', (elite_trader_profiles.metrics->>'openPositionCount')::integer
+        )
+        ELSE '{}'::jsonb
+        END,
+      tags = EXCLUDED.tags, quality_score = EXCLUDED.quality_score
   `, [w, username, JSON.stringify(metrics), tags, qualityScore]);
 
   return { wallet: w, username, qualityScore, tags, metrics };
@@ -1212,14 +1225,26 @@ export async function computeTraderProfile(wallet: string): Promise<any> {
     bestBets,
   };
 
-  // Save to DB
+  // Save to DB — preserve canonical PNL fields if already set
   await pool.query(`
     INSERT INTO elite_trader_profiles (wallet, username, computed_at, metrics, tags, quality_score)
     VALUES ($1, $2, NOW(), $3, $4, $5)
     ON CONFLICT (wallet) DO UPDATE SET
       username = EXCLUDED.username,
       computed_at = NOW(),
-      metrics = EXCLUDED.metrics,
+      metrics = EXCLUDED.metrics || CASE
+        WHEN elite_trader_profiles.metrics->>'pnlSource' = 'closed_positions_api'
+        THEN jsonb_build_object(
+          'overallPNL', (elite_trader_profiles.metrics->>'overallPNL')::numeric,
+          'realizedPNL', (elite_trader_profiles.metrics->>'realizedPNL')::numeric,
+          'unrealizedPNL', (elite_trader_profiles.metrics->>'unrealizedPNL')::numeric,
+          'pnlSource', 'closed_positions_api',
+          'pnlUpdatedAt', elite_trader_profiles.metrics->>'pnlUpdatedAt',
+          'closedPositionCount', (elite_trader_profiles.metrics->>'closedPositionCount')::integer,
+          'openPositionCount', (elite_trader_profiles.metrics->>'openPositionCount')::integer
+        )
+        ELSE '{}'::jsonb
+        END,
       tags = EXCLUDED.tags,
       quality_score = EXCLUDED.quality_score
   `, [w, username, JSON.stringify(metrics), tags, qualityScore]);
@@ -1337,6 +1362,130 @@ export async function runAnalysisForTrader(wallet: string): Promise<void> {
   }
 }
 
+// ─── Canonical PNL from /closed-positions API ────────────────────────────────
+// Uses sum(realizedPnl) which matches Polymarket's official displayed numbers.
+
+export interface CanonicalPNL {
+  realizedPNL: number;
+  unrealizedPNL: number;
+  totalPNL: number;
+  closedCount: number;
+  openCount: number;
+  pnlWinRate: number;
+  closedByCategory: Record<string, { pnl: number; positions: number; wins: number; invested: number }>;
+}
+
+function classifySportFromSlug(slug: string): string {
+  const s = (slug || "").toLowerCase();
+  if (s.startsWith("nba-") || s.includes("-nba-")) return "NBA";
+  if (s.startsWith("nfl-") || s.includes("super-bowl")) return "NFL";
+  if (s.startsWith("nhl-")) return "NHL";
+  if (s.startsWith("mlb-")) return "MLB";
+  if (s.startsWith("ufc-") || s.includes("-ufc-") || s.includes("-mma-")) return "UFC/MMA";
+  if (s.match(/^(wta|atp|aus-|wimbledon|usopen-ten|roland)/)) return "Tennis";
+  if (s.match(/^(cbb|ncaab|ncaaf|cfb)-/)) return "College Sports";
+  if (s.match(/^(epl|lal|sea|bun|uel|ucl|mls|spl|bra|elc|ere|lol)-/)) return "Soccer";
+  if (s.includes("esport") || s.includes("valorant") || s.includes("csgo")) return "eSports";
+  if (s.startsWith("golf-")) return "Golf";
+  if (s.match(/^(f1|formula)/)) return "Formula 1";
+  if (s.includes("bitcoin") || s.includes("crypto") || s.includes("btc")) return "Finance/Crypto";
+  if (s.includes("election") || s.includes("trump") || s.includes("president")) return "Politics";
+  return "Other";
+}
+
+export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
+  const addr = wallet.toLowerCase();
+  const PAGE = 50;
+  let offset = 0;
+  const closedPositions: any[] = [];
+
+  while (true) {
+    const data = await fetchJson(
+      `${DATA_API}/closed-positions?user=${addr}&limit=${PAGE}&offset=${offset}`
+    );
+    if (!Array.isArray(data) || data.length === 0) break;
+    closedPositions.push(...data);
+    if (data.length < PAGE) break;
+    offset += PAGE;
+    if (offset >= 100_000) break;
+    await new Promise(r => setTimeout(r, 80));
+  }
+
+  const realizedPNL = closedPositions.reduce((sum, c) => sum + (parseFloat(c.realizedPnl) || 0), 0);
+  const wins = closedPositions.filter(c => (parseFloat(c.realizedPnl) || 0) > 0).length;
+  const pnlWinRate = closedPositions.length > 0 ? Math.round((wins / closedPositions.length) * 1000) / 10 : 0;
+
+  // Category breakdown from closed positions
+  const closedByCategory: Record<string, { pnl: number; positions: number; wins: number; invested: number }> = {};
+  for (const c of closedPositions) {
+    const slug = c.slug || c.eventSlug || "";
+    const cat = classifySportFromSlug(slug);
+    if (!closedByCategory[cat]) closedByCategory[cat] = { pnl: 0, positions: 0, wins: 0, invested: 0 };
+    const pnl = parseFloat(c.realizedPnl) || 0;
+    closedByCategory[cat].pnl += pnl;
+    closedByCategory[cat].invested += parseFloat(c.totalBought) || 0;
+    closedByCategory[cat].positions++;
+    if (pnl > 0) closedByCategory[cat].wins++;
+  }
+  // Round category values
+  for (const cat of Object.keys(closedByCategory)) {
+    closedByCategory[cat].pnl = Math.round(closedByCategory[cat].pnl * 100) / 100;
+    closedByCategory[cat].invested = Math.round(closedByCategory[cat].invested * 100) / 100;
+  }
+
+  // Open positions for unrealized PNL (cashPnl)
+  const openData = await fetchJson(`${DATA_API}/positions?user=${addr}&limit=500&sizeThreshold=0`);
+  const openPositions = Array.isArray(openData) ? openData : [];
+  const unrealizedPNL = openPositions.reduce((sum: number, p: any) => sum + (parseFloat(p.cashPnl) || 0), 0);
+
+  return {
+    realizedPNL: Math.round(realizedPNL * 100) / 100,
+    unrealizedPNL: Math.round(unrealizedPNL * 100) / 100,
+    totalPNL: Math.round((realizedPNL + unrealizedPNL) * 100) / 100,
+    closedCount: closedPositions.length,
+    openCount: openPositions.length,
+    pnlWinRate,
+    closedByCategory,
+  };
+}
+
+// Patch an existing trader profile with canonical PNL — fast, no full recompute.
+export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
+  wallet: string; username: string; totalPNL: number; realizedPNL: number; unrealizedPNL: number;
+} | null> {
+  const w = wallet.toLowerCase();
+  try {
+    const uRow = await pool.query(`SELECT username FROM elite_traders WHERE wallet = $1`, [w]);
+    const username = uRow.rows[0]?.username || w.slice(0, 10);
+
+    const canonical = await fetchCanonicalPNL(w);
+
+    // Merge into existing metrics JSONB — only PNL-related fields are overwritten
+    await pool.query(`
+      UPDATE elite_trader_profiles
+      SET metrics = metrics || $2::jsonb,
+          computed_at = NOW()
+      WHERE wallet = $1
+    `, [w, JSON.stringify({
+      overallPNL: canonical.totalPNL,
+      realizedPNL: canonical.realizedPNL,
+      unrealizedPNL: canonical.unrealizedPNL,
+      closedPositionCount: canonical.closedCount,
+      openPositionCount: canonical.openCount,
+      pnlWinRate: canonical.pnlWinRate,
+      closedByCategory: canonical.closedByCategory,
+      pnlSource: "closed_positions_api",
+      pnlUpdatedAt: new Date().toISOString(),
+    })]);
+
+    console.log(`[Elite/PNL] ${username}: total=$${canonical.totalPNL.toFixed(0)} realized=$${canonical.realizedPNL.toFixed(0)} unrealized=$${canonical.unrealizedPNL.toFixed(0)} (${canonical.closedCount} closed positions)`);
+    return { wallet: w, username, ...canonical };
+  } catch (err: any) {
+    console.error(`[Elite/PNL] patchProfileWithCanonicalPNL failed for ${wallet}:`, err.message);
+    return null;
+  }
+}
+
 // ─── Periodic refresh (every 24h) ────────────────────────────────────────────
 
 export function startPeriodicRefresh(): void {
@@ -1352,5 +1501,38 @@ export function startPeriodicRefresh(): void {
     } catch (err: any) {
       console.error("[Elite] Periodic refresh error:", err.message);
     }
+  }, 24 * 60 * 60 * 1000);
+}
+
+async function runCanonicalPNLRefreshForAll(): Promise<void> {
+  try {
+    const { rows } = await pool.query(
+      `SELECT wallet, username FROM elite_traders WHERE wallet NOT LIKE 'pending-%' ORDER BY username`
+    );
+    console.log(`[canonical-pnl] Starting scheduled refresh for ${rows.length} wallets...`);
+    let patched = 0;
+    for (const r of rows) {
+      try {
+        const result = await patchProfileWithCanonicalPNL(r.wallet);
+        if (result) patched++;
+        await new Promise(res => setTimeout(res, 200));
+      } catch (e: any) {
+        console.error(`[canonical-pnl] Error for ${r.wallet}:`, e.message);
+      }
+    }
+    console.log(`[canonical-pnl] Scheduled refresh done — patched ${patched}/${rows.length} profiles`);
+  } catch (err: any) {
+    console.error("[canonical-pnl] Scheduled refresh error:", err.message);
+  }
+}
+
+export function startCanonicalPNLRefresh(): void {
+  // Run once on startup after a short delay, then every 24h
+  setTimeout(() => {
+    runCanonicalPNLRefreshForAll();
+  }, 30 * 1000); // 30s after startup to let the server settle
+
+  setInterval(() => {
+    runCanonicalPNLRefreshForAll();
   }, 24 * 60 * 60 * 1000);
 }

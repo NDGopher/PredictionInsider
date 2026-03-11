@@ -2,11 +2,11 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { Pool } from "pg";
 import {
-  seedCuratedTraders, startPeriodicRefresh, runAnalysisForTrader,
+  seedCuratedTraders, startPeriodicRefresh, startCanonicalPNLRefresh, runAnalysisForTrader,
   resolveUsernameToWallet, generateTraderCSV, curatedWalletSet, curatedWalletToUsername,
   settleUnresolvedTrades, fetchFullTradeHistory, computeTraderProfile,
   settleAllUnresolvedTradesGlobal, fetchAllActivity, computeTraderProfileFromActivity,
-  CURATED_TRADERS, classifySport
+  CURATED_TRADERS, classifySport, patchProfileWithCanonicalPNL, fetchCanonicalPNL
 } from "./eliteAnalysis";
 
 const elitePool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -1181,6 +1181,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   seedCuratedTraders().then(async () => {
     console.log("[Elite] Curated traders seeded");
     startPeriodicRefresh();
+    startCanonicalPNLRefresh(); // runs 30s after startup, then every 24h
     // Auto-sync activity for all wallets on every server start (incremental, safe)
     try {
       const { rows } = await elitePool.query(
@@ -1431,6 +1432,51 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  // ── POST /api/elite/admin/refresh-canonical-pnl ──────────────────────────
+  // For each of the 42 curated traders, fetches canonical PNL from Polymarket's
+  // /closed-positions API (sum of realizedPnl — matches official Polymarket numbers)
+  // and patches elite_trader_profiles metrics. Fast: no activity fetch, no recompute.
+  app.post("/api/elite/admin/refresh-canonical-pnl", async (_req, res) => {
+    try {
+      const { rows } = await elitePool.query(
+        `SELECT wallet, username FROM elite_traders WHERE wallet NOT LIKE 'pending-%' ORDER BY username`
+      );
+      res.json({ message: "Canonical PNL refresh started", wallets: rows.length });
+      setImmediate(async () => {
+        const results: any[] = [];
+        for (const r of rows) {
+          try {
+            const result = await patchProfileWithCanonicalPNL(r.wallet);
+            if (result) results.push(result);
+            await new Promise(res => setTimeout(res, 200)); // gentle rate limit
+          } catch (e: any) {
+            console.error(`[canonical-pnl] error for ${r.wallet}:`, e.message);
+          }
+        }
+        const sorted = [...results].sort((a, b) => b.totalPNL - a.totalPNL);
+        console.log(`[canonical-pnl] Done — patched ${results.length} profiles`);
+        console.log(`[canonical-pnl] Top 5 by total PNL:`);
+        for (const r of sorted.slice(0, 5)) {
+          console.log(`  ${r.username}: $${r.totalPNL?.toFixed(0)} (realized=$${r.realizedPNL?.toFixed(0)}, unrealized=$${r.unrealizedPNL?.toFixed(0)})`);
+        }
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── GET /api/elite/canonical-pnl/:wallet ────────────────────────────────
+  // Live fetch of canonical PNL for a single trader (no DB cache).
+  app.get("/api/elite/canonical-pnl/:wallet", async (req, res) => {
+    try {
+      const wallet = req.params.wallet.toLowerCase();
+      const canonical = await fetchCanonicalPNL(wallet);
+      res.json(canonical);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // ── POST /api/elite/admin/refetch-all ────────────────────────────────────
   // Clears and re-fetches ALL activity history for every trader (full refresh)
   app.post("/api/elite/admin/refetch-all", async (_req, res) => {
@@ -1625,7 +1671,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/traders", async (req, res) => {
     try {
       const category = (req.query.category as string) || "sports";
-      const cKey     = `traders-curated-v1-${category}`;
+      const cKey     = `traders-curated-v2-${category}`;
       const hit      = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -1647,6 +1693,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const winRate  = parseFloat(m.winRate ?? "0");
         const avgSize  = parseFloat(m.avgBetSize ?? "0");
         const totalTrades = parseInt(m.totalTrades ?? "0");
+        const realizedPNL  = m.realizedPNL  != null ? parseFloat(m.realizedPNL)  : undefined;
+        const unrealizedPNL = m.unrealizedPNL != null ? parseFloat(m.unrealizedPNL) : undefined;
+        const pnlSource = m.pnlSource ?? undefined;
+        const closedPositionCount = m.closedPositionCount != null ? parseInt(m.closedPositionCount) : undefined;
         const qs       = Math.min(90, Math.max(1,
           Math.round((Math.min(Math.abs(pnl) / 50_000, 1) * 40) +
                      (Math.min(winRate / 70, 1) * 30) +
@@ -1659,7 +1709,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           name: row.username,
           xUsername: undefined,
           verifiedBadge: true,
-          pnl, roi, winRate, avgSize,
+          pnl, realizedPNL, unrealizedPNL, pnlSource, closedPositionCount,
+          roi, winRate, avgSize,
           positionCount: 0,
           volume: vol,
           totalTrades,

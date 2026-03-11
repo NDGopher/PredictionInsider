@@ -161,11 +161,36 @@ function TraderCard({ trader, rank }: { trader: Trader; rank: number }) {
                 >
                   {fmtPnl(trader.pnl)}
                 </div>
-                <div className="text-[9px] text-muted-foreground">sports PNL</div>
+                {(trader as any).pnlSource === "closed_positions_api" ? (
+                  <div className="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center justify-end gap-0.5">
+                    ✓ Verified
+                  </div>
+                ) : (
+                  <div className="text-[9px] text-muted-foreground">total PNL</div>
+                )}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 mt-3">
+            {(trader as any).realizedPNL != null && (
+              <div className="grid grid-cols-2 gap-1.5 mt-2.5 p-2 bg-muted/30 rounded-md border border-border/40">
+                <div>
+                  <div className="text-[9px] text-muted-foreground uppercase tracking-wide">Realized</div>
+                  <div className={`text-xs font-bold tabular-nums ${(trader as any).realizedPNL >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}
+                    data-testid={`trader-realized-pnl-${rank}`}>
+                    {fmtPnl((trader as any).realizedPNL)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[9px] text-muted-foreground uppercase tracking-wide">Unrealized</div>
+                  <div className={`text-xs font-bold tabular-nums ${(trader as any).unrealizedPNL >= 0 ? "text-green-600 dark:text-green-400" : "text-amber-500"}`}
+                    data-testid={`trader-unrealized-pnl-${rank}`}>
+                    {fmtPnl((trader as any).unrealizedPNL)}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-2 mt-2.5">
               <div className="bg-muted/40 rounded-md px-2.5 py-1.5">
                 <div className="text-[9px] text-muted-foreground uppercase tracking-wide mb-0.5">ROI</div>
                 {trader.volume > 0 ? (
@@ -227,10 +252,11 @@ function TraderCard({ trader, rank }: { trader: Trader; rank: number }) {
 }
 
 const SORT_OPTIONS = [
-  { value: "rank",   label: "Sports Rank" },
-  { value: "pnl",   label: "PNL" },
-  { value: "roi",   label: "ROI %" },
-  { value: "volume", label: "Volume" },
+  { value: "rank",     label: "Sports Rank" },
+  { value: "pnl",     label: "Total PNL" },
+  { value: "realized", label: "Realized PNL" },
+  { value: "roi",     label: "ROI %" },
+  { value: "volume",  label: "Volume" },
 ];
 
 const TIER_FILTER_OPTIONS = [
@@ -273,18 +299,21 @@ export default function Traders() {
       return (t.address || "").toLowerCase().includes(q) || (t.name || "").toLowerCase().includes(q);
     })
     .sort((a, b) => {
-      if (sort === "rank")   return a.rank - b.rank;
-      if (sort === "pnl")    return b.pnl - a.pnl;
-      if (sort === "roi")    return b.roi - a.roi;
-      if (sort === "volume") return b.volume - a.volume;
+      if (sort === "rank")     return a.rank - b.rank;
+      if (sort === "pnl")      return b.pnl - a.pnl;
+      if (sort === "realized") return ((b as any).realizedPNL ?? b.pnl) - ((a as any).realizedPNL ?? a.pnl);
+      if (sort === "roi")      return b.roi - a.roi;
+      if (sort === "volume")   return b.volume - a.volume;
       return 0;
     });
 
   const totalPnl    = traders.reduce((s, t) => s + t.pnl, 0);
+  const totalRealized = traders.reduce((s, t) => s + ((t as any).realizedPNL ?? 0), 0);
   const totalVol    = traders.reduce((s, t) => s + t.volume, 0);
   const avgRoi      = traders.length > 0 ? traders.reduce((s, t) => s + t.roi, 0) / traders.length : 0;
   const eliteCount  = traders.filter(t => (t as any).tier === "elite").length;
   const proCount    = traders.filter(t => (t as any).tier === "pro").length;
+  const canonicalCount = traders.filter(t => (t as any).pnlSource === "closed_positions_api").length;
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-5">
@@ -340,18 +369,24 @@ export default function Traders() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Card>
             <CardContent className="pt-3 pb-3 px-4">
-              <div className="text-[10px] text-muted-foreground mb-1 uppercase tracking-wide">
-                {category === "sports" ? "Sports" : "Total"} PNL
-              </div>
-              <div className="text-lg font-black text-green-600 dark:text-green-400" data-testid="stat-total-pnl">
+              <div className="text-[10px] text-muted-foreground mb-1 uppercase tracking-wide">Total PNL</div>
+              <div className={`text-lg font-black ${totalPnl >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`} data-testid="stat-total-pnl">
                 {fmtPnl(totalPnl)}
               </div>
+              {canonicalCount > 0 && (
+                <div className="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
+                  ✓ {canonicalCount}/42 verified
+                </div>
+              )}
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-3 pb-3 px-4">
-              <div className="text-[10px] text-muted-foreground mb-1 uppercase tracking-wide">Volume</div>
-              <div className="text-lg font-black">{fmtVol(totalVol)}</div>
+              <div className="text-[10px] text-muted-foreground mb-1 uppercase tracking-wide">Realized PNL</div>
+              <div className={`text-lg font-black ${totalRealized >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`} data-testid="stat-total-realized">
+                {fmtPnl(totalRealized)}
+              </div>
+              <div className="text-[9px] text-muted-foreground mt-0.5">locked profits</div>
             </CardContent>
           </Card>
           <Card>

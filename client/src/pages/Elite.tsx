@@ -55,6 +55,14 @@ interface TraderMetrics {
   avgTradesPerWeek: number;
   overallROI: number;
   overallPNL: number;
+  realizedPNL?: number;
+  unrealizedPNL?: number;
+  closedPositionCount?: number;
+  openPositionCount?: number;
+  pnlWinRate?: number;
+  pnlSource?: string;
+  pnlUpdatedAt?: string;
+  closedByCategory?: Record<string, { pnl: number; positions: number; wins: number; invested: number }>;
   winRate: number;
   last30dROI: number;
   last90dROI: number;
@@ -395,18 +403,64 @@ function TraderDeepDive({ wallet, username }: { wallet: string; username: string
             ))}
           </div>
 
-          {/* ROI context */}
-          <div className="grid grid-cols-3 gap-2">
+          {/* PNL breakdown — canonical when available, falls back to computed */}
+          {(m.realizedPNL != null) ? (
+            <div className="rounded-lg border border-border/50 bg-muted/20 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Total PNL</span>
+                {m.pnlSource === "closed_positions_api" && (
+                  <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-green-500/40 text-green-600 dark:text-green-400">
+                    ✓ Polymarket Verified
+                  </Badge>
+                )}
+              </div>
+              <div className={`text-2xl font-bold ${roiColor(m.overallPNL)}`}>{fmtUSDC(m.overallPNL)}</div>
+              <div className="grid grid-cols-3 gap-2 pt-1 border-t border-border/30">
+                <div>
+                  <div className="text-[9px] text-muted-foreground">Realized</div>
+                  <div className={`text-xs font-bold ${roiColor(m.realizedPNL)}`}>{fmtUSDC(m.realizedPNL)}</div>
+                  <div className="text-[9px] text-muted-foreground">{m.closedPositionCount ?? 0} positions</div>
+                </div>
+                <div>
+                  <div className="text-[9px] text-muted-foreground">Unrealized</div>
+                  <div className={`text-xs font-bold ${roiColor(m.unrealizedPNL)}`}>{fmtUSDC(m.unrealizedPNL)}</div>
+                  <div className="text-[9px] text-muted-foreground">{m.openPositionCount ?? 0} open</div>
+                </div>
+                <div>
+                  <div className="text-[9px] text-muted-foreground">Position Win%</div>
+                  <div className={`text-xs font-bold ${(m.pnlWinRate ?? 0) >= 50 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                    {m.pnlWinRate != null ? `${m.pnlWinRate.toFixed(1)}%` : "—"}
+                  </div>
+                  <div className="text-[9px] text-muted-foreground">of closed</div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: "Last 30d ROI", value: m.last30dROI },
+                { label: "Last 90d ROI", value: m.last90dROI },
+                { label: "Total PNL", value: m.overallPNL },
+              ].map(({ label, value }) => (
+                <div key={label} className="bg-muted/30 rounded-md p-2 text-center">
+                  <div className="text-[10px] text-muted-foreground">{label}</div>
+                  <div className={`text-sm font-bold ${roiColor(value)}`}>
+                    {label.includes("PNL") ? fmtUSDC(value) : fmtROI(value)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ROI context (always shown) */}
+          <div className="grid grid-cols-2 gap-2">
             {[
               { label: "Last 30d ROI", value: m.last30dROI },
               { label: "Last 90d ROI", value: m.last90dROI },
-              { label: "Total PNL", value: m.overallPNL },
             ].map(({ label, value }) => (
               <div key={label} className="bg-muted/30 rounded-md p-2 text-center">
                 <div className="text-[10px] text-muted-foreground">{label}</div>
-                <div className={`text-sm font-bold ${roiColor(value)}`}>
-                  {label.includes("PNL") ? fmtUSDC(value) : fmtROI(value)}
-                </div>
+                <div className={`text-sm font-bold ${roiColor(value)}`}>{fmtROI(value)}</div>
               </div>
             ))}
           </div>
@@ -832,6 +886,7 @@ function AdminPanel() {
   const { toast } = useToast();
   const [settleStatus, setSettleStatus] = useState<string | null>(null);
   const [refetchStatus, setRefetchStatus] = useState<string | null>(null);
+  const [pnlStatus, setPnlStatus] = useState<string | null>(null);
 
   const settleMutation = useMutation({
     mutationFn: () => apiRequest("POST", "/api/elite/admin/settle-all", {}),
@@ -851,6 +906,15 @@ function AdminPanel() {
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
+  const canonicalPnlMutation = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/elite/admin/refresh-canonical-pnl", {}),
+    onSuccess: (data: any) => {
+      setPnlStatus(`Canonical PNL refresh started for ${data?.wallets ?? "?"} traders. Takes ~5 min. Fetches from Polymarket /closed-positions API (matches official numbers).`);
+      toast({ title: "Canonical PNL refresh started", description: "Fetching from Polymarket closed-positions API for all 42 traders." });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
   return (
     <Card className="border-border/40 bg-muted/20">
       <CardContent className="p-4 space-y-3">
@@ -858,7 +922,23 @@ function AdminPanel() {
           <Settings className="w-3.5 h-3.5" />
           Admin Tools
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="space-y-1.5">
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full text-xs border-green-500/40 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/20"
+              onClick={() => canonicalPnlMutation.mutate()}
+              disabled={canonicalPnlMutation.isPending}
+              data-testid="btn-refresh-canonical-pnl"
+            >
+              {canonicalPnlMutation.isPending ? "Refreshing..." : "✓ Refresh PNL (Polymarket API)"}
+            </Button>
+            <p className="text-[10px] text-muted-foreground leading-tight">
+              Fetches canonical realized PNL from Polymarket's /closed-positions API. Matches official Polymarket numbers. Fast (~5 min).
+            </p>
+            {pnlStatus && <p className="text-[10px] text-green-600 dark:text-green-400 leading-tight">{pnlStatus}</p>}
+          </div>
           <div className="space-y-1.5">
             <Button
               size="sm"
