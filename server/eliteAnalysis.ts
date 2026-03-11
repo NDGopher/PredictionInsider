@@ -156,25 +156,65 @@ export async function fetchFullTradeHistory(
   wallet: string,
   sinceTimestamp?: number
 ): Promise<number> {
-  const PAGE = 1000;
+  const PAGE = 500;
   let offset = 0;
-  let totalFetched = 0;
+  let totalInserted = 0;
   const walletLower = wallet.toLowerCase();
+
+  // Build a batch insert helper
+  const batch: any[][] = [];
+  const flushBatch = async () => {
+    if (!batch.length) return;
+    // Build multi-row INSERT
+    const placeholders = batch.map((_, i) => {
+      const base = i * 16;
+      return `($${base+1},$${base+2},$${base+3},$${base+4},$${base+5},$${base+6},$${base+7},$${base+8},$${base+9},$${base+10},$${base+11},$${base+12},$${base+13},$${base+14},$${base+15},$${base+16})`;
+    }).join(",");
+    const flat = batch.flat();
+    try {
+      await pool.query(`
+        INSERT INTO elite_trader_trades
+          (wallet, condition_id, side, is_buy, price, size, trade_timestamp, title, slug,
+           outcome, outcome_index, sport, market_type, is_longshot, is_guarantee, transaction_hash)
+        VALUES ${placeholders}
+        ON CONFLICT (wallet, transaction_hash) WHERE transaction_hash IS NOT NULL DO NOTHING
+      `, flat);
+      totalInserted += batch.length;
+    } catch (e: any) {
+      // Fall back to individual inserts if batch fails
+      for (const row of batch) {
+        try {
+          await pool.query(`
+            INSERT INTO elite_trader_trades
+              (wallet, condition_id, side, is_buy, price, size, trade_timestamp, title, slug,
+               outcome, outcome_index, sport, market_type, is_longshot, is_guarantee, transaction_hash)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+            ON CONFLICT (wallet, transaction_hash) WHERE transaction_hash IS NOT NULL DO NOTHING
+          `, row);
+          totalInserted++;
+        } catch (_) {}
+      }
+    }
+    batch.length = 0;
+  };
 
   while (true) {
     const url = `${DATA_API}/trades?user=${walletLower}&limit=${PAGE}&offset=${offset}`;
     const data = await fetchJson(url);
     if (!Array.isArray(data) || data.length === 0) break;
 
-    // Filter by sinceTimestamp if doing incremental refresh
-    const trades = sinceTimestamp
-      ? data.filter((t: any) => t.timestamp && t.timestamp * 1000 > sinceTimestamp)
-      : data;
+    for (const t of data) {
+      if (!t.conditionId) continue;
 
-    if (trades.length === 0 && sinceTimestamp) break; // All new trades consumed
+      // Skip trades newer than sinceTimestamp (for incremental refresh, we want OLDER)
+      // Actually for incremental: skip trades OLDER than sinceTimestamp
+      if (sinceTimestamp && t.timestamp && t.timestamp * 1000 < sinceTimestamp) {
+        // We've hit the already-fetched range — stop
+        await flushBatch();
+        await pool.query(`UPDATE elite_traders SET last_analyzed_at = NOW() WHERE wallet = $1`, [walletLower]);
+        return totalInserted;
+      }
 
-    for (const t of trades) {
-      if (!t.conditionId || !t.transactionHash) continue;
       const ts = t.timestamp ? new Date(t.timestamp * 1000) : null;
       if (!ts) continue;
 
@@ -183,94 +223,204 @@ export async function fetchFullTradeHistory(
       const price = parseFloat(t.price) || 0;
       const size = parseFloat(t.size) || 0;
       const isBuy = (t.side || "").toUpperCase() === "BUY";
-      const outcomeIndex = t.outcomeIndex ?? (t.outcome?.toLowerCase() === "yes" ? 0 : 1);
+      const outcomeIndex = t.outcomeIndex != null ? t.outcomeIndex : (t.outcome?.toLowerCase() === "yes" ? 0 : 1);
       const side = outcomeIndex === 0 ? "YES" : "NO";
+      // Use transactionHash if present, else generate a stable key
+      const txHash = t.transactionHash || null;
 
-      try {
-        await pool.query(`
-          INSERT INTO elite_trader_trades
-            (wallet, condition_id, side, is_buy, price, size, trade_timestamp, title, slug,
-             outcome, outcome_index, sport, market_type, is_longshot, is_guarantee, transaction_hash)
-          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
-          ON CONFLICT (wallet, transaction_hash) DO NOTHING
-        `, [
-          walletLower, t.conditionId, side, isBuy, price, size, ts,
-          t.title || "", t.slug || "", t.outcome || "", outcomeIndex,
-          sport, mType,
-          price < 0.25, price > 0.75,
-          t.transactionHash
-        ]);
-        totalFetched++;
-      } catch (_) { }
+      batch.push([
+        walletLower, t.conditionId, side, isBuy, price, size, ts,
+        (t.title || "").slice(0, 500), t.slug || "", t.outcome || "", outcomeIndex,
+        sport, mType,
+        price < 0.25, price > 0.75,
+        txHash,
+      ]);
+
+      if (batch.length >= 100) await flushBatch();
     }
 
-    if (data.length < PAGE) break; // Last page
-    offset += PAGE;
+    await flushBatch();
 
-    // Rate limit buffer
-    await new Promise(r => setTimeout(r, 100));
+    if (data.length < PAGE) break;
+    offset += PAGE;
+    await new Promise(r => setTimeout(r, 80));
   }
 
-  // Update last_analyzed_at
-  await pool.query(
-    `UPDATE elite_traders SET last_analyzed_at = NOW() WHERE wallet = $1`,
-    [walletLower]
-  );
-
-  return totalFetched;
+  await flushBatch();
+  await pool.query(`UPDATE elite_traders SET last_analyzed_at = NOW() WHERE wallet = $1`, [walletLower]);
+  return totalInserted;
 }
 
-// ─── Settle trades by checking CLOB midpoints ────────────────────────────────
+// ─── Parse outcomePrices from Gamma market object ─────────────────────────────
+function parseOutcome(m: any): { yesWon: boolean; noWon: boolean } | null {
+  if (!m || m.closed !== true) return null;
+  try {
+    const raw = typeof m.outcomePrices === "string"
+      ? JSON.parse(m.outcomePrices)
+      : m.outcomePrices;
+    if (!Array.isArray(raw) || raw.length < 2) return null;
+    const yesP = parseFloat(raw[0]);
+    const noP = parseFloat(raw[1]);
+    const yesWon = yesP >= 0.99;
+    const noWon = noP >= 0.99;
+    if (!yesWon && !noWon) return null;
+    return { yesWon, noWon };
+  } catch (_) { return null; }
+}
 
-export async function settleUnresolvedTrades(wallet: string): Promise<void> {
-  // Get distinct condition IDs for unsettled trades
+// ─── Global settlement: resolves ALL unsettled trades across all wallets ───────
+// Uses single condition_ids= lookups with concurrency of 15 to avoid 429s.
+// The Gamma API only reliably filters with a SINGLE condition_id at a time.
+
+export async function settleAllUnresolvedTradesGlobal(): Promise<number> {
+  // Get all distinct condition IDs that have ANY unsettled trades
   const { rows } = await pool.query(`
-    SELECT DISTINCT condition_id FROM elite_trader_trades
-    WHERE wallet = $1 AND settled_outcome IS NULL AND is_buy = TRUE
-    LIMIT 100
-  `, [wallet.toLowerCase()]);
+    SELECT DISTINCT condition_id
+    FROM elite_trader_trades
+    WHERE settled_outcome IS NULL AND is_buy = TRUE
+  `);
+  const allIds = rows.map((r: any) => r.condition_id as string);
+  if (!allIds.length) return 0;
 
-  for (const row of rows) {
+  console.log(`[Elite] Global settlement: checking ${allIds.length} condition IDs`);
+
+  // Concurrency-limited fetch helper
+  const CONCURRENCY = 15;
+  const settled = new Map<string, { yesWon: boolean; noWon: boolean }>();
+
+  const fetchOne = async (condId: string) => {
     try {
-      const condId = row.condition_id;
-      const mkt = await fetchJson(`${GAMMA_API}/markets?condition_id=${condId}&limit=1`);
-      const m = Array.isArray(mkt) ? mkt[0] : mkt?.markets?.[0];
-      if (!m) continue;
+      const res = await fetchJson(`${GAMMA_API}/markets?condition_ids=${condId}`);
+      const m = Array.isArray(res) ? res.find((x: any) => x.conditionId === condId) : null;
+      const outcome = parseOutcome(m);
+      if (outcome) settled.set(condId, outcome);
+    } catch (_) {}
+  };
 
-      const closed = m.closed === true || m.active === false;
-      if (!closed) continue;
+  // Helper: flush the settled map to DB, return count of rows updated
+  let totalUpdated = 0;
+  const flushToDB = async () => {
+    if (!settled.size) return;
+    const entries = [...settled.entries()];
+    settled.clear();
+    const now = new Date();
+    const CHUNK = 200;
+    for (let i = 0; i < entries.length; i += CHUNK) {
+      const chunk = entries.slice(i, i + CHUNK);
+      const yesIds = chunk.filter(([, o]) => o.yesWon).map(([id]) => id);
+      const noIds  = chunk.filter(([, o]) => o.noWon).map(([id]) => id);
+      if (yesIds.length) {
+        const ph = yesIds.map((_, j) => `$${j + 2}`).join(",");
+        const { rowCount } = await pool.query(`
+          UPDATE elite_trader_trades SET
+            settled_at = $1,
+            settled_outcome = CASE WHEN side = 'YES' THEN 'won' ELSE 'lost' END,
+            settled_pnl = CASE WHEN side = 'YES' THEN size * (1.0 / NULLIF(price, 0) - 1.0) ELSE -size END
+          WHERE is_buy = TRUE AND settled_outcome IS NULL AND condition_id IN (${ph})
+        `, [now, ...yesIds]);
+        totalUpdated += rowCount ?? 0;
+      }
+      if (noIds.length) {
+        const ph = noIds.map((_, j) => `$${j + 2}`).join(",");
+        const { rowCount } = await pool.query(`
+          UPDATE elite_trader_trades SET
+            settled_at = $1,
+            settled_outcome = CASE WHEN side = 'NO' THEN 'won' ELSE 'lost' END,
+            settled_pnl = CASE WHEN side = 'NO' THEN size * (1.0 / NULLIF(price, 0) - 1.0) ELSE -size END
+          WHERE is_buy = TRUE AND settled_outcome IS NULL AND condition_id IN (${ph})
+        `, [now, ...noIds]);
+        totalUpdated += rowCount ?? 0;
+      }
+    }
+  };
 
-      const prices = m.outcomePrices
-        ? (Array.isArray(m.outcomePrices) ? m.outcomePrices : JSON.parse(m.outcomePrices))
-        : null;
-      if (!prices) continue;
-
-      const yesPrice = parseFloat(prices[0]);
-      const noPrice = parseFloat(prices[1] || (1 - yesPrice).toString());
-
-      // YES outcome resolves to ~1.0, NO to ~0.0
-      const yesWon = yesPrice >= 0.99;
-      const noWon = noPrice >= 0.99;
-      if (!yesWon && !noWon) continue; // Not definitively resolved
-
-      const settledAt = new Date();
-
-      // Update all buy trades in this market
-      await pool.query(`
-        UPDATE elite_trader_trades SET
-          settled_at = $1,
-          settled_outcome = CASE WHEN side = 'YES' AND $2 THEN 'won'
-                                 WHEN side = 'NO'  AND $3 THEN 'won'
-                                 ELSE 'lost' END,
-          settled_pnl = CASE
-            WHEN (side = 'YES' AND $2) OR (side = 'NO' AND $3)
-              THEN size * (1.0 / price - 1.0)
-            ELSE -size
-          END
-        WHERE wallet = $4 AND condition_id = $5 AND is_buy = TRUE AND settled_outcome IS NULL
-      `, [settledAt, yesWon, noWon, wallet.toLowerCase(), condId]);
-    } catch (_) { }
+  // Process in parallel chunks, flushing to DB every 500 resolved markets
+  for (let i = 0; i < allIds.length; i += CONCURRENCY) {
+    await Promise.all(allIds.slice(i, i + CONCURRENCY).map(fetchOne));
+    // Flush to DB every 500 resolved markets for incremental progress visibility
+    if (settled.size >= 500) {
+      await flushToDB();
+      console.log(`[Elite] Settlement: ${i}/${allIds.length} checked, ${totalUpdated} settled so far`);
+    } else if (i % 300 === 0 && i > 0) {
+      console.log(`[Elite] Settlement progress: ${i}/${allIds.length} checked, ${settled.size} pending flush`);
+    }
+    await new Promise(r => setTimeout(r, 80)); // gentle rate limit
   }
+
+  // Final flush
+  await flushToDB();
+  console.log(`[Elite] Global settlement complete: ${totalUpdated} trades settled`);
+  return totalUpdated;
+}
+
+// ─── Per-wallet settlement (calls global for just this wallet's condition IDs) ─
+
+export async function settleUnresolvedTrades(wallet: string): Promise<number> {
+  const w = wallet.toLowerCase();
+
+  // Get distinct condition IDs for just this wallet
+  const { rows: condRows } = await pool.query(`
+    SELECT DISTINCT condition_id
+    FROM elite_trader_trades
+    WHERE wallet = $1 AND settled_outcome IS NULL AND is_buy = TRUE
+  `, [w]);
+
+  const allIds = condRows.map((r: any) => r.condition_id as string);
+  if (!allIds.length) return 0;
+
+  const CONCURRENCY = 10;
+  const settled = new Map<string, { yesWon: boolean; noWon: boolean }>();
+
+  const fetchOne = async (condId: string) => {
+    try {
+      const res = await fetchJson(`${GAMMA_API}/markets?condition_ids=${condId}`);
+      const m = Array.isArray(res) ? res.find((x: any) => x.conditionId === condId) : null;
+      const outcome = parseOutcome(m);
+      if (outcome) settled.set(condId, outcome);
+    } catch (_) {}
+  };
+
+  for (let i = 0; i < allIds.length; i += CONCURRENCY) {
+    await Promise.all(allIds.slice(i, i + CONCURRENCY).map(fetchOne));
+    await new Promise(r => setTimeout(r, 60));
+  }
+
+  if (!settled.size) return 0;
+
+  const settledAt = new Date();
+  let totalUpdated = 0;
+
+  const settledEntries = [...settled.entries()];
+  const yesWonIds = settledEntries.filter(([, o]) => o.yesWon).map(([id]) => id);
+  const noWonIds = settledEntries.filter(([, o]) => o.noWon).map(([id]) => id);
+
+  if (yesWonIds.length) {
+    // $1=settledAt, $2=wallet, $3,$4,...=conditionIds
+    const placeholders = yesWonIds.map((_, i) => `$${i + 3}`).join(",");
+    const { rowCount } = await pool.query(`
+      UPDATE elite_trader_trades SET
+        settled_at = $1,
+        settled_outcome = CASE WHEN side = 'YES' THEN 'won' ELSE 'lost' END,
+        settled_pnl = CASE WHEN side = 'YES' THEN size * (1.0 / NULLIF(price, 0) - 1.0) ELSE -size END
+      WHERE wallet = $2 AND is_buy = TRUE AND settled_outcome IS NULL AND condition_id IN (${placeholders})
+    `, [settledAt, w, ...yesWonIds]);
+    totalUpdated += rowCount ?? 0;
+  }
+
+  if (noWonIds.length) {
+    // $1=settledAt, $2=wallet, $3,$4,...=conditionIds
+    const placeholders = noWonIds.map((_, i) => `$${i + 3}`).join(",");
+    const { rowCount } = await pool.query(`
+      UPDATE elite_trader_trades SET
+        settled_at = $1,
+        settled_outcome = CASE WHEN side = 'NO' THEN 'won' ELSE 'lost' END,
+        settled_pnl = CASE WHEN side = 'NO' THEN size * (1.0 / NULLIF(price, 0) - 1.0) ELSE -size END
+      WHERE wallet = $2 AND is_buy = TRUE AND settled_outcome IS NULL AND condition_id IN (${placeholders})
+    `, [settledAt, w, ...noWonIds]);
+    totalUpdated += rowCount ?? 0;
+  }
+
+  return totalUpdated;
 }
 
 // ─── Statistics helpers ────────────────────────────────────────────────────────

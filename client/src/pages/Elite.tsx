@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Star, AlertTriangle, CheckCircle, Clock, RefreshCw, Download,
   TrendingUp, TrendingDown, ChevronDown, ChevronUp, Plus, ExternalLink,
-  BarChart2, Target, DollarSign, Users, Activity, Award
+  BarChart2, Target, DollarSign, Users, Activity, Award, Settings
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area, Cell } from "recharts";
 import { apiRequest } from "@/lib/queryClient";
@@ -820,6 +820,79 @@ export default function Elite() {
           Analysis runs every 24h · Last fetch: {data?.fetchedAt ? new Date(data.fetchedAt).toLocaleTimeString() : "—"}
         </div>
       )}
+
+      {/* Admin Panel */}
+      <AdminPanel />
     </div>
+  );
+}
+
+// ─── Admin Panel ──────────────────────────────────────────────────────────────
+function AdminPanel() {
+  const { toast } = useToast();
+  const [settleStatus, setSettleStatus] = useState<string | null>(null);
+  const [refetchStatus, setRefetchStatus] = useState<string | null>(null);
+
+  const settleMutation = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/elite/admin/settle-all", {}),
+    onSuccess: (data: any) => {
+      setSettleStatus(`Settlement started for ${data?.wallets ?? "?"} wallets. This runs in the background and may take 10–20 minutes.`);
+      toast({ title: "Settlement started", description: "Gamma API settlement running in background for all wallets." });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const refetchMutation = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/elite/admin/refetch-all", {}),
+    onSuccess: (data: any) => {
+      setRefetchStatus(`Full re-fetch started for ${data?.wallets ?? "?"} wallets. This clears & re-imports all trade history — may take 30–60 minutes.`);
+      toast({ title: "Re-fetch started", description: "Full trade history re-import running in background." });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  return (
+    <Card className="border-border/40 bg-muted/20">
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <Settings className="w-3.5 h-3.5" />
+          Admin Tools
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full text-xs"
+              onClick={() => settleMutation.mutate()}
+              disabled={settleMutation.isPending}
+              data-testid="btn-settle-all"
+            >
+              {settleMutation.isPending ? "Starting..." : "Settle All Trades (Fix Quality Scores)"}
+            </Button>
+            <p className="text-[10px] text-muted-foreground leading-tight">
+              Checks all unsettled markets via Polymarket API and grades wins/losses. Fixes the 0% ROI problem.
+            </p>
+            {settleStatus && <p className="text-[10px] text-green-600 dark:text-green-400 leading-tight">{settleStatus}</p>}
+          </div>
+          <div className="space-y-1.5">
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full text-xs"
+              onClick={() => refetchMutation.mutate()}
+              disabled={refetchMutation.isPending}
+              data-testid="btn-refetch-all"
+            >
+              {refetchMutation.isPending ? "Starting..." : "Full Re-fetch All Trades"}
+            </Button>
+            <p className="text-[10px] text-muted-foreground leading-tight">
+              Clears and re-imports complete trade history for all 42 traders. Use if trades are missing or incorrect.
+            </p>
+            {refetchStatus && <p className="text-[10px] text-yellow-600 dark:text-yellow-400 leading-tight">{refetchStatus}</p>}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -3,7 +3,9 @@ import { createServer, type Server } from "http";
 import { Pool } from "pg";
 import {
   seedCuratedTraders, startPeriodicRefresh, runAnalysisForTrader,
-  resolveUsernameToWallet, generateTraderCSV, curatedWalletSet, curatedWalletToUsername
+  resolveUsernameToWallet, generateTraderCSV, curatedWalletSet, curatedWalletToUsername,
+  settleUnresolvedTrades, fetchFullTradeHistory, computeTraderProfile,
+  settleAllUnresolvedTradesGlobal
 } from "./eliteAnalysis";
 
 const elitePool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -1306,6 +1308,66 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       if (!rows.length) return res.status(404).json({ error: "Trader not found" });
       setImmediate(() => runAnalysisForTrader(wallet));
       res.json({ message: "Refresh started", wallet });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── POST /api/elite/admin/settle-all ─────────────────────────────────────
+  // Settles all unsettled trades for EVERY trader globally using Gamma API.
+  // Uses global settlement: one pass over all unique condition IDs (much faster).
+  app.post("/api/elite/admin/settle-all", async (_req, res) => {
+    try {
+      const { rows } = await elitePool.query(
+        `SELECT wallet FROM elite_traders WHERE wallet NOT LIKE 'pending-%' ORDER BY wallet`
+      );
+      res.json({ message: "Settlement started", wallets: rows.length });
+      // Run global settlement in background, then recompute all profiles
+      setImmediate(async () => {
+        try {
+          const totalSettled = await settleAllUnresolvedTradesGlobal();
+          console.log(`[Admin] Global settlement complete: ${totalSettled} trades settled`);
+          // Now recompute profiles for all wallets that have trades
+          for (const r of rows) {
+            try {
+              await computeTraderProfile(r.wallet);
+            } catch (e: any) {
+              console.error(`[Admin] Profile compute failed for ${r.wallet}:`, e.message);
+            }
+          }
+          console.log(`[Admin] All profiles recomputed`);
+        } catch (e: any) {
+          console.error(`[Admin] settle-all error:`, e.message);
+        }
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── POST /api/elite/admin/refetch-all ────────────────────────────────────
+  // Clears and re-fetches ALL trade history for every trader (full refresh)
+  app.post("/api/elite/admin/refetch-all", async (_req, res) => {
+    try {
+      const { rows } = await elitePool.query(
+        `SELECT wallet FROM elite_traders WHERE wallet NOT LIKE 'pending-%' ORDER BY wallet`
+      );
+      res.json({ message: "Full re-fetch started", wallets: rows.length });
+      setImmediate(async () => {
+        for (const r of rows) {
+          try {
+            // Clear existing trades for this wallet so we do a clean full fetch
+            await elitePool.query(`DELETE FROM elite_trader_trades WHERE wallet = $1`, [r.wallet]);
+            await elitePool.query(`UPDATE elite_traders SET last_analyzed_at = NULL WHERE wallet = $1`, [r.wallet]);
+            await runAnalysisForTrader(r.wallet);
+            console.log(`[Admin] Re-fetched & analyzed ${r.wallet}`);
+          } catch (e: any) {
+            console.error(`[Admin] Re-fetch failed for ${r.wallet}:`, e.message);
+          }
+          await new Promise(res => setTimeout(res, 1000));
+        }
+        console.log(`[Admin] refetch-all complete`);
+      });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
