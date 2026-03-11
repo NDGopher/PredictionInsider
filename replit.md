@@ -26,6 +26,7 @@ A sports prediction market intelligence dashboard that surfaces consensus signal
 - `GET /api/trader/:address/positions` — Individual trader's current positions
 - `GET /api/alerts/live` — Recent large bets ($1K+, 10¢–90¢) by tracked traders
 - `GET /api/market/price-by-condition/:conditionId` — Live YES price for a market (checks signal cache → market registry → Gamma API)
+- `GET /api/market/resolve/:conditionId` — Auto-grade endpoint: returns `{ resolved, outcome, finalPrice }` for bet tracking
 - `GET /api/stream?channel=alerts` — SSE stream; pushes alert batch every 15s
 
 ## Signal Computation Logic
@@ -61,6 +62,10 @@ A sports prediction market intelligence dashboard that surfaces consensus signal
 - **bigPlayScore** (0-3): 3 if totalUsdc≥30K or avg≥15K; 2 if ≥10K or avg≥5K; 1 if ≥3K or avg≥1.5K
 - **marketCategory**: moneyline | spread | total | futures | other (from classifyMarketType)
 - **marketType**: live | pregame | futures (from categoriseMarket — time-based)
+- **relBetSize** (float): conviction multiplier — this bet vs trader's typical sports bet (weighted avg, estimated from volume/100 historical bets)
+- **slippagePct** (float): price movement after insiders bought (positive = moved in their favor; YES: currentPrice−avgEntry×100; NO: avgEntry−currentPrice×100)
+- **insiderSportsROI** (float): weighted average ROI of insiders backing this signal (weighted by position size)
+- **insiderTrades** (int): estimated total historical trades by these insiders (volume / ~$500 per trade)
 - **outcomeLabel**: human-readable bet description (e.g. "Warriors WIN", "Over 225.5", "-6.5 covers")
 
 ## Signal Tiers

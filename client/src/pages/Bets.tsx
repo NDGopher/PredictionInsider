@@ -134,6 +134,41 @@ export function isSignalSnoozed(signalId: string): boolean {
   return true;
 }
 
+// ─── Auto-grading hook ────────────────────────────────────────────────────────
+
+const AUTO_GRADE_INTERVAL_MS = 5 * 60 * 1000; // every 5 minutes
+
+function useAutoGrade(bets: TrackedBet[], resolveBet: (id: string, status: "won" | "lost" | "cancelled", resolvedPrice?: number) => void) {
+  const [lastGraded, setLastGraded] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function checkResolutions() {
+      const openBets = bets.filter(b => b.status === "open" && b.conditionId);
+      if (openBets.length === 0) return;
+
+      for (const bet of openBets) {
+        try {
+          const res = await fetch(`/api/market/resolve/${encodeURIComponent(bet.conditionId!)}`);
+          if (!res.ok) continue;
+          const data: { resolved: boolean; outcome: "YES" | "NO" | null; finalPrice: number | null } = await res.json();
+          if (!data.resolved || !data.outcome) continue;
+
+          const won = data.outcome === bet.side;
+          resolveBet(bet.id, won ? "won" : "lost", data.finalPrice ?? undefined);
+          setLastGraded(bet.id);
+        } catch {
+        }
+      }
+    }
+
+    checkResolutions();
+    const iv = setInterval(checkResolutions, AUTO_GRADE_INTERVAL_MS);
+    return () => clearInterval(iv);
+  }, [bets.length]); // re-runs if bet count changes
+
+  return lastGraded;
+}
+
 // ─── Format helpers ───────────────────────────────────────────────────────────
 
 function formatDate(ts: number): string {
@@ -470,6 +505,7 @@ function BetCard({ bet, onResolve, onDelete, onUpdateNotes }: {
 
 export default function Bets() {
   const { bets, addBet, resolveBet, deleteBet, updateNotes } = useBets();
+  useAutoGrade(bets, resolveBet);
   const [showAddForm, setShowAddForm] = useState(false);
   const [filter, setFilter] = useState<"all" | "open" | "resolved">("all");
 

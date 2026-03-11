@@ -427,56 +427,100 @@ function SignalCard({ signal, mode, onSnoozed }: { signal: Signal; mode: "elite"
                   )}
                 </div>
               </div>
-              {/* Net USDC aggregate */}
-              {totalNetUsdc && totalNetUsdc > 0 && (
-                <div className="text-right shrink-0">
-                  <div className="text-sm font-bold text-foreground">{formatUsdc(totalNetUsdc)}</div>
-                  <div className="text-[10px] text-muted-foreground">elite net pos.</div>
+              {/* Confidence score — large, OddsJam-style */}
+              <div className="shrink-0 flex flex-col items-end gap-1.5">
+                <div className={`text-3xl font-bold leading-none tabular-nums
+                  ${signal.confidence >= 75 ? "text-green-500" : signal.confidence >= 50 ? "text-yellow-500" : "text-red-500"}`}
+                  data-testid={`score-${signal.id}`}>
+                  {signal.confidence}
                 </div>
-              )}
+                <div className={`text-[10px] font-semibold px-2 py-0.5 rounded
+                  ${signal.side === "YES" ? "bg-green-600 text-white" : "bg-red-600 text-white"}`}>
+                  {(signal.currentPrice * 100).toFixed(1)}¢
+                </div>
+              </div>
             </div>
 
-            {/* Confidence bar */}
-            <div className="mt-3">
-              <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1">
-                <span>Confidence Score</span>
-                <span>{signal.confidence}/100</span>
-              </div>
-              <ConfidenceBar score={signal.confidence} />
-            </div>
+            {/* WHY THIS BET? — OddsJam-style conviction metrics */}
+            {((signal as any).relBetSize > 0 || (signal as any).insiderSportsROI !== undefined) && (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {/* WHY THIS BET box */}
+                <div className="rounded-lg bg-muted/40 border border-border/40 p-2.5">
+                  <div className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Why This Bet?</div>
+                  <div className="space-y-1.5">
+                    {(signal as any).relBetSize > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                          <TrendingUp className="w-2.5 h-2.5" /> Rel. Bet Size
+                        </span>
+                        <span className="text-xs font-bold text-foreground">{((signal as any).relBetSize as number).toFixed(1)}x</span>
+                      </div>
+                    )}
+                    {totalNetUsdc && totalNetUsdc > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                          <DollarSign className="w-2.5 h-2.5" /> Bet Size
+                        </span>
+                        <span className="text-xs font-bold text-foreground">{formatUsdc(totalNetUsdc)}</span>
+                      </div>
+                    )}
+                    {(signal as any).slippagePct !== undefined && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                          <span className={`w-1.5 h-1.5 rounded-full ${(signal as any).slippagePct >= 0 ? "bg-green-500" : "bg-red-500"}`} />
+                          Slippage
+                        </span>
+                        <span className={`text-xs font-bold ${(signal as any).slippagePct >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                          {(signal as any).slippagePct >= 0 ? "+" : ""}{((signal as any).slippagePct as number).toFixed(1)}%
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <Users className="w-2.5 h-2.5" /> Avg Entry
+                      </span>
+                      <span className="text-xs font-bold text-foreground">{(signal.avgEntryPrice * 100).toFixed(1)}¢</span>
+                    </div>
+                  </div>
+                </div>
 
-            {/* Stats grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
-              <div className="bg-muted/50 rounded-md p-2">
-                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                  {livePrice !== null && <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block" />}
-                  Live Price
-                </div>
-                <div className="text-sm font-semibold">
-                  {livePrice !== null
-                    ? `${(livePrice * 100).toFixed(1)}¢`
-                    : `${(signal.currentPrice * 100).toFixed(1)}¢`}
+                {/* INSIDER STATS box */}
+                <div className="rounded-lg bg-muted/40 border border-border/40 p-2.5">
+                  <div className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Insider Stats</div>
+                  <div className="space-y-1.5">
+                    {(signal as any).insiderSportsROI !== undefined && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-muted-foreground">Sports ROI</span>
+                        <span className={`text-xs font-bold ${(signal as any).insiderSportsROI >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                          {(signal as any).insiderSportsROI >= 0 ? "+" : ""}{((signal as any).insiderSportsROI as number).toFixed(1)}%
+                        </span>
+                      </div>
+                    )}
+                    {(signal as any).insiderTrades !== undefined && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-muted-foreground">Est. Trades</span>
+                        <span className="text-xs font-bold text-foreground">{((signal as any).insiderTrades as number).toLocaleString()}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-muted-foreground">Insiders</span>
+                      <span className="text-xs font-bold text-foreground">{signal.traderCount}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        {livePrice !== null && <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />}
+                        Live Price
+                      </span>
+                      <span className="text-xs font-bold text-foreground">
+                        {livePrice !== null
+                          ? `${(livePrice * 100).toFixed(1)}¢`
+                          : `${(signal.currentPrice * 100).toFixed(1)}¢`}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="bg-muted/50 rounded-md p-2">
-                <div className="text-[10px] text-muted-foreground">Avg Entry</div>
-                <div className="text-sm font-semibold">{(signal.avgEntryPrice * 100).toFixed(1)}¢</div>
-              </div>
-              <div className="bg-muted/50 rounded-md p-2">
-                <div className="text-[10px] text-muted-foreground">Consensus</div>
-                <div className="text-sm font-semibold">{signal.consensusPct}%</div>
-              </div>
-              <div className="bg-muted/50 rounded-md p-2">
-                <div className="text-[10px] text-muted-foreground">
-                  {mode === "elite" ? "Avg Net Size" : "Traders"}
-                </div>
-                <div className="text-sm font-semibold">
-                  {mode === "elite" && avgNetUsdc
-                    ? formatUsdc(avgNetUsdc)
-                    : signal.traderCount}
-                </div>
-              </div>
-            </div>
+            )}
 
             {/* Value delta line */}
             {signal.valueDelta !== 0 && (

@@ -1635,7 +1635,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/signals", async (req, res) => {
     try {
       const sportsOnly = req.query.sports !== "false";
-      const cKey = `signals-elite-v21-${sportsOnly ? "sp" : "all"}`;
+      const cKey = `signals-elite-v22-${sportsOnly ? "sp" : "all"}`;
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -1982,6 +1982,26 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const dominantSorted = [...dominant].sort((a, b) => b.totalSize - a.totalSize);
         const counterTraderCount = entries.length - dominant.length;
 
+        // ── Insider Stats (OddsJam-style "WHY THIS BET?" metrics) ─────────────
+        // relBetSize: how large is this bet vs each trader's typical sports bet (conviction signal)
+        const relBetSize = (() => {
+          const w = dominant.reduce((s, e) => s + e.totalSize, 0) || 1;
+          return Math.round(dominant.reduce((s, e) => {
+            const avgBet = Math.max(e.traderInfo.volume / 100, 50); // estimate: ~100 historical sports bets
+            return s + (e.totalSize / avgBet) * (e.totalSize / w);
+          }, 0) * 10) / 10;
+        })();
+        // slippagePct: how much did the price move after the insiders bought (conviction indicator)
+        const slippagePct = Math.round((side === "YES"
+          ? (currentPrice - avgEntry) * 100
+          : (avgEntry - currentPrice) * 100) * 10) / 10;
+        // insiderSportsROI: weighted average ROI of insiders backing this signal
+        const insiderSportsROI = Math.round(
+          (dominant.reduce((s, e) => s + e.traderInfo.roi * e.totalSize, 0) / (totalDominantWeight || 1)) * 10
+        ) / 10;
+        // insiderTrades: estimated total historical trades by these insiders (volume / ~$500 per trade)
+        const insiderTrades = dominant.reduce((s, e) => s + Math.max(Math.round(e.traderInfo.volume / 500), 1), 0);
+
         signals.push({
           id, marketId: condId,
           marketQuestion: mw.question,
@@ -2006,6 +2026,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           counterTraderCount,
           avgQuality: Math.round(avgQuality),
           scoreBreakdown: breakdown,
+          relBetSize, slippagePct, insiderSportsROI, insiderTrades,
           traders: dominantSorted.slice(0, 8).map(e => ({
             address: e.address,
             name: e.traderInfo.name,
@@ -2241,6 +2262,29 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const pgNoTokenId  = pg.noAsset  || pgMarket?.tokenIds?.[1];
           const tradersSorted = [...pg.traders].sort((a, b) => b.currentValue - a.currentValue);
 
+          // ── Insider Stats (OddsJam-style "WHY THIS BET?" metrics) ───────────
+          const pgTotalWeight = pg.totalValue || 1;
+          const pgRelBetSize = (() => {
+            return Math.round(pg.traders.reduce((s, t) => {
+              const tm = lbMap.get(t.wallet);
+              const avgBet = Math.max((tm?.volume ?? 1000) / 100, 50);
+              return s + (t.currentValue / avgBet) * (t.currentValue / pgTotalWeight);
+            }, 0) * 10) / 10;
+          })();
+          const pgSlippagePct = Math.round((pg.side === "YES"
+            ? (avgCurPrice - avgEntry) * 100
+            : (avgEntry - avgCurPrice) * 100) * 10) / 10;
+          const pgInsiderSportsROI = Math.round(
+            (pg.traders.reduce((s, t) => {
+              const tm = lbMap.get(t.wallet);
+              return s + (tm?.roi ?? 0) * t.currentValue;
+            }, 0) / pgTotalWeight) * 10
+          ) / 10;
+          const pgInsiderTrades = pg.traders.reduce((s, t) => {
+            const tm = lbMap.get(t.wallet);
+            return s + Math.max(Math.round((tm?.volume ?? 500) / 500), 1);
+          }, 0);
+
           signals.push({
             id, marketId: pg.conditionId,
             marketQuestion: pg.question,
@@ -2268,6 +2312,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               ? Math.round(pg.traders.reduce((s, t) => s + (lbMap.get(t.wallet)?.qualityScore ?? 20), 0) / pg.traders.length)
               : 20,
             scoreBreakdown: breakdown,
+            relBetSize: pgRelBetSize, slippagePct: pgSlippagePct,
+            insiderSportsROI: pgInsiderSportsROI, insiderTrades: pgInsiderTrades,
             traders: tradersSorted.slice(0, 8).map(t => {
               const tm = lbMap.get(t.wallet);
               return {
@@ -2671,6 +2717,61 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         }
       }
       res.status(404).json({ error: "Price not found", conditionId: condId });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── GET /api/market/resolve/:conditionId ─────────────────────────────────────
+  // Auto-grading endpoint: returns market resolution status for open bets
+  app.get("/api/market/resolve/:conditionId", async (req, res) => {
+    try {
+      const condId = req.params.conditionId;
+      if (!condId) return res.status(400).json({ error: "conditionId required" });
+
+      // 1. Try Gamma API first — has explicit closed/resolved fields
+      const gmRes = await fetch(`${GAMMA_API}/markets?condition_id=${condId}&limit=1`);
+      if (gmRes.ok) {
+        const gmData = await gmRes.json();
+        const mkt = Array.isArray(gmData) ? gmData[0] : gmData?.markets?.[0];
+        if (mkt) {
+          const closed = mkt.closed === true || mkt.active === false;
+          const resolutionPrice = mkt.outcomePrices
+            ? (Array.isArray(mkt.outcomePrices)
+                ? parseFloat(mkt.outcomePrices[0])
+                : parseFloat(JSON.parse(mkt.outcomePrices)[0]))
+            : null;
+
+          if (closed && resolutionPrice !== null) {
+            const outcome = resolutionPrice >= 0.99 ? "YES" : resolutionPrice <= 0.01 ? "NO" : null;
+            return res.json({
+              conditionId: condId,
+              resolved: !!outcome,
+              outcome,
+              finalPrice: resolutionPrice,
+              source: "gamma",
+            });
+          }
+
+          if (!closed) {
+            return res.json({ conditionId: condId, resolved: false, outcome: null, finalPrice: null });
+          }
+        }
+      }
+
+      // 2. Fall back to CLOB midpoint — if price is at 0.99 or 0.01 the market is resolved
+      const mr = gameMarketRegistry.get(condId);
+      const yesToken = mr?.tokenIds?.[0];
+      if (yesToken) {
+        const mid = await fetchMidpoint(yesToken);
+        if (mid !== null) {
+          if (mid >= 0.99) return res.json({ conditionId: condId, resolved: true, outcome: "YES", finalPrice: mid });
+          if (mid <= 0.01) return res.json({ conditionId: condId, resolved: true, outcome: "NO", finalPrice: mid });
+          return res.json({ conditionId: condId, resolved: false, outcome: null, finalPrice: mid });
+        }
+      }
+
+      res.json({ conditionId: condId, resolved: false, outcome: null, finalPrice: null });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
