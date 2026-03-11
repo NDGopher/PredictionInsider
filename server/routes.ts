@@ -1467,11 +1467,58 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
   // ── GET /api/elite/canonical-pnl/:wallet ────────────────────────────────
   // Live fetch of canonical PNL for a single trader (no DB cache).
+  // Note: sum(realizedPnl) matches Polymarket's profile P&L for most traders,
+  // but may diverge for active multi-side traders (e.g. TheMangler).
   app.get("/api/elite/canonical-pnl/:wallet", async (req, res) => {
     try {
       const wallet = req.params.wallet.toLowerCase();
       const canonical = await fetchCanonicalPNL(wallet);
       res.json(canonical);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── POST /api/elite/admin/set-manual-pnl ────────────────────────────────
+  // Manually override a trader's displayed PnL (protects against auto-refresh).
+  // Body: { wallet: string, overallPNL: number, note?: string }
+  app.post("/api/elite/admin/set-manual-pnl", async (req, res) => {
+    try {
+      const { wallet, overallPNL, note } = req.body;
+      if (!wallet || overallPNL === undefined) {
+        return res.status(400).json({ error: "wallet and overallPNL required" });
+      }
+      const w = wallet.toLowerCase();
+      await elitePool.query(`
+        UPDATE elite_trader_profiles
+        SET metrics = metrics || $2::jsonb, computed_at = NOW()
+        WHERE wallet = $1
+      `, [w, JSON.stringify({
+        overallPNL: Number(overallPNL),
+        manualPnlOverride: true,
+        manualPnlNote: note || "Manually set via admin API",
+        pnlSource: "polymarket_profile_manual",
+        pnlUpdatedAt: new Date().toISOString(),
+      })]);
+      res.json({ success: true, wallet: w, overallPNL: Number(overallPNL) });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── POST /api/elite/admin/clear-manual-pnl ──────────────────────────────
+  // Remove manual PnL override so auto-refresh resumes for a trader.
+  app.post("/api/elite/admin/clear-manual-pnl", async (req, res) => {
+    try {
+      const { wallet } = req.body;
+      if (!wallet) return res.status(400).json({ error: "wallet required" });
+      const w = wallet.toLowerCase();
+      await elitePool.query(`
+        UPDATE elite_trader_profiles
+        SET metrics = metrics - 'manualPnlOverride' - 'manualPnlNote' - 'pnlSource' || '{"pnlSource":"closed_positions_api"}'::jsonb
+        WHERE wallet = $1
+      `, [w]);
+      res.json({ success: true, wallet: w });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }

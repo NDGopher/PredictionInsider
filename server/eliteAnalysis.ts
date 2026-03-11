@@ -869,6 +869,14 @@ export async function computeTraderProfileFromActivity(wallet: string): Promise<
     ON CONFLICT (wallet) DO UPDATE SET
       username = EXCLUDED.username, computed_at = NOW(),
       metrics = EXCLUDED.metrics || CASE
+        WHEN elite_trader_profiles.metrics->>'manualPnlOverride' = 'true'
+        THEN jsonb_build_object(
+          'overallPNL', (elite_trader_profiles.metrics->>'overallPNL')::numeric,
+          'manualPnlOverride', true,
+          'manualPnlNote', elite_trader_profiles.metrics->>'manualPnlNote',
+          'pnlSource', elite_trader_profiles.metrics->>'pnlSource',
+          'pnlUpdatedAt', elite_trader_profiles.metrics->>'pnlUpdatedAt'
+        )
         WHEN elite_trader_profiles.metrics->>'pnlSource' = 'closed_positions_api'
         THEN jsonb_build_object(
           'overallPNL', (elite_trader_profiles.metrics->>'overallPNL')::numeric,
@@ -1233,6 +1241,14 @@ export async function computeTraderProfile(wallet: string): Promise<any> {
       username = EXCLUDED.username,
       computed_at = NOW(),
       metrics = EXCLUDED.metrics || CASE
+        WHEN elite_trader_profiles.metrics->>'manualPnlOverride' = 'true'
+        THEN jsonb_build_object(
+          'overallPNL', (elite_trader_profiles.metrics->>'overallPNL')::numeric,
+          'manualPnlOverride', true,
+          'manualPnlNote', elite_trader_profiles.metrics->>'manualPnlNote',
+          'pnlSource', elite_trader_profiles.metrics->>'pnlSource',
+          'pnlUpdatedAt', elite_trader_profiles.metrics->>'pnlUpdatedAt'
+        )
         WHEN elite_trader_profiles.metrics->>'pnlSource' = 'closed_positions_api'
         THEN jsonb_build_object(
           'overallPNL', (elite_trader_profiles.metrics->>'overallPNL')::numeric,
@@ -1433,9 +1449,20 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
     closedByCategory[cat].invested = Math.round(closedByCategory[cat].invested * 100) / 100;
   }
 
-  // Open positions for unrealized PNL (cashPnl)
-  const openData = await fetchJson(`${DATA_API}/positions?user=${addr}&limit=500&sizeThreshold=0`);
-  const openPositions = Array.isArray(openData) ? openData : [];
+  // Open positions for unrealized PNL (cashPnl) — paginate to fetch all
+  const openPositions: any[] = [];
+  let openOffset = 0;
+  while (true) {
+    const openPage = await fetchJson(
+      `${DATA_API}/positions?user=${addr}&limit=500&offset=${openOffset}&sizeThreshold=0`
+    );
+    if (!Array.isArray(openPage) || openPage.length === 0) break;
+    openPositions.push(...openPage);
+    if (openPage.length < 500) break;
+    openOffset += 500;
+    if (openOffset >= 10_000) break;
+    await new Promise(r => setTimeout(r, 80));
+  }
   const unrealizedPNL = openPositions.reduce((sum: number, p: any) => sum + (parseFloat(p.cashPnl) || 0), 0);
 
   return {
@@ -1457,6 +1484,16 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
   try {
     const uRow = await pool.query(`SELECT username FROM elite_traders WHERE wallet = $1`, [w]);
     const username = uRow.rows[0]?.username || w.slice(0, 10);
+
+    // Skip auto-refresh for traders with manually set PnL overrides
+    const overrideCheck = await pool.query(
+      `SELECT metrics->>'manualPnlOverride' as override FROM elite_trader_profiles WHERE wallet = $1`,
+      [w]
+    );
+    if (overrideCheck.rows[0]?.override === 'true') {
+      console.log(`[Elite/PNL] ${username}: skipping — manual PnL override active`);
+      return null;
+    }
 
     const canonical = await fetchCanonicalPNL(w);
 
