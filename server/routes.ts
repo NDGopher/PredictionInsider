@@ -1725,10 +1725,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   async function refreshAndBroadcastAlerts() {
     try {
       const now = Date.now();
-      const [allTrades, allSportsLb] = await Promise.all([
+      const [allTrades, allSportsLb, curatedRows] = await Promise.all([
         fetchRecentTrades(3000),
         fetchMultiWindowSportsLB(),
+        elitePool.query(`SELECT wallet FROM elite_traders`).catch(() => ({ rows: [] as any[] })),
       ]);
+      const curatedSet = new Set<string>((curatedRows.rows || []).map((r: any) => r.wallet.toLowerCase()));
       const lbMap = new Map<string, { name: string; pnl: number; isSportsLb: boolean }>();
       for (const t of allSportsLb) {
         const w = (t.proxyWallet || "").toLowerCase();
@@ -1740,8 +1742,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       for (const trade of allTrades) {
         const wallet = (trade.proxyWallet || "").toLowerCase();
         const isTracked = lbMap.has(wallet);
+        const isCurated = curatedSet.has(wallet);
         const size = parseFloat(trade.size || trade.amount || "0");
-        if (!isTracked && size < 5000) continue;
+        if (!isTracked && !isCurated && size < 5000) continue;
         if (size < 1000) continue; // minimum $1K plays only
         const title = trade.title || trade.market || "";
         if (!isSportsRelated(title) || !title) continue;
@@ -1762,7 +1765,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         alerts.push({
           id: `alert-${trade.id || key}`,
           trader: trader?.name || truncAddr(wallet),
-          wallet, isTracked, isSportsLb: trader?.isSportsLb ?? false,
+          wallet, isTracked, isSportsLb: trader?.isSportsLb ?? false, isCurated,
           market: title.slice(0, 80), slug: trade.slug, conditionId: condId,
           side, size: Math.round(size), price: Math.round(price * 1000) / 1000,
           americanOdds: toAmericanOdds(price),
@@ -2003,10 +2006,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       if (hit) { res.json(hit); return; }
 
       const now = Date.now();
-      const [allTrades, allSportsLb] = await Promise.all([
+      const [allTrades, allSportsLb, curatedRowsHttp] = await Promise.all([
         fetchRecentTrades(3000),
         fetchMultiWindowSportsLB(),
+        elitePool.query(`SELECT wallet FROM elite_traders`).catch(() => ({ rows: [] as any[] })),
       ]);
+      const curatedSetHttp = new Set<string>((curatedRowsHttp.rows || []).map((r: any) => r.wallet.toLowerCase()));
 
       const lbMap = new Map<string, { name: string; pnl: number; isSportsLb: boolean }>();
       for (const t of allSportsLb) {
@@ -2025,10 +2030,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       for (const trade of allTrades) {
         const wallet = (trade.proxyWallet || "").toLowerCase();
         const isTracked = lbMap.has(wallet);
+        const isCuratedHttp = curatedSetHttp.has(wallet);
         const size = parseFloat(trade.size || trade.amount || "0");
 
-        // Only tracked traders OR very large anonymous bets ($5K+)
-        if (!isTracked && size < 5000) continue;
+        // Only tracked LB traders, curated elites, OR very large anonymous bets ($5K+)
+        if (!isTracked && !isCuratedHttp && size < 5000) continue;
         if (size < 1000) continue; // minimum $1K plays
 
         const title = trade.title || trade.market || "";
@@ -2058,6 +2064,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           wallet,
           isTracked,
           isSportsLb: trader?.isSportsLb ?? false,
+          isCurated: isCuratedHttp,
           qualityScore: trader?.qualityScore ?? 0,
           roi: trader?.roi ?? 0,
           market: title.slice(0, 80),

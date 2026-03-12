@@ -622,6 +622,7 @@ function StatCard({
 export default function Dashboard() {
   const [signalTypeFilter, setSignalTypeFilter] = useState<"all" | "live" | "pregame" | "nofutures" | "actionable">("all");
   const [expandedAlerts, setExpandedAlerts] = useState<Set<string>>(new Set());
+  const [alertsCuratedOnly, setAlertsCuratedOnly] = useState(false);
   const [hiddenAlertIds, setHiddenAlertIds] = useState<Set<string>>(() => {
     try { return new Set(JSON.parse(localStorage.getItem("pi_hidden_alerts") || "[]")); } catch { return new Set(); }
   });
@@ -821,9 +822,28 @@ export default function Dashboard() {
                   : "connecting…"}
               </span>
             </div>
-            {alertsData?.alerts?.length ? (
-              <Badge variant="secondary" className="text-[10px]">{alertsData.alerts.length} bets</Badge>
-            ) : null}
+            <div className="flex items-center gap-2">
+              {/* Curated filter toggle */}
+              <div className="flex items-center rounded-md border border-border overflow-hidden text-[10px]">
+                <button
+                  onClick={() => setAlertsCuratedOnly(false)}
+                  data-testid="button-alerts-all-lb"
+                  className={`px-2 py-0.5 transition-colors ${!alertsCuratedOnly ? "bg-primary text-primary-foreground font-semibold" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  All LB
+                </button>
+                <button
+                  onClick={() => setAlertsCuratedOnly(true)}
+                  data-testid="button-alerts-elite-only"
+                  className={`px-2 py-0.5 transition-colors ${alertsCuratedOnly ? "bg-primary text-primary-foreground font-semibold" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  Elite 42
+                </button>
+              </div>
+              {alertsData?.alerts?.length ? (
+                <Badge variant="secondary" className="text-[10px]">{alertsData.alerts.length} bets</Badge>
+              ) : null}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="px-4 pb-4 pt-0">
@@ -862,8 +882,10 @@ export default function Dashboard() {
                   </div>
                 </div>
               )}
-              {alertsData.alerts.slice(0, 15)
+              {alertsData.alerts
+                .filter((alert: any) => !alertsCuratedOnly || alert.isCurated)
                 .filter((alert: any) => showHiddenAlerts || !hiddenAlertIds.has(alert.id))
+                .slice(0, 15)
                 .map((alert: any) => {
                 const outcomeLabel = getOutcomeLabel(alert.market, alert.side);
                 const isExpanded = expandedAlerts.has(alert.id);
@@ -902,7 +924,10 @@ export default function Dashboard() {
                               <CalendarClock className="w-2.5 h-2.5" />PRE
                             </span>
                           )}
-                          {alert.isSportsLb && (
+                          {alert.isCurated && (
+                            <span className="text-[10px] px-1 py-0 rounded bg-violet-500/10 text-violet-700 dark:text-violet-300 border border-violet-500/20 font-semibold shrink-0" title="One of your 42 curated elite traders">★ Elite</span>
+                          )}
+                          {alert.isSportsLb && !alert.isCurated && (
                             <span className="text-[10px] px-1 py-0 rounded bg-primary/10 text-primary border border-primary/20 font-semibold shrink-0">LB</span>
                           )}
                           {sharp?.isActionable && (
