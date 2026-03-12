@@ -1249,14 +1249,32 @@ function SharpMovesPanel({ signals }: { signals?: any[] }) {
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-1.5 shrink-0 text-right">
                         <span className="font-bold text-foreground">{t.netUsdc >= 1000 ? `$${(t.netUsdc/1000).toFixed(1)}K` : `$${t.netUsdc}`}</span>
                         <span className="text-muted-foreground">@ {Math.round(t.entryPrice * 100)}¢</span>
-                        {t.tradeTime > 0 && <span className="text-muted-foreground">{timeAgoShort(t.tradeTime)}</span>}
                       </div>
                     </div>
-                    {/* Sport ROI + win rate + tags */}
+                    {/* Time ago + multiplier + Sport ROI + win rate + tags */}
                     <div className="flex items-center gap-2 flex-wrap">
+                      {t.tradeTime > 0 && (
+                        <span className="flex items-center gap-0.5 text-muted-foreground font-medium">
+                          <Clock className="w-2.5 h-2.5" />{timeAgoShort(t.tradeTime)}
+                        </span>
+                      )}
+                      {(() => {
+                        const avg = t.sportAvgBet ?? 0;
+                        const bet = t.netUsdc ?? t.size ?? 0;
+                        if (avg > 50 && bet > 0) {
+                          const mult = bet / avg;
+                          const isHigh = mult >= 2;
+                          return (
+                            <span className={`px-1 py-0.5 rounded font-bold ${isHigh ? "bg-orange-500/15 text-orange-600 dark:text-orange-400" : "bg-muted text-muted-foreground"}`}>
+                              {mult.toFixed(1)}× avg bet
+                            </span>
+                          );
+                        }
+                        return null;
+                      })()}
                       {t.sportRoi !== null && t.sportRoi !== undefined && (
                         <span className={`px-1 py-0.5 rounded font-bold ${t.sportRoi >= 20 ? "bg-green-500/15 text-green-700 dark:text-green-300" : t.sportRoi < 0 ? "bg-red-500/15 text-red-600" : "bg-muted text-muted-foreground"}`}>
                           {matchSignal.sport} ROI: {t.sportRoi >= 0 ? "+" : ""}{t.sportRoi.toFixed(1)}%

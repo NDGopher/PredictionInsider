@@ -469,7 +469,22 @@ function SignalExpandedPanel({ signal, onClose }: { signal: Signal; onClose: () 
                   <div className="tabular-nums font-semibold">
                     {formatUsdc(t.riskUsdc ?? Math.round((t.size || 0) * (t.entryPrice || 0)))} risk @ {(t.entryPrice * 100).toFixed(0)}¢
                   </div>
-                  <div className="flex items-center gap-1.5 justify-end">
+                  <div className="flex items-center gap-1.5 justify-end flex-wrap">
+                    {t.tradeTime > 0 && <span className="text-[9px] text-muted-foreground">{timeAgo(t.tradeTime)}</span>}
+                    {(() => {
+                      const avg = t.sportAvgBet ?? 0;
+                      const bet = t.netUsdc ?? t.size ?? 0;
+                      if (avg > 50 && bet > 0) {
+                        const mult = bet / avg;
+                        const isHigh = mult >= 2;
+                        return (
+                          <span className={`text-[9px] font-bold px-0.5 rounded ${isHigh ? "text-orange-600 dark:text-orange-400" : "text-muted-foreground"}`}>
+                            {mult.toFixed(1)}× avg
+                          </span>
+                        );
+                      }
+                      return null;
+                    })()}
                     {(() => {
                       const displayRoi = t.sportRoi !== null && t.sportRoi !== undefined ? t.sportRoi : t.roi;
                       const roiLabel = t.sportRoi !== null && t.sportRoi !== undefined ? `${s.sport || "Sport"} ROI` : "ROI";
@@ -479,7 +494,6 @@ function SignalExpandedPanel({ signal, onClose }: { signal: Signal; onClose: () 
                         </span>
                       ) : null;
                     })()}
-                    {t.tradeTime > 0 && <span className="text-[9px] text-muted-foreground">{timeAgo(t.tradeTime)}</span>}
                   </div>
                 </div>
               </div>

@@ -2102,7 +2102,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/signals", async (req, res) => {
     try {
       const sportsOnly = req.query.sports !== "false";
-      const cKey = `signals-elite-v22-${sportsOnly ? "sp" : "all"}`;
+      const cKey = `signals-elite-v23-${sportsOnly ? "sp" : "all"}`;
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -2493,6 +2493,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               sportRoi: sportEntry?.roi ?? null,
               sportTradeCount: sportEntry?.tradeCount ?? null,
               sportWinRate: sportEntry?.winRate ?? null,
+              sportAvgBet: sportEntry?.avgBet ?? null,
               tags: cm?.tags ?? [],
             };
           }),
@@ -2799,6 +2800,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                 sportRoi: sportEntry?.roi ?? null,
                 sportTradeCount: sportEntry?.tradeCount ?? null,
                 sportWinRate: sportEntry?.winRate ?? null,
+                sportAvgBet: sportEntry?.avgBet ?? null,
                 tags: cm?.tags ?? [],
               };
             }),
