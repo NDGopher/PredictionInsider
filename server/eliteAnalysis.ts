@@ -792,8 +792,10 @@ export async function computeTraderProfileFromActivity(wallet: string): Promise<
     "Tennis": "🎾 Tennis Pro", "eSports": "🎮 eSports Analyst",
     "College Sports": "🎓 College Sports", "Golf": "⛳ Golf Expert", "Formula 1": "🏎️ F1 Expert",
   };
+  // Sport expert tags: qualify by ROI>5% OR high absolute PNL (≥$20K settled profit).
   for (const [sp, d] of Object.entries(roiBySport)) {
-    if (d.tradeCount >= 10 && d.roi > 5 && sportTagMap[sp]) tags.push(sportTagMap[sp]);
+    const isExpert = d.tradeCount >= 10 && sportTagMap[sp] && (d.roi > 5 || d.pnl >= 20000);
+    if (isExpert) tags.push(sportTagMap[sp]);
   }
   if ((roiByMarketType["total"]?.tradeCount || 0) >= 10 && (roiByMarketType["total"]?.roi || 0) > 5) tags.push("📊 O/U Specialist");
   if ((roiByMarketType["moneyline"]?.tradeCount || 0) >= 10 && (roiByMarketType["moneyline"]?.roi || 0) > 5) tags.push("📈 Moneyline Pro");
@@ -1138,8 +1140,12 @@ export async function computeTraderProfile(wallet: string): Promise<any> {
     "Tennis": "🎾 Tennis Pro", "eSports": "🎮 eSports Analyst",
     "College Sports": "🎓 College Sports", "Golf": "⛳ Golf Expert", "Formula 1": "🏎️ F1 Expert",
   };
+  // Sport expert tags: qualify by ROI>5% OR high absolute PNL (≥$20K settled profit).
+  // PNL threshold matters because active traders with many open winning positions
+  // may show low settled ROI while having significant real-world gains.
   for (const [sp, d] of Object.entries(roiBySport)) {
-    if (d.tradeCount >= 10 && d.roi > 5 && sportTagMap[sp]) tags.push(sportTagMap[sp]);
+    const isExpert = d.tradeCount >= 10 && sportTagMap[sp] && (d.roi > 5 || d.pnl >= 20000);
+    if (isExpert) tags.push(sportTagMap[sp]);
   }
   // Market type tags
   if ((roiByMarketType["total"]?.tradeCount || 0) >= 10 && (roiByMarketType["total"]?.roi || 0) > 5) tags.push("📊 O/U Specialist");

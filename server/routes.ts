@@ -345,6 +345,7 @@ type CanonicalEntry = {
   overallROI: number;
   winRate: number;
   totalTrades: number;
+  qualityScore: number;
   roiBySport: Record<string, { roi: number; tradeCount: number; winRate: number; avgBet: number }>;
   roiByMarketType: Record<string, { roi: number; tradeCount: number; winRate: number }>;
 };
@@ -357,6 +358,7 @@ async function loadCanonicalMetricsFromDB(): Promise<Map<string, CanonicalEntry>
   try {
     const { rows } = await elitePool.query(`
       SELECT wallet,
+        quality_score,
         (metrics->>'overallROI')::float          AS overall_roi,
         (metrics->>'winRate')::float             AS win_rate,
         (metrics->>'totalTrades')::int           AS total_trades,
@@ -371,6 +373,7 @@ async function loadCanonicalMetricsFromDB(): Promise<Map<string, CanonicalEntry>
         overallROI: parseFloat(r.overall_roi ?? "0") || 0,
         winRate: parseFloat(r.win_rate ?? "0") || 0,
         totalTrades: parseInt(r.total_trades ?? "0") || 0,
+        qualityScore: parseInt(r.quality_score ?? "0") || 0,
         roiBySport: r.roi_by_sport ?? {},
         roiByMarketType: r.roi_by_market_type ?? {},
       });
@@ -2310,22 +2313,27 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // ── Counter-trader count (computed BEFORE confidence so it can penalize consensus) ──
         const counterTraderCount = entries.length - dominant.length;
 
-        const avgQuality = dominant.reduce((s, e) => s + e.traderInfo.qualityScore, 0) / dominant.length;
+        // ── Detect sport for sport-specific canonical ROI ──────────────────────
+        const signalSport = classifySport(mw.slug || "", mw.question || "");
+
+        // Use canonical DB quality score for each trader (consistent with Elite page)
+        const avgQuality = dominant.reduce((s, e) => {
+          const cm = canonicalMap.get(e.address.toLowerCase());
+          return s + (cm?.qualityScore > 0 ? cm.qualityScore : e.traderInfo.qualityScore);
+        }, 0) / dominant.length;
+
         // Weighted avg entry price: weight each trader's avg price by their total position size
         const totalDominantWeight = dominant.reduce((s, e) => s + e.totalSize, 0) || 1;
         const avgEntry   = dominant.reduce((s, e) => s + (e.prices.reduce((a, b) => a + b, 0) / e.prices.length) * e.totalSize, 0) / totalDominantWeight;
         const avgSize    = totalDominantSize / dominant.length;
 
-        // ── Detect sport for sport-specific canonical ROI ──────────────────────
-        const signalSport = classifySport(mw.slug || "", mw.question || "");
-
-        // avgROI: prefer canonical sport-specific ROI → canonical overall ROI → activity-based ROI
+        // avgROI: use canonical OVERALL ROI (not sport-specific) for confidence scoring.
+        // Sport-specific ROI from our DB only counts SETTLED/CLOSED trades and misses
+        // open winning positions — so it can falsely penalize traders with large unrealized gains.
+        // Canonical overall ROI (from closed-positions API) is the ground truth.
         const avgROI = dominant.reduce((s, e) => {
           const cm = canonicalMap.get(e.address.toLowerCase());
-          const sportEntry = cm?.roiBySport?.[signalSport];
-          const sportROI = sportEntry && sportEntry.tradeCount >= 5 ? sportEntry.roi : null;
-          const overallROI = cm?.overallROI != null && cm.overallROI !== 0 ? cm.overallROI : e.traderInfo.roi;
-          return s + (sportROI ?? overallROI);
+          return s + (cm?.overallROI ?? e.traderInfo.roi);
         }, 0) / dominant.length;
 
         // ── Live price via CLOB ────────────────────────────────────────────────
@@ -2383,15 +2391,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const slippagePct = Math.round((side === "YES"
           ? (currentPrice - avgEntry) * 100
           : (avgEntry - currentPrice) * 100) * 10) / 10;
-        // insiderSportsROI: canonical sport-specific ROI, weighted by bet size
+        // insiderSportsROI: canonical OVERALL ROI weighted by bet size.
+        // We use overall ROI because sport-specific only counts settled/closed trades,
+        // which can miss large unrealized gains in open positions (e.g. a hockey trader
+        // with +$60K unrealized appears -$3K settled in our DB — misleading).
         const insiderSportsROI = Math.round(
           dominant.reduce((s, e) => {
             const cm = canonicalMap.get(e.address.toLowerCase());
-            const sportEntry = cm?.roiBySport?.[signalSport];
-            const roi = (sportEntry && sportEntry.tradeCount >= 5)
-              ? sportEntry.roi
-              : (cm?.overallROI ?? e.traderInfo.roi);
-            return s + roi * e.totalSize;
+            return s + (cm?.overallROI ?? e.traderInfo.roi) * e.totalSize;
           }, 0) / (totalDominantWeight || 1) * 10
         ) / 10;
         // insiderTrades: canonical closed position count (actual), not estimated from volume
@@ -2435,10 +2442,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           relBetSize, slippagePct, insiderSportsROI, insiderTrades, insiderWinRate,
           traders: dominantSorted.slice(0, 8).map(e => {
             const cm = canonicalMap.get(e.address.toLowerCase());
+            // Display canonical overall ROI — more accurate than sport-specific settled ROI
+            // which misses open profitable positions
+            const displayROI = cm?.overallROI ?? e.traderInfo.roi;
+            const displayQuality = cm?.qualityScore > 0 ? cm.qualityScore : e.traderInfo.qualityScore;
             const sportEntry = cm?.roiBySport?.[signalSport];
-            const displayROI = (sportEntry && sportEntry.tradeCount >= 5)
-              ? sportEntry.roi
-              : (cm?.overallROI ?? e.traderInfo.roi);
             return {
               address: e.address,
               name: e.traderInfo.name,
@@ -2446,12 +2454,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               size: Math.round(e.totalSize),
               netUsdc: Math.round(e.totalSize),
               roi: Math.round(displayROI * 10) / 10,
-              qualityScore: e.traderInfo.qualityScore,
+              qualityScore: displayQuality,
               pnl: Math.round(e.traderInfo.pnl),
               isLeaderboard: e.traderInfo.isLeaderboard,
               isSportsLb: (e.traderInfo as any).isSportsLb ?? false,
               tradeTime: (e as any).lastTimestamp || 0,
-              winRate: cm?.roiBySport?.[signalSport]?.winRate ?? cm?.winRate ?? 0,
+              winRate: cm?.winRate ?? 0,
               totalTrades: cm?.totalTrades ?? 0,
               sportRoi: sportEntry?.roi ?? null,
             };
@@ -2629,17 +2637,19 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           // Detect sport for sport-specific canonical ROI
           const pgSport = classifySport(pg.slug || pgMarket?.slug || "", pg.question || "");
 
-          // avgROI: prefer canonical sport-specific ROI → canonical overall ROI → activity-based ROI
+          // avgROI: use canonical OVERALL ROI (not sport-specific settled ROI).
+          // Sport-specific ROI misses open winning positions — canonical overall is the ground truth.
           const avgROI = pg.traders.reduce((s, t) => {
             const cm = canonicalMap.get(t.wallet.toLowerCase());
-            const sportEntry = cm?.roiBySport?.[pgSport];
-            const sportROI = sportEntry && sportEntry.tradeCount >= 5 ? sportEntry.roi : null;
-            const overallROI = cm?.overallROI != null && cm.overallROI !== 0 ? cm.overallROI : (lbMap.get(t.wallet)?.roi ?? 0);
-            return s + (sportROI ?? overallROI);
+            return s + (cm?.overallROI ?? lbMap.get(t.wallet)?.roi ?? 0);
           }, 0) / pg.traders.length;
 
+          // Use canonical DB quality score (consistent with Elite page display)
           const avgQualityForScore = pg.traders.length > 0
-            ? Math.round(pg.traders.reduce((s, t) => s + (lbMap.get(t.wallet)?.qualityScore ?? 20), 0) / pg.traders.length)
+            ? Math.round(pg.traders.reduce((s, t) => {
+                const cm = canonicalMap.get(t.wallet.toLowerCase());
+                return s + (cm?.qualityScore > 0 ? cm.qualityScore : (lbMap.get(t.wallet)?.qualityScore ?? 20));
+              }, 0) / pg.traders.length)
             : 20;
           const { score: confidence, breakdown } = computeConfidence(
             avgROI, consensusPct, valueDelta, avgSize, pg.traders.length, avgQualityForScore, counterTraderCount
@@ -2675,15 +2685,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const pgSlippagePct = Math.round((pg.side === "YES"
             ? (avgCurPrice - avgEntry) * 100
             : (avgEntry - avgCurPrice) * 100) * 10) / 10;
-          // insiderSportsROI: canonical sport-specific ROI, weighted by bet size
+          // insiderSportsROI: canonical OVERALL ROI, weighted by bet size.
+          // Use overall (not sport-specific) because sport-specific misses open winning positions.
           const pgInsiderSportsROI = Math.round(
             pg.traders.reduce((s, t) => {
               const cm = canonicalMap.get(t.wallet.toLowerCase());
-              const sportEntry = cm?.roiBySport?.[pgSport];
-              const roi = (sportEntry && sportEntry.tradeCount >= 5)
-                ? sportEntry.roi
-                : (cm?.overallROI ?? lbMap.get(t.wallet)?.roi ?? 0);
-              return s + roi * t.currentValue;
+              return s + (cm?.overallROI ?? lbMap.get(t.wallet)?.roi ?? 0) * t.currentValue;
             }, 0) / pgTotalWeight * 10
           ) / 10;
           // insiderTrades: canonical closed position count (actual trades completed)
@@ -2732,10 +2739,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             traders: tradersSorted.slice(0, 8).map(t => {
               const tm = lbMap.get(t.wallet);
               const cm = canonicalMap.get(t.wallet.toLowerCase());
+              // Display canonical overall ROI for consistency with Elite page
+              const displayROI = cm?.overallROI ?? tm?.roi ?? 0;
+              const displayQuality = cm?.qualityScore > 0 ? cm.qualityScore : (tm?.qualityScore ?? 20);
               const sportEntry = cm?.roiBySport?.[pgSport];
-              const displayROI = (sportEntry && sportEntry.tradeCount >= 5)
-                ? sportEntry.roi
-                : (cm?.overallROI ?? tm?.roi ?? 0);
               return {
                 address: t.wallet,
                 name: t.name,
@@ -2743,11 +2750,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                 size: Math.round(t.currentValue),
                 netUsdc: Math.round(t.currentValue),
                 roi: Math.round(displayROI * 10) / 10,
-                qualityScore: tm?.qualityScore ?? 20,
+                qualityScore: displayQuality,
                 pnl: tm?.pnl ?? 0,
                 isLeaderboard: tm?.isLeaderboard ?? false,
                 isSportsLb: t.isSportsLb,
-                winRate: cm?.roiBySport?.[pgSport]?.winRate ?? cm?.winRate ?? 0,
+                winRate: cm?.winRate ?? 0,
                 totalTrades: cm?.totalTrades ?? 0,
                 sportRoi: sportEntry?.roi ?? null,
               };
