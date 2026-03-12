@@ -589,7 +589,7 @@ function SignalCard({ signal, mode, onSnoozed, onBetTracked }: { signal: Signal;
                       ? "bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/25"
                       : "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/25"
                   }`}>
-                    {signal.side === "YES" ? "▲ BACK YES" : "▼ BACK NO"}
+                    {signal.side === "YES" ? "▲ BACKING" : "▼ BACKING"}
                   </span>
                   <span className="text-xs font-bold text-foreground">{outcomeLabel}</span>
                   <span className="text-xs text-muted-foreground">@ {(signal.currentPrice * 100).toFixed(1)}¢</span>
@@ -1433,11 +1433,11 @@ export default function Signals() {
     return new Set(Object.entries(s).filter(([, v]) => v > now).map(([k]) => k));
   });
 
-  // Tracked bets — conditionIds of open bets so we can flag/hide matching signals
+  // Tracked bets — conditionIds of ALL tracked bets (open or resolved) so signals stay hidden permanently
   const [trackedConditionIds, setTrackedConditionIds] = useState<Set<string>>(() => {
     try {
       const bets: Array<{ conditionId?: string; status: string }> = JSON.parse(localStorage.getItem(BET_KEY) || "[]");
-      return new Set(bets.filter(b => b.status === "open" && b.conditionId).map(b => b.conditionId!));
+      return new Set(bets.filter(b => b.conditionId).map(b => b.conditionId!));
     } catch { return new Set(); }
   });
   const [hideTracked, setHideTracked] = useState(true);
@@ -1446,7 +1446,7 @@ export default function Signals() {
   const refreshTrackedIds = useCallback(() => {
     try {
       const bets: Array<{ conditionId?: string; status: string }> = JSON.parse(localStorage.getItem(BET_KEY) || "[]");
-      setTrackedConditionIds(new Set(bets.filter(b => b.status === "open" && b.conditionId).map(b => b.conditionId!)));
+      setTrackedConditionIds(new Set(bets.filter(b => b.conditionId).map(b => b.conditionId!)));
     } catch {}
   }, []);
 

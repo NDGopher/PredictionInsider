@@ -3433,18 +3433,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         }
       }
 
-      // 2. Fall back to CLOB midpoint — if price is at 0.99 or 0.01 the market is resolved
-      const mr = gameMarketRegistry.get(condId);
-      const yesToken = mr?.tokenIds?.[0];
-      if (yesToken) {
-        const mid = await fetchMidpoint(yesToken);
-        if (mid !== null) {
-          if (mid >= 0.99) return res.json({ conditionId: condId, resolved: true, outcome: "YES", finalPrice: mid });
-          if (mid <= 0.01) return res.json({ conditionId: condId, resolved: true, outcome: "NO", finalPrice: mid });
-          return res.json({ conditionId: condId, resolved: false, outcome: null, finalPrice: mid });
-        }
-      }
-
+      // 2. CLOB price fallback removed — live in-game markets reach 0.99 without being resolved,
+      //    causing false WON/LOST grades. Gamma API (above) is the sole resolution source.
       res.json({ conditionId: condId, resolved: false, outcome: null, finalPrice: null });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
