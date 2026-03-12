@@ -1164,8 +1164,8 @@ function SharpMovesPanel({ signals }: { signals?: any[] }) {
                 matchSignal.confidence >= 70 ? "bg-green-500/15 text-green-700 dark:text-green-300"
                 : matchSignal.confidence >= 50 ? "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300"
                 : "bg-muted text-muted-foreground"
-              }`} title={`Signal confidence: ${matchSignal.confidence}/95`}>
-                {matchSignal.confidence}
+              }`} title={`Signal confidence: ${matchSignal.confidence}/95 — 70+ is strong, 50-69 moderate, below 50 is weak`}>
+                {matchSignal.confidence}<span className="opacity-60">/95</span>
               </span>
             )}
             <div>
@@ -1256,9 +1256,13 @@ function SharpMovesPanel({ signals }: { signals?: any[] }) {
                     </div>
                     {/* Time ago + multiplier + Sport ROI + win rate + tags */}
                     <div className="flex items-center gap-2 flex-wrap">
-                      {t.tradeTime > 0 && (
+                      {t.tradeTime > 0 ? (
                         <span className="flex items-center gap-0.5 text-muted-foreground font-medium">
                           <Clock className="w-2.5 h-2.5" />{timeAgoShort(t.tradeTime)}
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-0.5 text-muted-foreground/60 text-[9px]">
+                          <Clock className="w-2 h-2" />position
                         </span>
                       )}
                       {(() => {
@@ -1290,6 +1294,42 @@ function SharpMovesPanel({ signals }: { signals?: any[] }) {
                         <span key={ti} className="text-primary/70">{tag}</span>
                       ))}
                     </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Counter-traders — opposite side */}
+            {matchSignal && matchSignal.counterTraders?.length > 0 && (
+              <div className="space-y-1">
+                <div className="text-[10px] font-semibold uppercase tracking-wide flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                  <AlertTriangle className="w-3 h-3" />
+                  {matchSignal.counterTraders.length} trader{matchSignal.counterTraders.length !== 1 ? "s" : ""} on opposite side ({sharp?.side === "YES" ? "NO" : "YES"})
+                </div>
+                {matchSignal.counterTraders.map((ct: any, i: number) => (
+                  <div key={i} className="rounded bg-amber-500/5 border border-amber-500/20 px-2 py-1.5 text-[10px] flex items-center gap-2">
+                    {ct.isSportsLb && <span>🏆</span>}
+                    <a
+                      href={`https://polymarket.com/profile/${ct.address}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-amber-700 dark:text-amber-300 hover:underline font-semibold min-w-0 truncate"
+                      onClick={e => e.stopPropagation()}
+                    >{ct.name}</a>
+                    {ct.qualityScore > 0 && (
+                      <span className="text-[9px] text-muted-foreground flex items-center gap-0.5 shrink-0">
+                        <ShieldCheck className="w-2.5 h-2.5" />{ct.qualityScore}
+                      </span>
+                    )}
+                    <span className="ml-auto shrink-0 font-bold text-amber-700 dark:text-amber-300">
+                      {ct.netUsdc >= 1000 ? `$${(ct.netUsdc/1000).toFixed(1)}K` : `$${ct.netUsdc}`}
+                      <span className="font-normal text-muted-foreground"> @ {Math.round(ct.entryPrice * 100)}¢</span>
+                    </span>
+                    {ct.sportRoi !== null && ct.sportRoi !== undefined && (
+                      <span className={`shrink-0 text-[9px] ${ct.sportRoi >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                        {ct.sportRoi >= 0 ? "+" : ""}{ct.sportRoi.toFixed(0)}% ROI
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>

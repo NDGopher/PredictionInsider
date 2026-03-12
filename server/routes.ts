@@ -2102,7 +2102,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/signals", async (req, res) => {
     try {
       const sportsOnly = req.query.sports !== "false";
-      const cKey = `signals-elite-v24-${sportsOnly ? "sp" : "all"}`;
+      const cKey = `signals-elite-v25-${sportsOnly ? "sp" : "all"}`;
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -2302,6 +2302,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const yesE = entries.filter(e => e.side === "YES");
         const noE  = entries.filter(e => e.side === "NO");
         const dominant = yesE.length >= noE.length ? yesE : noE;
+        const counterEntries = yesE.length >= noE.length ? noE : yesE;
         const side: "YES"|"NO" = yesE.length >= noE.length ? "YES" : "NO";
         if (dominant.length === 0) continue;
 
@@ -2507,6 +2508,20 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               sportWinRate: sportEntry?.winRate ?? null,
               sportAvgBet: sportEntry?.avgBet ?? null,
               tags: cm?.tags ?? [],
+            };
+          }),
+          counterTraders: counterEntries.slice(0, 4).map(e => {
+            const cm = canonicalMap.get(e.address.toLowerCase());
+            const sportEntry = cm?.roiBySport?.[signalSport];
+            return {
+              address: e.address,
+              name: e.traderInfo.name,
+              entryPrice: Math.round((e.prices.reduce((a,b)=>a+b,0)/e.prices.length) * 100) / 100,
+              netUsdc: Math.round(e.totalSize),
+              qualityScore: cm?.qualityScore > 0 ? cm.qualityScore : e.traderInfo.qualityScore,
+              isSportsLb: (e.traderInfo as any).isSportsLb ?? false,
+              sportRoi: sportEntry?.roi ?? null,
+              tradeTime: (e as any).lastTimestamp || 0,
             };
           }),
           category: isSports ? "sports" : "other",
@@ -2814,8 +2829,27 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                 sportWinRate: sportEntry?.winRate ?? null,
                 sportAvgBet: sportEntry?.avgBet ?? null,
                 tags: cm?.tags ?? [],
+                tradeTime: 0,
               };
             }),
+            counterTraders: (() => {
+              const oppPg = posMap.get(oppositeKey);
+              if (!oppPg?.traders?.length) return [];
+              return oppPg.traders.slice(0, 4).map(t => {
+                const cm = canonicalMap.get(t.wallet.toLowerCase());
+                const sportEntry = cm?.roiBySport?.[pgSport];
+                return {
+                  address: t.wallet,
+                  name: t.name,
+                  entryPrice: Math.round(t.entryPrice * 100) / 100,
+                  netUsdc: Math.round(t.currentValue),
+                  qualityScore: cm?.qualityScore > 0 ? cm.qualityScore : (lbMap.get(t.wallet)?.qualityScore ?? 20),
+                  isSportsLb: t.isSportsLb,
+                  sportRoi: sportEntry?.roi ?? null,
+                  tradeTime: 0,
+                };
+              });
+            })(),
             category: "sports",
             sport: pgSport,
             volume: 0,
