@@ -17,7 +17,7 @@ import {
   RefreshCw, Users, Target, ChevronDown, ChevronUp, Star, Activity,
   Bell, BellOff, Clock, DollarSign, ShieldCheck, AlertTriangle, Radio,
   Hourglass, CalendarClock, BarChart2, Flame, ChevronRight, BookmarkPlus, EyeOff, X,
-  CheckCircle2
+  CheckCircle2, Gamepad2
 } from "lucide-react";
 import { Link } from "wouter";
 import type { SignalsResponse, Signal } from "@shared/schema";
@@ -1423,6 +1423,8 @@ export default function Signals() {
   const [mode, setMode]           = useState<"elite" | "fast">("elite");
   const [sportsOnly, setSportsOnly] = useState(true);
   const [betType, setBetType]     = useState<"all" | "moneyline" | "spread" | "total" | "futures">("all");
+  const [showFutures, setShowFutures] = useState(true);
+  const [showEsports, setShowEsports] = useState(true);
   const [notifEnabled, setNotifEnabled] = useState(Notification?.permission === "granted");
   const [countdown, setCountdown] = useState(mode === "elite" ? ELITE_REFRESH_SEC : FAST_REFRESH_SEC);
   const [alertHistory, setAlertHistory] = useState<Array<{ id: string; question: string; confidence: number; ts: number }>>([]);
@@ -1543,6 +1545,9 @@ export default function Signals() {
       if (search && !s.marketQuestion.toLowerCase().includes(search.toLowerCase())) return false;
       // Hide signals where user already has an open bet tracked
       if (hideTracked && trackedConditionIds.has((s as any).marketId)) return false;
+      // Category toggles
+      if (!showFutures && ((s as any).marketType === "futures" || (s as any).gameStatus === "futures" || (s as any).marketCategory === "futures")) return false;
+      if (!showEsports && /^(Dota\s*2|LoL|CS:?GO|Valorant|Overwatch|Rocket\s*League|SC2|StarCraft|Hearthstone|PUBG|R6|Rainbow\s*6|LCS|LEC|BLAST|PGL|ESL|IEM)\s*:/i.test(s.marketQuestion)) return false;
       if (filter === "best_bets") return s.confidence >= 70 && s.isActionable && s.valueDelta > 0;
       if (filter === "value")   return s.isValue;
       if (filter === "high")    return s.confidence >= 70;
@@ -1816,6 +1821,41 @@ export default function Signals() {
             <SelectItem value="size">Net Position $</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Category toggles — Futures / Esports */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-[11px] text-muted-foreground font-medium">Show:</span>
+        <button
+          onClick={() => setShowFutures(v => !v)}
+          data-testid="toggle-futures"
+          className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-all ${
+            showFutures
+              ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20"
+              : "bg-muted text-muted-foreground border-border opacity-60 hover:opacity-80"
+          }`}
+        >
+          <CalendarClock className="w-3 h-3" />
+          Futures
+          <span className={`ml-0.5 text-[10px] ${showFutures ? "text-primary" : "text-muted-foreground"}`}>
+            {showFutures ? "ON" : "OFF"}
+          </span>
+        </button>
+        <button
+          onClick={() => setShowEsports(v => !v)}
+          data-testid="toggle-esports"
+          className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-all ${
+            showEsports
+              ? "bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/30 hover:bg-violet-500/20"
+              : "bg-muted text-muted-foreground border-border opacity-60 hover:opacity-80"
+          }`}
+        >
+          <Gamepad2 className="w-3 h-3" />
+          Esports
+          <span className={`ml-0.5 text-[10px] ${showEsports ? "text-violet-600 dark:text-violet-400" : "text-muted-foreground"}`}>
+            {showEsports ? "ON" : "OFF"}
+          </span>
+        </button>
       </div>
 
       {/* Summary bar */}
