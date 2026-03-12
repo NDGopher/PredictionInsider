@@ -1490,6 +1490,18 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  // ── POST /api/elite/admin/refresh-canonical-pnl/:wallet ─────────────────
+  // Refresh canonical PNL for a single wallet synchronously.
+  app.post("/api/elite/admin/refresh-canonical-pnl/:wallet", async (req, res) => {
+    try {
+      const wallet = req.params.wallet.toLowerCase();
+      const result = await patchProfileWithCanonicalPNL(wallet);
+      res.json({ message: "Canonical PNL refresh complete", wallet, result });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // ── POST /api/elite/admin/refresh-canonical-pnl ──────────────────────────
   // For each of the 42 curated traders, fetches canonical PNL from Polymarket's
   // /closed-positions API (sum of realizedPnl — matches official Polymarket numbers)
@@ -2391,14 +2403,16 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const slippagePct = Math.round((side === "YES"
           ? (currentPrice - avgEntry) * 100
           : (avgEntry - currentPrice) * 100) * 10) / 10;
-        // insiderSportsROI: canonical OVERALL ROI weighted by bet size.
-        // We use overall ROI because sport-specific only counts settled/closed trades,
-        // which can miss large unrealized gains in open positions (e.g. a hockey trader
-        // with +$60K unrealized appears -$3K settled in our DB — misleading).
+        // insiderSportsROI: sport-specific canonical ROI (from closed-positions API — accurate),
+        // falling back to overall canonical ROI if sport has fewer than 10 positions.
         const insiderSportsROI = Math.round(
           dominant.reduce((s, e) => {
             const cm = canonicalMap.get(e.address.toLowerCase());
-            return s + (cm?.overallROI ?? e.traderInfo.roi) * e.totalSize;
+            const sportEntry = cm?.roiBySport?.[signalSport];
+            const roi = (sportEntry && (sportEntry.tradeCount ?? 0) >= 10)
+              ? sportEntry.roi
+              : (cm?.overallROI ?? e.traderInfo.roi);
+            return s + roi * e.totalSize;
           }, 0) / (totalDominantWeight || 1) * 10
         ) / 10;
         // insiderTrades: canonical closed position count (actual), not estimated from volume
@@ -2685,12 +2699,16 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const pgSlippagePct = Math.round((pg.side === "YES"
             ? (avgCurPrice - avgEntry) * 100
             : (avgEntry - avgCurPrice) * 100) * 10) / 10;
-          // insiderSportsROI: canonical OVERALL ROI, weighted by bet size.
-          // Use overall (not sport-specific) because sport-specific misses open winning positions.
+          // insiderSportsROI: sport-specific canonical ROI (from closed-positions API — accurate),
+          // falling back to overall canonical ROI if sport has fewer than 10 positions.
           const pgInsiderSportsROI = Math.round(
             pg.traders.reduce((s, t) => {
               const cm = canonicalMap.get(t.wallet.toLowerCase());
-              return s + (cm?.overallROI ?? lbMap.get(t.wallet)?.roi ?? 0) * t.currentValue;
+              const sportEntry = cm?.roiBySport?.[pgSport];
+              const roi = (sportEntry && sportEntry.tradeCount >= 10)
+                ? sportEntry.roi
+                : (cm?.overallROI ?? lbMap.get(t.wallet)?.roi ?? 0);
+              return s + roi * t.currentValue;
             }, 0) / pgTotalWeight * 10
           ) / 10;
           // insiderTrades: canonical closed position count (actual trades completed)

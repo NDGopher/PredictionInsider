@@ -1414,21 +1414,42 @@ export interface CanonicalPNL {
   closedByCategory: Record<string, { pnl: number; positions: number; wins: number; invested: number }>;
 }
 
-function classifySportFromSlug(slug: string): string {
+function classifySportFromSlug(slug: string, title?: string): string {
   const s = (slug || "").toLowerCase();
-  if (s.startsWith("nba-") || s.includes("-nba-")) return "NBA";
-  if (s.startsWith("nfl-") || s.includes("super-bowl")) return "NFL";
-  if (s.startsWith("nhl-")) return "NHL";
-  if (s.startsWith("mlb-")) return "MLB";
-  if (s.startsWith("ufc-") || s.includes("-ufc-") || s.includes("-mma-")) return "UFC/MMA";
-  if (s.match(/^(wta|atp|aus-|wimbledon|usopen-ten|roland)/)) return "Tennis";
-  if (s.match(/^(cbb|ncaab|ncaaf|cfb)-/)) return "College Sports";
-  if (s.match(/^(epl|lal|sea|bun|uel|ucl|mls|spl|bra|elc|ere|lol)-/)) return "Soccer";
-  if (s.includes("esport") || s.includes("valorant") || s.includes("csgo")) return "eSports";
-  if (s.startsWith("golf-")) return "Golf";
-  if (s.match(/^(f1|formula)/)) return "Formula 1";
-  if (s.includes("bitcoin") || s.includes("crypto") || s.includes("btc")) return "Finance/Crypto";
-  if (s.includes("election") || s.includes("trump") || s.includes("president")) return "Politics";
+  const t = (title || "").toLowerCase();
+
+  // NHL / Ice Hockey (includes Winter Olympics hockey, mwoh/wwoh prefixes)
+  if (s.startsWith("nhl-") || t.includes("nhl ") || t.includes(" nhl") || t.includes("stanley cup") ||
+      t.includes("ice hockey") || s.startsWith("mwoh-") || s.startsWith("wwoh-") ||
+      (t.includes("hockey") && (t.includes("olympic") || t.includes("winter")))) return "NHL";
+
+  if (s.startsWith("nba-") || s.includes("-nba-") || t.includes("nba ") || t.includes(" nba")) return "NBA";
+  if (s.startsWith("nfl-") || s.includes("super-bowl") || t.includes("nfl ") || t.includes("super bowl")) return "NFL";
+  if (s.startsWith("mlb-") || t.includes("mlb ") || t.includes("world series")) return "MLB";
+  if (s.startsWith("ufc-") || s.includes("-ufc-") || s.includes("-mma-") ||
+      t.includes("ufc ") || t.includes("mma ") || t.includes("fight night")) return "UFC/MMA";
+
+  // Tennis — slug prefixes AND title-based (named tournaments and top players)
+  if (s.match(/^(wta|atp|aus-|wimbledon|usopen-ten|roland)/) ||
+      t.includes("tennis") || t.includes("grand slam") || t.includes("wimbledon") ||
+      t.includes("us open") || t.includes("french open") || t.includes("australian open") ||
+      t.match(/\b(alcaraz|sinner|djokovic|swiatek|medvedev|zverev|sabalenka|gauff|rublev|fritz|lehecka|tiafoe)\b/)) return "Tennis";
+
+  if (s.match(/^(cbb|ncaab|ncaaf|cfb)-/) || t.includes("ncaa") || t.includes("march madness")) return "College Sports";
+
+  // Soccer — extended slug prefixes (fl1=Ligue 1, eng/fra/ger/esp/ita/por/bel/ned/sco league slugs)
+  if (s.match(/^(epl|lal|sea|bun|uel|ucl|mls|spl|bra|elc|ere|fl1|ligue|eng|fra|ger|esp|ita|por|bel|ned|sco|eur|con)-/) ||
+      t.includes("soccer") || t.includes("football") && !t.includes("super bowl") ||
+      t.includes("premier league") || t.includes("champions league") ||
+      t.includes("la liga") || t.includes("bundesliga") || t.includes("serie a") ||
+      t.includes("copa") || t.includes("ligue 1") || t.includes("copa america")) return "Soccer";
+
+  if (s.includes("esport") || s.includes("valorant") || s.includes("csgo") ||
+      t.includes("esport") || t.includes("valorant") || t.includes("league of legends")) return "eSports";
+  if (s.startsWith("golf-") || t.includes("pga tour") || t.includes("masters") && t.includes("golf") || t.includes("golf")) return "Golf";
+  if (s.match(/^(f1|formula)/) || t.includes("formula 1") || t.includes("grand prix")) return "Formula 1";
+  if (t.match(/trump|biden|harris|election|congress|senate|president|vote|poll|democrat|republican|poilievre|prime minister|government of canada/)) return "Politics";
+  if (t.match(/crypto|bitcoin|ethereum|fed rate|inflation|gdp|stock|nasdaq|defi/)) return "Finance/Crypto";
   return "Other";
 }
 
@@ -1516,7 +1537,7 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
   const closedByCategory: Record<string, { pnl: number; positions: number; wins: number; invested: number }> = {};
   for (const c of closedPositions) {
     const slug = c.slug || c.eventSlug || "";
-    const cat = classifySportFromSlug(slug);
+    const cat = classifySportFromSlug(slug, c.title || "");
     if (!closedByCategory[cat]) closedByCategory[cat] = { pnl: 0, positions: 0, wins: 0, invested: 0 };
     const pnl = parseFloat(c.realizedPnl) || 0;
     closedByCategory[cat].pnl += pnl;
@@ -1624,6 +1645,35 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
     const c = await fetchCanonicalPNL(w);
     const qualityScore = computeCanonicalQualityScore(c);
 
+    // Build roiBySport from canonical closedByCategory (correct data, not per-trade)
+    const roiBySport: Record<string, { roi: number; tradeCount: number; pnl: number; winRate: number; avgBet: number }> = {};
+    for (const [cat, d] of Object.entries(c.closedByCategory)) {
+      if (d.positions === 0) continue;
+      const roi = d.invested > 0 ? Math.round((d.pnl / d.invested) * 10000) / 100 : 0;
+      const winRate = d.positions > 0 ? Math.round((d.wins / d.positions) * 1000) / 10 : 0;
+      const avgBet = d.positions > 0 ? Math.round(d.invested / d.positions) : 0;
+      roiBySport[cat] = { roi, tradeCount: d.positions, pnl: Math.round(d.pnl * 100) / 100, winRate, avgBet };
+    }
+
+    // Compute canonical sport expert tags from roiBySport
+    const sportTagMap: Record<string, string> = {
+      "NHL": "🏒 NHL Pro", "NBA": "🏀 NBA Expert", "NFL": "🏈 NFL Specialist",
+      "MLB": "⚾ MLB Expert", "Soccer": "⚽ Soccer Expert", "UFC/MMA": "🥊 UFC Analyst",
+      "Tennis": "🎾 Tennis Expert", "Golf": "⛳ Golf Specialist",
+    };
+    const canonicalSportTags: string[] = [];
+    for (const [sp, d] of Object.entries(roiBySport)) {
+      if (d.tradeCount >= 10 && sportTagMap[sp] && (d.roi > 5 || d.pnl >= 20000)) {
+        canonicalSportTags.push(sportTagMap[sp]);
+      }
+    }
+
+    // Fetch existing tags, replace sport tags with canonical ones, keep non-sport tags
+    const existingProfile = await pool.query(`SELECT tags FROM elite_trader_profiles WHERE wallet = $1`, [w]);
+    const existingTags: string[] = existingProfile.rows[0]?.tags ?? [];
+    const nonSportTags = existingTags.filter((t: string) => !Object.values(sportTagMap).some(st => t === st));
+    const mergedTags = [...new Set([...canonicalSportTags, ...nonSportTags])];
+
     // All canonical metrics — these are authoritative and override activity-based values
     const canonicalMetrics = {
       overallPNL:          c.totalPNL,
@@ -1653,6 +1703,7 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
       medianBetSize:       c.medianBetUSDC,
       totalTrades:         c.closedCount,
       monthlyROI:          c.monthlyROI,
+      roiBySport,
       closedByCategory:    c.closedByCategory,
       pnlSource:           "closed_positions_api",
       pnlUpdatedAt:        new Date().toISOString(),
@@ -1662,14 +1713,16 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
       UPDATE elite_trader_profiles
       SET metrics = metrics || $2::jsonb,
           computed_at = NOW(),
-          quality_score = $3
+          quality_score = $3,
+          tags = $4
       WHERE wallet = $1
-    `, [w, JSON.stringify(canonicalMetrics), qualityScore]);
+    `, [w, JSON.stringify(canonicalMetrics), qualityScore, mergedTags]);
 
     console.log(
       `[Elite/PNL] ${username}: pnl=$${c.totalPNL.toFixed(0)} ` +
       `roi=${c.overallROI.toFixed(1)}% 30d=${c.last30dROI.toFixed(1)}% 90d=${c.last90dROI.toFixed(1)}% ` +
       `wr=${c.pnlWinRate.toFixed(1)}% qs=${qualityScore} ` +
+      `sportTags=[${canonicalSportTags.join(",")}] ` +
       `(${c.closedCount} closed, ${c.activeOpenCount} live open)`
     );
     return { wallet: w, username, totalPNL: c.totalPNL, realizedPNL: c.realizedPNL, unrealizedPNL: c.unrealizedPNL };
