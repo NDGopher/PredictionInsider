@@ -2102,7 +2102,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/signals", async (req, res) => {
     try {
       const sportsOnly = req.query.sports !== "false";
-      const cKey = `signals-elite-v23-${sportsOnly ? "sp" : "all"}`;
+      const cKey = `signals-elite-v24-${sportsOnly ? "sp" : "all"}`;
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -2290,6 +2290,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const SLIPPAGE = 0.02;
       const MIN_LIVE_PRICE  = 0.10;
       const MAX_LIVE_PRICE  = 0.90;
+      const MIN_RESOLVED    = 0.02;  // below 2¢ or above 98¢ = market resolved / dead
+      const MAX_RESOLVED    = 0.98;
 
       for (const [condId, mw] of marketWallets.entries()) {
         if (!mw.question || mw.question === condId) continue;
@@ -2363,8 +2365,18 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const liveTokenId = side === "YES" ? mw.yesTokenId : mw.noTokenId;
         if (liveTokenId) {
           const mid = await fetchMidpoint(liveTokenId);
-          if (mid !== null) currentPrice = mid; // accept ANY non-null price, including near-0/1 for resolved markets
+          if (mid !== null) {
+            currentPrice = mid;
+          } else if (mw.currentPrice != null && mw.currentPrice > 0) {
+            // CLOB has no orders (market resolved / no liquidity) — use market registry YES price
+            const registryYes = mw.currentPrice;
+            currentPrice = side === "YES" ? registryYes : (1 - registryYes);
+          }
         }
+
+        // ── Pre-clamp: reject near-resolved markets (<2¢ or >98¢) ────────────
+        if (currentPrice < MIN_RESOLVED || currentPrice > MAX_RESOLVED) continue;
+
         currentPrice = Math.min(0.99, Math.max(0.01, currentPrice));
 
         // ── Strict price range filter (0.10–0.90) ─────────────────────────────
@@ -2953,7 +2965,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   // ── GET /api/signals/fast ─── Live feed: stricter quality gates ──────────────
   app.get("/api/signals/fast", async (req, res) => {
     try {
-      const cKey = "signals-fast-v5";
+      const cKey = "signals-fast-v6";
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -3047,8 +3059,18 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         if (info.tokenIds?.length > 0) {
           const tokenId = info.tokenIds[side === "YES" ? 0 : 1] || info.tokenIds[0];
           const mid = await fetchMidpoint(tokenId);
-          if (mid !== null && mid > 0.01 && mid < 0.99) currentPrice = mid;
+          if (mid !== null) {
+            currentPrice = mid;
+          } else if (mw.info?.currentPrice != null && mw.info.currentPrice > 0) {
+            // CLOB null = market resolved/no orders — use registry YES price
+            const registryYes = mw.info.currentPrice;
+            currentPrice = side === "YES" ? registryYes : (1 - registryYes);
+          }
         }
+
+        // Reject near-resolved markets (<2¢ or >98¢)
+        if (currentPrice < 0.02 || currentPrice > 0.98) continue;
+
         currentPrice = Math.min(0.99, Math.max(0.01, currentPrice));
 
         // Enforce price range 0.10–0.90
