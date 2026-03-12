@@ -622,6 +622,23 @@ function StatCard({
 export default function Dashboard() {
   const [signalTypeFilter, setSignalTypeFilter] = useState<"all" | "live" | "pregame" | "nofutures" | "actionable">("all");
   const [expandedAlerts, setExpandedAlerts] = useState<Set<string>>(new Set());
+  const [hiddenAlertIds, setHiddenAlertIds] = useState<Set<string>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem("pi_hidden_alerts") || "[]")); } catch { return new Set(); }
+  });
+  const [showHiddenAlerts, setShowHiddenAlerts] = useState(false);
+  const hideAlert = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setHiddenAlertIds(prev => {
+      const next = new Set(prev).add(id);
+      localStorage.setItem("pi_hidden_alerts", JSON.stringify([...next]));
+      return next;
+    });
+  };
+  const unhideAllAlerts = () => {
+    setHiddenAlertIds(new Set());
+    localStorage.removeItem("pi_hidden_alerts");
+    setShowHiddenAlerts(false);
+  };
   const [livePrices, setLivePrices] = useState<Record<string, { price: number; americanOdds: string; fetchedAt: number }>>({});
   const [fetchingPrice, setFetchingPrice] = useState<Set<string>>(new Set());
 
@@ -823,12 +840,37 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="divide-y divide-border/50">
-              {alertsData.alerts.slice(0, 15).map((alert: any) => {
+              {/* Hidden alerts banner */}
+              {hiddenAlertIds.size > 0 && (
+                <div className="flex items-center justify-between px-1 py-1.5 text-[11px] bg-muted/40 rounded-md mb-1">
+                  <span className="text-muted-foreground">{hiddenAlertIds.size} alert{hiddenAlertIds.size !== 1 ? "s" : ""} hidden</span>
+                  <div className="flex gap-3">
+                    <button
+                      className="text-primary hover:underline font-medium"
+                      onClick={() => setShowHiddenAlerts(v => !v)}
+                      data-testid="button-toggle-hidden-alerts"
+                    >
+                      {showHiddenAlerts ? "Hide" : "Show"}
+                    </button>
+                    <button
+                      className="text-muted-foreground hover:text-red-500 hover:underline"
+                      onClick={unhideAllAlerts}
+                      data-testid="button-unhide-all-alerts"
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                </div>
+              )}
+              {alertsData.alerts.slice(0, 15)
+                .filter((alert: any) => showHiddenAlerts || !hiddenAlertIds.has(alert.id))
+                .map((alert: any) => {
                 const outcomeLabel = getOutcomeLabel(alert.market, alert.side);
                 const isExpanded = expandedAlerts.has(alert.id);
+                const isHidden = hiddenAlertIds.has(alert.id);
                 const sharp = alert.sharpAction;
                 return (
-                  <div key={alert.id} data-testid={`live-alert-${alert.id}`}>
+                  <div key={alert.id} data-testid={`live-alert-${alert.id}`} className={isHidden ? "opacity-40" : ""}>
                     {/* Main row — clickable */}
                     <div
                       role="button"
@@ -888,7 +930,7 @@ export default function Dashboard() {
                           })()}
                         </div>
                       </div>
-                      {/* Size + expand chevron */}
+                      {/* Size + expand chevron + hide */}
                       <div className="flex items-center gap-1.5 shrink-0">
                         <div className="text-right">
                           <div className="text-sm font-bold tabular-nums">
@@ -901,6 +943,14 @@ export default function Dashboard() {
                         {isExpanded
                           ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" />
                           : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />}
+                        <button
+                          onClick={e => hideAlert(alert.id, e)}
+                          data-testid={`button-hide-alert-${alert.id}`}
+                          title="Hide this alert"
+                          className="text-muted-foreground/50 hover:text-red-500 transition-colors ml-0.5 leading-none"
+                        >
+                          ×
+                        </button>
                       </div>
                     </div>
 

@@ -3245,7 +3245,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       // 1. Check elite_traders DB first (instant)
       const eliteRow = await elitePool.query(
-        `SELECT et.*, etp.quality_score, etp.sport_roi, etp.roi, etp.win_rate, etp.total_bets, etp.tags, etp.sport
+        `SELECT et.wallet, et.polymarket_url,
+                etp.quality_score,
+                etp.tags,
+                etp.metrics->>'overallROI'   AS roi,
+                etp.metrics->>'winRate'      AS win_rate,
+                etp.metrics->>'totalBets'    AS total_bets,
+                etp.metrics->>'topSport'     AS top_sport,
+                etp.metrics->'roiBySport'    AS roi_by_sport
          FROM elite_traders et
          LEFT JOIN elite_trader_profiles etp ON et.wallet = etp.wallet
          WHERE et.wallet = $1`,
@@ -3253,18 +3260,22 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       );
       if (eliteRow.rows[0]) {
         const r = eliteRow.rows[0];
+        const roiBySport: Record<string, any> = r.roi_by_sport ?? {};
+        const topSport: string | null = r.top_sport ?? null;
+        const sportEntry = topSport ? roiBySport[topSport] : null;
         return res.json({
           source: "elite",
           wallet,
-          username: r.username || r.polymarket_url?.split("@")[1] || null,
+          username: r.polymarket_url?.split("@")[1] || null,
           qualityScore: r.quality_score ?? null,
-          roi: r.roi ?? null,
-          sportRoi: r.sport_roi ?? null,
-          winRate: r.win_rate ?? null,
-          totalBets: r.total_bets ?? null,
-          sport: r.sport ?? null,
+          roi: r.roi !== null && r.roi !== undefined ? parseFloat(r.roi) : null,
+          sportRoi: sportEntry?.roi ?? null,
+          winRate: r.win_rate !== null && r.win_rate !== undefined ? parseFloat(r.win_rate) : null,
+          totalBets: r.total_bets !== null && r.total_bets !== undefined ? parseInt(r.total_bets) : null,
+          sport: topSport,
           tags: r.tags ?? [],
           isElite: true,
+          roiBySport,
         });
       }
 
