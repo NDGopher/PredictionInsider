@@ -3,16 +3,175 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Link } from "wouter";
 import {
   Zap, Users, BarChart3, TrendingUp, TrendingDown, ArrowRight,
   Activity, Target, AlertCircle, RefreshCw, ExternalLink, X,
   Radio, Hourglass, CalendarClock, DollarSign, ShieldCheck,
-  ChevronDown, ChevronUp, Bell, Clock, Flame, BarChart2, BookmarkPlus, EyeOff
+  ChevronDown, ChevronUp, Bell, Clock, Flame, BarChart2, BookmarkPlus, EyeOff, CheckCircle2
 } from "lucide-react";
 import type { SignalsResponse, LeaderboardResponse, MarketsResponse, Signal } from "@shared/schema";
 import GameScorePanel from "@/components/GameScorePanel";
+import { useToast } from "@/hooks/use-toast";
+
+const BET_KEY = "pi_bets";
+
+function priceToAmericanNum(p: number): number {
+  if (!p || p <= 0 || p >= 1) return 100;
+  if (p >= 0.5) return -Math.round((p / (1 - p)) * 100);
+  return Math.round(((1 - p) / p) * 100);
+}
+
+function americanToImplied(odds: number): number {
+  if (odds > 0) return 100 / (odds + 100);
+  return Math.abs(odds) / (Math.abs(odds) + 100);
+}
+
+type BookType = "Kalshi" | "PPH" | "Polymarket";
+
+function DashboardTrackBetModal({
+  signal, outcomeLabel, open, onClose,
+}: { signal: Signal; outcomeLabel: string; open: boolean; onClose: () => void }) {
+  const { toast } = useToast();
+  const s = signal as any;
+  const signalPrice = signal.avgEntryPrice || signal.currentPrice;
+  const defaultOdds = priceToAmericanNum(signalPrice);
+
+  const [book, setBook] = useState<BookType>("Kalshi");
+  const [oddsStr, setOddsStr] = useState(defaultOdds > 0 ? `+${defaultOdds}` : String(defaultOdds));
+  const [betAmount, setBetAmount] = useState("");
+  const [notes, setNotes] = useState(`Signal confidence: ${signal.confidence}/95`);
+
+  useEffect(() => {
+    if (open) {
+      const d = priceToAmericanNum(signalPrice);
+      setOddsStr(d > 0 ? `+${d}` : String(d));
+      setBetAmount("");
+      setNotes(`Signal confidence: ${signal.confidence}/95`);
+    }
+  }, [open, signalPrice]);
+
+  function parseOdds(raw: string): number | null {
+    const n = parseInt(raw.replace(/[^-+0-9]/g, ""), 10);
+    if (isNaN(n) || n === 0 || (n > -100 && n < 100)) return null;
+    return n;
+  }
+
+  const oddsNum = parseOdds(oddsStr);
+  const impliedProb = oddsNum ? americanToImplied(oddsNum) : null;
+  const betAmtNum = parseFloat(betAmount);
+  const potentialWin = oddsNum && !isNaN(betAmtNum) && betAmtNum > 0
+    ? oddsNum > 0 ? betAmtNum * oddsNum / 100 : betAmtNum * 100 / Math.abs(oddsNum)
+    : null;
+
+  function handleSave() {
+    if (!oddsNum || !betAmtNum || betAmtNum <= 0) return;
+    try {
+      const bets = JSON.parse(localStorage.getItem(BET_KEY) || "[]");
+      bets.unshift({
+        id: `bet-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        marketQuestion: signal.marketQuestion,
+        outcomeLabel,
+        side: signal.side,
+        conditionId: s.marketId,
+        slug: s.slug,
+        entryPrice: impliedProb || signalPrice,
+        betAmount: betAmtNum,
+        betDate: Date.now(),
+        status: "open",
+        book,
+        americanOdds: oddsNum,
+        polymarketPrice: signalPrice,
+        sport: s.sport,
+        confidence: signal.confidence,
+        tailedTraders: (signal.traders || []).map((t: any) => ({
+          address: t.address, name: t.name, sportRoi: t.sportRoi, winRate: t.winRate, qualityScore: t.qualityScore,
+        })),
+        notes: notes.trim(),
+      });
+      localStorage.setItem(BET_KEY, JSON.stringify(bets));
+      toast({ title: "Bet tracked!", description: `${outcomeLabel} · ${oddsNum > 0 ? "+" : ""}${oddsNum} · ${book}` });
+      onClose();
+    } catch {
+      toast({ title: "Error", description: "Could not save bet.", variant: "destructive" });
+    }
+  }
+
+  const BOOKS: BookType[] = ["Kalshi", "PPH", "Polymarket"];
+  return (
+    <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
+      <DialogContent className="max-w-sm" data-testid="modal-track-bet-dash">
+        <DialogHeader>
+          <DialogTitle className="text-base flex items-center gap-2">
+            <BookmarkPlus className="w-4 h-4 text-primary" />
+            Track Bet
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-1">
+          <div className="rounded-lg bg-muted/50 border border-border p-3 space-y-1">
+            <div className="text-xs text-muted-foreground">{signal.marketQuestion}</div>
+            <div className="text-sm font-bold text-green-600 dark:text-green-400">{outcomeLabel}</div>
+            <div className="text-[10px] text-muted-foreground">
+              Polymarket @ {Math.round(signalPrice * 100)}¢ ({priceToAmericanNum(signalPrice) > 0 ? "+" : ""}{priceToAmericanNum(signalPrice)})
+              {s.sport && <span className="ml-1 text-primary">· {s.sport}</span>}
+              {" · "}<span className="text-foreground font-semibold">Signal {signal.confidence}/95</span>
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Where are you placing this bet?</label>
+            <div className="flex gap-2">
+              {BOOKS.map(b => (
+                <button key={b} onClick={() => setBook(b)} className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors ${
+                  book === b ? b === "Kalshi" ? "bg-purple-600 text-white border-purple-600" : b === "PPH" ? "bg-blue-600 text-white border-blue-600" : "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border-border hover:border-primary/50"
+                }`}>{b}</button>
+              ))}
+            </div>
+            {book === "Kalshi" && (
+              <div className="mt-2 p-2 rounded bg-purple-500/10 border border-purple-500/20 text-[10px] text-purple-700 dark:text-purple-300">
+                <strong>Kalshi fees:</strong> Enter actual net odds after ~2% settlement fee (e.g. enter +318, not raw +354).
+              </div>
+            )}
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Your actual odds (American)</label>
+            <Input value={oddsStr} onChange={e => setOddsStr(e.target.value)} placeholder="+318 or -150" className="h-10 text-lg font-bold text-center" data-testid="input-odds-dash" />
+            {oddsNum && impliedProb && (
+              <div className="mt-1 flex items-center gap-2 text-[10px]">
+                <span className="text-muted-foreground">Breakeven: <strong>{(impliedProb * 100).toFixed(1)}%</strong></span>
+                <span className={impliedProb < signalPrice - 0.015 ? "text-green-600 dark:text-green-400" : impliedProb > signalPrice + 0.015 ? "text-red-500" : "text-muted-foreground"}>
+                  {impliedProb < signalPrice - 0.015 ? `✓ Better than PM (${Math.round(signalPrice*100)}¢)` : impliedProb > signalPrice + 0.015 ? `⚠ Worse than PM (${Math.round(signalPrice*100)}¢)` : `≈ Same as PM`}
+                </span>
+              </div>
+            )}
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Bet amount ($)</label>
+            <Input type="number" min="1" value={betAmount} onChange={e => setBetAmount(e.target.value)} placeholder="e.g. 50" className="h-10 text-base font-semibold" data-testid="input-bet-amount-dash" />
+            {potentialWin !== null && (
+              <div className="mt-1 text-[10px] text-green-600 dark:text-green-400 font-medium">
+                To win: <strong>${potentialWin.toFixed(2)}</strong> · Total: <strong>${(betAmtNum + potentialWin).toFixed(2)}</strong>
+              </div>
+            )}
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Notes</label>
+            <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Add notes..." className="h-8 text-xs" data-testid="input-notes-dash" />
+          </div>
+        </div>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
+          <Button size="sm" onClick={handleSave} disabled={!oddsNum || !betAmtNum || betAmtNum <= 0} className="gap-1.5" data-testid="button-save-bet-dash">
+            <CheckCircle2 className="w-3.5 h-3.5" /> Track Bet
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 const SIGNAL_REFRESH_MS = 90_000; // 90s auto-refresh
 
@@ -111,7 +270,7 @@ function DashboardScoreBreakdown({ breakdown, confidence, signal }: {
           : `${(Math.abs(signal.valueDelta)*100).toFixed(1)}¢ worse than live`
         : "", low: (breakdown.valuePct ?? 0) === 0 },
     { label: "Position Size (10%)", val: breakdown.sizePct ?? 0, max: 10, color: "bg-purple-500",
-      note: signal?.avgNetUsdc ? `avg $${(signal.avgNetUsdc/1000).toFixed(1)}K` : "", low: (breakdown.sizePct ?? 0) < 3 },
+      note: signal?.avgRiskUsdc ? `avg $${(signal.avgRiskUsdc/1000).toFixed(1)}K risk` : signal?.avgNetUsdc ? `avg $${(signal.avgNetUsdc/1000).toFixed(1)}K` : "", low: (breakdown.sizePct ?? 0) < 3 },
     { label: "Quality Bonus", val: breakdown.tierBonus ?? 0, max: 15, color: "bg-orange-500",
       note: signal?.avgQuality ? `quality ${signal.avgQuality}/100` : "", low: false },
   ];
@@ -150,6 +309,7 @@ function SignalExpandedPanel({ signal, onClose }: { signal: Signal; onClose: () 
   const outcomeLabel = s.outcomeLabel || getOutcomeLabel(signal.marketQuestion, signal.side as "YES" | "NO");
   const polyUrl = s.slug ? `https://polymarket.com/market/${s.slug}` : null;
   const condId: string = s.marketId || s.id || "";
+  const [showBetModal, setShowBetModal] = useState(false);
 
   // SSE live price — updates every 3s from server
   const [livePrice, setLivePrice] = useState<number | null>(null);
@@ -306,9 +466,19 @@ function SignalExpandedPanel({ signal, onClose }: { signal: Signal; onClose: () 
                   <span className="font-mono truncate flex-1">{t.name}</span>
                 )}
                 <div className="shrink-0 text-right space-y-0">
-                  <div className="tabular-nums font-semibold">{formatUsdc(t.size)} @ {(t.entryPrice * 100).toFixed(0)}¢</div>
+                  <div className="tabular-nums font-semibold">
+                    {formatUsdc(t.riskUsdc ?? Math.round((t.size || 0) * (t.entryPrice || 0)))} risk @ {(t.entryPrice * 100).toFixed(0)}¢
+                  </div>
                   <div className="flex items-center gap-1.5 justify-end">
-                    {t.roi !== 0 && <span className={`text-[9px] ${t.roi >= 20 ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>{t.roi >= 0 ? "+" : ""}{t.roi?.toFixed(0)}% ROI</span>}
+                    {(() => {
+                      const displayRoi = t.sportRoi !== null && t.sportRoi !== undefined ? t.sportRoi : t.roi;
+                      const roiLabel = t.sportRoi !== null && t.sportRoi !== undefined ? `${s.sport || "Sport"} ROI` : "ROI";
+                      return displayRoi !== 0 ? (
+                        <span className={`text-[9px] ${displayRoi >= 20 ? "text-green-600 dark:text-green-400" : displayRoi < 0 ? "text-red-500" : "text-muted-foreground"}`}>
+                          {displayRoi >= 0 ? "+" : ""}{displayRoi?.toFixed(0)}% {roiLabel}
+                        </span>
+                      ) : null;
+                    })()}
                     {t.tradeTime > 0 && <span className="text-[9px] text-muted-foreground">{timeAgo(t.tradeTime)}</span>}
                   </div>
                 </div>
@@ -326,32 +496,12 @@ function SignalExpandedPanel({ signal, onClose }: { signal: Signal; onClose: () 
       {/* Confidence summary */}
       <div className="flex items-center justify-between text-xs">
         <span className="text-muted-foreground">Score: <span className="font-bold text-foreground">{signal.confidence}/95</span></span>
-        <span className="text-muted-foreground">{s.traderCount} trader{s.traderCount !== 1 ? "s" : ""} · {formatUsdc(s.totalNetUsdc || 0)} total</span>
+        <span className="text-muted-foreground">{s.traderCount} trader{s.traderCount !== 1 ? "s" : ""} · {formatUsdc(s.totalRiskUsdc || s.totalNetUsdc || 0)} total risk</span>
       </div>
 
       <div className="flex gap-2">
         <button
-          onClick={() => {
-            const s = signal as any;
-            const outcomeLabel = s.outcomeLabel || getOutcomeLabel(signal.marketQuestion, signal.side as "YES" | "NO");
-            try {
-              const bets = JSON.parse(localStorage.getItem("pi_bets") || "[]");
-              bets.unshift({
-                id: `bet-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-                marketQuestion: signal.marketQuestion,
-                outcomeLabel,
-                side: signal.side,
-                conditionId: signal.marketId,
-                slug: s.slug,
-                entryPrice: signal.avgEntryPrice,
-                betAmount: 0,
-                betDate: Date.now(),
-                status: "open",
-                notes: `Signal confidence: ${signal.confidence}/95`,
-              });
-              localStorage.setItem("pi_bets", JSON.stringify(bets));
-            } catch {}
-          }}
+          onClick={() => setShowBetModal(true)}
           className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md bg-muted hover:bg-muted/80 text-xs font-semibold transition-colors"
           data-testid={`button-track-bet-dash-${signal.id}`}
         >
@@ -369,6 +519,12 @@ function SignalExpandedPanel({ signal, onClose }: { signal: Signal; onClose: () 
           </a>
         )}
       </div>
+      <DashboardTrackBetModal
+        signal={signal}
+        outcomeLabel={outcomeLabel}
+        open={showBetModal}
+        onClose={() => setShowBetModal(false)}
+      />
     </div>
   );
 }
@@ -739,6 +895,15 @@ export default function Dashboard() {
                       const isFetching = alert.conditionId ? fetchingPrice.has(alert.conditionId) : false;
                       const entryOdds = alert.americanOdds || toAmericanOdds(alert.price);
                       const tradeTimeStr = alert.timestamp ? timeAgo(alert.timestamp) : `${alert.minutesAgo}m ago`;
+                      // Look up enriched trader profile from leaderboard data
+                      const traderProfile = traders.find((t: any) =>
+                        alert.wallet && (t.address?.toLowerCase() === alert.wallet.toLowerCase() || t.polyId?.toLowerCase() === alert.wallet.toLowerCase())
+                      ) as any | undefined;
+                      const qs = traderProfile?.qualityScore || alert.qualityScore || 0;
+                      const roiDisplay = traderProfile?.sportRoi ?? traderProfile?.roi ?? alert.roi ?? 0;
+                      const roiLabel = traderProfile?.sportRoi !== undefined ? "Sport ROI" : "ROI";
+                      const winRate = traderProfile?.winRate ?? 0;
+                      const traderTags: string[] = traderProfile?.tags || [];
                       return (
                       <div className="mb-2 mx-1 p-3 rounded-md bg-muted/50 border border-border space-y-2 text-xs">
                         {/* Full market title */}
@@ -750,16 +915,27 @@ export default function Dashboard() {
                           {alert.isSportsLb && (
                             <span className="px-1 py-0.5 rounded bg-green-500/15 text-green-700 dark:text-green-300 border border-green-500/20 font-semibold">🏆 Sports LB</span>
                           )}
-                          {alert.qualityScore > 0 && (
-                            <span className={`px-1 py-0.5 rounded border font-semibold ${alert.qualityScore >= 70 ? "bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/20" : alert.qualityScore >= 40 ? "bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 border-yellow-500/20" : "bg-muted text-muted-foreground border-border"}`}>
-                              Quality {alert.qualityScore}
+                          {qs > 0 && (
+                            <span className={`px-1 py-0.5 rounded border font-semibold ${qs >= 70 ? "bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/20" : qs >= 40 ? "bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 border-yellow-500/20" : "bg-muted text-muted-foreground border-border"}`}>
+                              Quality {qs}
                             </span>
                           )}
-                          {alert.roi > 0 && (
-                            <span className="text-muted-foreground">+{alert.roi.toFixed(0)}% ROI</span>
+                          {roiDisplay !== 0 && (
+                            <span className={roiDisplay >= 15 ? "text-green-600 dark:text-green-400 font-semibold" : roiDisplay < 0 ? "text-red-500" : "text-muted-foreground"}>
+                              {roiDisplay >= 0 ? "+" : ""}{roiDisplay.toFixed(0)}% {roiLabel}
+                            </span>
                           )}
+                          {winRate > 0 && <span className="text-muted-foreground">{winRate.toFixed(0)}% WR</span>}
                           <span className="text-muted-foreground">{tradeTimeStr}</span>
                         </div>
+                        {/* Trader sport tags */}
+                        {traderTags.length > 0 && (
+                          <div className="flex gap-1 flex-wrap">
+                            {traderTags.slice(0, 4).map((tag: string) => (
+                              <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted border border-border/60 text-muted-foreground">{tag}</span>
+                            ))}
+                          </div>
+                        )}
 
                         {/* Match time (pregame) */}
                         {alert.gameStartTime && (() => {

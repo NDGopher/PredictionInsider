@@ -190,7 +190,7 @@ function ScoreBreakdown({ breakdown, confidence, signal }: {
       val: breakdown.sizePct ?? 0,
       max: 10,
       color: "bg-purple-500",
-      note: signal?.avgNetUsdc ? `avg $${(signal.avgNetUsdc / 1000).toFixed(1)}K (threshold $15K)` : "",
+      note: signal?.avgRiskUsdc ? `avg $${(signal.avgRiskUsdc / 1000).toFixed(1)}K risk/trader` : signal?.avgNetUsdc ? `avg $${(signal.avgNetUsdc / 1000).toFixed(1)}K` : "",
       low: (breakdown.sizePct ?? 0) < 3,
     },
     {
@@ -338,7 +338,15 @@ function TrackBetModal({
         americanOdds: oddsNum,
         polymarketPrice: signalPrice,
         sport: (signal as any).sport,
-        notes: notes.trim() || `Signal confidence: ${signal.confidence}/95`,
+        confidence: signal.confidence,
+        tailedTraders: (signal.traders || []).map((t: any) => ({
+          address: t.address,
+          name: t.name,
+          sportRoi: t.sportRoi,
+          winRate: t.winRate,
+          qualityScore: t.qualityScore,
+        })),
+        notes: notes.trim(),
       });
       localStorage.setItem(BET_KEY, JSON.stringify(bets));
       toast({ title: "Bet tracked!", description: `${outcomeLabel} · ${oddsNum > 0 ? "+" : ""}${oddsNum} · ${book}` });
@@ -354,7 +362,7 @@ function TrackBetModal({
       const d = priceToAmericanNum(signalPrice);
       setOddsStr(d > 0 ? `+${d}` : String(d));
       setBetAmount("");
-      setNotes("");
+      setNotes(`Signal confidence: ${signal.confidence}/95`);
     }
   }, [open, signalPrice]);
 
@@ -374,20 +382,14 @@ function TrackBetModal({
           {/* Bet info (read-only) */}
           <div className="rounded-lg bg-muted/50 border border-border p-3 space-y-1">
             <div className="text-xs text-muted-foreground">{signal.marketQuestion}</div>
-            <div className="flex items-center gap-2">
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
-                signal.side === "YES"
-                  ? "bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/25"
-                  : "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/25"
-              }`}>
-                {signal.side === "YES" ? "▲ YES" : "▼ NO"}
-              </span>
-              <span className="text-sm font-bold">{outcomeLabel}</span>
+            <div className={`text-sm font-bold ${signal.side === "YES" ? "text-green-600 dark:text-green-400" : "text-green-600 dark:text-green-400"}`}>
+              {outcomeLabel}
             </div>
             <div className="text-[10px] text-muted-foreground">
               Polymarket signal @ {Math.round(signalPrice * 100)}¢
               {" "}({priceToAmericanNum(signalPrice) > 0 ? "+" : ""}{priceToAmericanNum(signalPrice)})
               {(signal as any).sport && <span className="ml-1 text-primary">· {(signal as any).sport}</span>}
+              {" · "}<span className="text-foreground font-semibold">Signal {signal.confidence}/95</span>
             </div>
           </div>
 
@@ -437,14 +439,14 @@ function TrackBetModal({
             </div>
             {oddsNum && impliedProb && (
               <div className="mt-1 flex items-center gap-2 text-[10px]">
-                <span className="text-muted-foreground">Implied probability: <strong className="text-foreground">{(impliedProb * 100).toFixed(1)}%</strong></span>
+                <span className="text-muted-foreground">Breakeven: <strong className="text-foreground">{(impliedProb * 100).toFixed(1)}%</strong></span>
                 {signalPrice && (
-                  <span className={`${impliedProb < signalPrice - 0.02 ? "text-red-500" : impliedProb > signalPrice + 0.02 ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
-                    {impliedProb < signalPrice - 0.02
-                      ? `⚠ Worse than PM (${Math.round(signalPrice * 100)}¢)`
-                      : impliedProb > signalPrice + 0.02
-                      ? `✓ Better than PM (${Math.round(signalPrice * 100)}¢)`
-                      : `≈ Matches PM (${Math.round(signalPrice * 100)}¢)`}
+                  <span className={`${impliedProb < signalPrice - 0.015 ? "text-green-600 dark:text-green-400" : impliedProb > signalPrice + 0.015 ? "text-red-500" : "text-muted-foreground"}`}>
+                    {impliedProb < signalPrice - 0.015
+                      ? `✓ Better odds than PM (${Math.round(signalPrice * 100)}¢ = ${(signalPrice*100).toFixed(1)}% breakeven)`
+                      : impliedProb > signalPrice + 0.015
+                      ? `⚠ Worse odds than PM (${Math.round(signalPrice * 100)}¢ = ${(signalPrice*100).toFixed(1)}% breakeven)`
+                      : `≈ Same value as PM (${Math.round(signalPrice * 100)}¢)`}
                   </span>
                 )}
               </div>
@@ -473,13 +475,13 @@ function TrackBetModal({
             )}
           </div>
 
-          {/* Optional notes */}
+          {/* Notes */}
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Notes (optional)</label>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Notes</label>
             <Input
               value={notes}
               onChange={e => setNotes(e.target.value)}
-              placeholder={`Signal confidence: ${signal.confidence}/95`}
+              placeholder="Add notes..."
               className="h-8 text-xs"
               data-testid="input-bet-notes-modal"
             />
@@ -546,8 +548,8 @@ function SignalCard({ signal, mode, onSnoozed }: { signal: Signal; mode: "elite"
 
   const outcomeLabel = (signal as any).outcomeLabel || getOutcomeLabel(signal.marketQuestion, signal.side as "YES" | "NO");
 
-  const totalNetUsdc = (signal as any).totalNetUsdc as number | undefined;
-  const avgNetUsdc   = (signal as any).avgNetUsdc   as number | undefined;
+  const totalNetUsdc = (signal as any).totalRiskUsdc as number | undefined || (signal as any).totalNetUsdc as number | undefined;
+  const avgNetUsdc   = (signal as any).avgRiskUsdc   as number | undefined || (signal as any).avgNetUsdc   as number | undefined;
 
   return (
     <>
@@ -1034,8 +1036,13 @@ function SignalCard({ signal, mode, onSnoozed }: { signal: Signal; mode: "elite"
 
                       {/* Bet info */}
                       <div className="text-center p-1.5 rounded bg-background border border-border/50">
-                        <div className="text-[9px] text-muted-foreground mb-0.5">Entry / Size</div>
-                        <div className="text-sm font-bold tabular-nums">{(t as any).netUsdc ? formatUsdc((t as any).netUsdc) : `${t.size.toLocaleString()} shr`}</div>
+                        <div className="text-[9px] text-muted-foreground mb-0.5">Risk / Entry</div>
+                        <div className="text-sm font-bold tabular-nums">
+                          {(() => {
+                            const risk = (t as any).riskUsdc ?? Math.round(((t as any).netUsdc || t.size || 0) * (t.entryPrice || 0));
+                            return formatUsdc(risk);
+                          })()}
+                        </div>
                         <div className="text-[9px] text-muted-foreground">@ {(t.entryPrice * 100).toFixed(1)}¢</div>
                       </div>
                     </div>

@@ -2451,6 +2451,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           avgEntryPrice: Math.round(avgEntry * 1000) / 1000,
           totalNetUsdc: Math.round(totalDominantSize),
           avgNetUsdc: Math.round(avgSize),
+          totalRiskUsdc: Math.round(dominant.reduce((s, e) => { const p = e.prices.reduce((a,b)=>a+b,0)/e.prices.length; return s + e.totalSize * p; }, 0)),
+          avgRiskUsdc: Math.round(dominant.reduce((s, e) => { const p = e.prices.reduce((a,b)=>a+b,0)/e.prices.length; return s + e.totalSize * p; }, 0) / Math.max(dominant.length, 1)),
           traderCount: dominant.length,
           lbTraderCount: lbCount,
           sportsLbCount,
@@ -2465,12 +2467,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             const displayROI = cm?.overallROI ?? e.traderInfo.roi;
             const displayQuality = cm?.qualityScore > 0 ? cm.qualityScore : e.traderInfo.qualityScore;
             const sportEntry = cm?.roiBySport?.[signalSport];
+            const avgEP = e.prices.reduce((a,b)=>a+b,0)/e.prices.length;
             return {
               address: e.address,
               name: e.traderInfo.name,
-              entryPrice: Math.round((e.prices.reduce((a, b) => a + b, 0) / e.prices.length) * 1000) / 1000,
+              entryPrice: Math.round(avgEP * 1000) / 1000,
               size: Math.round(e.totalSize),
               netUsdc: Math.round(e.totalSize),
+              riskUsdc: Math.round(e.totalSize * avgEP),
               roi: Math.round(displayROI * 10) / 10,
               qualityScore: displayQuality,
               pnl: Math.round(e.traderInfo.pnl),
@@ -2752,6 +2756,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             avgEntryPrice: Math.round(avgEntry * 1000) / 1000,
             totalNetUsdc: Math.round(pg.totalValue),
             avgNetUsdc: Math.round(avgSize),
+            totalRiskUsdc: Math.round(pg.traders.reduce((s, t) => s + t.currentValue * t.entryPrice, 0)),
+            avgRiskUsdc: Math.round(pg.traders.reduce((s, t) => s + t.currentValue * t.entryPrice, 0) / Math.max(pg.traders.length, 1)),
             traderCount: pg.traders.length,
             lbTraderCount: pg.traders.filter(t => lbMap.get(t.wallet)?.isLeaderboard).length,
             sportsLbCount: pg.traders.filter(t => t.isSportsLb).length,
@@ -2775,6 +2781,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                 entryPrice: Math.round(t.entryPrice * 1000) / 1000,
                 size: Math.round(t.currentValue),
                 netUsdc: Math.round(t.currentValue),
+                riskUsdc: Math.round(t.currentValue * t.entryPrice),
                 roi: Math.round(displayROI * 10) / 10,
                 qualityScore: displayQuality,
                 pnl: tm?.pnl ?? 0,
@@ -3068,17 +3075,23 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           avgEntryPrice: Math.round(avgEntry * 1000) / 1000,
           totalNetUsdc: Math.round(totalDominantSize),
           avgNetUsdc: Math.round(avgSize),
+          totalRiskUsdc: Math.round(dominant.reduce((s, e) => { const p = e.prices.reduce((a,b)=>a+b,0)/e.prices.length; return s + e.totalSize * p; }, 0)),
+          avgRiskUsdc: Math.round(dominant.reduce((s, e) => { const p = e.prices.reduce((a,b)=>a+b,0)/e.prices.length; return s + e.totalSize * p; }, 0) / Math.max(dominant.length, 1)),
           traderCount: dominant.length,
           avgQuality: 40,
           scoreBreakdown: breakdown,
-          traders: dominant.slice(0, 8).map(e => ({
-            address: e.wallet,
-            name: e.name,
-            entryPrice: Math.round((e.prices.reduce((a, b) => a + b, 0) / e.prices.length) * 1000) / 1000,
-            size: Math.round(e.totalSize),
-            netUsdc: Math.round(e.totalSize),
-            roi: 0, qualityScore: 0,
-          })),
+          traders: dominant.slice(0, 8).map(e => {
+            const avgEP2 = e.prices.reduce((a, b) => a + b, 0) / e.prices.length;
+            return {
+              address: e.wallet,
+              name: e.name,
+              entryPrice: Math.round(avgEP2 * 1000) / 1000,
+              size: Math.round(e.totalSize),
+              netUsdc: Math.round(e.totalSize),
+              riskUsdc: Math.round(e.totalSize * avgEP2),
+              roi: 0, qualityScore: 0,
+            };
+          }),
           category: info.category || "sports",
           sport: classifySport(info.slug || "", info.question || condId),
           volume: info.volume || 0,
