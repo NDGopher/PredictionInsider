@@ -172,38 +172,72 @@ function TraderCard({ trader, rank }: { trader: Trader; rank: number }) {
             </div>
 
             {(trader as any).realizedPNL != null && (
-              <div className="grid grid-cols-2 gap-1.5 mt-2.5 p-2 bg-muted/30 rounded-md border border-border/40">
-                <div>
-                  <div className="text-[9px] text-muted-foreground uppercase tracking-wide">Realized</div>
-                  <div className={`text-xs font-bold tabular-nums ${(trader as any).realizedPNL >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}
-                    data-testid={`trader-realized-pnl-${rank}`}>
-                    {fmtPnl((trader as any).realizedPNL)}
+              <div className="mt-2.5 p-2 bg-muted/30 rounded-md border border-border/40">
+                <div className="grid grid-cols-2 gap-1.5">
+                  <div>
+                    <div className="text-[9px] text-muted-foreground uppercase tracking-wide">Realized</div>
+                    <div className={`text-xs font-bold tabular-nums ${(trader as any).realizedPNL >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}
+                      data-testid={`trader-realized-pnl-${rank}`}>
+                      {fmtPnl((trader as any).realizedPNL)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[9px] text-muted-foreground uppercase tracking-wide">
+                      {(trader as any).activeUnrealizedPNL != null ? "Active P&L" : "Open P&L"}
+                    </div>
+                    <div className={`text-xs font-bold tabular-nums ${((trader as any).activeUnrealizedPNL ?? (trader as any).unrealizedPNL) >= 0 ? "text-green-600 dark:text-green-400" : "text-amber-500"}`}
+                      data-testid={`trader-unrealized-pnl-${rank}`}>
+                      {fmtPnl((trader as any).activeUnrealizedPNL ?? (trader as any).unrealizedPNL)}
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <div className="text-[9px] text-muted-foreground uppercase tracking-wide">Unrealized</div>
-                  <div className={`text-xs font-bold tabular-nums ${(trader as any).unrealizedPNL >= 0 ? "text-green-600 dark:text-green-400" : "text-amber-500"}`}
-                    data-testid={`trader-unrealized-pnl-${rank}`}>
-                    {fmtPnl((trader as any).unrealizedPNL)}
+                {(trader as any).redeemableCount > 0 && (
+                  <div className="mt-1.5 pt-1.5 border-t border-border/30 flex items-center justify-between">
+                    <div className="text-[9px] text-muted-foreground">
+                      <span className="text-amber-600 dark:text-amber-400 font-medium">{(trader as any).redeemableCount} redeemable</span>
+                      {" · "}
+                      <span className="text-green-600 dark:text-green-400 font-medium">
+                        {fmtPnl((trader as any).redeemableValue ?? 0)} claimable
+                      </span>
+                    </div>
+                    <div className="text-[9px] text-muted-foreground">
+                      {(trader as any).activeOpenCount ?? 0} live open
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-2 mt-2.5">
               <div className="bg-muted/40 rounded-md px-2.5 py-1.5">
-                <div className="text-[9px] text-muted-foreground uppercase tracking-wide mb-0.5">ROI</div>
-                {trader.volume > 0 ? (
+                <div className="text-[9px] text-muted-foreground uppercase tracking-wide mb-0.5">Overall ROI</div>
+                {trader.roi !== 0 ? (
                   <div className={`text-sm font-bold tabular-nums ${roiPositive ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
                     {roiPositive ? "+" : ""}{trader.roi.toFixed(1)}%
                   </div>
                 ) : (
                   <div className="text-sm font-bold text-muted-foreground">N/A</div>
                 )}
+                {(trader as any).last30dROI !== 0 && (
+                  <div className="text-[9px] text-muted-foreground mt-0.5">
+                    30d: <span className={(trader as any).last30dROI >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}>
+                      {(trader as any).last30dROI >= 0 ? "+" : ""}{(trader as any).last30dROI.toFixed(1)}%
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="bg-muted/40 rounded-md px-2.5 py-1.5">
-                <div className="text-[9px] text-muted-foreground uppercase tracking-wide mb-0.5">Volume</div>
-                <div className="text-sm font-bold">{trader.volume > 0 ? fmtVol(trader.volume) : "—"}</div>
+                <div className="text-[9px] text-muted-foreground uppercase tracking-wide mb-0.5">Win Rate</div>
+                <div className={`text-sm font-bold tabular-nums ${trader.winRate >= 55 ? "text-green-600 dark:text-green-400" : trader.winRate >= 45 ? "text-yellow-600 dark:text-yellow-400" : "text-red-500"}`}>
+                  {trader.winRate > 0 ? `${trader.winRate.toFixed(1)}%` : "—"}
+                </div>
+                {(trader as any).winRate30 !== 0 && (
+                  <div className="text-[9px] text-muted-foreground mt-0.5">
+                    30d: <span className={(trader as any).winRate30 >= 50 ? "text-green-600 dark:text-green-400" : "text-red-500"}>
+                      {(trader as any).winRate30.toFixed(1)}%
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 

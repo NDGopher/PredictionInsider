@@ -216,6 +216,7 @@ Traders page sorted by this score (hot hands bubbled to top). Signal lbMap also 
 ## Key Technical Details
 
 - Polymarket trades API caps at 1000/call → paginate with offset (5 pages → 5000 trades)
+- **Canonical PNL closed-positions API caps at 50 items/page** → use `PAGE=50` with `offset+=50` loop, break when `data.length < PAGE`. Using PAGE=500 (wrong) caused only 50 positions to be fetched per trader, producing 100% win rate and >87% ROI (wildly inaccurate). Correct values: 50-92% win rate, 1-72% ROI depending on trader
 - Game markets close fast → use market DB for enrichment only, not as hard filter
 - Sports is ~7% of all trades → few qualified trades; positions API fills the gap
 - Today's NBA/NHL game markets not in Gamma API top-800 → gameMarketRegistry fills this

@@ -1725,8 +1725,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       // ── Curated-only: Return ALL 42 hand-picked elite traders from DB ──────
       // Query every profile in elite_trader_profiles — these are all curated.
       const profileRows = await elitePool.query<{
-        wallet: string; username: string; metrics: any;
-      }>(`SELECT wallet, username, metrics FROM elite_trader_profiles ORDER BY (metrics->>'overallPNL')::numeric DESC NULLS LAST`);
+        wallet: string; username: string; metrics: any; quality_score: number;
+      }>(`SELECT wallet, username, metrics, quality_score FROM elite_trader_profiles ORDER BY (metrics->>'overallPNL')::numeric DESC NULLS LAST`);
 
       const traders: any[] = [];
       for (let i = 0; i < profileRows.rows.length; i++) {
@@ -1734,35 +1734,49 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const m    = row.metrics ?? {};
         const addr = row.wallet;
 
-        const pnl      = parseFloat(m.overallPNL ?? "0");
-        const vol      = parseFloat(m.totalUSDC ?? "0");
-        const roi      = parseFloat(m.overallROI ?? (vol > 0 ? String((pnl / vol) * 100) : "0"));
-        const winRate  = parseFloat(m.winRate ?? "0");
-        const avgSize  = parseFloat(m.avgBetSize ?? "0");
-        const totalTrades = parseInt(m.totalTrades ?? "0");
-        const realizedPNL  = m.realizedPNL  != null ? parseFloat(m.realizedPNL)  : undefined;
-        const unrealizedPNL = m.unrealizedPNL != null ? parseFloat(m.unrealizedPNL) : undefined;
-        const pnlSource = m.pnlSource ?? undefined;
-        const closedPositionCount = m.closedPositionCount != null ? parseInt(m.closedPositionCount) : undefined;
-        const qs       = Math.min(90, Math.max(1,
-          Math.round((Math.min(Math.abs(pnl) / 50_000, 1) * 40) +
-                     (Math.min(winRate / 70, 1) * 30) +
-                     (Math.min(totalTrades / 500, 1) * 20) + 10)
-        ));
-        const tier = pnl >= 100_000 ? "elite" : pnl >= 30_000 ? "pro" : "active";
+        // All metrics from canonical source (closed_positions_api) — accurate and complete
+        const pnl         = parseFloat(m.overallPNL    ?? "0");
+        const realizedPNL = m.realizedPNL   != null ? parseFloat(m.realizedPNL)    : undefined;
+        const unrealizedPNL       = m.unrealizedPNL != null ? parseFloat(m.unrealizedPNL)  : undefined;
+        const activeUnrealizedPNL = m.activeUnrealizedPNL != null ? parseFloat(m.activeUnrealizedPNL) : undefined;
+        const roi         = parseFloat(m.overallROI   ?? "0");
+        const last30dROI  = parseFloat(m.last30dROI   ?? "0");
+        const last90dROI  = parseFloat(m.last90dROI   ?? "0");
+        const last30dPNL  = parseFloat(m.last30dPNL   ?? "0");
+        const last90dPNL  = parseFloat(m.last90dPNL   ?? "0");
+        const last30dCount = parseInt(m.last30dCount  ?? "0");
+        const last90dCount = parseInt(m.last90dCount  ?? "0");
+        const winRate     = parseFloat(m.winRate      ?? m.pnlWinRate ?? "0");
+        const winRate30   = parseFloat(m.winRate30    ?? "0");
+        const winRate90   = parseFloat(m.winRate90    ?? "0");
+        const avgSize     = parseFloat(m.avgBetSize   ?? "0");
+        const medianSize  = parseFloat(m.medianBetSize ?? "0");
+        const totalInvested = parseFloat(m.totalInvested ?? "0");
+        const totalTrades = parseInt(m.totalTrades    ?? m.closedPositionCount ?? "0");
+        const pnlSource   = m.pnlSource ?? undefined;
+        const closedPositionCount   = m.closedPositionCount  != null ? parseInt(m.closedPositionCount)  : undefined;
+        const activeOpenCount       = m.activeOpenCount      != null ? parseInt(m.activeOpenCount)      : undefined;
+        const redeemableCount       = m.redeemableCount      != null ? parseInt(m.redeemableCount)      : undefined;
+        const redeemableValue       = m.redeemableValue      != null ? parseFloat(m.redeemableValue)    : undefined;
+        const monthlyROI  = m.monthlyROI ?? undefined;
+        const closedByCategory = m.closedByCategory ?? undefined;
+        const qualityScore = row.quality_score ?? 1;
+        const tier = pnl >= 500_000 ? "elite" : pnl >= 100_000 ? "pro" : "active";
 
         traders.push({
           address: addr,
           name: row.username,
-          xUsername: undefined,
           verifiedBadge: true,
-          pnl, realizedPNL, unrealizedPNL, pnlSource, closedPositionCount,
-          roi, winRate, avgSize,
-          positionCount: 0,
-          volume: vol,
+          pnl, realizedPNL, unrealizedPNL, activeUnrealizedPNL,
+          pnlSource, closedPositionCount, activeOpenCount, redeemableCount, redeemableValue,
+          roi, last30dROI, last90dROI, last30dPNL, last90dPNL, last30dCount, last90dCount,
+          winRate, winRate30, winRate90,
+          avgSize, medianSize, totalInvested,
+          positionCount: activeOpenCount ?? 0,
           totalTrades,
+          monthlyROI, closedByCategory,
           rank: i + 1,
-          qualityScore: qs,
+          qualityScore,
           tier,
           recentForm: "📌 Curated",
           source: "curated",

@@ -694,10 +694,12 @@ export async function computeTraderProfileFromActivity(wallet: string): Promise<
   const monthlyROI = Object.entries(byMonth)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([month, { pnl, invested, count }]) => ({
-      month, roi: invested > 0 ? pnl / invested : 0,
+      month,
+      roi: invested > 0 ? Math.round((pnl / invested) * 10000) / 100 : 0, // percentage
       pnl: Math.round(pnl * 100) / 100, tradeCount: count,
     }));
-  const monthlyROIs = monthlyROI.map(m => m.roi);
+  // Sharpe uses ratio form to keep scale-invariant thresholds
+  const monthlyROIs = monthlyROI.map(m => m.roi / 100);
   const avgMROI = mean(monthlyROIs);
   const stdMROI = stdDev(monthlyROIs);
   const sharpeScore = stdMROI > 0 ? avgMROI / stdMROI : (avgMROI > 0 ? 2 : 0);
@@ -868,28 +870,18 @@ export async function computeTraderProfileFromActivity(wallet: string): Promise<
     VALUES ($1, $2, NOW(), $3, $4, $5)
     ON CONFLICT (wallet) DO UPDATE SET
       username = EXCLUDED.username, computed_at = NOW(),
-      metrics = EXCLUDED.metrics || CASE
+      metrics = CASE
         WHEN elite_trader_profiles.metrics->>'manualPnlOverride' = 'true'
-        THEN jsonb_build_object(
-          'overallPNL', (elite_trader_profiles.metrics->>'overallPNL')::numeric,
-          'manualPnlOverride', true,
-          'manualPnlNote', elite_trader_profiles.metrics->>'manualPnlNote',
-          'pnlSource', elite_trader_profiles.metrics->>'pnlSource',
-          'pnlUpdatedAt', elite_trader_profiles.metrics->>'pnlUpdatedAt'
-        )
-        WHEN elite_trader_profiles.metrics->>'pnlSource' = 'closed_positions_api'
-        THEN jsonb_build_object(
-          'overallPNL', (elite_trader_profiles.metrics->>'overallPNL')::numeric,
-          'realizedPNL', (elite_trader_profiles.metrics->>'realizedPNL')::numeric,
-          'unrealizedPNL', (elite_trader_profiles.metrics->>'unrealizedPNL')::numeric,
-          'pnlSource', 'closed_positions_api',
-          'pnlUpdatedAt', elite_trader_profiles.metrics->>'pnlUpdatedAt',
-          'closedPositionCount', (elite_trader_profiles.metrics->>'closedPositionCount')::integer,
-          'openPositionCount', (elite_trader_profiles.metrics->>'openPositionCount')::integer
-        )
-        ELSE '{}'::jsonb
+          OR elite_trader_profiles.metrics->>'pnlSource' = 'closed_positions_api'
+        THEN EXCLUDED.metrics || elite_trader_profiles.metrics
+        ELSE EXCLUDED.metrics
         END,
-      tags = EXCLUDED.tags, quality_score = EXCLUDED.quality_score
+      tags = EXCLUDED.tags,
+      quality_score = CASE
+        WHEN elite_trader_profiles.metrics->>'pnlSource' = 'closed_positions_api'
+        THEN elite_trader_profiles.quality_score
+        ELSE EXCLUDED.quality_score
+        END
   `, [w, username, JSON.stringify(metrics), tags, qualityScore]);
 
   return { wallet: w, username, qualityScore, tags, metrics };
@@ -1016,12 +1008,13 @@ export async function computeTraderProfile(wallet: string): Promise<any> {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([month, { pnl, invested, count }]) => ({
       month,
-      roi: invested > 0 ? pnl / invested : 0,
+      roi: invested > 0 ? Math.round((pnl / invested) * 10000) / 100 : 0, // percentage
       pnl: Math.round(pnl * 100) / 100,
       tradeCount: count,
     }));
 
-  const monthlyROIs = monthlyROI.map(m => m.roi);
+  // Sharpe uses ratio form to keep scale-invariant thresholds
+  const monthlyROIs = monthlyROI.map(m => m.roi / 100);
   const avgMonthlyROI = mean(monthlyROIs);
   const stdMonthlyROI = stdDev(monthlyROIs);
   const sharpeScore = stdMonthlyROI > 0 ? avgMonthlyROI / stdMonthlyROI : (avgMonthlyROI > 0 ? 2 : 0);
@@ -1233,36 +1226,25 @@ export async function computeTraderProfile(wallet: string): Promise<any> {
     bestBets,
   };
 
-  // Save to DB — preserve canonical PNL fields if already set
+  // Save to DB — canonical metrics (pnlSource=closed_positions_api) always win over activity-based
   await pool.query(`
     INSERT INTO elite_trader_profiles (wallet, username, computed_at, metrics, tags, quality_score)
     VALUES ($1, $2, NOW(), $3, $4, $5)
     ON CONFLICT (wallet) DO UPDATE SET
       username = EXCLUDED.username,
       computed_at = NOW(),
-      metrics = EXCLUDED.metrics || CASE
+      metrics = CASE
         WHEN elite_trader_profiles.metrics->>'manualPnlOverride' = 'true'
-        THEN jsonb_build_object(
-          'overallPNL', (elite_trader_profiles.metrics->>'overallPNL')::numeric,
-          'manualPnlOverride', true,
-          'manualPnlNote', elite_trader_profiles.metrics->>'manualPnlNote',
-          'pnlSource', elite_trader_profiles.metrics->>'pnlSource',
-          'pnlUpdatedAt', elite_trader_profiles.metrics->>'pnlUpdatedAt'
-        )
-        WHEN elite_trader_profiles.metrics->>'pnlSource' = 'closed_positions_api'
-        THEN jsonb_build_object(
-          'overallPNL', (elite_trader_profiles.metrics->>'overallPNL')::numeric,
-          'realizedPNL', (elite_trader_profiles.metrics->>'realizedPNL')::numeric,
-          'unrealizedPNL', (elite_trader_profiles.metrics->>'unrealizedPNL')::numeric,
-          'pnlSource', 'closed_positions_api',
-          'pnlUpdatedAt', elite_trader_profiles.metrics->>'pnlUpdatedAt',
-          'closedPositionCount', (elite_trader_profiles.metrics->>'closedPositionCount')::integer,
-          'openPositionCount', (elite_trader_profiles.metrics->>'openPositionCount')::integer
-        )
-        ELSE '{}'::jsonb
+          OR elite_trader_profiles.metrics->>'pnlSource' = 'closed_positions_api'
+        THEN EXCLUDED.metrics || elite_trader_profiles.metrics
+        ELSE EXCLUDED.metrics
         END,
       tags = EXCLUDED.tags,
-      quality_score = EXCLUDED.quality_score
+      quality_score = CASE
+        WHEN elite_trader_profiles.metrics->>'pnlSource' = 'closed_positions_api'
+        THEN elite_trader_profiles.quality_score
+        ELSE EXCLUDED.quality_score
+        END
   `, [w, username, JSON.stringify(metrics), tags, qualityScore]);
 
   return { wallet: w, username, qualityScore, tags, metrics };
@@ -1382,12 +1364,47 @@ export async function runAnalysisForTrader(wallet: string): Promise<void> {
 // Uses sum(realizedPnl) which matches Polymarket's official displayed numbers.
 
 export interface CanonicalPNL {
+  // ── PNL totals ──────────────────────────────────────────────────────────────
   realizedPNL: number;
-  unrealizedPNL: number;
-  totalPNL: number;
+  unrealizedPNL: number;       // sum(cashPnl) across ALL open positions
+  activeUnrealizedPNL: number; // sum(cashPnl) for live (unresolved) open positions only
+  totalPNL: number;            // realizedPNL + unrealizedPNL
+
+  // ── Position counts ─────────────────────────────────────────────────────────
   closedCount: number;
-  openCount: number;
-  pnlWinRate: number;
+  openCount: number;           // all open positions (includes redeemable)
+  activeOpenCount: number;     // live markets (curPrice > 0, not redeemable)
+  redeemableCount: number;     // resolved markets awaiting user redemption
+  redeemableValue: number;     // USDC claimable from redeemable positions
+
+  // ── Investment & ROI ────────────────────────────────────────────────────────
+  totalInvested: number;       // sum(avgPrice * totalBought) USDC for all closed positions
+  overallROI: number;          // realizedPNL / totalInvested * 100 (%)
+  last30dPNL: number;
+  last30dInvested: number;
+  last30dCount: number;
+  last30dROI: number;          // 0 if no 30d data
+  last90dPNL: number;
+  last90dInvested: number;
+  last90dCount: number;
+  last90dROI: number;
+
+  // ── Win rates ───────────────────────────────────────────────────────────────
+  pnlWinRate: number;          // overall % positions with realizedPnl > 0
+  winRate30: number;
+  winRate90: number;
+
+  // ── Bet sizes (USDC) ────────────────────────────────────────────────────────
+  avgBetUSDC: number;
+  medianBetUSDC: number;
+
+  // ── Monthly breakdown ───────────────────────────────────────────────────────
+  monthlyROI: Array<{
+    month: string; roi: number; pnl: number; invested: number;
+    tradeCount: number; wins: number;
+  }>;
+
+  // ── Category breakdown ───────────────────────────────────────────────────────
   closedByCategory: Record<string, { pnl: number; positions: number; wins: number; invested: number }>;
 }
 
@@ -1411,10 +1428,14 @@ function classifySportFromSlug(slug: string): string {
 
 export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
   const addr = wallet.toLowerCase();
+  const now = Date.now();
+  const ms30 = now - 30 * 86_400_000;
+  const ms90 = now - 90 * 86_400_000;
+
+  // ── 1. Fetch ALL closed positions (API caps each page at 50) ─────────────
   const PAGE = 50;
   let offset = 0;
   const closedPositions: any[] = [];
-
   while (true) {
     const data = await fetchJson(
       `${DATA_API}/closed-positions?user=${addr}&limit=${PAGE}&offset=${offset}`
@@ -1423,15 +1444,69 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
     closedPositions.push(...data);
     if (data.length < PAGE) break;
     offset += PAGE;
-    if (offset >= 100_000) break;
+    if (offset >= 200_000) break;
     await new Promise(r => setTimeout(r, 80));
   }
 
-  const realizedPNL = closedPositions.reduce((sum, c) => sum + (parseFloat(c.realizedPnl) || 0), 0);
-  const wins = closedPositions.filter(c => (parseFloat(c.realizedPnl) || 0) > 0).length;
-  const pnlWinRate = closedPositions.length > 0 ? Math.round((wins / closedPositions.length) * 1000) / 10 : 0;
+  // ── 2. Per-position metrics ───────────────────────────────────────────────
+  // USDC invested per position = avgPrice × totalBought (shares × price/share = USDC)
+  const investedUSDC = (c: any): number =>
+    Math.abs((parseFloat(c.avgPrice) || 0) * (parseFloat(c.totalBought) || 0));
 
-  // Category breakdown from closed positions
+  const realizedPNL = closedPositions.reduce((s, c) => s + (parseFloat(c.realizedPnl) || 0), 0);
+  const totalInvested = closedPositions.reduce((s, c) => s + investedUSDC(c), 0);
+  const wins = closedPositions.filter(c => (parseFloat(c.realizedPnl) || 0) > 0).length;
+  const pnlWinRate = closedPositions.length > 0
+    ? Math.round((wins / closedPositions.length) * 1000) / 10 : 0;
+  const overallROI = totalInvested > 0
+    ? Math.round((realizedPNL / totalInvested) * 10000) / 100 : 0;
+
+  // Bet size distribution (USDC)
+  const betSizes = closedPositions.map(c => investedUSDC(c)).filter(v => v > 0);
+  const avgBetUSDC = betSizes.length > 0 ? Math.round(mean(betSizes) * 100) / 100 : 0;
+  const medianBetUSDC = betSizes.length > 0 ? Math.round(median(betSizes) * 100) / 100 : 0;
+
+  // ── 3. Time-windowed metrics (30d / 90d) ──────────────────────────────────
+  const closed30 = closedPositions.filter(c => (c.timestamp || 0) * 1000 > ms30);
+  const closed90 = closedPositions.filter(c => (c.timestamp || 0) * 1000 > ms90);
+
+  const pnl30 = closed30.reduce((s, c) => s + (parseFloat(c.realizedPnl) || 0), 0);
+  const pnl90 = closed90.reduce((s, c) => s + (parseFloat(c.realizedPnl) || 0), 0);
+  const inv30 = closed30.reduce((s, c) => s + investedUSDC(c), 0);
+  const inv90 = closed90.reduce((s, c) => s + investedUSDC(c), 0);
+  const wins30 = closed30.filter(c => (parseFloat(c.realizedPnl) || 0) > 0).length;
+  const wins90 = closed90.filter(c => (parseFloat(c.realizedPnl) || 0) > 0).length;
+
+  const last30dROI = inv30 > 0 ? Math.round((pnl30 / inv30) * 10000) / 100 : 0;
+  const last90dROI = inv90 > 0 ? Math.round((pnl90 / inv90) * 10000) / 100 : 0;
+  const winRate30 = closed30.length > 0 ? Math.round((wins30 / closed30.length) * 1000) / 10 : 0;
+  const winRate90 = closed90.length > 0 ? Math.round((wins90 / closed90.length) * 1000) / 10 : 0;
+
+  // ── 4. Monthly breakdown ─────────────────────────────────────────────────
+  const byMonth: Record<string, { pnl: number; invested: number; count: number; wins: number }> = {};
+  for (const c of closedPositions) {
+    if (!c.timestamp) continue;
+    const d = new Date(c.timestamp * 1000);
+    const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+    if (!byMonth[key]) byMonth[key] = { pnl: 0, invested: 0, count: 0, wins: 0 };
+    const pnl = parseFloat(c.realizedPnl) || 0;
+    byMonth[key].pnl += pnl;
+    byMonth[key].invested += investedUSDC(c);
+    byMonth[key].count++;
+    if (pnl > 0) byMonth[key].wins++;
+  }
+  const monthlyROI = Object.entries(byMonth)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, d]) => ({
+      month,
+      roi: d.invested > 0 ? Math.round((d.pnl / d.invested) * 10000) / 100 : 0,
+      pnl: Math.round(d.pnl * 100) / 100,
+      invested: Math.round(d.invested),
+      tradeCount: d.count,
+      wins: d.wins,
+    }));
+
+  // ── 5. Category breakdown (USDC invested — not shares) ───────────────────
   const closedByCategory: Record<string, { pnl: number; positions: number; wins: number; invested: number }> = {};
   for (const c of closedPositions) {
     const slug = c.slug || c.eventSlug || "";
@@ -1439,17 +1514,16 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
     if (!closedByCategory[cat]) closedByCategory[cat] = { pnl: 0, positions: 0, wins: 0, invested: 0 };
     const pnl = parseFloat(c.realizedPnl) || 0;
     closedByCategory[cat].pnl += pnl;
-    closedByCategory[cat].invested += parseFloat(c.totalBought) || 0;
+    closedByCategory[cat].invested += investedUSDC(c); // USDC, not shares
     closedByCategory[cat].positions++;
     if (pnl > 0) closedByCategory[cat].wins++;
   }
-  // Round category values
   for (const cat of Object.keys(closedByCategory)) {
     closedByCategory[cat].pnl = Math.round(closedByCategory[cat].pnl * 100) / 100;
     closedByCategory[cat].invested = Math.round(closedByCategory[cat].invested * 100) / 100;
   }
 
-  // Open positions for unrealized PNL (cashPnl) — paginate to fetch all
+  // ── 6. Open positions (paginated) ─────────────────────────────────────────
   const openPositions: any[] = [];
   let openOffset = 0;
   while (true) {
@@ -1463,20 +1537,76 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
     if (openOffset >= 10_000) break;
     await new Promise(r => setTimeout(r, 80));
   }
-  const unrealizedPNL = openPositions.reduce((sum: number, p: any) => sum + (parseFloat(p.cashPnl) || 0), 0);
+
+  // Separate active (live market) from redeemable (resolved, awaiting claim)
+  const activePositions = openPositions.filter(p => !p.redeemable && (parseFloat(p.curPrice) || 0) > 0);
+  const redeemablePositions = openPositions.filter(p => p.redeemable);
+
+  const unrealizedPNL = openPositions.reduce((s: number, p: any) => s + (parseFloat(p.cashPnl) || 0), 0);
+  const activeUnrealizedPNL = activePositions.reduce((s: number, p: any) => s + (parseFloat(p.cashPnl) || 0), 0);
+  const redeemableValue = redeemablePositions.reduce((s: number, p: any) => s + (parseFloat(p.currentValue) || 0), 0);
 
   return {
-    realizedPNL: Math.round(realizedPNL * 100) / 100,
-    unrealizedPNL: Math.round(unrealizedPNL * 100) / 100,
-    totalPNL: Math.round((realizedPNL + unrealizedPNL) * 100) / 100,
-    closedCount: closedPositions.length,
-    openCount: openPositions.length,
+    realizedPNL:        Math.round(realizedPNL * 100) / 100,
+    unrealizedPNL:      Math.round(unrealizedPNL * 100) / 100,
+    activeUnrealizedPNL: Math.round(activeUnrealizedPNL * 100) / 100,
+    totalPNL:           Math.round((realizedPNL + unrealizedPNL) * 100) / 100,
+    closedCount:        closedPositions.length,
+    openCount:          openPositions.length,
+    activeOpenCount:    activePositions.length,
+    redeemableCount:    redeemablePositions.length,
+    redeemableValue:    Math.round(redeemableValue * 100) / 100,
+    totalInvested:      Math.round(totalInvested * 100) / 100,
+    overallROI,
+    last30dPNL:         Math.round(pnl30 * 100) / 100,
+    last30dInvested:    Math.round(inv30 * 100) / 100,
+    last30dCount:       closed30.length,
+    last30dROI,
+    last90dPNL:         Math.round(pnl90 * 100) / 100,
+    last90dInvested:    Math.round(inv90 * 100) / 100,
+    last90dCount:       closed90.length,
+    last90dROI,
     pnlWinRate,
+    winRate30,
+    winRate90,
+    avgBetUSDC,
+    medianBetUSDC,
+    monthlyROI,
     closedByCategory,
   };
 }
 
-// Patch an existing trader profile with canonical PNL — fast, no full recompute.
+// Compute a quality score from canonical metrics (0-100)
+function computeCanonicalQualityScore(c: CanonicalPNL): number {
+  const pnl = c.totalPNL;
+  const roi = c.overallROI;
+  const wr = c.pnlWinRate;
+  const trades = c.closedCount;
+  const roi30 = c.last30dROI;
+
+  // PNL size component (0-25 pts): logarithmic scale, $100K = 20pts, $1M = 25pts
+  const pnlPts = pnl <= 0 ? 0
+    : Math.min(25, Math.round(Math.log10(Math.max(pnl, 1)) / Math.log10(1_000_000) * 25));
+
+  // ROI component (0-25 pts): 5% ROI = 15pts, 10%+ = 25pts (cap at 25)
+  const roiPts = roi <= 0 ? 0 : Math.min(25, Math.round(roi / 10 * 25));
+
+  // Win rate component (0-20 pts): 50% = 0pts, 60% = 15pts, 70%+ = 20pts
+  const wrPts = wr < 50 ? 0 : Math.min(20, Math.round((wr - 50) / 20 * 20));
+
+  // Sample size / volume (0-15 pts): 100 trades = 5pts, 1000+ = 15pts
+  const tradePts = Math.min(15, Math.round(Math.min(trades, 2000) / 2000 * 15));
+
+  // Recent momentum (0-15 pts): last30d ROI vs overall
+  const momentumPts = roi30 > 0
+    ? (roi30 >= roi ? 15 : Math.round((roi30 / Math.max(roi, 1)) * 15))
+    : 0;
+
+  return Math.min(99, Math.max(1, pnlPts + roiPts + wrPts + tradePts + momentumPts));
+}
+
+// Patch an existing trader profile with canonical PNL + full metrics.
+// This is the authoritative source of truth for all metric values displayed on the Traders page.
 export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
   wallet: string; username: string; totalPNL: number; realizedPNL: number; unrealizedPNL: number;
 } | null> {
@@ -1495,28 +1625,58 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
       return null;
     }
 
-    const canonical = await fetchCanonicalPNL(w);
+    const c = await fetchCanonicalPNL(w);
+    const qualityScore = computeCanonicalQualityScore(c);
 
-    // Merge into existing metrics JSONB — only PNL-related fields are overwritten
+    // All canonical metrics — these are authoritative and override activity-based values
+    const canonicalMetrics = {
+      overallPNL:          c.totalPNL,
+      realizedPNL:         c.realizedPNL,
+      unrealizedPNL:       c.unrealizedPNL,
+      activeUnrealizedPNL: c.activeUnrealizedPNL,
+      closedPositionCount: c.closedCount,
+      openPositionCount:   c.openCount,
+      activeOpenCount:     c.activeOpenCount,
+      redeemableCount:     c.redeemableCount,
+      redeemableValue:     c.redeemableValue,
+      totalInvested:       c.totalInvested,
+      overallROI:          c.overallROI,
+      last30dROI:          c.last30dROI,
+      last30dPNL:          c.last30dPNL,
+      last30dInvested:     c.last30dInvested,
+      last30dCount:        c.last30dCount,
+      last90dROI:          c.last90dROI,
+      last90dPNL:          c.last90dPNL,
+      last90dInvested:     c.last90dInvested,
+      last90dCount:        c.last90dCount,
+      winRate:             c.pnlWinRate,
+      pnlWinRate:          c.pnlWinRate,
+      winRate30:           c.winRate30,
+      winRate90:           c.winRate90,
+      avgBetSize:          c.avgBetUSDC,
+      medianBetSize:       c.medianBetUSDC,
+      totalTrades:         c.closedCount,
+      monthlyROI:          c.monthlyROI,
+      closedByCategory:    c.closedByCategory,
+      pnlSource:           "closed_positions_api",
+      pnlUpdatedAt:        new Date().toISOString(),
+    };
+
     await pool.query(`
       UPDATE elite_trader_profiles
       SET metrics = metrics || $2::jsonb,
-          computed_at = NOW()
+          computed_at = NOW(),
+          quality_score = $3
       WHERE wallet = $1
-    `, [w, JSON.stringify({
-      overallPNL: canonical.totalPNL,
-      realizedPNL: canonical.realizedPNL,
-      unrealizedPNL: canonical.unrealizedPNL,
-      closedPositionCount: canonical.closedCount,
-      openPositionCount: canonical.openCount,
-      pnlWinRate: canonical.pnlWinRate,
-      closedByCategory: canonical.closedByCategory,
-      pnlSource: "closed_positions_api",
-      pnlUpdatedAt: new Date().toISOString(),
-    })]);
+    `, [w, JSON.stringify(canonicalMetrics), qualityScore]);
 
-    console.log(`[Elite/PNL] ${username}: total=$${canonical.totalPNL.toFixed(0)} realized=$${canonical.realizedPNL.toFixed(0)} unrealized=$${canonical.unrealizedPNL.toFixed(0)} (${canonical.closedCount} closed positions)`);
-    return { wallet: w, username, ...canonical };
+    console.log(
+      `[Elite/PNL] ${username}: pnl=$${c.totalPNL.toFixed(0)} ` +
+      `roi=${c.overallROI.toFixed(1)}% 30d=${c.last30dROI.toFixed(1)}% 90d=${c.last90dROI.toFixed(1)}% ` +
+      `wr=${c.pnlWinRate.toFixed(1)}% qs=${qualityScore} ` +
+      `(${c.closedCount} closed, ${c.activeOpenCount} live open)`
+    );
+    return { wallet: w, username, totalPNL: c.totalPNL, realizedPNL: c.realizedPNL, unrealizedPNL: c.unrealizedPNL };
   } catch (err: any) {
     console.error(`[Elite/PNL] patchProfileWithCanonicalPNL failed for ${wallet}:`, err.message);
     return null;

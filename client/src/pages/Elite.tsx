@@ -57,11 +57,20 @@ interface TraderMetrics {
   overallPNL: number;
   realizedPNL?: number;
   unrealizedPNL?: number;
+  activeUnrealizedPNL?: number;
   closedPositionCount?: number;
   openPositionCount?: number;
+  activeOpenCount?: number;
+  redeemableCount?: number;
+  redeemableValue?: number;
+  totalInvested?: number;
   pnlWinRate?: number;
   pnlSource?: string;
   pnlUpdatedAt?: string;
+  winRate30?: number;
+  winRate90?: number;
+  last30dPNL?: number;
+  last90dPNL?: number;
   closedByCategory?: Record<string, { pnl: number; positions: number; wins: number; invested: number }>;
   winRate: number;
   last30dROI: number;
@@ -419,21 +428,45 @@ function TraderDeepDive({ wallet, username }: { wallet: string; username: string
                 <div>
                   <div className="text-[9px] text-muted-foreground">Realized</div>
                   <div className={`text-xs font-bold ${roiColor(m.realizedPNL)}`}>{fmtUSDC(m.realizedPNL)}</div>
-                  <div className="text-[9px] text-muted-foreground">{m.closedPositionCount ?? 0} positions</div>
+                  <div className="text-[9px] text-muted-foreground">{m.closedPositionCount ?? 0} closed</div>
                 </div>
                 <div>
-                  <div className="text-[9px] text-muted-foreground">Unrealized</div>
-                  <div className={`text-xs font-bold ${roiColor(m.unrealizedPNL)}`}>{fmtUSDC(m.unrealizedPNL)}</div>
-                  <div className="text-[9px] text-muted-foreground">{m.openPositionCount ?? 0} open</div>
+                  <div className="text-[9px] text-muted-foreground">
+                    {m.activeUnrealizedPNL != null ? "Active P&L" : "Open P&L"}
+                  </div>
+                  <div className={`text-xs font-bold ${roiColor(m.activeUnrealizedPNL ?? m.unrealizedPNL)}`}>
+                    {fmtUSDC(m.activeUnrealizedPNL ?? m.unrealizedPNL)}
+                  </div>
+                  <div className="text-[9px] text-muted-foreground">
+                    {m.activeOpenCount != null
+                      ? `${m.activeOpenCount} live`
+                      : `${m.openPositionCount ?? 0} open`}
+                  </div>
                 </div>
                 <div>
-                  <div className="text-[9px] text-muted-foreground">Position Win%</div>
+                  <div className="text-[9px] text-muted-foreground">Win Rate</div>
                   <div className={`text-xs font-bold ${(m.pnlWinRate ?? 0) >= 50 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
                     {m.pnlWinRate != null ? `${m.pnlWinRate.toFixed(1)}%` : "—"}
                   </div>
                   <div className="text-[9px] text-muted-foreground">of closed</div>
                 </div>
               </div>
+              {(m.redeemableCount ?? 0) > 0 && (
+                <div className="pt-1.5 border-t border-border/30 flex items-center justify-between">
+                  <div className="text-[9px] text-muted-foreground">
+                    <span className="text-amber-600 dark:text-amber-400 font-medium">{m.redeemableCount} redeemable</span>
+                    {" · "}
+                    <span className="text-green-600 dark:text-green-400 font-medium">
+                      {fmtUSDC(m.redeemableValue ?? 0)} claimable
+                    </span>
+                  </div>
+                  {m.totalInvested != null && m.totalInvested > 0 && (
+                    <div className="text-[9px] text-muted-foreground">
+                      {fmtUSDC(m.totalInvested)} invested
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-2">
