@@ -1615,16 +1615,6 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
     const uRow = await pool.query(`SELECT username FROM elite_traders WHERE wallet = $1`, [w]);
     const username = uRow.rows[0]?.username || w.slice(0, 10);
 
-    // Skip auto-refresh for traders with manually set PnL overrides
-    const overrideCheck = await pool.query(
-      `SELECT metrics->>'manualPnlOverride' as override FROM elite_trader_profiles WHERE wallet = $1`,
-      [w]
-    );
-    if (overrideCheck.rows[0]?.override === 'true') {
-      console.log(`[Elite/PNL] ${username}: skipping — manual PnL override active`);
-      return null;
-    }
-
     const c = await fetchCanonicalPNL(w);
     const qualityScore = computeCanonicalQualityScore(c);
 

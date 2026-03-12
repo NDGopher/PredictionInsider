@@ -72,9 +72,11 @@ A sports prediction market intelligence dashboard that surfaces consensus signal
 - **marketType**: live | pregame | futures (from categoriseMarket — time-based)
 - **relBetSize** (float): conviction multiplier — this bet vs trader's typical sports bet (weighted avg, estimated from volume/100 historical bets)
 - **slippagePct** (float): price movement after insiders bought (positive = moved in their favor; YES: currentPrice−avgEntry×100; NO: avgEntry−currentPrice×100)
-- **insiderSportsROI** (float): weighted average ROI of insiders backing this signal (weighted by position size)
-- **insiderTrades** (int): estimated total historical trades by these insiders (volume / ~$500 per trade)
+- **insiderSportsROI** (float): canonical sport-specific ROI of insiders (from DB `roiBySport`); falls back to overall canonical ROI then activity-based ROI; weighted by position size
+- **insiderTrades** (int): canonical closed position count from DB (`metrics.totalTrades`); accurate actual counts (e.g. LynxTitan=20,795, tcp2=18,684) — no longer estimated from volume/500
+- **insiderWinRate** (float): canonical win rate, sport-specific if available (from DB `roiBySport[sport].winRate`), else overall `winRate`; weighted by position size
 - **outcomeLabel**: human-readable bet description (e.g. "Warriors WIN", "Over 225.5", "-6.5 covers")
+- **sportRoi** (float|null): per-trader sport-specific ROI from canonical DB (null if fewer than 5 trades in that sport)
 
 ## Signal Tiers
 
@@ -120,6 +122,22 @@ All 42 curated traders have PNL sourced from Polymarket's official closed positi
 - TheMangler: correctly -$3.14M
 
 **DB fields in `elite_trader_profiles.metrics`**: `overallPNL`, `realizedPNL`, `unrealizedPNL`, `pnlSource` (="closed_positions_api"), `pnlUpdatedAt`, `closedPositionCount`, `openPositionCount`
+
+## Canonical Metrics in Signal Scoring (Critical)
+
+`loadCanonicalMetricsFromDB()` in `routes.ts` fetches `roiBySport`, `roiByMarketType`, `overallROI`, `totalTrades`, `winRate` from `elite_trader_profiles.metrics` for all curated traders. Results are cached 10 minutes in `_canonicalCache`.
+
+Loaded in **Phase 1** of `/api/signals` alongside `buildMarketDatabase()` — fully parallel.
+
+**Sport-specific ROI fallback chain** (used for both `avgROI` in `computeConfidence` and `insiderSportsROI`):
+1. `canonicalMap.get(wallet)?.roiBySport[sport]?.roi` — if tradeCount ≥ 5 for that sport
+2. `canonicalMap.get(wallet)?.overallROI` — if non-zero
+3. `lbMap.get(wallet)?.roi` — activity-based estimate (fallback)
+
+**Counter-trader consensus penalty** (in `computeConfidence`):
+- Each tracked trader on the opposite side reduces effective consensus by 20 points (max −40)
+- Formula: `adjustedConsPct = max(0, consensusPct − counterTraderCount * 20)` then scored normally
+- Example: 100% consensus with 2 counter traders → 60% effective → consPct score of `(60-50)/50 * 100 * 0.30 = 6`
 
 ## External APIs Used
 
