@@ -10,10 +10,14 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
 import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
+} from "@/components/ui/dialog";
+import {
   Zap, Search, ExternalLink, TrendingUp, TrendingDown, AlertCircle,
   RefreshCw, Users, Target, ChevronDown, ChevronUp, Star, Activity,
   Bell, BellOff, Clock, DollarSign, ShieldCheck, AlertTriangle, Radio,
-  Hourglass, CalendarClock, BarChart2, Flame, ChevronRight, BookmarkPlus, EyeOff, X
+  Hourglass, CalendarClock, BarChart2, Flame, ChevronRight, BookmarkPlus, EyeOff, X,
+  CheckCircle2
 } from "lucide-react";
 import { Link } from "wouter";
 import type { SignalsResponse, Signal } from "@shared/schema";
@@ -264,11 +268,250 @@ function getOutcomeLabel(title: string, side: "YES" | "NO"): string {
   return side;
 }
 
+// ─── Odds helpers ──────────────────────────────────────────────────────────────
+function priceToAmericanNum(p: number): number {
+  if (p <= 0 || p >= 1) return 0;
+  if (p >= 0.5) return Math.round(-p / (1 - p) * 100);
+  return Math.round((1 - p) / p * 100);
+}
+function americanToImplied(odds: number): number {
+  if (odds === 0) return 0;
+  if (odds > 0) return 100 / (odds + 100);
+  return Math.abs(odds) / (Math.abs(odds) + 100);
+}
+
+// ─── Track Bet Modal ───────────────────────────────────────────────────────────
+type BookType = "Kalshi" | "PPH" | "Polymarket";
+
+function TrackBetModal({
+  signal,
+  outcomeLabel,
+  open,
+  onClose,
+}: {
+  signal: Signal;
+  outcomeLabel: string;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const { toast } = useToast();
+  const signalPrice = signal.avgEntryPrice || signal.currentPrice;
+  const defaultOdds = priceToAmericanNum(signalPrice);
+
+  const [book, setBook] = useState<BookType>("Kalshi");
+  const [oddsStr, setOddsStr] = useState(defaultOdds > 0 ? `+${defaultOdds}` : String(defaultOdds));
+  const [betAmount, setBetAmount] = useState("");
+  const [notes, setNotes] = useState("");
+
+  // Parse odds input
+  function parseOdds(raw: string): number | null {
+    const n = parseInt(raw.replace(/[^-+0-9]/g, ""), 10);
+    if (isNaN(n) || n === 0 || (n > -100 && n < 100)) return null;
+    return n;
+  }
+
+  const oddsNum = parseOdds(oddsStr);
+  const impliedProb = oddsNum ? americanToImplied(oddsNum) : null;
+  const betAmtNum = parseFloat(betAmount);
+  const potentialWin = oddsNum && !isNaN(betAmtNum) && betAmtNum > 0
+    ? oddsNum > 0
+      ? betAmtNum * oddsNum / 100
+      : betAmtNum * 100 / Math.abs(oddsNum)
+    : null;
+
+  function handleSave() {
+    if (!oddsNum || !betAmtNum || betAmtNum <= 0) return;
+    try {
+      const bets = JSON.parse(localStorage.getItem(BET_KEY) || "[]");
+      bets.unshift({
+        id: `bet-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        marketQuestion: signal.marketQuestion,
+        outcomeLabel,
+        side: signal.side,
+        conditionId: signal.marketId,
+        slug: (signal as any).slug,
+        entryPrice: impliedProb || signalPrice,
+        betAmount: betAmtNum,
+        betDate: Date.now(),
+        status: "open",
+        book,
+        americanOdds: oddsNum,
+        polymarketPrice: signalPrice,
+        sport: (signal as any).sport,
+        notes: notes.trim() || `Signal confidence: ${signal.confidence}/95`,
+      });
+      localStorage.setItem(BET_KEY, JSON.stringify(bets));
+      toast({ title: "Bet tracked!", description: `${outcomeLabel} · ${oddsNum > 0 ? "+" : ""}${oddsNum} · ${book}` });
+      onClose();
+    } catch {
+      toast({ title: "Error", description: "Could not save bet.", variant: "destructive" });
+    }
+  }
+
+  // Reset odds when signal changes
+  useEffect(() => {
+    if (open) {
+      const d = priceToAmericanNum(signalPrice);
+      setOddsStr(d > 0 ? `+${d}` : String(d));
+      setBetAmount("");
+      setNotes("");
+    }
+  }, [open, signalPrice]);
+
+  const BOOKS: BookType[] = ["Kalshi", "PPH", "Polymarket"];
+
+  return (
+    <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
+      <DialogContent className="max-w-sm" data-testid="modal-track-bet">
+        <DialogHeader>
+          <DialogTitle className="text-base flex items-center gap-2">
+            <BookmarkPlus className="w-4 h-4 text-primary" />
+            Track Bet
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4 py-1">
+          {/* Bet info (read-only) */}
+          <div className="rounded-lg bg-muted/50 border border-border p-3 space-y-1">
+            <div className="text-xs text-muted-foreground">{signal.marketQuestion}</div>
+            <div className="flex items-center gap-2">
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
+                signal.side === "YES"
+                  ? "bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/25"
+                  : "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/25"
+              }`}>
+                {signal.side === "YES" ? "▲ YES" : "▼ NO"}
+              </span>
+              <span className="text-sm font-bold">{outcomeLabel}</span>
+            </div>
+            <div className="text-[10px] text-muted-foreground">
+              Polymarket signal @ {Math.round(signalPrice * 100)}¢
+              {" "}({priceToAmericanNum(signalPrice) > 0 ? "+" : ""}{priceToAmericanNum(signalPrice)})
+              {(signal as any).sport && <span className="ml-1 text-primary">· {(signal as any).sport}</span>}
+            </div>
+          </div>
+
+          {/* Book selector */}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Where are you placing this bet?</label>
+            <div className="flex gap-2">
+              {BOOKS.map(b => (
+                <button
+                  key={b}
+                  onClick={() => setBook(b)}
+                  className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors ${
+                    book === b
+                      ? b === "Kalshi"
+                        ? "bg-purple-600 text-white border-purple-600"
+                        : b === "PPH"
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-muted-foreground border-border hover:border-primary/50"
+                  }`}
+                  data-testid={`button-book-${b}`}
+                >
+                  {b}
+                </button>
+              ))}
+            </div>
+            {book === "Kalshi" && (
+              <div className="mt-2 p-2 rounded bg-purple-500/10 border border-purple-500/20 text-[10px] text-purple-700 dark:text-purple-300">
+                <strong>Kalshi fees:</strong> They charge ~2% of winnings on settlement. Enter your <strong>actual net odds</strong> after fees (e.g. Kalshi shows +318, enter +318 — not the raw +354).
+              </div>
+            )}
+          </div>
+
+          {/* American Odds input */}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+              Your actual odds (American)
+            </label>
+            <div className="flex gap-2 items-center">
+              <Input
+                value={oddsStr}
+                onChange={e => setOddsStr(e.target.value)}
+                placeholder="+318 or -150"
+                className="h-10 text-lg font-bold text-center"
+                data-testid="input-american-odds"
+              />
+            </div>
+            {oddsNum && impliedProb && (
+              <div className="mt-1 flex items-center gap-2 text-[10px]">
+                <span className="text-muted-foreground">Implied probability: <strong className="text-foreground">{(impliedProb * 100).toFixed(1)}%</strong></span>
+                {signalPrice && (
+                  <span className={`${impliedProb < signalPrice - 0.02 ? "text-red-500" : impliedProb > signalPrice + 0.02 ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
+                    {impliedProb < signalPrice - 0.02
+                      ? `⚠ Worse than PM (${Math.round(signalPrice * 100)}¢)`
+                      : impliedProb > signalPrice + 0.02
+                      ? `✓ Better than PM (${Math.round(signalPrice * 100)}¢)`
+                      : `≈ Matches PM (${Math.round(signalPrice * 100)}¢)`}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Bet amount */}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+              Bet amount ($)
+            </label>
+            <Input
+              type="number"
+              min="1"
+              value={betAmount}
+              onChange={e => setBetAmount(e.target.value)}
+              placeholder="e.g. 50"
+              className="h-10 text-base font-semibold"
+              data-testid="input-bet-amount-modal"
+            />
+            {potentialWin !== null && (
+              <div className="mt-1 text-[10px] text-green-600 dark:text-green-400 font-medium">
+                To win: <strong>${potentialWin.toFixed(2)}</strong>
+                {" "}&middot; Total return: <strong>${(betAmtNum + potentialWin).toFixed(2)}</strong>
+              </div>
+            )}
+          </div>
+
+          {/* Optional notes */}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Notes (optional)</label>
+            <Input
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              placeholder={`Signal confidence: ${signal.confidence}/95`}
+              className="h-8 text-xs"
+              data-testid="input-bet-notes-modal"
+            />
+          </div>
+        </div>
+
+        <DialogFooter className="gap-2">
+          <Button variant="outline" size="sm" onClick={onClose} data-testid="button-cancel-bet">
+            Cancel
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleSave}
+            disabled={!oddsNum || !betAmtNum || betAmtNum <= 0}
+            className="gap-1.5"
+            data-testid="button-save-bet"
+          >
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            Track Bet
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function SignalCard({ signal, mode, onSnoozed }: { signal: Signal; mode: "elite" | "fast"; onSnoozed?: (id: string) => void }) {
   const [expanded, setExpanded] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [livePrice, setLivePrice] = useState<number | null>(null);
   const [showSnoozeMenu, setShowSnoozeMenu] = useState(false);
+  const [showBetModal, setShowBetModal] = useState(false);
   const { toast } = useToast();
 
   // Auto-show score breakdown when card is expanded
@@ -307,6 +550,7 @@ function SignalCard({ signal, mode, onSnoozed }: { signal: Signal; mode: "elite"
   const avgNetUsdc   = (signal as any).avgNetUsdc   as number | undefined;
 
   return (
+    <>
     <Card className={`border ${borderCls}`} data-testid={`signal-card-${signal.id}`}>
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
@@ -605,21 +849,15 @@ function SignalCard({ signal, mode, onSnoozed }: { signal: Signal; mode: "elite"
                 )}
               </div>
               <div className="flex items-center gap-1.5">
-                {/* Track Bet button */}
-                <Link href="/bets">
-                  <button
-                    onClick={() => {
-                      const outcomeLabel = getOutcomeLabel(signal.marketQuestion, signal.side as "YES" | "NO");
-                      trackBetFromSignal(signal, outcomeLabel);
-                      toast({ title: "Bet logged!", description: `Added ${outcomeLabel} to My Bets. Set your amount there.` });
-                    }}
-                    className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
-                    data-testid={`button-track-bet-${signal.id}`}
-                    title="Log this signal as a bet"
-                  >
-                    <BookmarkPlus className="w-3 h-3" /> Track
-                  </button>
-                </Link>
+                {/* Track Bet button — opens modal */}
+                <button
+                  onClick={e => { e.stopPropagation(); setShowBetModal(true); }}
+                  className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors border border-primary/20 hover:border-primary/40 rounded px-2 py-0.5 bg-primary/5 hover:bg-primary/10"
+                  data-testid={`button-track-bet-${signal.id}`}
+                  title="Track this bet"
+                >
+                  <BookmarkPlus className="w-3 h-3" /> Track
+                </button>
 
                 {/* Snooze button */}
                 <div className="relative">
@@ -810,6 +1048,15 @@ function SignalCard({ signal, mode, onSnoozed }: { signal: Signal; mode: "elite"
         </div>
       </CardContent>
     </Card>
+
+    {/* Track Bet modal — rendered here so it has access to signal state */}
+    <TrackBetModal
+      signal={signal}
+      outcomeLabel={getOutcomeLabel(signal.marketQuestion, signal.side as "YES" | "NO")}
+      open={showBetModal}
+      onClose={() => setShowBetModal(false)}
+    />
+  </>
   );
 }
 

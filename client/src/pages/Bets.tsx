@@ -29,6 +29,10 @@ interface TrackedBet {
   pnl?: number;
   notes?: string;
   snoozedUntil?: number;
+  book?: "PPH" | "Kalshi" | "Polymarket";
+  americanOdds?: number;
+  polymarketPrice?: number;
+  sport?: string;
 }
 
 // ─── Storage helpers ──────────────────────────────────────────────────────────
@@ -66,19 +70,21 @@ function useBets() {
       const updated = prev.map(b => {
         if (b.id !== id) return b;
         let pnl = 0;
-        if (resolvedPrice !== undefined && status !== "cancelled") {
-          if (b.side === "YES") {
-            pnl = status === "won" ? b.betAmount * (1 - b.entryPrice) / b.entryPrice : -b.betAmount;
-          } else {
-            const noEntry = 1 - b.entryPrice;
-            pnl = status === "won" ? b.betAmount * (1 - noEntry) / noEntry : -b.betAmount;
+        if (status !== "cancelled") {
+          if (status === "won") {
+            // Use actual americanOdds if we have them (most accurate)
+            if (b.americanOdds !== undefined) {
+              pnl = b.americanOdds > 0
+                ? b.betAmount * (b.americanOdds / 100)
+                : b.betAmount * (100 / Math.abs(b.americanOdds));
+            } else {
+              pnl = b.side === "YES"
+                ? b.betAmount * (1 - b.entryPrice) / b.entryPrice
+                : b.betAmount * b.entryPrice / (1 - b.entryPrice);
+            }
+          } else if (status === "lost") {
+            pnl = -b.betAmount;
           }
-        } else if (status === "won") {
-          pnl = b.side === "YES"
-            ? b.betAmount * (1 - b.entryPrice) / b.entryPrice
-            : b.betAmount * b.entryPrice / (1 - b.entryPrice);
-        } else if (status === "lost") {
-          pnl = -b.betAmount;
         }
         return { ...b, status, resolvedPrice, resolvedDate: Date.now(), pnl: Math.round(pnl * 100) / 100 };
       });
@@ -337,9 +343,13 @@ function BetCard({ bet, onResolve, onDelete, onUpdateNotes }: {
     cancelled: "bg-muted text-muted-foreground border-border",
   }[bet.status];
 
-  const potentialPnl = bet.side === "YES"
-    ? bet.betAmount * (1 - bet.entryPrice) / bet.entryPrice
-    : bet.betAmount * bet.entryPrice / (1 - bet.entryPrice);
+  const potentialPnl = bet.americanOdds !== undefined
+    ? (bet.americanOdds > 0
+        ? bet.betAmount * (bet.americanOdds / 100)
+        : bet.betAmount * (100 / Math.abs(bet.americanOdds)))
+    : bet.side === "YES"
+      ? bet.betAmount * (1 - bet.entryPrice) / bet.entryPrice
+      : bet.betAmount * bet.entryPrice / (1 - bet.entryPrice);
 
   return (
     <Card data-testid={`bet-card-${bet.id}`}>
@@ -372,11 +382,26 @@ function BetCard({ bet, onResolve, onDelete, onUpdateNotes }: {
         </div>
 
         {/* Key numbers row */}
-        <div className="flex items-center gap-4 text-xs">
+        <div className="flex items-center gap-4 text-xs flex-wrap">
+          {bet.book && (
+            <div>
+              <span className={`font-bold px-1.5 py-0.5 rounded text-[10px] ${
+                bet.book === "Kalshi" ? "bg-purple-500/15 text-purple-700 dark:text-purple-300" :
+                bet.book === "PPH" ? "bg-blue-500/15 text-blue-700 dark:text-blue-300" :
+                "bg-primary/10 text-primary"
+              }`}>{bet.book}</span>
+            </div>
+          )}
           <div>
-            <span className="text-muted-foreground">Entry: </span>
-            <span className="font-bold">{Math.round(bet.entryPrice * 100)}¢</span>
-            <span className="text-muted-foreground ml-1">({toAmericanOdds(bet.entryPrice)})</span>
+            <span className="text-muted-foreground">Odds: </span>
+            <span className="font-bold">
+              {bet.americanOdds !== undefined
+                ? (bet.americanOdds > 0 ? `+${bet.americanOdds}` : `${bet.americanOdds}`)
+                : toAmericanOdds(bet.entryPrice)}
+            </span>
+            {bet.polymarketPrice && bet.americanOdds !== undefined && (
+              <span className="text-muted-foreground ml-1">(PM: {Math.round(bet.polymarketPrice * 100)}¢)</span>
+            )}
           </div>
           <div>
             <span className="text-muted-foreground">Bet: </span>
