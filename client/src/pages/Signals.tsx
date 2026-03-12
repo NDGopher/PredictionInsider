@@ -288,11 +288,13 @@ function TrackBetModal({
   outcomeLabel,
   open,
   onClose,
+  onBetTracked,
 }: {
   signal: Signal;
   outcomeLabel: string;
   open: boolean;
   onClose: () => void;
+  onBetTracked?: () => void;
 }) {
   const { toast } = useToast();
   const signalPrice = signal.avgEntryPrice || signal.currentPrice;
@@ -350,6 +352,7 @@ function TrackBetModal({
       });
       localStorage.setItem(BET_KEY, JSON.stringify(bets));
       toast({ title: "Bet tracked!", description: `${outcomeLabel} · ${oddsNum > 0 ? "+" : ""}${oddsNum} · ${book}` });
+      onBetTracked?.();
       onClose();
     } catch {
       toast({ title: "Error", description: "Could not save bet.", variant: "destructive" });
@@ -508,7 +511,7 @@ function TrackBetModal({
   );
 }
 
-function SignalCard({ signal, mode, onSnoozed }: { signal: Signal; mode: "elite" | "fast"; onSnoozed?: (id: string) => void }) {
+function SignalCard({ signal, mode, onSnoozed, onBetTracked }: { signal: Signal; mode: "elite" | "fast"; onSnoozed?: (id: string) => void; onBetTracked?: () => void }) {
   const [expanded, setExpanded] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [livePrice, setLivePrice] = useState<number | null>(null);
@@ -1062,6 +1065,7 @@ function SignalCard({ signal, mode, onSnoozed }: { signal: Signal; mode: "elite"
       outcomeLabel={getOutcomeLabel(signal.marketQuestion, signal.side as "YES" | "NO")}
       open={showBetModal}
       onClose={() => setShowBetModal(false)}
+      onBetTracked={onBetTracked}
     />
   </>
   );
@@ -1371,6 +1375,23 @@ export default function Signals() {
     return new Set(Object.entries(s).filter(([, v]) => v > now).map(([k]) => k));
   });
 
+  // Tracked bets — conditionIds of open bets so we can flag/hide matching signals
+  const [trackedConditionIds, setTrackedConditionIds] = useState<Set<string>>(() => {
+    try {
+      const bets: Array<{ conditionId?: string; status: string }> = JSON.parse(localStorage.getItem(BET_KEY) || "[]");
+      return new Set(bets.filter(b => b.status === "open" && b.conditionId).map(b => b.conditionId!));
+    } catch { return new Set(); }
+  });
+  const [hideTracked, setHideTracked] = useState(true);
+
+  // Refresh tracked conditionIds whenever localStorage changes (e.g. after saving a bet)
+  const refreshTrackedIds = useCallback(() => {
+    try {
+      const bets: Array<{ conditionId?: string; status: string }> = JSON.parse(localStorage.getItem(BET_KEY) || "[]");
+      setTrackedConditionIds(new Set(bets.filter(b => b.status === "open" && b.conditionId).map(b => b.conditionId!)));
+    } catch {}
+  }, []);
+
   const handleSnoozed = useCallback((id: string) => {
     setSnoozedIds(prev => new Set([...prev, id]));
   }, []);
@@ -1462,6 +1483,8 @@ export default function Signals() {
     .filter(s => {
       if (snoozedIds.has(s.id)) return false;
       if (search && !s.marketQuestion.toLowerCase().includes(search.toLowerCase())) return false;
+      // Hide signals where user already has an open bet tracked
+      if (hideTracked && trackedConditionIds.has((s as any).marketId)) return false;
       if (filter === "best_bets") return s.confidence >= 70 && s.isActionable && s.valueDelta > 0;
       if (filter === "value")   return s.isValue;
       if (filter === "high")    return s.confidence >= 70;
@@ -1841,9 +1864,47 @@ export default function Signals() {
               </button>
             </div>
           )}
-          {filtered.map(signal => (
-            <SignalCard key={signal.id} signal={signal} mode={mode} onSnoozed={handleSnoozed} />
-          ))}
+          {/* Tracked bets notice */}
+          {(() => {
+            const hiddenCount = signals.filter(s =>
+              !snoozedIds.has(s.id) &&
+              trackedConditionIds.has((s as any).marketId)
+            ).length;
+            if (hiddenCount === 0) return null;
+            return (
+              <div className="flex items-center justify-between text-xs px-2 py-2 rounded-lg bg-green-500/10 border border-green-500/20 text-green-700 dark:text-green-300">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                  <strong>{hiddenCount}</strong> signal{hiddenCount !== 1 ? "s" : ""} hidden — you already have action on {hiddenCount !== 1 ? "these markets" : "this market"}
+                </span>
+                <button
+                  onClick={() => setHideTracked(h => !h)}
+                  className="text-green-700 dark:text-green-300 hover:underline ml-2 shrink-0 font-medium"
+                  data-testid="button-toggle-hide-tracked"
+                >
+                  {hideTracked ? "Show" : "Hide"}
+                </button>
+              </div>
+            );
+          })()}
+          {filtered.map(signal => {
+            const hasAction = !hideTracked && trackedConditionIds.has((signal as any).marketId);
+            return (
+              <div key={signal.id} className="relative">
+                {hasAction && (
+                  <div className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-600 text-white text-[10px] font-bold shadow">
+                    <CheckCircle2 className="w-3 h-3" /> You have action
+                  </div>
+                )}
+                <SignalCard
+                  signal={signal}
+                  mode={mode}
+                  onSnoozed={handleSnoozed}
+                  onBetTracked={refreshTrackedIds}
+                />
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

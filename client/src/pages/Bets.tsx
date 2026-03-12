@@ -109,7 +109,18 @@ function useBets() {
     });
   }, []);
 
-  return { bets, addBet, resolveBet, deleteBet, updateNotes };
+  const reopenBet = useCallback((id: string) => {
+    setBets(prev => {
+      const updated = prev.map(b => b.id === id
+        ? { ...b, status: "open" as BetStatus, resolvedPrice: undefined, resolvedDate: undefined, pnl: undefined }
+        : b
+      );
+      saveBets(updated);
+      return updated;
+    });
+  }, []);
+
+  return { bets, addBet, resolveBet, deleteBet, updateNotes, reopenBet };
 }
 
 // ─── Snooze helpers ───────────────────────────────────────────────────────────
@@ -144,12 +155,22 @@ export function isSignalSnoozed(signalId: string): boolean {
 
 const AUTO_GRADE_INTERVAL_MS = 5 * 60 * 1000; // every 5 minutes
 
-function useAutoGrade(bets: TrackedBet[], resolveBet: (id: string, status: "won" | "lost" | "cancelled", resolvedPrice?: number) => void) {
+const MIN_AGE_BEFORE_GRADE_MS = 60 * 60 * 1000; // 1 hour — prevents immediate grading of newly added bets
+
+function useAutoGrade(_bets: TrackedBet[], resolveBet: (id: string, status: "won" | "lost" | "cancelled", resolvedPrice?: number) => void) {
   const [lastGraded, setLastGraded] = useState<string | null>(null);
 
   useEffect(() => {
     async function checkResolutions() {
-      const openBets = bets.filter(b => b.status === "open" && b.conditionId);
+      // Always read FRESH bets from localStorage to avoid stale-closure overwrites
+      const freshBets = loadBets();
+      const now = Date.now();
+      const openBets = freshBets.filter(b =>
+        b.status === "open" &&
+        b.conditionId &&
+        // Only grade bets that are old enough (prevents immediate grading of new bets)
+        (now - (b.betDate || 0)) > MIN_AGE_BEFORE_GRADE_MS
+      );
       if (openBets.length === 0) return;
 
       for (const bet of openBets) {
@@ -158,6 +179,11 @@ function useAutoGrade(bets: TrackedBet[], resolveBet: (id: string, status: "won"
           if (!res.ok) continue;
           const data: { resolved: boolean; outcome: "YES" | "NO" | null; finalPrice: number | null } = await res.json();
           if (!data.resolved || !data.outcome) continue;
+
+          // Double-check the bet is STILL open in localStorage (user might have manually resolved it)
+          const currentBets = loadBets();
+          const currentBet = currentBets.find(b => b.id === bet.id);
+          if (!currentBet || currentBet.status !== "open") continue;
 
           const won = data.outcome === bet.side;
           resolveBet(bet.id, won ? "won" : "lost", data.finalPrice ?? undefined);
@@ -170,7 +196,7 @@ function useAutoGrade(bets: TrackedBet[], resolveBet: (id: string, status: "won"
     checkResolutions();
     const iv = setInterval(checkResolutions, AUTO_GRADE_INTERVAL_MS);
     return () => clearInterval(iv);
-  }, [bets.length]); // re-runs if bet count changes
+  }, [_bets.length]); // re-runs if bet count changes
 
   return lastGraded;
 }
@@ -324,11 +350,12 @@ function AddBetForm({ onAdd, onCancel, prefill }: {
 
 // ─── Bet card ─────────────────────────────────────────────────────────────────
 
-function BetCard({ bet, onResolve, onDelete, onUpdateNotes }: {
+function BetCard({ bet, onResolve, onDelete, onUpdateNotes, onReopen }: {
   bet: TrackedBet;
   onResolve: (id: string, status: "won" | "lost" | "cancelled", price?: number) => void;
   onDelete: (id: string) => void;
   onUpdateNotes: (id: string, notes: string) => void;
+  onReopen: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [resolveMode, setResolveMode] = useState(false);
@@ -356,12 +383,8 @@ function BetCard({ bet, onResolve, onDelete, onUpdateNotes }: {
       <CardContent className="p-3 space-y-2">
         {/* Header row */}
         <div className="flex items-start gap-2">
-          <div className={`shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold border ${
-            bet.side === "YES"
-              ? "bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/20"
-              : "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/20"
-          }`}>
-            {bet.side}
+          <div className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold border bg-primary/10 text-primary border-primary/20">
+            BET
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-semibold leading-tight">{bet.outcomeLabel}</div>
@@ -511,6 +534,17 @@ function BetCard({ bet, onResolve, onDelete, onUpdateNotes }: {
               </div>
             )}
 
+            {/* Reopen for resolved bets (allows correcting wrong auto-grades) */}
+            {bet.status !== "open" && (
+              <button
+                onClick={() => onReopen(bet.id)}
+                className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-blue-500 transition-colors"
+                data-testid={`button-reopen-bet-${bet.id}`}
+              >
+                <RefreshCw className="w-3 h-3" /> Reopen
+              </button>
+            )}
+
             {/* Delete */}
             <button
               onClick={() => onDelete(bet.id)}
@@ -529,7 +563,7 @@ function BetCard({ bet, onResolve, onDelete, onUpdateNotes }: {
 // ─── Main Bets page ───────────────────────────────────────────────────────────
 
 export default function Bets() {
-  const { bets, addBet, resolveBet, deleteBet, updateNotes } = useBets();
+  const { bets, addBet, resolveBet, deleteBet, updateNotes, reopenBet } = useBets();
   useAutoGrade(bets, resolveBet);
   const [showAddForm, setShowAddForm] = useState(false);
   const [filter, setFilter] = useState<"all" | "open" | "resolved">("all");
@@ -641,6 +675,7 @@ export default function Bets() {
               onResolve={resolveBet}
               onDelete={deleteBet}
               onUpdateNotes={updateNotes}
+              onReopen={reopenBet}
             />
           ))}
         </div>
