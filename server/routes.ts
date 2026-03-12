@@ -3236,6 +3236,90 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  // ── GET /api/trader/quick/:wallet ─────────────────────────────────────────────
+  // Returns quick stats for any trader — checks elite DB first, falls back to Polymarket API
+  app.get("/api/trader/quick/:wallet", async (req, res) => {
+    try {
+      const raw = req.params.wallet;
+      const wallet = raw.toLowerCase().slice(0, 42); // strip any -timestamp suffix
+
+      // 1. Check elite_traders DB first (instant)
+      const eliteRow = await elitePool.query(
+        `SELECT et.*, etp.quality_score, etp.sport_roi, etp.roi, etp.win_rate, etp.total_bets, etp.tags, etp.sport
+         FROM elite_traders et
+         LEFT JOIN elite_trader_profiles etp ON et.wallet = etp.wallet
+         WHERE et.wallet = $1`,
+        [wallet]
+      );
+      if (eliteRow.rows[0]) {
+        const r = eliteRow.rows[0];
+        return res.json({
+          source: "elite",
+          wallet,
+          username: r.username || r.polymarket_url?.split("@")[1] || null,
+          qualityScore: r.quality_score ?? null,
+          roi: r.roi ?? null,
+          sportRoi: r.sport_roi ?? null,
+          winRate: r.win_rate ?? null,
+          totalBets: r.total_bets ?? null,
+          sport: r.sport ?? null,
+          tags: r.tags ?? [],
+          isElite: true,
+        });
+      }
+
+      // 2. Fall back to live Polymarket activity fetch
+      const actUrl = `https://data-api.polymarket.com/activity?user=${wallet}&limit=500&type=TRADE`;
+      const actRes = await fetch(actUrl, { headers: { "Accept": "application/json" } });
+      if (!actRes.ok) return res.status(502).json({ error: "Polymarket API error", status: actRes.status });
+      const activity: any[] = await actRes.json();
+
+      // Only look at BUY side (entries), filter to resolved markets for win/loss calc
+      const buys = activity.filter((a: any) => a.side === "BUY" && a.type === "TRADE");
+      const resolved = buys.filter((a: any) => a.resolved === true || a.pnl !== undefined);
+      const wins = resolved.filter((a: any) => (a.pnl ?? 0) > 0);
+      const totalVolume = buys.reduce((s: number, a: any) => s + (parseFloat(a.size) || 0), 0);
+      const totalPnl = resolved.reduce((s: number, a: any) => s + (parseFloat(a.pnl) || 0), 0);
+      const winRate = resolved.length > 0 ? Math.round(wins.length / resolved.length * 100) : null;
+      const roi = totalVolume > 0 && resolved.length > 0 ? Math.round(totalPnl / totalVolume * 100) : null;
+
+      // Detect sport tendencies from market titles
+      const titles = buys.map((a: any) => (a.title || "").toLowerCase()).join(" ");
+      const sportCounts: Record<string, number> = {};
+      const sportKeywords: Record<string, string[]> = {
+        NBA: ["nba", "lakers", "celtics", "warriors", "76ers", "heat", "bucks", "nuggets"],
+        NFL: ["nfl", "super bowl", "chiefs", "eagles", "cowboys", "patriots", "49ers"],
+        NHL: ["nhl", "stanley cup", "bruins", "leafs", "penguins", "oilers"],
+        MLB: ["mlb", "world series", "yankees", "dodgers", "red sox", "astros"],
+        Soccer: ["premier league", "mls", "champions league", "world cup", "bundesliga", "la liga"],
+      };
+      for (const [sport, kws] of Object.entries(sportKeywords)) {
+        sportCounts[sport] = kws.filter(kw => titles.includes(kw)).length;
+      }
+      const topSport = Object.entries(sportCounts).sort(([, a], [, b]) => b - a)[0];
+      const detectedSport = topSport && topSport[1] > 0 ? topSport[0] : null;
+
+      res.json({
+        source: "polymarket",
+        wallet,
+        username: null,
+        qualityScore: null,
+        roi,
+        sportRoi: null,
+        winRate,
+        totalBets: buys.length,
+        resolvedBets: resolved.length,
+        totalVolume: Math.round(totalVolume),
+        totalPnl: Math.round(totalPnl),
+        sport: detectedSport,
+        tags: detectedSport ? [detectedSport] : [],
+        isElite: false,
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // ── GET /api/market/resolve/:conditionId ─────────────────────────────────────
   // Auto-grading endpoint: returns market resolution status for open bets
   app.get("/api/market/resolve/:conditionId", async (req, res) => {

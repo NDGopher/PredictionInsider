@@ -666,6 +666,21 @@ export default function Dashboard() {
       refetchInterval: 30_000,
     });
 
+  // Quick trader stats (loaded on demand per wallet)
+  const [quickStats, setQuickStats] = useState<Record<string, any>>({});
+  const loadTraderStats = async (wallet: string) => {
+    const key = wallet.toLowerCase().slice(0, 42);
+    if (quickStats[key]) return; // already loaded or loading
+    setQuickStats(prev => ({ ...prev, [key]: "loading" }));
+    try {
+      const r = await fetch(`/api/trader/quick/${key}`);
+      const data = await r.json();
+      setQuickStats(prev => ({ ...prev, [key]: r.ok ? data : { error: data.error || "Failed" } }));
+    } catch (e: any) {
+      setQuickStats(prev => ({ ...prev, [key]: { error: e.message } }));
+    }
+  };
+
   // Live alerts via SSE — updates arrive automatically every 15s from the server
   const [alertsData, setAlertsData] = useState<{ alerts: any[]; fetchedAt: number } | null>(null);
   const [alertsLoading, setAlertsLoading] = useState(true);
@@ -895,15 +910,20 @@ export default function Dashboard() {
                       const isFetching = alert.conditionId ? fetchingPrice.has(alert.conditionId) : false;
                       const entryOdds = alert.americanOdds || toAmericanOdds(alert.price);
                       const tradeTimeStr = alert.timestamp ? timeAgo(alert.timestamp) : `${alert.minutesAgo}m ago`;
-                      // Look up enriched trader profile from leaderboard data
+                      // Look up enriched trader profile from leaderboard data first
                       const traderProfile = traders.find((t: any) =>
                         alert.wallet && (t.address?.toLowerCase() === alert.wallet.toLowerCase() || t.polyId?.toLowerCase() === alert.wallet.toLowerCase())
                       ) as any | undefined;
-                      const qs = traderProfile?.qualityScore || alert.qualityScore || 0;
-                      const roiDisplay = traderProfile?.sportRoi ?? traderProfile?.roi ?? alert.roi ?? 0;
-                      const roiLabel = traderProfile?.sportRoi !== undefined ? "Sport ROI" : "ROI";
-                      const winRate = traderProfile?.winRate ?? 0;
-                      const traderTags: string[] = traderProfile?.tags || [];
+                      // Fall back to quick-fetched stats
+                      const walletKey = alert.wallet?.toLowerCase().slice(0, 42) || "";
+                      const qsData = walletKey ? quickStats[walletKey] : undefined;
+                      const qsLoaded = qsData && qsData !== "loading" && !qsData.error;
+                      const effectiveProfile = traderProfile || (qsLoaded ? qsData : null);
+                      const qs = effectiveProfile?.qualityScore || alert.qualityScore || 0;
+                      const roiDisplay = effectiveProfile?.sportRoi ?? effectiveProfile?.roi ?? alert.roi ?? 0;
+                      const roiLabel = effectiveProfile?.sportRoi !== undefined ? "Sport ROI" : "ROI";
+                      const winRate = effectiveProfile?.winRate ?? 0;
+                      const traderTags: string[] = effectiveProfile?.tags || [];
                       return (
                       <div className="mb-2 mx-1 p-3 rounded-md bg-muted/50 border border-border space-y-2 text-xs">
                         {/* Full market title */}
@@ -914,6 +934,9 @@ export default function Dashboard() {
                           <span className="font-medium text-foreground">{alert.trader}</span>
                           {alert.isSportsLb && (
                             <span className="px-1 py-0.5 rounded bg-green-500/15 text-green-700 dark:text-green-300 border border-green-500/20 font-semibold">🏆 Sports LB</span>
+                          )}
+                          {alert.isTracked && !traderProfile && (
+                            <span className="px-1 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20 font-semibold">Elite Trader</span>
                           )}
                           {qs > 0 && (
                             <span className={`px-1 py-0.5 rounded border font-semibold ${qs >= 70 ? "bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/20" : qs >= 40 ? "bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 border-yellow-500/20" : "bg-muted text-muted-foreground border-border"}`}>
@@ -926,6 +949,9 @@ export default function Dashboard() {
                             </span>
                           )}
                           {winRate > 0 && <span className="text-muted-foreground">{winRate.toFixed(0)}% WR</span>}
+                          {qsLoaded && qsData.totalBets > 0 && (
+                            <span className="text-muted-foreground">{qsData.totalBets} bets</span>
+                          )}
                           <span className="text-muted-foreground">{tradeTimeStr}</span>
                         </div>
                         {/* Trader sport tags */}
@@ -935,6 +961,79 @@ export default function Dashboard() {
                               <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted border border-border/60 text-muted-foreground">{tag}</span>
                             ))}
                           </div>
+                        )}
+
+                        {/* Quick-fetched extended stats panel */}
+                        {qsLoaded && (
+                          <div className="rounded border border-border/60 bg-background/60 p-2 space-y-1.5">
+                            <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                              <span>Trader Quick Stats</span>
+                              {!qsData.isElite && <span className="text-[9px] font-normal normal-case">(from Polymarket activity)</span>}
+                            </div>
+                            <div className="grid grid-cols-3 gap-2 text-[11px]">
+                              {qsData.winRate !== null && (
+                                <div>
+                                  <div className="text-muted-foreground text-[9px] uppercase tracking-wide">Win Rate</div>
+                                  <div className={`font-bold ${qsData.winRate >= 55 ? "text-green-600 dark:text-green-400" : qsData.winRate < 45 ? "text-red-500" : "text-foreground"}`}>
+                                    {qsData.winRate}%
+                                  </div>
+                                  {qsData.resolvedBets != null && <div className="text-[9px] text-muted-foreground">{qsData.resolvedBets} resolved</div>}
+                                </div>
+                              )}
+                              {qsData.roi !== null && (
+                                <div>
+                                  <div className="text-muted-foreground text-[9px] uppercase tracking-wide">ROI</div>
+                                  <div className={`font-bold ${qsData.roi >= 10 ? "text-green-600 dark:text-green-400" : qsData.roi < 0 ? "text-red-500" : "text-foreground"}`}>
+                                    {qsData.roi >= 0 ? "+" : ""}{qsData.roi}%
+                                  </div>
+                                </div>
+                              )}
+                              {qsData.totalVolume != null && qsData.totalVolume > 0 && (
+                                <div>
+                                  <div className="text-muted-foreground text-[9px] uppercase tracking-wide">Volume</div>
+                                  <div className="font-bold">${qsData.totalVolume >= 1000 ? `${(qsData.totalVolume / 1000).toFixed(0)}K` : qsData.totalVolume}</div>
+                                  {qsData.totalPnl != null && (
+                                    <div className={`text-[9px] ${qsData.totalPnl >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                                      PnL {qsData.totalPnl >= 0 ? "+" : ""}${qsData.totalPnl >= 1000 ? `${(qsData.totalPnl / 1000).toFixed(1)}K` : qsData.totalPnl}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            {/* Verdict */}
+                            {qsData.winRate !== null && qsData.roi !== null && (
+                              <div className={`text-[10px] font-medium px-2 py-1 rounded ${
+                                qsData.winRate >= 55 && qsData.roi >= 10
+                                  ? "bg-green-500/10 text-green-700 dark:text-green-300"
+                                  : qsData.winRate < 45 || qsData.roi < -10
+                                  ? "bg-red-500/10 text-red-700 dark:text-red-300"
+                                  : "bg-muted text-muted-foreground"
+                              }`}>
+                                {qsData.winRate >= 55 && qsData.roi >= 10
+                                  ? "Sharp trader — historically profitable"
+                                  : qsData.winRate < 45 || qsData.roi < -10
+                                  ? "Below-average trader — use caution"
+                                  : "Average trader — neutral track record"}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Load stats button for un-fetched traders */}
+                        {!effectiveProfile && qsData !== "loading" && !qsLoaded && walletKey && (
+                          <button
+                            onClick={e => { e.stopPropagation(); loadTraderStats(walletKey); }}
+                            data-testid={`btn-load-trader-stats-${alert.id}`}
+                            className="text-[11px] text-primary hover:underline font-medium flex items-center gap-1"
+                          >
+                            Load trader stats ↓
+                          </button>
+                        )}
+                        {qsData === "loading" && (
+                          <div className="text-[11px] text-muted-foreground animate-pulse">Loading trader stats…</div>
+                        )}
+                        {qsData?.error && (
+                          <div className="text-[11px] text-red-500">Could not load stats: {qsData.error}</div>
                         )}
 
                         {/* Match time (pregame) */}
