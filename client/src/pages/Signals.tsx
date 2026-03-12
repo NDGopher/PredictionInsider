@@ -237,6 +237,17 @@ function getOutcomeLabel(title: string, side: "YES" | "NO"): string {
   if (spreadMatch) return side === "YES" ? `${spreadMatch[1].trim()} ${spreadMatch[2]} covers` : `${spreadMatch[1].trim()} doesn't cover`;
   const willMatch = t.match(/will\s+(?:the\s+)?(.+?)\s+win/i);
   if (willMatch) return side === "YES" ? `${willMatch[1].trim()} WIN` : `${willMatch[1].trim()} won't win`;
+
+  // eSports "Team A vs Team B - Map/Round context": extract the team
+  // e.g. "LoL: BiliBili vs BNK (BO5) - First Stand Group A"
+  const esportsColonSub = t.match(/^[^:]+:\s*(.+?)\s+vs\.?\s+(.+?)\s*-\s*(.+)$/i);
+  if (esportsColonSub) {
+    const team1 = esportsColonSub[1].trim();
+    const team2 = esportsColonSub[2].trim();
+    const ctx   = esportsColonSub[3].trim();
+    return side === "YES" ? `${team1} win (${ctx})` : `${team2} win (${ctx})`;
+  }
+
   if (!t.includes(":")) {
     const vsMatch = t.match(/^(.+?)\s+vs\.?\s+(.+)$/i);
     if (vsMatch) return side === "YES" ? `${vsMatch[1].trim()} WIN` : `${vsMatch[2].trim()} WIN`;
@@ -323,9 +334,24 @@ function SignalCard({ signal, mode, onSnoozed }: { signal: Signal; mode: "elite"
                   </div>
                 )}
                 {/* Outcome label — the specific bet this signal represents */}
-                <div className={`mt-0.5 text-xs font-bold ${signal.side === "YES" ? "text-green-600 dark:text-green-400" : "text-red-500 dark:text-red-400"}`}
-                  data-testid={`signal-outcome-${signal.id}`}>
-                  {outcomeLabel} <span className="font-normal text-muted-foreground">@ {(signal.currentPrice * 100).toFixed(1)}¢</span>
+                <div className="mt-0.5 flex items-center gap-1.5 flex-wrap" data-testid={`signal-outcome-${signal.id}`}>
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border shrink-0 ${
+                    signal.side === "YES"
+                      ? "bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/25"
+                      : "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/25"
+                  }`}>
+                    {signal.side === "YES" ? "▲ BACK YES" : "▼ BACK NO"}
+                  </span>
+                  <span className="text-xs font-bold text-foreground">{outcomeLabel}</span>
+                  <span className="text-xs text-muted-foreground">@ {(signal.currentPrice * 100).toFixed(1)}¢</span>
+                  {signal.traders?.length > 0 && (() => {
+                    const latest = Math.max(...signal.traders.map((t: any) => t.tradeTime || 0).filter((v: number) => v > 0));
+                    return latest > 0 ? (
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-0.5 shrink-0">
+                        <Clock className="w-2.5 h-2.5" />{timeAgoShort(latest)}
+                      </span>
+                    ) : null;
+                  })()}
                 </div>
                 {/* Game date/time for pregame signals */}
                 {((signal as any).marketType === "pregame" || (signal as any).marketType === "live") && ((signal as any).gameStartTime || (signal as any).endDate) && (() => {
@@ -509,7 +535,7 @@ function SignalCard({ signal, mode, onSnoozed }: { signal: Signal; mode: "elite"
                     )}
                     {(signal as any).insiderTrades !== undefined && (
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-muted-foreground">Est. Trades</span>
+                        <span className="text-[10px] text-muted-foreground">{(signal as any).sport ? `${(signal as any).sport} Bets` : "Sport Bets"}</span>
                         <span className="text-xs font-bold text-foreground">{((signal as any).insiderTrades as number).toLocaleString()}</span>
                       </div>
                     )}
@@ -670,61 +696,114 @@ function SignalCard({ signal, mode, onSnoozed }: { signal: Signal; mode: "elite"
 
             {/* Expanded trader list */}
             {expanded && signal.traders.length > 0 && (
-              <div className="mt-3 space-y-1.5">
-                <div className="grid grid-cols-5 text-[10px] text-muted-foreground font-medium px-2.5 py-1">
-                  <span className="col-span-2">Trader (sorted by size)</span>
-                  <span className="text-right">Entry</span>
-                  <span className="text-right">Size</span>
-                  <span className="text-right">Quality / Time</span>
+              <div className="mt-3 space-y-2">
+                <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-1">
+                  Traders — {(signal as any).sport || "Sport"} Track Record
                 </div>
-                {signal.traders.map((t, i) => (
-                  <div key={i} className="grid grid-cols-5 items-center bg-muted/40 rounded px-2.5 py-1.5 text-xs gap-1">
-                    {/* Rank + name */}
-                    <div className="col-span-2 flex items-center gap-1.5 min-w-0">
-                      <span className="shrink-0 text-[9px] font-bold text-muted-foreground w-3.5 text-center">#{i + 1}</span>
-                      {t.address ? (
-                        <a
-                          href={`https://polymarket.com/profile/${t.address}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline font-mono truncate flex items-center gap-0.5"
-                          data-testid={`link-trader-${t.address}`}
-                          title="View on Polymarket"
-                        >
-                          {t.name || `${t.address.slice(0, 6)}…${t.address.slice(-4)}`}
-                          <ExternalLink className="w-2.5 h-2.5 shrink-0 opacity-50" />
-                        </a>
-                      ) : (
-                        <span className="font-mono truncate">{t.name || "Trader"}</span>
-                      )}
-                      {(t as any).isSportsLb && (
-                        <span className="text-[9px] font-bold bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-1 rounded shrink-0" title="Top sports leaderboard">🏆</span>
-                      )}
-                      {(t as any).isLeaderboard && !(t as any).isSportsLb && (
-                        <span className="text-[9px] font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 px-1 rounded shrink-0" title="General leaderboard">LB</span>
-                      )}
-                    </div>
-                    <div className="text-right text-muted-foreground tabular-nums">
-                      {(t.entryPrice * 100).toFixed(1)}¢
-                    </div>
-                    <div className="text-right font-medium tabular-nums">
-                      {(t as any).netUsdc ? formatUsdc((t as any).netUsdc) : `${t.size.toLocaleString()} shr`}
-                    </div>
-                    <div className="text-right flex flex-col items-end gap-0.5">
-                      <div className="flex items-center gap-1">
-                        {t.roi !== 0 && (
-                          <span className={`text-[9px] ${t.roi >= 20 ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
-                            {t.roi >= 0 ? "+" : ""}{t.roi.toFixed(0)}% ROI
-                          </span>
+                {signal.traders.map((t, i) => {
+                  const sportRoi = (t as any).sportRoi as number | null;
+                  const sportTrades = (t as any).sportTradeCount as number | null;
+                  const sportWinRate = (t as any).sportWinRate as number | null;
+                  const tags = (t as any).tags as string[] | undefined;
+                  const sportTags = tags?.filter(tag =>
+                    tag.includes("🏒") || tag.includes("⚽") || tag.includes("🏈") || tag.includes("⚾") ||
+                    tag.includes("🏀") || tag.includes("🎾") || tag.includes("🥊") || tag.includes("🎮")
+                  ) ?? [];
+                  return (
+                  <div key={i} className="bg-muted/40 rounded-lg border border-border/30 p-2.5">
+                    {/* Row 1: Rank + Name + Badges + Time */}
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="shrink-0 text-[10px] font-bold text-muted-foreground w-4 text-center">#{i + 1}</span>
+                        {(t as any).isSportsLb && <span title="Top sports leaderboard">🏆</span>}
+                        {(t as any).isLeaderboard && !(t as any).isSportsLb && (
+                          <span className="text-[9px] font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 px-1 rounded shrink-0">LB</span>
                         )}
-                        {(t as any).qualityScore ? <QualityPip score={(t as any).qualityScore} /> : null}
+                        {t.address ? (
+                          <a
+                            href={`https://polymarket.com/profile/${t.address}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm font-semibold text-primary hover:underline truncate flex items-center gap-0.5"
+                            data-testid={`link-trader-${t.address}`}
+                          >
+                            {t.name || `${t.address.slice(0, 6)}…${t.address.slice(-4)}`}
+                            <ExternalLink className="w-3 h-3 shrink-0 opacity-40" />
+                          </a>
+                        ) : (
+                          <span className="text-sm font-semibold truncate">{t.name || "Trader"}</span>
+                        )}
+                        {(t as any).qualityScore > 0 && <QualityPip score={(t as any).qualityScore} />}
                       </div>
-                      {(t as any).tradeTime > 0 && (
-                        <span className="text-[9px] text-muted-foreground">{timeAgoShort((t as any).tradeTime)}</span>
-                      )}
+                      <div className="shrink-0 text-right">
+                        {(t as any).tradeTime > 0 && (
+                          <div className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                            <Clock className="w-2.5 h-2.5" />{timeAgoShort((t as any).tradeTime)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Row 2: Sport tags */}
+                    {sportTags.length > 0 && (
+                      <div className="flex items-center gap-1 mb-1.5 flex-wrap">
+                        {sportTags.map((tag, ti) => (
+                          <span key={ti} className="text-[9px] px-1.5 py-0.5 rounded bg-primary/8 border border-primary/15 text-primary/80 font-medium">{tag}</span>
+                        ))}
+                        {tags && tags.some(t => t.includes("↕️")) && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 font-medium">↕️ Spread Expert</span>
+                        )}
+                        {tags && tags.some(t => t.includes("✅")) && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 font-medium">✅ YES Specialist</span>
+                        )}
+                        {tags && tags.some(t => t.includes("🐋")) && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400 font-medium">🐋 Big Bettor</span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Row 3: Stats grid */}
+                    <div className="grid grid-cols-3 gap-2">
+                      {/* Sport-specific ROI (primary stat) */}
+                      <div className="text-center p-1.5 rounded bg-background border border-border/50">
+                        <div className="text-[9px] text-muted-foreground mb-0.5">{(signal as any).sport || "Sport"} ROI</div>
+                        {sportRoi !== null ? (
+                          <div className={`text-sm font-bold tabular-nums ${sportRoi >= 30 ? "text-green-600 dark:text-green-400" : sportRoi >= 10 ? "text-yellow-600" : sportRoi < 0 ? "text-red-500" : "text-foreground"}`}>
+                            {sportRoi >= 0 ? "+" : ""}{sportRoi.toFixed(1)}%
+                          </div>
+                        ) : (
+                          <div className="text-sm font-bold text-muted-foreground">—</div>
+                        )}
+                        {sportTrades !== null && sportTrades > 0 && (
+                          <div className="text-[9px] text-muted-foreground">{sportTrades} bets</div>
+                        )}
+                      </div>
+
+                      {/* Win rate in this sport */}
+                      <div className="text-center p-1.5 rounded bg-background border border-border/50">
+                        <div className="text-[9px] text-muted-foreground mb-0.5">Win Rate</div>
+                        {sportWinRate !== null && sportWinRate > 0 ? (
+                          <div className={`text-sm font-bold tabular-nums ${sportWinRate >= 70 ? "text-green-600 dark:text-green-400" : sportWinRate >= 50 ? "text-yellow-600" : "text-red-500"}`}>
+                            {sportWinRate.toFixed(0)}%
+                          </div>
+                        ) : (
+                          <div className={`text-sm font-bold tabular-nums ${(t.winRate ?? 0) >= 70 ? "text-green-600 dark:text-green-400" : (t.winRate ?? 0) >= 50 ? "text-yellow-600" : "text-foreground"}`}>
+                            {t.winRate ? `${(t.winRate as number).toFixed(0)}%` : "—"}
+                          </div>
+                        )}
+                        <div className="text-[9px] text-muted-foreground">overall</div>
+                      </div>
+
+                      {/* Bet info */}
+                      <div className="text-center p-1.5 rounded bg-background border border-border/50">
+                        <div className="text-[9px] text-muted-foreground mb-0.5">Entry / Size</div>
+                        <div className="text-sm font-bold tabular-nums">{(t as any).netUsdc ? formatUsdc((t as any).netUsdc) : `${t.size.toLocaleString()} shr`}</div>
+                        <div className="text-[9px] text-muted-foreground">@ {(t.entryPrice * 100).toFixed(1)}¢</div>
+                      </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -887,27 +966,53 @@ function SharpMovesPanel({ signals }: { signals?: any[] }) {
               </div>
             )}
 
-            {/* Trader list from matching signal */}
+            {/* Trader list from matching signal — with full track record */}
             {matchSignal && matchSignal.traders?.length > 0 && (
-              <div>
-                <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Traders (sorted by size)</div>
+              <div className="space-y-1.5">
+                <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                  {matchSignal.sport || "Sport"} Track Record — {matchSignal.traders.length} trader{matchSignal.traders.length !== 1 ? "s" : ""}
+                </div>
                 {matchSignal.traders.slice(0, 5).map((t: any, i: number) => (
-                  <div key={i} className="flex items-center justify-between py-0.5 border-t border-border/30 text-[10px]">
-                    <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground w-4 text-right">#{i + 1}</span>
-                      {t.isSportsLb && <span className="text-[9px]">🏆</span>}
-                      <a
-                        href={`https://polymarket.com/profile/${t.address}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline font-mono"
-                        onClick={e => e.stopPropagation()}
-                      >{t.name}</a>
+                  <div key={i} className="rounded bg-background/60 border border-border/40 p-2 text-[10px]">
+                    <div className="flex items-center justify-between gap-1 mb-1">
+                      <div className="flex items-center gap-1 min-w-0">
+                        <span className="text-muted-foreground font-bold w-3 shrink-0">#{i+1}</span>
+                        {t.isSportsLb && <span>🏆</span>}
+                        <a
+                          href={`https://polymarket.com/profile/${t.address}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline font-semibold truncate"
+                          onClick={e => e.stopPropagation()}
+                        >{t.name}</a>
+                        {t.qualityScore > 0 && (
+                          <span className={`text-[9px] font-semibold flex items-center gap-0.5 shrink-0 ${t.qualityScore >= 70 ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
+                            <ShieldCheck className="w-2.5 h-2.5" />{t.qualityScore}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="font-bold text-foreground">{t.netUsdc >= 1000 ? `$${(t.netUsdc/1000).toFixed(1)}K` : `$${t.netUsdc}`}</span>
+                        <span className="text-muted-foreground">@ {Math.round(t.entryPrice * 100)}¢</span>
+                        {t.tradeTime > 0 && <span className="text-muted-foreground">{timeAgoShort(t.tradeTime)}</span>}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <span>{Math.round(t.entryPrice * 100)}¢ entry</span>
-                      <span className="font-medium text-foreground">${(t.netUsdc / 1000).toFixed(1)}K</span>
-                      {t.tradeTime > 0 && <span>{timeAgoShort(t.tradeTime)}</span>}
+                    {/* Sport ROI + win rate + tags */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {t.sportRoi !== null && t.sportRoi !== undefined && (
+                        <span className={`px-1 py-0.5 rounded font-bold ${t.sportRoi >= 20 ? "bg-green-500/15 text-green-700 dark:text-green-300" : t.sportRoi < 0 ? "bg-red-500/15 text-red-600" : "bg-muted text-muted-foreground"}`}>
+                          {matchSignal.sport} ROI: {t.sportRoi >= 0 ? "+" : ""}{t.sportRoi.toFixed(1)}%
+                          {t.sportTradeCount ? ` (${t.sportTradeCount} bets)` : ""}
+                        </span>
+                      )}
+                      {t.sportWinRate > 0 && (
+                        <span className={`px-1 py-0.5 rounded font-bold ${t.sportWinRate >= 70 ? "bg-green-500/10 text-green-700 dark:text-green-300" : "bg-muted text-muted-foreground"}`}>
+                          {t.sportWinRate.toFixed(0)}% win rate
+                        </span>
+                      )}
+                      {t.tags?.filter((tag: string) => tag.includes("🏒")||tag.includes("⚽")||tag.includes("🏈")||tag.includes("⚾")||tag.includes("🏀")||tag.includes("🎾")||tag.includes("🥊")||tag.includes("🎮")).slice(0,2).map((tag: string, ti: number) => (
+                        <span key={ti} className="text-primary/70">{tag}</span>
+                      ))}
                     </div>
                   </div>
                 ))}

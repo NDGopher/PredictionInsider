@@ -35,6 +35,14 @@ function getOutcomeLabel(title: string, side: "YES" | "NO"): string {
   if (ouMatch) return side === "YES" ? `Over ${ouMatch[1]}` : `Under ${ouMatch[1]}`;
   const willMatch = t.match(/will\s+(?:the\s+)?(.+?)\s+win/i);
   if (willMatch) return side === "YES" ? `${willMatch[1].trim()} WIN` : `${willMatch[1].trim()} won't win`;
+  // eSports: "LoL: Team A vs Team B (BO3) - Context" → "Team A win (Context)"
+  const esportsColonSub = t.match(/^[^:]+:\s*(.+?)\s+vs\.?\s+(.+?)\s*-\s*(.+)$/i);
+  if (esportsColonSub) {
+    const team1 = esportsColonSub[1].trim();
+    const team2 = esportsColonSub[2].trim();
+    const ctx   = esportsColonSub[3].trim();
+    return side === "YES" ? `${team1} win (${ctx})` : `${team2} win (${ctx})`;
+  }
   if (!t.includes(":")) {
     const vsMatch = t.match(/^(.+?)\s+vs\.?\s+(.+)$/i);
     if (vsMatch) return side === "YES" ? `${vsMatch[1].trim()} WIN` : `${vsMatch[2].trim()} WIN`;
@@ -140,7 +148,7 @@ function SharpActionBanner({ action }: { action: any }) {
   );
 }
 
-function MarketCard({ market }: { market: Market & { marketType?: string; gameStatus?: string; sharpAction?: any } }) {
+function MarketCard({ market, matchSignal }: { market: Market & { marketType?: string; gameStatus?: string; sharpAction?: any }; matchSignal?: any }) {
   const [expanded, setExpanded] = useState(false);
   const pct = Math.round(market.currentPrice * 100);
   const timeLeft = formatTimeLeft(market.endDate);
@@ -273,6 +281,50 @@ function MarketCard({ market }: { market: Market & { marketType?: string; gameSt
                   </span>
                   <span className="font-semibold text-foreground">{sharpAction.confidence}/100 confidence</span>
                 </div>
+
+                {/* Trader profiles from matching signal */}
+                {matchSignal && matchSignal.traders?.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-border/30 space-y-1.5">
+                    <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      {matchSignal.sport || "Sport"} Track Record
+                    </div>
+                    {matchSignal.traders.slice(0, 4).map((t: any, i: number) => (
+                      <div key={i} className="rounded bg-background/70 border border-border/40 p-2">
+                        <div className="flex items-center justify-between gap-1 mb-1">
+                          <div className="flex items-center gap-1 min-w-0">
+                            <span className="text-muted-foreground text-[10px] font-bold shrink-0">#{i+1}</span>
+                            {t.isSportsLb && <span className="text-[10px]">🏆</span>}
+                            <a
+                              href={`https://polymarket.com/profile/${t.address}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[11px] font-semibold text-primary hover:underline truncate"
+                              onClick={e => e.stopPropagation()}
+                            >{t.name || t.address?.slice(0, 10)}</a>
+                          </div>
+                          <div className="text-[10px] text-muted-foreground shrink-0">
+                            {t.netUsdc >= 1000 ? `$${(t.netUsdc/1000).toFixed(1)}K` : `$${t.netUsdc}`} @ {Math.round(t.entryPrice * 100)}¢
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {t.sportRoi !== null && t.sportRoi !== undefined && (
+                            <span className={`text-[9px] px-1 py-0.5 rounded font-bold ${t.sportRoi >= 20 ? "bg-green-500/15 text-green-700 dark:text-green-300" : t.sportRoi < 0 ? "bg-red-500/15 text-red-600" : "bg-muted text-muted-foreground"}`}>
+                              {matchSignal.sport} ROI: {t.sportRoi >= 0 ? "+" : ""}{t.sportRoi.toFixed(1)}%{t.sportTradeCount ? ` (${t.sportTradeCount})` : ""}
+                            </span>
+                          )}
+                          {t.winRate > 0 && (
+                            <span className="text-[9px] px-1 py-0.5 rounded bg-muted text-muted-foreground font-bold">
+                              {t.winRate.toFixed(0)}% win
+                            </span>
+                          )}
+                          {t.tags?.filter((tag: string) => tag.includes("🏒")||tag.includes("⚽")||tag.includes("🏈")||tag.includes("⚾")||tag.includes("🏀")||tag.includes("🎾")).slice(0,2).map((tag: string, ti: number) => (
+                            <span key={ti} className="text-[9px] text-primary/70">{tag}</span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -335,6 +387,14 @@ export default function Markets() {
     staleTime: 25_000,
     refetchInterval: marketType === "live" ? 15_000 : AUTO_REFRESH_MS, // faster for live
   });
+
+  // Fetch signals in the background so we can cross-reference trader profiles
+  const { data: signalsData } = useQuery<{ signals: any[] }>({
+    queryKey: ["/api/signals-elite", "markets-xref"],
+    queryFn: () => fetch("/api/signals-elite?limit=500").then(r => r.json()),
+    staleTime: 90_000,
+  });
+  const allSignals: any[] = signalsData?.signals || [];
 
   const markets = (data?.markets || []) as (Market & { marketType?: string; gameStatus?: string })[];
 
@@ -553,7 +613,11 @@ export default function Markets() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
           {filtered.map(market => (
-            <MarketCard key={market.id} market={market as any} />
+            <MarketCard
+              key={market.id}
+              market={market as any}
+              matchSignal={allSignals.find((s: any) => s.marketId === market.id)}
+            />
           ))}
         </div>
       )}

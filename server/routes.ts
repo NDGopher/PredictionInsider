@@ -346,6 +346,7 @@ type CanonicalEntry = {
   winRate: number;
   totalTrades: number;
   qualityScore: number;
+  tags: string[];
   roiBySport: Record<string, { roi: number; tradeCount: number; winRate: number; avgBet: number }>;
   roiByMarketType: Record<string, { roi: number; tradeCount: number; winRate: number }>;
 };
@@ -359,6 +360,7 @@ async function loadCanonicalMetricsFromDB(): Promise<Map<string, CanonicalEntry>
     const { rows } = await elitePool.query(`
       SELECT wallet,
         quality_score,
+        tags,
         (metrics->>'overallROI')::float          AS overall_roi,
         (metrics->>'winRate')::float             AS win_rate,
         (metrics->>'totalTrades')::int           AS total_trades,
@@ -374,6 +376,7 @@ async function loadCanonicalMetricsFromDB(): Promise<Map<string, CanonicalEntry>
         winRate: parseFloat(r.win_rate ?? "0") || 0,
         totalTrades: parseInt(r.total_trades ?? "0") || 0,
         qualityScore: parseInt(r.quality_score ?? "0") || 0,
+        tags: Array.isArray(r.tags) ? r.tags : [],
         roiBySport: r.roi_by_sport ?? {},
         roiByMarketType: r.roi_by_market_type ?? {},
       });
@@ -2415,10 +2418,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             return s + roi * e.totalSize;
           }, 0) / (totalDominantWeight || 1) * 10
         ) / 10;
-        // insiderTrades: canonical closed position count (actual), not estimated from volume
+        // insiderTrades: sport-specific closed position count from canonical API
         const insiderTrades = dominant.reduce((s, e) => {
           const cm = canonicalMap.get(e.address.toLowerCase());
-          return s + (cm?.totalTrades > 0 ? cm.totalTrades : Math.max(Math.round(e.traderInfo.volume / 500), 1));
+          const sportCount = cm?.roiBySport?.[signalSport]?.tradeCount ?? 0;
+          return s + (sportCount > 0 ? sportCount : (cm?.totalTrades > 0 ? cm.totalTrades : Math.max(Math.round(e.traderInfo.volume / 500), 1)));
         }, 0);
         // insiderWinRate: canonical win rate weighted by bet size
         const insiderWinRate = Math.round(
@@ -2476,6 +2480,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               winRate: cm?.winRate ?? 0,
               totalTrades: cm?.totalTrades ?? 0,
               sportRoi: sportEntry?.roi ?? null,
+              sportTradeCount: sportEntry?.tradeCount ?? null,
+              sportWinRate: sportEntry?.winRate ?? null,
+              tags: cm?.tags ?? [],
             };
           }),
           category: isSports ? "sports" : "other",
@@ -2714,7 +2721,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           // insiderTrades: canonical closed position count (actual trades completed)
           const pgInsiderTrades = pg.traders.reduce((s, t) => {
             const cm = canonicalMap.get(t.wallet.toLowerCase());
-            return s + (cm?.totalTrades > 0 ? cm.totalTrades : Math.max(Math.round((lbMap.get(t.wallet)?.volume ?? 500) / 500), 1));
+            const sportCount = cm?.roiBySport?.[pgSport]?.tradeCount ?? 0;
+            return s + (sportCount > 0 ? sportCount : (cm?.totalTrades > 0 ? cm.totalTrades : Math.max(Math.round((lbMap.get(t.wallet)?.volume ?? 500) / 500), 1)));
           }, 0);
           // insiderWinRate: canonical win rate weighted by bet size
           const pgInsiderWinRate = Math.round(
@@ -2775,6 +2783,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                 winRate: cm?.winRate ?? 0,
                 totalTrades: cm?.totalTrades ?? 0,
                 sportRoi: sportEntry?.roi ?? null,
+                sportTradeCount: sportEntry?.tradeCount ?? null,
+                sportWinRate: sportEntry?.winRate ?? null,
+                tags: cm?.tags ?? [],
               };
             }),
             category: "sports",
