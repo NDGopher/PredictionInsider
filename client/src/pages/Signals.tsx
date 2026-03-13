@@ -94,7 +94,7 @@ async function requestNotificationPermission(): Promise<boolean> {
 }
 
 function sendNotification(title: string, body: string) {
-  if (Notification.permission !== "granted") return;
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
   try {
     new Notification(title, { body, icon: "/favicon.ico" });
   } catch {}
@@ -1426,7 +1426,7 @@ export default function Signals() {
   const [betType, setBetType]     = useState<"all" | "moneyline" | "spread" | "total" | "futures">("all");
   const [showFutures, setShowFutures] = useState(true);
   const [showEsports, setShowEsports] = useState(true);
-  const [notifEnabled, setNotifEnabled] = useState(Notification?.permission === "granted");
+  const [notifEnabled, setNotifEnabled] = useState(typeof Notification !== "undefined" && Notification.permission === "granted");
   const [countdown, setCountdown] = useState(mode === "elite" ? ELITE_REFRESH_SEC : FAST_REFRESH_SEC);
   const [alertHistory, setAlertHistory] = useState<Array<{ id: string; question: string; confidence: number; ts: number }>>([]);
   const [showAlerts, setShowAlerts] = useState(false);
