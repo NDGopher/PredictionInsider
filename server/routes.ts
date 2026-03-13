@@ -689,6 +689,16 @@ function isHexTimestampUsername(name: string): boolean {
  *      "Spread: Warriors (-6.5)" + YES  →  "Warriors -6.5 covers"
  *      "Will the Celtics win the 2026 NBA Finals?" + YES  →  "Celtics WIN"
  */
+/** Strip BO-series notation and tournament context suffix from a raw team name.
+ *  e.g. "Spirit (BO3) - ESL Pro League Playoffs" → "Spirit" */
+function cleanTeamName(raw: string): string {
+  return raw
+    .replace(/\s*\(BO\d+\)\s*/gi, "")   // "(BO3)", "(BO5)" etc.
+    .replace(/\s*[-–]\s*.+$/, "")        // "- ESL Pro League Playoffs" suffix
+    .replace(/\?$/, "")
+    .trim();
+}
+
 function computeOutcomeLabel(title: string, side: "YES" | "NO"): string {
   const t = title.trim();
   // O/U totals: "O/U 225.5" or "total 225.5"
@@ -740,11 +750,12 @@ function computeOutcomeLabel(title: string, side: "YES" | "NO"): string {
     if (/btts|both\s+teams/i.test(sub)) return side === "YES" ? "BTTS — Yes" : "BTTS — No";
     return `${sub} — ${side}`;
   }
-  // "Tournament: Player1 vs. Player2" — colon before vs (tennis, soccer, etc.)
+  // "Tournament: Player1 vs. Player2" — colon before vs (tennis, soccer, esports)
+  // Also handles "Sport: Team1 vs Team2 (BO3) - Tournament Context"
   const tourneyVs = t.match(/^.+?:\s*(.+?)\s+vs\.?\s+(.+)$/i);
   if (tourneyVs) {
-    const p1 = tourneyVs[1].trim();
-    const p2 = tourneyVs[2].trim().replace(/\?$/, "");
+    const p1 = cleanTeamName(tourneyVs[1]);
+    const p2 = cleanTeamName(tourneyVs[2]);
     return side === "YES" ? `${p1} WIN` : `${p2} WIN`;
   }
   return side;
@@ -3006,7 +3017,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const now = Date.now();
       const [allTrades, marketDb] = await Promise.all([
         fetchRecentTrades(4000),
-        buildMarketDatabase(800),
+        buildMarketDatabase(800).catch(() => new Map() as any),
       ]);
 
       type WalletPos = { side: "YES"|"NO"; totalSize: number; prices: number[]; name: string; wallet: string };

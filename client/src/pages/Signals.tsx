@@ -233,6 +233,16 @@ function ScoreBreakdown({ breakdown, confidence, signal }: {
   );
 }
 
+/** Strip BO-series notation and tournament context from a raw team name.
+ *  "Spirit (BO3) - ESL Pro League Playoffs" → "Spirit" */
+function cleanTeamName(raw: string): string {
+  return raw
+    .replace(/\s*\(BO\d+\)\s*/gi, "")
+    .replace(/\s*[-–]\s*.+$/, "")
+    .replace(/\?$/, "")
+    .trim();
+}
+
 function getOutcomeLabel(title: string, side: "YES" | "NO"): string {
   const t = title.trim();
   const ouMatch = t.match(/o\/?u\s+([\d.]+)/i) || t.match(/total[:\s]+([\d.]+)/i);
@@ -241,16 +251,6 @@ function getOutcomeLabel(title: string, side: "YES" | "NO"): string {
   if (spreadMatch) return side === "YES" ? `${spreadMatch[1].trim()} ${spreadMatch[2]} covers` : `${spreadMatch[1].trim()} doesn't cover`;
   const willMatch = t.match(/will\s+(?:the\s+)?(.+?)\s+win/i);
   if (willMatch) return side === "YES" ? `${willMatch[1].trim()} WIN` : `${willMatch[1].trim()} won't win`;
-
-  // eSports "Team A vs Team B - Map/Round context": extract the team
-  // e.g. "LoL: BiliBili vs BNK (BO5) - First Stand Group A"
-  const esportsColonSub = t.match(/^[^:]+:\s*(.+?)\s+vs\.?\s+(.+?)\s*-\s*(.+)$/i);
-  if (esportsColonSub) {
-    const team1 = esportsColonSub[1].trim();
-    const team2 = esportsColonSub[2].trim();
-    const ctx   = esportsColonSub[3].trim();
-    return side === "YES" ? `${team1} win (${ctx})` : `${team2} win (${ctx})`;
-  }
 
   if (!t.includes(":")) {
     const vsMatch = t.match(/^(.+?)\s+vs\.?\s+(.+)$/i);
@@ -263,8 +263,9 @@ function getOutcomeLabel(title: string, side: "YES" | "NO"): string {
     if (subOu) return side === "YES" ? `Over ${subOu[1]}` : `Under ${subOu[1]}`;
     return `${sub} — ${side}`;
   }
+  // "Sport/Tournament: Team1 vs Team2 (BO3) - Context" — includes esports
   const tourneyVs = t.match(/^.+?:\s*(.+?)\s+vs\.?\s+(.+)$/i);
-  if (tourneyVs) return side === "YES" ? `${tourneyVs[1].trim()} WIN` : `${tourneyVs[2].trim()} WIN`;
+  if (tourneyVs) return side === "YES" ? `${cleanTeamName(tourneyVs[1])} WIN` : `${cleanTeamName(tourneyVs[2])} WIN`;
   return side;
 }
 
