@@ -1547,7 +1547,7 @@ export default function Signals() {
       if (hideTracked && trackedConditionIds.has((s as any).marketId)) return false;
       // Category toggles
       if (!showFutures && ((s as any).marketType === "futures" || (s as any).gameStatus === "futures" || (s as any).marketCategory === "futures")) return false;
-      if (!showEsports && /^(Dota\s*2|LoL|CS:?GO|Valorant|Overwatch|Rocket\s*League|SC2|StarCraft|Hearthstone|PUBG|R6|Rainbow\s*6|LCS|LEC|BLAST|PGL|ESL|IEM)\s*:/i.test(s.marketQuestion)) return false;
+      if (!showEsports && /^(Dota\s*2|LoL|Counter.Strike\s*2?|CS:?(?:GO|2)?|Valorant|Call\s*of\s*Duty|Overwatch|Rocket\s*League|SC2|StarCraft|Hearthstone|PUBG|R6|Rainbow\s*6|League\s*of\s*Legends)\s*:/i.test(s.marketQuestion)) return false;
       if (filter === "best_bets") return s.confidence >= 70 && s.isActionable && s.valueDelta > 0;
       if (filter === "value")   return s.isValue;
       if (filter === "high")    return s.confidence >= 70;

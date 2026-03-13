@@ -2368,10 +2368,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const mid = await fetchMidpoint(liveTokenId);
           if (mid !== null) {
             currentPrice = mid;
-          } else if (mw.currentPrice != null && mw.currentPrice > 0) {
-            // CLOB has no orders (market resolved / no liquidity) — use market registry YES price
-            const registryYes = mw.currentPrice;
-            currentPrice = side === "YES" ? registryYes : (1 - registryYes);
+          } else {
+            // CLOB null = no active orders → market is resolved, cancelled, or fully illiquid.
+            // Skip rather than showing a stale registry price as if it were tradeable.
+            continue;
           }
         }
 
@@ -3095,10 +3095,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const mid = await fetchMidpoint(tokenId);
           if (mid !== null) {
             currentPrice = mid;
-          } else if (mw.info?.currentPrice != null && mw.info.currentPrice > 0) {
-            // CLOB null = market resolved/no orders — use registry YES price
-            const registryYes = mw.info.currentPrice;
-            currentPrice = side === "YES" ? registryYes : (1 - registryYes);
+          } else {
+            // CLOB null = no active orders → resolved, cancelled, or fully illiquid.
+            // Skip rather than using a stale registry price.
+            continue;
           }
         }
 
