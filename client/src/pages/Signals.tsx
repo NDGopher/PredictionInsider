@@ -718,6 +718,18 @@ function SignalCard({ signal, mode, onSnoozed, onBetTracked }: { signal: Signal;
                       <BarChart2 className="w-2.5 h-2.5" /> POSITIONS
                     </span>
                   )}
+                  {(signal as any).source === "cluster" && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/20 flex items-center gap-0.5"
+                      title={`${(signal as any).traderCount} tracked leaderboard traders co-investing $${((signal as any).totalNetUsdc||0).toLocaleString()} in the same direction`}>
+                      <Users className="w-2.5 h-2.5" /> CLUSTER
+                    </span>
+                  )}
+                  {(signal as any).clusterBoost && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/15 flex items-center gap-0.5"
+                      title={`+${(signal as any).clusterBoost.traders} tracked leaderboard traders added $${((signal as any).clusterBoost.combinedSize||0).toLocaleString()} on this same side`}>
+                      <Users className="w-2.5 h-2.5" /> +{(signal as any).clusterBoost.traders} LB
+                    </span>
+                  )}
                 </div>
               </div>
               {/* Confidence score — large, OddsJam-style */}
@@ -1287,7 +1299,7 @@ function SharpMovesPanel({ signals }: { signals?: any[] }) {
                           );
                         }
                         // Live Feed: use signal's avgNetUsdc as reference
-                        const signalAvg = avgNetUsdc ?? 0;
+                        const signalAvg = ((matchSignal as any)?.avgRiskUsdc ?? (matchSignal as any)?.avgNetUsdc) ?? 0;
                         if (signalAvg > 50) {
                           const mult = bet / signalAvg;
                           const isHigh = mult >= 2;
@@ -1476,7 +1488,7 @@ export default function Signals() {
   const refreshTrackedIds = useCallback(() => {}, []);
 
   const handleSnoozed = useCallback((id: string) => {
-    setSnoozedIds(prev => new Set([...prev, id]));
+    setSnoozedIds(prev => new Set(Array.from(prev).concat(id)));
   }, []);
 
   const queryClient = useQueryClient();
@@ -1524,6 +1536,27 @@ export default function Signals() {
   useEffect(() => {
     if (data?.signals) processAlerts(data.signals);
   }, [data, processAlerts]);
+
+  // ── SSE: push notification for new high-confidence signals ────────────────────
+  useEffect(() => {
+    const es = new EventSource("/api/stream?channel=signals");
+    es.addEventListener("new_signals", (e: MessageEvent) => {
+      try {
+        const d = JSON.parse(e.data) as { signals: any[]; count: number };
+        if (d.count > 0 && d.signals?.length > 0) {
+          const top = d.signals[0];
+          toast({
+            title: `🔔 New Signal: ${top.sport || "Sports"} (${top.confidence}% confidence)`,
+            description: `${top.marketQuestion?.slice(0, 80)} — ${top.side} @ ${top.marketType?.toUpperCase()}`,
+            duration: 8000,
+          });
+          queryClient.invalidateQueries({ queryKey });
+        }
+      } catch { /* ignore */ }
+    });
+    es.onerror = () => { /* silent — SSE auto-reconnects */ };
+    return () => es.close();
+  }, [toast, queryClient, queryKey]);
 
   // ── Auto-refresh countdown ────────────────────────────────────────────────────
   const resetCountdown = useCallback(() => {

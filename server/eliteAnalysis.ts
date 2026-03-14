@@ -50,6 +50,8 @@ export const CURATED_TRADERS: { wallet: string; username: string; url?: string }
   { wallet: "0x9c82c60829df081d593055ee5fa288870c051f13", username: "Vetch", url: "https://polymarket.com/@Vetch" },
   { wallet: "0x25867077c891354137bbaf7fde12eec6949cc893", username: "TTdes", url: "https://polymarket.com/@TTdes" },
   { wallet: "0x4133bcbad1d9c41de776646696f41c34d0a65e70", username: "EF203F2IPFC2ICP20W-CP3", url: "https://polymarket.com/@EF203F2IPFC2ICP20W-CP3" },
+  // ── eSports specialists (added 2026-03) ──────────────────────────────────
+  { wallet: "0x081e14554b92ee3dc53a21bd5b01f306692ef76e", username: "BossOfEsports", url: "https://polymarket.com/@BossOfEsports" },
 ];
 
 // ─── In-memory set for fast signal lookup ────────────────────────────────────
@@ -74,7 +76,9 @@ export function classifySport(slug: string, title: string): string {
       t.includes("soccer") || t.includes("football") || t.includes("copa") || t.includes("premier league") ||
       t.includes("champions league") || t.includes("la liga") || t.includes("bundesliga") || t.includes("serie a")) return "Soccer";
   if (s.includes("esport") || s.includes("valorant") || s.includes("csgo") || s.includes("lol-") ||
-      t.includes("esport") || t.includes("valorant") || t.includes("league of legends")) return "eSports";
+      s.includes("dota") || s.includes("cs2-") || s.startsWith("cs-") || s.includes("csgop5") ||
+      t.includes("esport") || t.includes("valorant") || t.includes("league of legends") ||
+      t.includes("dota 2") || t.includes("counter-strike") || t.includes("cs2") || t.includes("dota2")) return "eSports";
   if (s.startsWith("golf-") || t.includes("masters") || t.includes("pga tour") || t.includes("golf")) return "Golf";
   if (s.match(/^(f1|formula)/) || t.includes("formula 1") || t.includes("grand prix")) return "Formula 1";
   if (t.match(/trump|biden|harris|election|congress|senate|president|vote|poll|democrat|republican/)) return "Politics";

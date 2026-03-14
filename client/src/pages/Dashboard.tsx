@@ -647,7 +647,7 @@ export default function Dashboard() {
     e.stopPropagation();
     setHiddenAlertIds(prev => {
       const next = new Set(prev).add(id);
-      localStorage.setItem("pi_hidden_alerts", JSON.stringify([...next]));
+      localStorage.setItem("pi_hidden_alerts", JSON.stringify(Array.from(next)));
       return next;
     });
   };

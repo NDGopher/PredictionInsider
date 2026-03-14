@@ -132,6 +132,9 @@ const SPORTS_KW = [
   "premier league","efl","fa cup","el classico","derby","grand prix","open championship",
   "masters ","ryder cup","solheim cup","futsal","volleyball","handball","cricket",
   "rugby","ashes","ipl","carabao","euros ","copa ","ligue 1","eredivisie","6 nations",
+  "esport","dota 2","dota2","counter-strike","cs2","valorant","league of legends",
+  "lol champions","iem ","major ","blast ","esl ","faceit","pgl ","navi ","team liquid",
+  "team spirit","team vitality","natus vincere","faze clan","astralis",
 ];
 function isSportsRelated(text: string): boolean {
   const t = (text || "").toLowerCase();
@@ -708,7 +711,7 @@ async function refreshESPNLiveGames(): Promise<void> {
   await Promise.all([...groups.values()].map(async (group) => {
     try {
       const url = `https://site.api.espn.com/apis/site/v2/sports/${group.sportPath}/scoreboard?dates=${group.date}`;
-      const res = await fetchWithRetry(url, 2, 6000);
+      const res = await fetchWithRetry(url, {}, 2);
       if (!res.ok) return;
       const data = await res.json();
       const events: any[] = data.events || [];
@@ -1305,7 +1308,7 @@ async function fetchESPNGameScore(slug: string): Promise<GameScore | null> {
   const { sportPath, t1, t2, date } = parsed;
   const url = `https://site.api.espn.com/apis/site/v2/sports/${sportPath}/scoreboard?dates=${date}`;
   try {
-    const res = await fetchWithRetry(url, 2, 6000);
+    const res = await fetchWithRetry(url, {}, 2);
     if (!res.ok) { setCache(cKey, null, 60_000); return null; }
     const data = await res.json();
     const events: any[] = data.events || [];
@@ -2178,13 +2181,16 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       ]);
       const curatedSetHttp = new Set<string>((curatedRowsHttp.rows || []).map((r: any) => r.wallet.toLowerCase()));
 
-      const lbMap = new Map<string, { name: string; pnl: number; isSportsLb: boolean }>();
+      const lbMap = new Map<string, { name: string; pnl: number; roi: number; qualityScore: number; isSportsLb: boolean }>();
       for (const t of allSportsLb) {
         const w = (t.proxyWallet || "").toLowerCase();
         if (!w || lbMap.has(w)) continue;
+        const roi = parseFloat(t.roi ?? t.profit ?? "0");
         lbMap.set(w, {
           name: t.userName || truncAddr(w),
           pnl: parseFloat(t.pnl || "0"),
+          roi,
+          qualityScore: Math.min(60, Math.max(10, Math.floor(roi))),
           isSportsLb: true,
         });
       }
@@ -2276,12 +2282,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       // ── Phase 1: Build verified trader quality map ───────────────────────────
       // CURATED-ONLY: Use only our 42 hand-picked elite traders as the signal source.
       // Fetch market database + recent trades for each curated trader in parallel.
-      const [marketDb, canonicalMap, ...curatedTradeBatches] = await Promise.all([
-        buildMarketDatabase(800),
-        loadCanonicalMetricsFromDB(),
-        // Fetch recent trades for each curated elite in parallel
-        ...CURATED_ELITES.map(e => fetchEliteTraderTrades(e.addr, 100)),
-      ]) as [Map<string, any>, Map<string, CanonicalEntry>, ...any[]];
+      const [allSportsLb, [marketDb, canonicalMap, ...curatedTradeBatches]] = await Promise.all([
+        fetchMultiWindowSportsLB().catch(() => [] as any[]),
+        Promise.all([
+          buildMarketDatabase(800),
+          loadCanonicalMetricsFromDB(),
+          ...CURATED_ELITES.map(e => fetchEliteTraderTrades(e.addr, 100)),
+        ]),
+      ]) as [any[], [Map<string, any>, Map<string, CanonicalEntry>, ...any[]]];
 
       // allTrades = merged trades from all curated elite traders (deduplicated)
       const allTrades: any[] = [];
@@ -2322,6 +2330,25 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           isLeaderboard: true,
           isSportsLb: true,
           source: "curated",
+        });
+      }
+
+      // ── Add sports LB traders to lbMap for cluster detection ─────────────────
+      // These are NOT curated but ARE tracked; needed so cluster detection can
+      // find 2+ non-curated LB traders co-investing in the same market.
+      for (const t of allSportsLb) {
+        const w = (t.proxyWallet || "").toLowerCase();
+        if (!w || lbMap.has(w)) continue; // don't overwrite curated traders
+        const roi = parseFloat(t.roi ?? t.profit ?? "0");
+        lbMap.set(w, {
+          name: t.userName || truncAddr(w),
+          pnl: parseFloat(t.pnl || "0"),
+          roi,
+          volume: 0,
+          qualityScore: Math.min(60, Math.max(10, Math.floor(roi))),
+          isLeaderboard: true,
+          isSportsLb: true,
+          source: "sports_lb",
         });
       }
 
@@ -2436,8 +2463,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const lb = lbMap.get(wallet);
         const traderInfo: TraderInfo = lb ?? {
           name: displayName(trade.pseudonym || trade.name || "", wallet),
-          pnl: 0, roi: 0, isLeaderboard: false, isSportsLb: false,
+          pnl: 0, roi: 0, volume: 0, isLeaderboard: false, isSportsLb: false,
           qualityScore: Math.min(35, Math.round(Math.log10(size + 1) * 7)),
+          source: "curated",
         };
 
         if (!marketWallets.has(condId)) {
@@ -2535,7 +2563,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // Use canonical DB quality score for each trader (consistent with Elite page)
         const avgQuality = dominant.reduce((s, e) => {
           const cm = canonicalMap.get(e.address.toLowerCase());
-          return s + (cm?.qualityScore > 0 ? cm.qualityScore : e.traderInfo.qualityScore);
+          return s + ((cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : e.traderInfo.qualityScore);
         }, 0) / dominant.length;
 
         // Weighted avg entry price: weight each trader's avg price by their total position size
@@ -2633,7 +2661,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const insiderTrades = dominant.reduce((s, e) => {
           const cm = canonicalMap.get(e.address.toLowerCase());
           const sportCount = cm?.roiBySport?.[signalSport]?.tradeCount ?? 0;
-          return s + (sportCount > 0 ? sportCount : (cm?.totalTrades > 0 ? cm.totalTrades : Math.max(Math.round(e.traderInfo.volume / 500), 1)));
+          return s + (sportCount > 0 ? sportCount : ((cm?.totalTrades ?? 0) > 0 ? cm!.totalTrades : Math.max(Math.round(e.traderInfo.volume / 500), 1)));
         }, 0);
         // insiderWinRate: canonical win rate weighted by bet size
         const insiderWinRate = Math.round(
@@ -2676,7 +2704,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             // Display canonical overall ROI — more accurate than sport-specific settled ROI
             // which misses open profitable positions
             const displayROI = cm?.overallROI ?? e.traderInfo.roi;
-            const displayQuality = cm?.qualityScore > 0 ? cm.qualityScore : e.traderInfo.qualityScore;
+            const displayQuality = (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : e.traderInfo.qualityScore;
             const sportEntry = cm?.roiBySport?.[signalSport];
             const avgEP = e.prices.reduce((a,b)=>a+b,0)/e.prices.length;
             return {
@@ -2709,7 +2737,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               name: e.traderInfo.name,
               entryPrice: Math.round((e.prices.reduce((a,b)=>a+b,0)/e.prices.length) * 100) / 100,
               netUsdc: Math.round(e.totalSize),
-              qualityScore: cm?.qualityScore > 0 ? cm.qualityScore : e.traderInfo.qualityScore,
+              qualityScore: (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : e.traderInfo.qualityScore,
               isSportsLb: (e.traderInfo as any).isSportsLb ?? false,
               sportRoi: sportEntry?.roi ?? null,
               tradeTime: (e as any).lastTimestamp || 0,
@@ -2908,7 +2936,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const avgQualityForScore = pg.traders.length > 0
             ? Math.round(pg.traders.reduce((s, t) => {
                 const cm = canonicalMap.get(t.wallet.toLowerCase());
-                return s + (cm?.qualityScore > 0 ? cm.qualityScore : (lbMap.get(t.wallet)?.qualityScore ?? 20));
+                return s + ((cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : (lbMap.get(t.wallet)?.qualityScore ?? 20));
               }, 0) / pg.traders.length)
             : 20;
           const { score: confidence, breakdown } = computeConfidence(
@@ -2961,7 +2989,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const pgInsiderTrades = pg.traders.reduce((s, t) => {
             const cm = canonicalMap.get(t.wallet.toLowerCase());
             const sportCount = cm?.roiBySport?.[pgSport]?.tradeCount ?? 0;
-            return s + (sportCount > 0 ? sportCount : (cm?.totalTrades > 0 ? cm.totalTrades : Math.max(Math.round((lbMap.get(t.wallet)?.volume ?? 500) / 500), 1)));
+            return s + (sportCount > 0 ? sportCount : ((cm?.totalTrades ?? 0) > 0 ? cm!.totalTrades : Math.max(Math.round((lbMap.get(t.wallet)?.volume ?? 500) / 500), 1)));
           }, 0);
           // insiderWinRate: canonical win rate weighted by bet size
           const pgInsiderWinRate = Math.round(
@@ -3008,7 +3036,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               const cm = canonicalMap.get(t.wallet.toLowerCase());
               // Display canonical overall ROI for consistency with Elite page
               const displayROI = cm?.overallROI ?? tm?.roi ?? 0;
-              const displayQuality = cm?.qualityScore > 0 ? cm.qualityScore : (tm?.qualityScore ?? 20);
+              const displayQuality = (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : (tm?.qualityScore ?? 20);
               const sportEntry = cm?.roiBySport?.[pgSport];
               return {
                 address: t.wallet,
@@ -3043,7 +3071,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                   name: t.name,
                   entryPrice: Math.round(t.entryPrice * 100) / 100,
                   netUsdc: Math.round(t.currentValue),
-                  qualityScore: cm?.qualityScore > 0 ? cm.qualityScore : (lbMap.get(t.wallet)?.qualityScore ?? 20),
+                  qualityScore: (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : (lbMap.get(t.wallet)?.qualityScore ?? 20),
                   isSportsLb: t.isSportsLb,
                   sportRoi: sportEntry?.roi ?? null,
                   tradeTime: 0,
@@ -3151,6 +3179,146 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         }
       }
 
+      // ── Cluster detection: tracked non-curated sports-LB traders ───────────
+      // When 2+ tracked (but not curated) traders co-invest same direction
+      // within 60 min with combined size ≥ $5K → boost or create a signal.
+      {
+        const curatedAddrs = new Set(CURATED_ELITES.map(e => e.addr.toLowerCase()));
+        const sixtyMinAgo = now - 60 * 60_000;
+        type ClusterEntry = { wallet:string; name:string; size:number; price:number; ts:number; title:string; slug:string; roi:number; isSportsLb:boolean };
+        const clusterMap = new Map<string, ClusterEntry[]>();
+
+        for (const trade of allTrades) {
+          const wallet = (trade.proxyWallet || "").toLowerCase();
+          if (!lbMap.has(wallet)) continue;
+          if (curatedAddrs.has(wallet)) continue;
+          const ts = (trade.timestamp || 0) * 1000;
+          if (ts < sixtyMinAgo) continue;
+          const size = parseFloat(trade.size || trade.amount || "0");
+          if (size < 500) continue;
+          const title = trade.title || trade.market || "";
+          if (!isSportsRelated(title)) continue;
+          const price = parseFloat(trade.price || "0.5");
+          if (price < 0.05 || price > 0.95) continue;
+          const condId = trade.conditionId || "";
+          if (!condId) continue;
+          const outcomeIdx = trade.outcomeIndex ?? (trade.outcome === "Yes" ? 0 : 1);
+          const side = outcomeIdx === 0 ? "YES" : "NO";
+          const key = `${condId}|${side}`;
+          if (!clusterMap.has(key)) clusterMap.set(key, []);
+          const lbInfo = lbMap.get(wallet);
+          clusterMap.get(key)!.push({
+            wallet, name: lbInfo?.name || wallet.slice(0, 8),
+            size, price, ts, title, slug: trade.slug || "",
+            roi: lbInfo?.roi ?? 0, isSportsLb: lbInfo?.isSportsLb ?? false,
+          });
+        }
+
+        for (const [key, clusterTrades] of clusterMap) {
+          const [condId, side] = key.split("|") as [string, "YES"|"NO"];
+          // Deduplicate by wallet, keep largest trade per wallet
+          const byWallet = new Map<string, ClusterEntry>();
+          for (const t of clusterTrades) {
+            const ex = byWallet.get(t.wallet);
+            if (!ex || t.size > ex.size) byWallet.set(t.wallet, t);
+          }
+          const unique = [...byWallet.values()];
+          if (unique.length < 2) continue;
+          const totalSize = unique.reduce((s, t) => s + t.size, 0);
+          if (totalSize < 5000) continue;
+
+          // Check for an existing curated signal for this conditionId + side
+          const existingIdx = signals.findIndex(s => s.marketId === condId && s.side === side);
+          if (existingIdx >= 0) {
+            const boost = Math.min(12, unique.length * 5);
+            signals[existingIdx].confidence = Math.min(95, signals[existingIdx].confidence + boost);
+            (signals[existingIdx] as any).clusterBoost = { traders: unique.length, combinedSize: Math.round(totalSize) };
+            continue;
+          }
+
+          // No curated signal exists → create a standalone cluster signal
+          const rep = unique.sort((a, b) => b.ts - a.ts)[0];
+          const dbEntry = sharedMarketDb.get(condId);
+          if (dbEntry && !dbEntry.active) continue;
+          if (isPostponedOrCancelled(rep.title, true, false)) continue;
+
+          const avgPrice = unique.reduce((s, t) => s + t.price * t.size, 0) / totalSize;
+          const avgRoi = unique.reduce((s, t) => s + t.roi, 0) / unique.length;
+          const mType = categoriseMarket(rep.title, dbEntry?.endDate, dbEntry?.gameStartTime, rep.slug);
+          const sport = classifySport(rep.slug, rep.title);
+          const mCategory = classifyMarketType(rep.title);
+
+          const roiPct = Math.min(20, Math.floor(avgRoi / 5));
+          const sizePct = Math.min(15, Math.floor(totalSize / 2000));
+          const countBonus = Math.min(10, (unique.length - 1) * 5);
+          const clusterConf = Math.min(82, 40 + roiPct + sizePct + countBonus);
+
+          const cSignalId = `cluster-${condId}-${side}`;
+          const isNew = !seenSignalIds.has(cSignalId);
+          seenSignalIds.add(cSignalId);
+
+          signals.push({
+            id: cSignalId,
+            marketId: condId,
+            marketQuestion: rep.title,
+            slug: rep.slug,
+            endDate: dbEntry?.endDate || "",
+            outcome: side,
+            side,
+            confidence: clusterConf,
+            tier: unique.length >= 3 ? "HIGH" : "MED",
+            marketType: mType,
+            isSports: true,
+            marketCategory: mCategory,
+            isActionable: true,
+            priceStatus: "cluster",
+            bigPlayScore: computeBigPlayScore(totalSize, unique.length),
+            consensusPct: 100,
+            valueDelta: 0,
+            currentPrice: avgPrice,
+            avgEntryPrice: avgPrice,
+            totalNetUsdc: Math.round(totalSize),
+            avgNetUsdc: Math.round(totalSize / unique.length),
+            totalRiskUsdc: Math.round(totalSize * avgPrice),
+            avgRiskUsdc: Math.round(totalSize * avgPrice / unique.length),
+            traderCount: unique.length,
+            lbTraderCount: unique.length,
+            sportsLbCount: unique.filter(t => t.isSportsLb).length,
+            counterTraderCount: 0,
+            avgQuality: Math.min(90, 50 + avgRoi * 2),
+            scoreBreakdown: { roiPct, consensusPct: countBonus, valuePct: 0, sizePct, tierBonus: 0 },
+            relBetSize: totalSize / 2000,
+            slippagePct: 0,
+            insiderSportsROI: avgRoi,
+            insiderTrades: 0,
+            insiderWinRate: 0,
+            traders: unique.map(t => ({
+              address: t.wallet, name: t.name,
+              entryPrice: t.price, size: t.size, netUsdc: t.size,
+              riskUsdc: Math.round(t.size * t.price),
+              roi: t.roi, qualityScore: 60, pnl: 0,
+              isLeaderboard: true, isSportsLb: t.isSportsLb,
+              tradeTime: t.ts, winRate: 0, totalTrades: 0,
+              sportRoi: t.roi, sportTradeCount: 0, sportWinRate: 0, sportAvgBet: t.size,
+              tags: ["🎯 Cluster Play"],
+            })),
+            counterTraders: [],
+            category: "sports",
+            sport,
+            volume: 0,
+            generatedAt: now,
+            isValue: false,
+            isNew,
+            source: "cluster",
+            outcomeLabel: side,
+            hasCuratedElite: false,
+            curatedEliteSplit: false,
+            curatedElites: [],
+          } as any);
+        }
+        console.log(`[Cluster] detected ${[...clusterMap.values()].filter(v => [...new Map(v.map(t=>[t.wallet,t])).values()].length >= 2).length} cluster plays from non-curated tracked traders`);
+      }
+
       signals.sort((a, b) => b.confidence - a.confidence);
       console.log(`[Elite v16] ${signals.length} signals total (trades + positions)`);
 
@@ -3182,6 +3350,23 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         source: "verified_sports_v11",
       };
       setCache(cKey, response, 2 * 60 * 1000);
+
+      // ── SSE push: broadcast new high-confidence signals to connected clients ──
+      {
+        const newHighConf = signals.filter(s => s.isNew && s.confidence >= 80 && s.isActionable);
+        if (newHighConf.length > 0 && sseClients.size > 0) {
+          broadcastSSE("signals", "new_signals", {
+            signals: newHighConf.slice(0, 5).map(s => ({
+              id: s.id, confidence: s.confidence, sport: s.sport,
+              marketQuestion: s.marketQuestion, side: s.side,
+              marketType: s.marketType, totalNetUsdc: s.totalNetUsdc,
+            })),
+            count: newHighConf.length,
+            fetchedAt: now,
+          });
+          console.log(`[SSE] Pushed ${newHighConf.length} new high-confidence signals to ${sseClients.size} clients`);
+        }
+      }
 
       // Enrich game market registry non-blocking (fills volume/liquidity for /api/markets)
       enrichGameMarketsFromGamma().catch(e => console.warn("enrichGMR:", e.message));

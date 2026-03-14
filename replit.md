@@ -231,6 +231,15 @@ Traders page sorted by this score (hot hands bubbled to top). Signal lbMap also 
 - ACTIONABLE (emerald), PRICE MOVED (gray), BIG PLAY (amber), VALUE EDGE, ELITE, SPORTS LB, POSITIONS badges
 - LIVE (red pulsing), PREGAME (blue), FUTURES (gray) game status badges
 
+## Bug Fixes (March 2026)
+
+- **`allSportsLb is not defined`**: Fixed by adding `fetchMultiWindowSportsLB()` to the parallel fetch in the `/api/signals` route (was only in alerts route)
+- **`fetchWithRetry(url, 2, 6000)`**: Fixed incorrect call in ESPN score fetchers (2nd arg is `RequestInit`, not retries) → `fetchWithRetry(url, {}, 2)`
+- **`avgNetUsdc` undefined in `renderAlert()`**: Fixed by using `matchSignal?.avgRiskUsdc ?? matchSignal?.avgNetUsdc` instead of referencing `avgNetUsdc` from outer `SignalCard` scope
+- **Shared schema gaps**: Added `winRate`, `totalTrades`, `sportRoi`, `sportWinRate`, `sportAvgBet`, `tags`, `isActionable`, `sport`, `marketType`, `marketCategory`, `clusterBoost`, etc. to `signalTraderSchema` and `signalSchema`
+- **TypeScript ES5 target**: Added `"target": "ES2020"` to `tsconfig.json` to fix Map/Set iteration errors
+- **Alerts route lbMap type**: Added `roi` and `qualityScore` fields to the alerts route's `lbMap` type (was only `{ name, pnl, isSportsLb }`)
+
 ## Key Technical Details
 
 - Polymarket trades API caps at 1000/call → paginate with offset (5 pages → 5000 trades)

@@ -434,8 +434,8 @@ function TraderDeepDive({ wallet, username }: { wallet: string; username: string
                   <div className="text-[9px] text-muted-foreground">
                     {m.activeUnrealizedPNL != null ? "Active P&L" : "Open P&L"}
                   </div>
-                  <div className={`text-xs font-bold ${roiColor(m.activeUnrealizedPNL ?? m.unrealizedPNL)}`}>
-                    {fmtUSDC(m.activeUnrealizedPNL ?? m.unrealizedPNL)}
+                  <div className={`text-xs font-bold ${roiColor(m.activeUnrealizedPNL ?? m.unrealizedPNL ?? 0)}`}>
+                    {fmtUSDC(m.activeUnrealizedPNL ?? m.unrealizedPNL ?? 0)}
                   </div>
                   <div className="text-[9px] text-muted-foreground">
                     {m.activeOpenCount != null
