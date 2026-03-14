@@ -69,35 +69,37 @@ function DashboardTrackBetModal({
 
   function handleSave() {
     if (!oddsNum || !betAmtNum || betAmtNum <= 0) return;
+    const newBet = {
+      id: `bet-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      marketQuestion: signal.marketQuestion,
+      outcomeLabel,
+      side: signal.side,
+      conditionId: s.marketId,
+      slug: s.slug,
+      entryPrice: impliedProb || signalPrice,
+      betAmount: betAmtNum,
+      betDate: Date.now(),
+      status: "open",
+      book,
+      americanOdds: oddsNum,
+      polymarketPrice: signalPrice,
+      sport: s.sport,
+      notes: notes.trim() || undefined,
+    };
+    // Persist to database
+    fetch("/api/bets", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newBet),
+    }).catch(() => {});
+    // Also write to localStorage as immediate cache
     try {
       const bets = JSON.parse(localStorage.getItem(BET_KEY) || "[]");
-      bets.unshift({
-        id: `bet-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        marketQuestion: signal.marketQuestion,
-        outcomeLabel,
-        side: signal.side,
-        conditionId: s.marketId,
-        slug: s.slug,
-        entryPrice: impliedProb || signalPrice,
-        betAmount: betAmtNum,
-        betDate: Date.now(),
-        status: "open",
-        book,
-        americanOdds: oddsNum,
-        polymarketPrice: signalPrice,
-        sport: s.sport,
-        confidence: signal.confidence,
-        tailedTraders: (signal.traders || []).map((t: any) => ({
-          address: t.address, name: t.name, sportRoi: t.sportRoi, winRate: t.winRate, qualityScore: t.qualityScore,
-        })),
-        notes: notes.trim(),
-      });
+      bets.unshift(newBet);
       localStorage.setItem(BET_KEY, JSON.stringify(bets));
-      toast({ title: "Bet tracked!", description: `${outcomeLabel} · ${oddsNum > 0 ? "+" : ""}${oddsNum} · ${book}` });
-      onClose();
-    } catch {
-      toast({ title: "Error", description: "Could not save bet.", variant: "destructive" });
-    }
+    } catch {}
+    toast({ title: "Bet tracked!", description: `${outcomeLabel} · ${oddsNum > 0 ? "+" : ""}${oddsNum} · ${book}` });
+    onClose();
   }
 
   const BOOKS: BookType[] = ["Kalshi", "PPH", "Polymarket"];

@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 type BetStatus = "open" | "won" | "lost" | "cancelled";
 
-interface TrackedBet {
+export interface TrackedBet {
   id: string;
   marketQuestion: string;
   outcomeLabel: string;
@@ -28,121 +29,64 @@ interface TrackedBet {
   resolvedDate?: number;
   pnl?: number;
   notes?: string;
-  snoozedUntil?: number;
   book?: "PPH" | "Kalshi" | "Polymarket";
   americanOdds?: number;
   polymarketPrice?: number;
   sport?: string;
 }
 
-// ─── Storage helpers ──────────────────────────────────────────────────────────
+// ─── API helpers ──────────────────────────────────────────────────────────────
 
-const BET_KEY = "pi_bets";
+async function apiBets(): Promise<TrackedBet[]> {
+  const r = await fetch("/api/bets");
+  if (!r.ok) throw new Error("Failed to load bets");
+  return r.json();
+}
 
-function loadBets(): TrackedBet[] {
+async function apiAddBet(bet: TrackedBet): Promise<void> {
+  await fetch("/api/bets", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(bet),
+  });
+}
+
+async function apiPatchBet(id: string, patch: Partial<TrackedBet>): Promise<void> {
+  await fetch(`/api/bets/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
+}
+
+async function apiDeleteBet(id: string): Promise<void> {
+  await fetch(`/api/bets/${id}`, { method: "DELETE" });
+}
+
+// ─── localStorage write-through (so Signals/Dashboard can read fast) ──────────
+
+export const BET_KEY = "pi_bets";
+export function syncBetsToStorage(bets: TrackedBet[]) {
+  try { localStorage.setItem(BET_KEY, JSON.stringify(bets)); } catch {}
+}
+export function loadBetsFromStorage(): TrackedBet[] {
   try { return JSON.parse(localStorage.getItem(BET_KEY) || "[]"); } catch { return []; }
 }
 
-function saveBets(bets: TrackedBet[]) {
-  localStorage.setItem(BET_KEY, JSON.stringify(bets));
-}
-
-function useBets() {
-  const [bets, setBets] = useState<TrackedBet[]>(() => loadBets());
-
-  const addBet = useCallback((bet: Omit<TrackedBet, "id" | "betDate" | "status">) => {
-    const newBet: TrackedBet = {
-      ...bet,
-      id: `bet-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      betDate: Date.now(),
-      status: "open",
-    };
-    setBets(prev => {
-      const updated = [newBet, ...prev];
-      saveBets(updated);
-      return updated;
-    });
-    return newBet;
-  }, []);
-
-  const resolveBet = useCallback((id: string, status: "won" | "lost" | "cancelled", resolvedPrice?: number) => {
-    setBets(prev => {
-      const updated = prev.map(b => {
-        if (b.id !== id) return b;
-        let pnl = 0;
-        if (status !== "cancelled") {
-          if (status === "won") {
-            // Use actual americanOdds if we have them (most accurate)
-            if (b.americanOdds !== undefined) {
-              pnl = b.americanOdds > 0
-                ? b.betAmount * (b.americanOdds / 100)
-                : b.betAmount * (100 / Math.abs(b.americanOdds));
-            } else {
-              pnl = b.side === "YES"
-                ? b.betAmount * (1 - b.entryPrice) / b.entryPrice
-                : b.betAmount * b.entryPrice / (1 - b.entryPrice);
-            }
-          } else if (status === "lost") {
-            pnl = -b.betAmount;
-          }
-        }
-        return { ...b, status, resolvedPrice, resolvedDate: Date.now(), pnl: Math.round(pnl * 100) / 100 };
-      });
-      saveBets(updated);
-      return updated;
-    });
-  }, []);
-
-  const deleteBet = useCallback((id: string) => {
-    setBets(prev => {
-      const updated = prev.filter(b => b.id !== id);
-      saveBets(updated);
-      return updated;
-    });
-  }, []);
-
-  const updateNotes = useCallback((id: string, notes: string) => {
-    setBets(prev => {
-      const updated = prev.map(b => b.id === id ? { ...b, notes } : b);
-      saveBets(updated);
-      return updated;
-    });
-  }, []);
-
-  const reopenBet = useCallback((id: string) => {
-    setBets(prev => {
-      const updated = prev.map(b => b.id === id
-        ? { ...b, status: "open" as BetStatus, resolvedPrice: undefined, resolvedDate: undefined, pnl: undefined }
-        : b
-      );
-      saveBets(updated);
-      return updated;
-    });
-  }, []);
-
-  return { bets, addBet, resolveBet, deleteBet, updateNotes, reopenBet };
-}
-
-// ─── Snooze helpers ───────────────────────────────────────────────────────────
+// ─── Snooze helpers (still localStorage – these are ephemeral) ───────────────
 
 const SNOOZE_KEY = "pi_snoozed";
-
 export function getSnoozed(): Record<string, number> {
   try { return JSON.parse(localStorage.getItem(SNOOZE_KEY) || "{}"); } catch { return {}; }
 }
-
 export function snoozeSignal(signalId: string, until: number) {
-  const s = getSnoozed();
-  s[signalId] = until;
+  const s = getSnoozed(); s[signalId] = until;
   localStorage.setItem(SNOOZE_KEY, JSON.stringify(s));
 }
-
 export function unsnoozeSignal(signalId: string) {
-  const s = getSnoozed();
-  delete s[signalId];
+  const s = getSnoozed(); delete s[signalId];
   localStorage.setItem(SNOOZE_KEY, JSON.stringify(s));
 }
-
 export function isSignalSnoozed(signalId: string): boolean {
   const s = getSnoozed();
   const until = s[signalId];
@@ -153,22 +97,16 @@ export function isSignalSnoozed(signalId: string): boolean {
 
 // ─── Auto-grading hook ────────────────────────────────────────────────────────
 
-const AUTO_GRADE_INTERVAL_MS = 5 * 60 * 1000; // every 5 minutes
+const AUTO_GRADE_INTERVAL_MS = 5 * 60 * 1000;
+const MIN_AGE_BEFORE_GRADE_MS = 60 * 60 * 1000;
 
-const MIN_AGE_BEFORE_GRADE_MS = 60 * 60 * 1000; // 1 hour — prevents immediate grading of newly added bets
-
-function useAutoGrade(_bets: TrackedBet[], resolveBet: (id: string, status: "won" | "lost" | "cancelled", resolvedPrice?: number) => void) {
-  const [lastGraded, setLastGraded] = useState<string | null>(null);
-
+function useAutoGrade(bets: TrackedBet[], patchBet: (id: string, patch: Partial<TrackedBet>) => void) {
   useEffect(() => {
     async function checkResolutions() {
-      // Always read FRESH bets from localStorage to avoid stale-closure overwrites
-      const freshBets = loadBets();
       const now = Date.now();
-      const openBets = freshBets.filter(b =>
+      const openBets = bets.filter(b =>
         b.status === "open" &&
         b.conditionId &&
-        // Only grade bets that are old enough (prevents immediate grading of new bets)
         (now - (b.betDate || 0)) > MIN_AGE_BEFORE_GRADE_MS
       );
       if (openBets.length === 0) return;
@@ -180,25 +118,35 @@ function useAutoGrade(_bets: TrackedBet[], resolveBet: (id: string, status: "won
           const data: { resolved: boolean; outcome: "YES" | "NO" | null; finalPrice: number | null } = await res.json();
           if (!data.resolved || !data.outcome) continue;
 
-          // Double-check the bet is STILL open in localStorage (user might have manually resolved it)
-          const currentBets = loadBets();
-          const currentBet = currentBets.find(b => b.id === bet.id);
-          if (!currentBet || currentBet.status !== "open") continue;
-
+          let pnl = 0;
           const won = data.outcome === bet.side;
-          resolveBet(bet.id, won ? "won" : "lost", data.finalPrice ?? undefined);
-          setLastGraded(bet.id);
-        } catch {
-        }
+          if (won) {
+            if (bet.americanOdds !== undefined) {
+              pnl = bet.americanOdds > 0
+                ? bet.betAmount * (bet.americanOdds / 100)
+                : bet.betAmount * (100 / Math.abs(bet.americanOdds));
+            } else {
+              pnl = bet.side === "YES"
+                ? bet.betAmount * (1 - bet.entryPrice) / bet.entryPrice
+                : bet.betAmount * bet.entryPrice / (1 - bet.entryPrice);
+            }
+          } else {
+            pnl = -bet.betAmount;
+          }
+          patchBet(bet.id, {
+            status: won ? "won" : "lost",
+            resolvedPrice: data.finalPrice ?? undefined,
+            resolvedDate: Date.now(),
+            pnl: Math.round(pnl * 100) / 100,
+          });
+        } catch {}
       }
     }
 
     checkResolutions();
     const iv = setInterval(checkResolutions, AUTO_GRADE_INTERVAL_MS);
     return () => clearInterval(iv);
-  }, [_bets.length]); // re-runs if bet count changes
-
-  return lastGraded;
+  }, [bets.length]);
 }
 
 // ─── Format helpers ───────────────────────────────────────────────────────────
@@ -206,12 +154,10 @@ function useAutoGrade(_bets: TrackedBet[], resolveBet: (id: string, status: "won
 function formatDate(ts: number): string {
   return new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 }
-
 function fmtUsdc(v: number): string {
   if (Math.abs(v) >= 1000) return `$${(v / 1000).toFixed(1)}K`;
   return `$${v.toFixed(2)}`;
 }
-
 function toAmericanOdds(p: number): string {
   if (p <= 0 || p >= 1) return "—";
   if (p >= 0.5) return `-${Math.round(p / (1 - p) * 100)}`;
@@ -238,113 +184,53 @@ function AddBetForm({ onAdd, onCancel, prefill }: {
     ? side === "YES"
       ? amtNum * (1 - priceNum) / priceNum
       : amtNum * priceNum / (1 - priceNum)
-    : null;
-
-  function handleSubmit() {
-    if (!marketQuestion.trim() || !entryPrice || !betAmount) return;
-    onAdd({
-      marketQuestion: marketQuestion.trim(),
-      outcomeLabel: outcomeLabel.trim() || marketQuestion.trim(),
-      side,
-      conditionId: prefill?.conditionId,
-      slug: prefill?.slug,
-      entryPrice: priceNum,
-      betAmount: amtNum,
-      notes: notes.trim() || undefined,
-    });
-  }
+    : 0;
 
   return (
-    <div className="p-4 space-y-3 bg-muted/30 rounded-lg border border-border">
-      <div className="font-semibold text-sm">Log a Bet</div>
-      <div>
-        <label className="text-xs text-muted-foreground mb-1 block">Market / Bet</label>
-        <Input
-          placeholder="e.g. Celtics vs. Spurs"
-          value={marketQuestion}
-          onChange={e => setMarketQuestion(e.target.value)}
-          className="h-8 text-sm"
-          data-testid="input-bet-market"
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">Outcome</label>
-          <Input
-            placeholder="e.g. Spurs WIN"
-            value={outcomeLabel}
-            onChange={e => setOutcomeLabel(e.target.value)}
-            className="h-8 text-sm"
-            data-testid="input-bet-outcome"
-          />
-        </div>
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">Side</label>
+    <Card>
+      <CardHeader className="pb-2 pt-3 px-4">
+        <CardTitle className="text-sm">Log Bet</CardTitle>
+      </CardHeader>
+      <CardContent className="px-4 pb-4 space-y-2">
+        <Input placeholder="Market question" value={marketQuestion} onChange={e => setMarketQuestion(e.target.value)} className="h-8 text-sm" data-testid="input-market-question" />
+        <div className="flex gap-2">
+          <Input placeholder="Pick / outcome label" value={outcomeLabel} onChange={e => setOutcomeLabel(e.target.value)} className="h-8 text-sm flex-1" data-testid="input-outcome-label" />
           <Select value={side} onValueChange={v => setSide(v as "YES" | "NO")}>
-            <SelectTrigger className="h-8 text-sm" data-testid="select-bet-side">
-              <SelectValue />
-            </SelectTrigger>
+            <SelectTrigger className="h-8 text-sm w-20" data-testid="select-side"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="YES">YES</SelectItem>
               <SelectItem value="NO">NO</SelectItem>
             </SelectContent>
           </Select>
         </div>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">Entry Price (cents)</label>
-          <Input
-            placeholder="e.g. 45"
-            type="number"
-            min="1"
-            max="99"
-            value={entryPrice}
-            onChange={e => setEntryPrice(e.target.value)}
-            className="h-8 text-sm"
-            data-testid="input-bet-entry"
-          />
-          {priceNum > 0 && priceNum < 1 && (
-            <div className="text-[10px] text-muted-foreground mt-0.5">{toAmericanOdds(priceNum)}</div>
-          )}
+        <div className="flex gap-2">
+          <Input placeholder="Entry (cents)" type="number" value={entryPrice} onChange={e => setEntryPrice(e.target.value)} className="h-8 text-sm flex-1" data-testid="input-entry-price" />
+          <Input placeholder="Bet amount ($)" type="number" value={betAmount} onChange={e => setBetAmount(e.target.value)} className="h-8 text-sm flex-1" data-testid="input-bet-amount" />
         </div>
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">Bet Amount (USDC)</label>
-          <Input
-            placeholder="e.g. 100"
-            type="number"
-            min="1"
-            value={betAmount}
-            onChange={e => setBetAmount(e.target.value)}
-            className="h-8 text-sm"
-            data-testid="input-bet-amount"
-          />
-          {potentialPnl !== null && (
-            <div className="text-[10px] text-green-600 dark:text-green-400 mt-0.5">
-              Potential profit: {fmtUsdc(potentialPnl)}
-            </div>
-          )}
+        {potentialPnl > 0 && (
+          <div className="text-xs text-green-600 dark:text-green-400 font-medium">
+            To win: +{fmtUsdc(potentialPnl)}
+          </div>
+        )}
+        <Input placeholder="Notes (optional)" value={notes} onChange={e => setNotes(e.target.value)} className="h-8 text-sm" data-testid="input-notes" />
+        <div className="flex gap-2 pt-1">
+          <Button size="sm" className="flex-1 h-8" onClick={() => {
+            if (!marketQuestion || !outcomeLabel) return;
+            onAdd({
+              marketQuestion, outcomeLabel, side,
+              entryPrice: priceNum || 0,
+              betAmount: amtNum || 0,
+              conditionId: prefill?.conditionId,
+              slug: prefill?.slug,
+              notes: notes || undefined,
+            });
+          }} data-testid="button-submit-add-bet">
+            Track Bet
+          </Button>
+          <Button size="sm" variant="outline" className="h-8" onClick={onCancel} data-testid="button-cancel-add-bet">Cancel</Button>
         </div>
-      </div>
-      <div>
-        <label className="text-xs text-muted-foreground mb-1 block">Notes (optional)</label>
-        <Input
-          placeholder="e.g. Based on OKC signal, confidence 95"
-          value={notes}
-          onChange={e => setNotes(e.target.value)}
-          className="h-8 text-sm"
-          data-testid="input-bet-notes"
-        />
-      </div>
-      <div className="flex gap-2">
-        <Button onClick={handleSubmit} size="sm" className="flex-1" data-testid="button-add-bet">
-          <Plus className="w-3.5 h-3.5 mr-1" /> Track Bet
-        </Button>
-        <Button onClick={onCancel} size="sm" variant="outline" data-testid="button-cancel-bet">
-          Cancel
-        </Button>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -363,57 +249,53 @@ function BetCard({ bet, onResolve, onDelete, onUpdateNotes, onReopen }: {
   const [editingNotes, setEditingNotes] = useState(false);
   const [notes, setNotes] = useState(bet.notes || "");
 
+  const priceNum = bet.entryPrice || 0;
+  const potentialPnl = bet.betAmount > 0 && priceNum > 0 && priceNum < 1
+    ? bet.side === "YES"
+      ? bet.betAmount * (1 - priceNum) / priceNum
+      : bet.betAmount * priceNum / (1 - priceNum)
+    : 0;
+
   const statusColor = {
-    open: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/20",
+    open: "bg-primary/10 text-primary border-primary/20",
     won: "bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/20",
     lost: "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/20",
     cancelled: "bg-muted text-muted-foreground border-border",
   }[bet.status];
 
-  const potentialPnl = bet.americanOdds !== undefined
-    ? (bet.americanOdds > 0
-        ? bet.betAmount * (bet.americanOdds / 100)
-        : bet.betAmount * (100 / Math.abs(bet.americanOdds)))
-    : bet.side === "YES"
-      ? bet.betAmount * (1 - bet.entryPrice) / bet.entryPrice
-      : bet.betAmount * bet.entryPrice / (1 - bet.entryPrice);
-
   return (
-    <Card data-testid={`bet-card-${bet.id}`}>
+    <Card data-testid={`card-bet-${bet.id}`}>
       <CardContent className="p-3 space-y-2">
         {/* Header row */}
-        <div className="flex items-start gap-2">
-          <div className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold border bg-primary/10 text-primary border-primary/20">
-            BET
-          </div>
+        <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-semibold leading-tight">{bet.outcomeLabel}</div>
-            <div className="text-[11px] text-muted-foreground truncate">{bet.marketQuestion}</div>
+            <div className="font-semibold text-sm leading-tight truncate" data-testid={`text-market-${bet.id}`}>
+              {bet.marketQuestion}
+            </div>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${statusColor}`}>
+                {bet.status.toUpperCase()}
+              </span>
+              <span className="text-xs font-bold text-foreground" data-testid={`text-outcome-${bet.id}`}>{bet.outcomeLabel}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${statusColor}`}>
-              {bet.status.toUpperCase()}
-            </span>
-            <button
-              onClick={() => setExpanded(e => !e)}
-              className="text-muted-foreground hover:text-foreground"
-              data-testid={`button-expand-bet-${bet.id}`}
-            >
-              {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            </button>
-          </div>
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="text-muted-foreground hover:text-foreground transition-colors mt-0.5 shrink-0"
+            data-testid={`button-expand-bet-${bet.id}`}
+          >
+            {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
         </div>
 
         {/* Key numbers row */}
         <div className="flex items-center gap-4 text-xs flex-wrap">
           {bet.book && (
-            <div>
-              <span className={`font-bold px-1.5 py-0.5 rounded text-[10px] ${
-                bet.book === "Kalshi" ? "bg-purple-500/15 text-purple-700 dark:text-purple-300" :
-                bet.book === "PPH" ? "bg-blue-500/15 text-blue-700 dark:text-blue-300" :
-                "bg-primary/10 text-primary"
-              }`}>{bet.book}</span>
-            </div>
+            <span className={`font-bold px-1.5 py-0.5 rounded text-[10px] ${
+              bet.book === "Kalshi" ? "bg-purple-500/15 text-purple-700 dark:text-purple-300" :
+              bet.book === "PPH" ? "bg-blue-500/15 text-blue-700 dark:text-blue-300" :
+              "bg-primary/10 text-primary"
+            }`}>{bet.book}</span>
           )}
           <div>
             <span className="text-muted-foreground">Odds: </span>
@@ -430,7 +312,7 @@ function BetCard({ bet, onResolve, onDelete, onUpdateNotes, onReopen }: {
             <span className="text-muted-foreground">Bet: </span>
             <span className="font-bold">{fmtUsdc(bet.betAmount)}</span>
           </div>
-          {bet.status === "open" && (
+          {bet.status === "open" && potentialPnl > 0 && (
             <div>
               <span className="text-muted-foreground">To win: </span>
               <span className="font-bold text-green-600 dark:text-green-400">{fmtUsdc(potentialPnl)}</span>
@@ -450,7 +332,6 @@ function BetCard({ bet, onResolve, onDelete, onUpdateNotes, onReopen }: {
         {/* Expanded section */}
         {expanded && (
           <div className="pt-2 border-t border-border/50 space-y-2">
-            {/* Notes */}
             <div>
               {editingNotes ? (
                 <div className="flex gap-1">
@@ -477,7 +358,6 @@ function BetCard({ bet, onResolve, onDelete, onUpdateNotes, onReopen }: {
               )}
             </div>
 
-            {/* Polymarket link */}
             {bet.slug && (
               <a
                 href={`https://polymarket.com/market/${bet.slug}`}
@@ -489,19 +369,14 @@ function BetCard({ bet, onResolve, onDelete, onUpdateNotes, onReopen }: {
               </a>
             )}
 
-            {/* Actions */}
             {bet.status === "open" && (
               <div className="space-y-2">
                 {!resolveMode ? (
                   <div className="flex gap-1.5">
-                    <Button size="sm" className="h-7 text-xs gap-1 bg-green-600 hover:bg-green-700 text-white" onClick={() => {
-                      onResolve(bet.id, "won");
-                    }} data-testid={`button-won-${bet.id}`}>
+                    <Button size="sm" className="h-7 text-xs gap-1 bg-green-600 hover:bg-green-700 text-white" onClick={() => onResolve(bet.id, "won")} data-testid={`button-won-${bet.id}`}>
                       <CheckCircle className="w-3 h-3" /> Won
                     </Button>
-                    <Button size="sm" variant="outline" className="h-7 text-xs gap-1 border-red-500/30 text-red-600 hover:bg-red-500/10" onClick={() => {
-                      onResolve(bet.id, "lost");
-                    }} data-testid={`button-lost-${bet.id}`}>
+                    <Button size="sm" variant="outline" className="h-7 text-xs gap-1 border-red-500/30 text-red-600 hover:bg-red-500/10" onClick={() => onResolve(bet.id, "lost")} data-testid={`button-lost-${bet.id}`}>
                       <XCircle className="w-3 h-3" /> Lost
                     </Button>
                     <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => setResolveMode(true)} data-testid={`button-resolve-custom-${bet.id}`}>
@@ -510,47 +385,22 @@ function BetCard({ bet, onResolve, onDelete, onUpdateNotes, onReopen }: {
                   </div>
                 ) : (
                   <div className="flex gap-1.5 flex-wrap">
-                    <Input
-                      placeholder="Final price (cents)"
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={finalPrice}
-                      onChange={e => setFinalPrice(e.target.value)}
-                      className="h-7 text-xs w-36"
-                      data-testid={`input-final-price-${bet.id}`}
-                    />
-                    <Button size="sm" className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white" onClick={() => {
-                      onResolve(bet.id, "won", parseFloat(finalPrice) / 100);
-                      setResolveMode(false);
-                    }}>Won</Button>
-                    <Button size="sm" variant="outline" className="h-7 text-xs border-red-500/30 text-red-600 hover:bg-red-500/10" onClick={() => {
-                      onResolve(bet.id, "lost", parseFloat(finalPrice) / 100);
-                      setResolveMode(false);
-                    }}>Lost</Button>
+                    <Input placeholder="Final price (cents)" type="number" min="0" max="100" value={finalPrice} onChange={e => setFinalPrice(e.target.value)} className="h-7 text-xs w-36" data-testid={`input-final-price-${bet.id}`} />
+                    <Button size="sm" className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white" onClick={() => { onResolve(bet.id, "won", parseFloat(finalPrice) / 100); setResolveMode(false); }}>Won</Button>
+                    <Button size="sm" variant="outline" className="h-7 text-xs border-red-500/30 text-red-600 hover:bg-red-500/10" onClick={() => { onResolve(bet.id, "lost", parseFloat(finalPrice) / 100); setResolveMode(false); }}>Lost</Button>
                     <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setResolveMode(false)}>Cancel</Button>
                   </div>
                 )}
               </div>
             )}
 
-            {/* Reopen for resolved bets (allows correcting wrong auto-grades) */}
             {bet.status !== "open" && (
-              <button
-                onClick={() => onReopen(bet.id)}
-                className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-blue-500 transition-colors"
-                data-testid={`button-reopen-bet-${bet.id}`}
-              >
+              <button onClick={() => onReopen(bet.id)} className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-blue-500 transition-colors" data-testid={`button-reopen-bet-${bet.id}`}>
                 <RefreshCw className="w-3 h-3" /> Reopen
               </button>
             )}
 
-            {/* Delete */}
-            <button
-              onClick={() => onDelete(bet.id)}
-              className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-red-500 transition-colors"
-              data-testid={`button-delete-bet-${bet.id}`}
-            >
+            <button onClick={() => onDelete(bet.id)} className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-red-500 transition-colors" data-testid={`button-delete-bet-${bet.id}`}>
               <Trash2 className="w-3 h-3" /> Delete
             </button>
           </div>
@@ -563,10 +413,95 @@ function BetCard({ bet, onResolve, onDelete, onUpdateNotes, onReopen }: {
 // ─── Main Bets page ───────────────────────────────────────────────────────────
 
 export default function Bets() {
-  const { bets, addBet, resolveBet, deleteBet, updateNotes, reopenBet } = useBets();
-  useAutoGrade(bets, resolveBet);
+  const queryClient = useQueryClient();
   const [showAddForm, setShowAddForm] = useState(false);
   const [filter, setFilter] = useState<"all" | "open" | "resolved">("all");
+
+  const { data: bets = [], isLoading } = useQuery<TrackedBet[]>({
+    queryKey: ["/api/bets"],
+    queryFn: apiBets,
+    staleTime: 30_000,
+  });
+
+  // Keep localStorage in sync so Signals/Dashboard can read fast
+  useEffect(() => {
+    if (bets.length > 0) syncBetsToStorage(bets);
+  }, [bets]);
+
+  // Also migrate any existing localStorage bets to DB on first load
+  useEffect(() => {
+    const stored = loadBetsFromStorage();
+    if (stored.length === 0) return;
+    stored.forEach(bet => apiAddBet(bet).catch(() => {}));
+    queryClient.invalidateQueries({ queryKey: ["/api/bets"] });
+    localStorage.removeItem(BET_KEY);
+  }, []);
+
+  const addMutation = useMutation({
+    mutationFn: (bet: TrackedBet) => apiAddBet(bet),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/bets"] }),
+  });
+
+  const patchMutation = useMutation({
+    mutationFn: ({ id, patch }: { id: string; patch: Partial<TrackedBet> }) => apiPatchBet(id, patch),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/bets"] }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiDeleteBet(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/bets"] }),
+  });
+
+  function computePnl(bet: TrackedBet, status: "won" | "lost" | "cancelled", resolvedPrice?: number): number {
+    if (status === "cancelled") return 0;
+    if (status === "won") {
+      if (bet.americanOdds !== undefined) {
+        return bet.americanOdds > 0
+          ? bet.betAmount * (bet.americanOdds / 100)
+          : bet.betAmount * (100 / Math.abs(bet.americanOdds));
+      }
+      return bet.side === "YES"
+        ? bet.betAmount * (1 - bet.entryPrice) / bet.entryPrice
+        : bet.betAmount * bet.entryPrice / (1 - bet.entryPrice);
+    }
+    return -bet.betAmount;
+  }
+
+  function handleAddBet(betData: Omit<TrackedBet, "id" | "betDate" | "status">) {
+    const newBet: TrackedBet = {
+      ...betData,
+      id: `bet-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      betDate: Date.now(),
+      status: "open",
+    };
+    addMutation.mutate(newBet);
+    setShowAddForm(false);
+  }
+
+  function handleResolve(id: string, status: "won" | "lost" | "cancelled", resolvedPrice?: number) {
+    const bet = bets.find(b => b.id === id);
+    if (!bet) return;
+    const pnl = Math.round(computePnl(bet, status, resolvedPrice) * 100) / 100;
+    patchMutation.mutate({ id, patch: { status, resolvedPrice, resolvedDate: Date.now(), pnl } });
+  }
+
+  function handleDelete(id: string) {
+    deleteMutation.mutate(id);
+  }
+
+  function handleUpdateNotes(id: string, notes: string) {
+    patchMutation.mutate({ id, patch: { notes } });
+  }
+
+  function handleReopen(id: string) {
+    patchMutation.mutate({ id, patch: { status: "open", resolvedPrice: undefined, resolvedDate: undefined, pnl: undefined } });
+  }
+
+  function patchBet(id: string, patch: Partial<TrackedBet>) {
+    patchMutation.mutate({ id, patch });
+  }
+
+  useAutoGrade(bets, patchBet);
 
   const openBets = bets.filter(b => b.status === "open");
   const resolvedBets = bets.filter(b => b.status !== "open");
@@ -583,28 +518,25 @@ export default function Bets() {
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-primary" /> My Bets
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Track bets logged from signals. Stored locally.</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Track bets from signals. Synced to database — persists across devices.</p>
         </div>
         <Button onClick={() => setShowAddForm(f => !f)} size="sm" className="gap-1.5" data-testid="button-add-bet-open">
           <Plus className="w-3.5 h-3.5" /> Log Bet
         </Button>
       </div>
 
-      {/* Add form */}
       {showAddForm && (
         <AddBetForm
-          onAdd={bet => { addBet(bet); setShowAddForm(false); }}
+          onAdd={handleAddBet}
           onCancel={() => setShowAddForm(false)}
         />
       )}
 
-      {/* Stats */}
       <div className="grid grid-cols-4 gap-3">
         <Card>
           <CardContent className="p-3 text-center">
@@ -636,7 +568,6 @@ export default function Bets() {
         </Card>
       </div>
 
-      {/* Filter tabs */}
       <div className="flex items-center gap-1 p-1 bg-muted rounded-lg w-fit">
         {([["all", "All"], ["open", "Open"], ["resolved", "Resolved"]] as const).map(([v, label]) => (
           <button
@@ -655,14 +586,17 @@ export default function Bets() {
         ))}
       </div>
 
-      {/* Bet list */}
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="space-y-2">
+          {[1,2,3].map(i => <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />)}
+        </div>
+      ) : filtered.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <BookOpen className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
             <div className="font-medium text-sm">No bets yet</div>
             <div className="text-xs text-muted-foreground mt-1">
-              Log bets from the Signals or Dashboard pages using the "Track Bet" button, or click "Log Bet" above.
+              Log bets from the Signals or Dashboard pages, or click "Log Bet" above.
             </div>
           </CardContent>
         </Card>
@@ -672,16 +606,15 @@ export default function Bets() {
             <BetCard
               key={bet.id}
               bet={bet}
-              onResolve={resolveBet}
-              onDelete={deleteBet}
-              onUpdateNotes={updateNotes}
-              onReopen={reopenBet}
+              onResolve={handleResolve}
+              onDelete={handleDelete}
+              onUpdateNotes={handleUpdateNotes}
+              onReopen={handleReopen}
             />
           ))}
         </div>
       )}
 
-      {/* Instructions */}
       <Card className="border-dashed">
         <CardContent className="p-3 text-xs text-muted-foreground space-y-1">
           <div className="font-semibold text-foreground flex items-center gap-1.5">
@@ -691,7 +624,7 @@ export default function Bets() {
           <div>2. Click "Track Bet" on any signal card to pre-fill the form</div>
           <div>3. Enter your actual bet amount and click "Track Bet"</div>
           <div>4. When the market resolves, come back and click Won/Lost to log your PNL</div>
-          <div className="text-muted-foreground/70 mt-1">Bets are stored locally in your browser. They won't sync across devices.</div>
+          <div className="text-primary/70 mt-1 font-medium">✓ Bets are saved to the database and will not disappear.</div>
         </CardContent>
       </Card>
     </div>

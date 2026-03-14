@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import GameScorePanel from "@/components/GameScorePanel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -50,24 +50,32 @@ function isSignalSnoozed(id: string): boolean {
   return true;
 }
 
-// ─── Bet tracker helpers (localStorage) ────────────────────────────────────────
+// ─── Bet tracker helpers (API + localStorage write-through) ──────────────────
 const BET_KEY = "pi_bets";
 function trackBetFromSignal(signal: Signal, outcomeLabel: string) {
+  const newBet = {
+    id: `bet-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    marketQuestion: signal.marketQuestion,
+    outcomeLabel,
+    side: signal.side,
+    conditionId: signal.marketId,
+    slug: (signal as any).slug,
+    entryPrice: signal.avgEntryPrice,
+    betAmount: 0,
+    betDate: Date.now(),
+    status: "open",
+    notes: `Signal confidence: ${signal.confidence}/95`,
+  };
+  // Persist to database
+  fetch("/api/bets", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newBet),
+  }).catch(() => {});
+  // Also write to localStorage as immediate cache
   try {
     const bets = JSON.parse(localStorage.getItem(BET_KEY) || "[]");
-    bets.unshift({
-      id: `bet-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      marketQuestion: signal.marketQuestion,
-      outcomeLabel,
-      side: signal.side,
-      conditionId: signal.marketId,
-      slug: (signal as any).slug,
-      entryPrice: signal.avgEntryPrice,
-      betAmount: 0,
-      betDate: Date.now(),
-      status: "open",
-      notes: `Signal confidence: ${signal.confidence}/95`,
-    });
+    bets.unshift(newBet);
     localStorage.setItem(BET_KEY, JSON.stringify(bets));
   } catch {}
 }
@@ -324,40 +332,38 @@ function TrackBetModal({
 
   function handleSave() {
     if (!oddsNum || !betAmtNum || betAmtNum <= 0) return;
+    const newBet = {
+      id: `bet-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      marketQuestion: signal.marketQuestion,
+      outcomeLabel,
+      side: signal.side,
+      conditionId: signal.marketId,
+      slug: (signal as any).slug,
+      entryPrice: impliedProb || signalPrice,
+      betAmount: betAmtNum,
+      betDate: Date.now(),
+      status: "open",
+      book,
+      americanOdds: oddsNum,
+      polymarketPrice: signalPrice,
+      sport: (signal as any).sport,
+      notes: notes.trim() || undefined,
+    };
+    // Persist to database
+    fetch("/api/bets", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newBet),
+    }).catch(() => {});
+    // Also write to localStorage as immediate cache
     try {
       const bets = JSON.parse(localStorage.getItem(BET_KEY) || "[]");
-      bets.unshift({
-        id: `bet-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        marketQuestion: signal.marketQuestion,
-        outcomeLabel,
-        side: signal.side,
-        conditionId: signal.marketId,
-        slug: (signal as any).slug,
-        entryPrice: impliedProb || signalPrice,
-        betAmount: betAmtNum,
-        betDate: Date.now(),
-        status: "open",
-        book,
-        americanOdds: oddsNum,
-        polymarketPrice: signalPrice,
-        sport: (signal as any).sport,
-        confidence: signal.confidence,
-        tailedTraders: (signal.traders || []).map((t: any) => ({
-          address: t.address,
-          name: t.name,
-          sportRoi: t.sportRoi,
-          winRate: t.winRate,
-          qualityScore: t.qualityScore,
-        })),
-        notes: notes.trim(),
-      });
+      bets.unshift(newBet);
       localStorage.setItem(BET_KEY, JSON.stringify(bets));
-      toast({ title: "Bet tracked!", description: `${outcomeLabel} · ${oddsNum > 0 ? "+" : ""}${oddsNum} · ${book}` });
-      onBetTracked?.();
-      onClose();
-    } catch {
-      toast({ title: "Error", description: "Could not save bet.", variant: "destructive" });
-    }
+    } catch {}
+    toast({ title: "Bet tracked!", description: `${outcomeLabel} · ${oddsNum > 0 ? "+" : ""}${oddsNum} · ${book}` });
+    onBetTracked?.();
+    onClose();
   }
 
   // Reset odds when signal changes
@@ -1267,14 +1273,27 @@ function SharpMovesPanel({ signals }: { signals?: any[] }) {
                         </span>
                       )}
                       {(() => {
-                        const avg = t.sportAvgBet ?? 0;
+                        const sportAvg = t.sportAvgBet ?? 0;
                         const bet = t.netUsdc ?? t.size ?? 0;
-                        if (avg > 50 && bet > 0) {
-                          const mult = bet / avg;
+                        if (bet <= 0) return null;
+                        // Elite signal: use sport avg bet
+                        if (sportAvg > 50) {
+                          const mult = bet / sportAvg;
                           const isHigh = mult >= 2;
                           return (
                             <span className={`px-1 py-0.5 rounded font-bold ${isHigh ? "bg-orange-500/15 text-orange-600 dark:text-orange-400" : "bg-muted text-muted-foreground"}`}>
                               {mult.toFixed(1)}× avg bet
+                            </span>
+                          );
+                        }
+                        // Live Feed: use signal's avgNetUsdc as reference
+                        const signalAvg = avgNetUsdc ?? 0;
+                        if (signalAvg > 50) {
+                          const mult = bet / signalAvg;
+                          const isHigh = mult >= 2;
+                          return (
+                            <span className={`px-1 py-0.5 rounded font-bold ${isHigh ? "bg-orange-500/15 text-orange-600 dark:text-orange-400" : "bg-muted text-muted-foreground"}`}>
+                              {mult.toFixed(1)}× signal avg
                             </span>
                           );
                         }
@@ -1436,22 +1455,25 @@ export default function Signals() {
     return new Set(Object.entries(s).filter(([, v]) => v > now).map(([k]) => k));
   });
 
-  // Tracked bets — conditionIds of ALL tracked bets (open or resolved) so signals stay hidden permanently
-  const [trackedConditionIds, setTrackedConditionIds] = useState<Set<string>>(() => {
-    try {
-      const bets: Array<{ conditionId?: string; status: string }> = JSON.parse(localStorage.getItem(BET_KEY) || "[]");
-      return new Set(bets.filter(b => b.conditionId).map(b => b.conditionId!));
-    } catch { return new Set(); }
+  // Tracked bets — load from API (primary) with localStorage fallback for instant hydration
+  const { data: trackedBetsApi } = useQuery<Array<{ conditionId?: string; status: string }>>({
+    queryKey: ["/api/bets"],
+    queryFn: () => fetch("/api/bets").then(r => r.json()),
+    staleTime: 30_000,
+    select: (data) => data,
   });
+
+  const trackedConditionIds = useMemo<Set<string>>(() => {
+    // Use API data when available, fall back to localStorage for immediate render
+    const source: Array<{ conditionId?: string }> = trackedBetsApi
+      || (() => { try { return JSON.parse(localStorage.getItem(BET_KEY) || "[]"); } catch { return []; } })();
+    return new Set(source.filter(b => b.conditionId).map(b => b.conditionId!));
+  }, [trackedBetsApi]);
+
   const [hideTracked, setHideTracked] = useState(true);
 
-  // Refresh tracked conditionIds whenever localStorage changes (e.g. after saving a bet)
-  const refreshTrackedIds = useCallback(() => {
-    try {
-      const bets: Array<{ conditionId?: string; status: string }> = JSON.parse(localStorage.getItem(BET_KEY) || "[]");
-      setTrackedConditionIds(new Set(bets.filter(b => b.conditionId).map(b => b.conditionId!)));
-    } catch {}
-  }, []);
+  // Keep refreshTrackedIds as a no-op shim (API query auto-refreshes)
+  const refreshTrackedIds = useCallback(() => {}, []);
 
   const handleSnoozed = useCallback((id: string) => {
     setSnoozedIds(prev => new Set([...prev, id]));

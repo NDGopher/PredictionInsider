@@ -3528,5 +3528,122 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  // ── Bets CRUD ─── Persist tracked bets to the database ──────────────────────
+  // Create table on startup
+  elitePool.query(`
+    CREATE TABLE IF NOT EXISTS tracked_bets (
+      id TEXT PRIMARY KEY,
+      market_question TEXT NOT NULL,
+      outcome_label TEXT,
+      side TEXT NOT NULL,
+      condition_id TEXT,
+      slug TEXT,
+      entry_price NUMERIC,
+      bet_amount NUMERIC DEFAULT 0,
+      bet_date BIGINT,
+      status TEXT NOT NULL DEFAULT 'open',
+      resolved_price NUMERIC,
+      resolved_date BIGINT,
+      pnl NUMERIC,
+      notes TEXT,
+      book TEXT,
+      american_odds INTEGER,
+      polymarket_price NUMERIC,
+      sport TEXT,
+      created_at BIGINT DEFAULT (extract(epoch from now()) * 1000)::BIGINT
+    )
+  `).catch(e => console.error("[Bets] Table init error:", e.message));
+
+  app.get("/api/bets", async (_req, res) => {
+    try {
+      const { rows } = await elitePool.query(
+        `SELECT * FROM tracked_bets ORDER BY created_at DESC`
+      );
+      const bets = rows.map(r => ({
+        id: r.id,
+        marketQuestion: r.market_question,
+        outcomeLabel: r.outcome_label,
+        side: r.side,
+        conditionId: r.condition_id,
+        slug: r.slug,
+        entryPrice: r.entry_price ? parseFloat(r.entry_price) : 0,
+        betAmount: r.bet_amount ? parseFloat(r.bet_amount) : 0,
+        betDate: r.bet_date ? parseInt(r.bet_date) : 0,
+        status: r.status,
+        resolvedPrice: r.resolved_price ? parseFloat(r.resolved_price) : undefined,
+        resolvedDate: r.resolved_date ? parseInt(r.resolved_date) : undefined,
+        pnl: r.pnl ? parseFloat(r.pnl) : undefined,
+        notes: r.notes,
+        book: r.book,
+        americanOdds: r.american_odds,
+        polymarketPrice: r.polymarket_price ? parseFloat(r.polymarket_price) : undefined,
+        sport: r.sport,
+      }));
+      res.json(bets);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post("/api/bets", async (req, res) => {
+    try {
+      const b = req.body;
+      if (!b.id || !b.marketQuestion || !b.side) {
+        return res.status(400).json({ error: "id, marketQuestion, side required" });
+      }
+      await elitePool.query(`
+        INSERT INTO tracked_bets
+          (id, market_question, outcome_label, side, condition_id, slug, entry_price,
+           bet_amount, bet_date, status, notes, book, american_odds, polymarket_price, sport)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+        ON CONFLICT (id) DO NOTHING
+      `, [
+        b.id, b.marketQuestion, b.outcomeLabel ?? null, b.side,
+        b.conditionId ?? null, b.slug ?? null, b.entryPrice ?? 0,
+        b.betAmount ?? 0, b.betDate ?? Date.now(), b.status ?? "open",
+        b.notes ?? null, b.book ?? null, b.americanOdds ?? null,
+        b.polymarketPrice ?? null, b.sport ?? null,
+      ]);
+      res.json({ ok: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.patch("/api/bets/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const b = req.body;
+      await elitePool.query(`
+        UPDATE tracked_bets SET
+          status = COALESCE($1, status),
+          resolved_price = COALESCE($2, resolved_price),
+          resolved_date = COALESCE($3, resolved_date),
+          pnl = COALESCE($4, pnl),
+          notes = COALESCE($5, notes),
+          bet_amount = COALESCE($6, bet_amount),
+          book = COALESCE($7, book),
+          american_odds = COALESCE($8, american_odds)
+        WHERE id = $9
+      `, [
+        b.status ?? null, b.resolvedPrice ?? null, b.resolvedDate ?? null,
+        b.pnl ?? null, b.notes ?? null, b.betAmount ?? null,
+        b.book ?? null, b.americanOdds ?? null, id,
+      ]);
+      res.json({ ok: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.delete("/api/bets/:id", async (req, res) => {
+    try {
+      await elitePool.query(`DELETE FROM tracked_bets WHERE id = $1`, [req.params.id]);
+      res.json({ ok: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   return httpServer;
 }
