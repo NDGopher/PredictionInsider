@@ -67,6 +67,12 @@ function upsertGameMarket(conditionId: string, entry: GameMarketEntry) {
   const existing = gameMarketRegistry.get(conditionId);
   if (!existing || (entry.currentPrice && !existing.currentPrice)) {
     gameMarketRegistry.set(conditionId, entry);
+    // Populate slug→GST cache for categoriseMarket lookups
+    if (entry.slug && entry.gameStartTime) {
+      gameSlugToGST.set(entry.slug, entry.gameStartTime);
+      const bs = entry.slug.match(/^(.+-\d{4}-\d{2}-\d{2})(-|$)/)?.[1];
+      if (bs && bs !== entry.slug) gameSlugToGST.set(bs, entry.gameStartTime);
+    }
   }
 }
 
@@ -140,6 +146,18 @@ function isPostponedOrCancelled(question: string, active: boolean, closed: boole
 }
 
 // ─── Categorise as Pregame / Live / Futures ───────────────────────────────────
+
+/**
+ * Strip market-type suffixes to get the canonical game slug for ESPN lookups.
+ * e.g. "nhl-ana-ott-2026-03-14-total-6pt5" → "nhl-ana-ott-2026-03-14"
+ *      "epl-che-new-2026-03-14-draw"        → "epl-che-new-2026-03-14"
+ *      "nhl-wsh-bos-2026-03-14"             → "nhl-wsh-bos-2026-03-14"
+ */
+function baseGameSlug(slug: string): string {
+  const m = slug.match(/^(.+-\d{4}-\d{2}-\d{2})(-|$)/);
+  return m ? m[1] : slug;
+}
+
 /**
  * Categorise a market as live / pregame / futures.
  * Uses Polymarket's own `gameStartTime` when available — this is the most accurate method.
@@ -149,40 +167,85 @@ function categoriseMarket(question: string, endDate?: string, gameStartTime?: st
   const q = (question || "").toLowerCase();
   // Definitive live signals from question text (e.g. in-play markets)
   if (/(lead|trailing|winning|losing|currently|live|in-game|halftime|first half|second half|quarter|overtime|period|inning)/.test(q)) return "live";
-  if (!endDate) return "pregame";
+
   const now = Date.now();
-  const endMs = new Date(endDate).getTime();
+
+  // Many O/U / spread markets share a game slug but have a suffix like -total-6pt5.
+  // Resolve the base game slug for ESPN cache lookups (ESPN tracks the game, not
+  // individual market variants).
+  const rawSlug = slug || "";
+  const base = rawSlug ? baseGameSlug(rawSlug) : "";
+
+  // Track any sports event slug we see so refreshESPNLiveGames can look them up.
+  // sharedMarketDb has CLOB market_slug (e.g. "ducks-vs-senators-ou-6-5"), NOT the
+  // event slug (e.g. "nhl-ana-ott-2026-03-14-total-6pt5"), so we must collect slugs here.
+  if (rawSlug && /^(nba|nhl|nfl|mlb|ncaab|ncaaf)-/.test(rawSlug)) {
+    seenEventSlugs.add(rawSlug);
+    if (base && base !== rawSlug) seenEventSlugs.add(base);
+  }
+
+  // If this market itself doesn't have gameStartTime, try the slug-keyed GST cache.
+  // This covers O/U and spread market variants (e.g. "nhl-ana-ott-2026-03-14-total-6pt5")
+  // that share a base game slug ("nhl-ana-ott-2026-03-14") with the moneyline market
+  // which DOES have gameStartTime.
+  let resolvedGST = gameStartTime;
+  if (!resolvedGST) {
+    resolvedGST = gameSlugToGST.get(rawSlug) ?? gameSlugToGST.get(base) ?? undefined;
+  }
+
+  // ── Priority 1: Polymarket's actual game start time ───────────────────────
+  // IMPORTANT: Check gameStartTime BEFORE endDate. Many Polymarket markets use a
+  // bare date string for endDate (e.g. "2026-03-14") which JavaScript parses as
+  // midnight UTC — making the market look 17+ hours "expired" while the game is
+  // actively in progress. gameStartTime is far more reliable.
+  if (resolvedGST) {
+    const startMs = new Date(resolvedGST).getTime();
+    if (now < startMs) return "pregame"; // game hasn't started yet
+    // Game has started. Use a 14-hour window (covers OT/long games).
+    // Trust ESPN's completed flag as the authoritative "game over" signal.
+    const hoursElapsed = (now - startMs) / 3_600_000;
+    if (hoursElapsed > 14) {
+      // Definitely over — only mark live if ESPN explicitly still has it active
+      const espnOverride = espnLiveGames.get(rawSlug) ?? espnLiveGames.get(base);
+      if (espnOverride === true) return "live";
+      return "pregame";
+    }
+    // Within 14h of tip-off — live unless ESPN explicitly says completed
+    const espnCheck = espnLiveGames.get(rawSlug) ?? espnLiveGames.get(base);
+    if (espnCheck === false) return "pregame";
+    return "live";
+  }
+
+  // ── No gameStartTime: fall back to endDate heuristics ────────────────────
+  if (!endDate) return "pregame";
+
+  // Fix: bare date strings like "2026-03-14" parse to midnight UTC which is
+  // way before the game starts. Treat them as end-of-day instead (23:59 UTC).
+  let endMs: number;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(endDate.trim())) {
+    endMs = new Date(endDate + "T23:59:59Z").getTime();
+  } else {
+    endMs = new Date(endDate).getTime();
+  }
   const ms = endMs - now;
 
-  // Market has already ended — check ESPN cache before giving up
+  // Market already past its end-of-day — check ESPN cache with generous window
   if (ms < 0) {
-    // Game ended recently (within 4h) — ESPN may still show it as live
-    if (ms > -4 * 3600_000 && slug && espnLiveGames.get(slug) === true) return "live";
+    const espnCheck = espnLiveGames.get(rawSlug) ?? espnLiveGames.get(base);
+    if (ms > -6 * 3600_000 && espnCheck === true) return "live";
     return "pregame";
   }
   // Far future → futures
   if (ms > 7 * 24 * 3600_000) return "futures";
 
-  // ── Best path: Polymarket's actual game start time ─────────────────────────
-  // gameStartTime = when the game actually tips off / kicks off.
-  // If now < gameStartTime: hasn't started yet = PREGAME
-  // If now >= gameStartTime (and market not ended): in progress = LIVE
-  if (gameStartTime) {
-    const startMs = new Date(gameStartTime).getTime();
-    if (now < startMs) return "pregame";
-    return "live"; // started but not yet resolved
-  }
-
   // ── Fallback: ESPN background cache ────────────────────────────────────────
-  // When Polymarket doesn't provide gameStartTime, use ESPN live-status cache.
-  // This catches in-progress games like Red Wings vs Panthers where GST is missing.
-  if (slug) {
-    const espnLive = espnLiveGames.get(slug);
+  // Check both the exact slug and the base game slug.
+  if (rawSlug) {
+    const espnLive = espnLiveGames.get(rawSlug) ?? espnLiveGames.get(base);
     if (espnLive === true)  return "live";
-    if (espnLive === false) return "pregame"; // ESPN says not started / final
+    if (espnLive === false) return "pregame";
   }
 
-  // ── Last resort: no evidence game has started ───────────────────────────────
   return "pregame";
 }
 
@@ -585,38 +648,114 @@ const sharedMarketDb = new Map<string, { question: string; slug?: string; endDat
 // Refreshed every 90s so categoriseMarket can use it as a fallback when Polymarket
 // doesn't supply gameStartTime for a market we know has started.
 const espnLiveGames = new Map<string, boolean>();
+// Collects event slugs seen by categoriseMarket so refreshESPNLiveGames can check them.
+// sharedMarketDb uses CLOB market_slug (not event slug), so this is the only reliable way
+// to collect the sports event slugs that ESPN needs to check.
+const seenEventSlugs = new Set<string>();
+// Slug-keyed gameStartTime lookup — covers O/U and spread market variants that share
+// a base game slug but don't have their own gameStartTime field.
+const gameSlugToGST = new Map<string, string>();
 
 async function refreshESPNLiveGames(): Promise<void> {
   const now = Date.now();
-  const checkedSlugs = new Set<string>();
-  // Gather slugs from sharedMarketDb and gameMarketRegistry that are game-day markets
-  const allEntries: { slug?: string; endDate?: string; gameStartTime?: string }[] = [
-    ...sharedMarketDb.values(),
-    ...gameMarketRegistry.values(),
-  ];
-  for (const entry of allEntries) {
-    const slug = entry.slug;
-    if (!slug || checkedSlugs.has(slug)) continue;
-    // Only check sports slugs that match ESPN sport paths
+
+  // ── Collect all candidate slugs ──────────────────────────────────────────
+  const toCheck = new Set<string>();
+
+  // From seenEventSlugs (true Polymarket event slugs, e.g. "nhl-ana-ott-2026-03-14-total-6pt5")
+  for (const slug of seenEventSlugs) {
     if (!/^(nba|nhl|nfl|mlb|ncaab|ncaaf)-/.test(slug)) continue;
-    // Only check markets ending within 24h (game-day)
-    if (entry.endDate) {
-      const endMs = new Date(entry.endDate).getTime();
-      if (endMs < now - 4 * 3600_000) continue; // ended >4h ago — skip
-      if (endMs > now + 24 * 3600_000) continue; // too far out — skip
-    }
-    checkedSlugs.add(slug);
-    try {
-      const score = await fetchESPNGameScore(slug);
-      if (!score) continue;
-      const isLive = !score.completed && (
-        score.status === "STATUS_IN_PROGRESS" ||
-        /in.progress|in progress|live|progress/i.test(score.status) ||
-        (score.period > 0 && !score.completed)
-      );
-      espnLiveGames.set(slug, isLive);
-    } catch { /* ignore */ }
+    const dm = slug.match(/-(\d{4}-\d{2}-\d{2})/);
+    if (!dm) continue;
+    const endMs = new Date(dm[1] + "T23:59:59Z").getTime();
+    if (endMs < now - 6 * 3600_000 || endMs > now + 24 * 3600_000) continue;
+    toCheck.add(slug);
   }
+
+  // Also from sharedMarketDb (CLOB slugs, for markets fetched via CLOB API)
+  for (const entry of [...sharedMarketDb.values(), ...gameMarketRegistry.values()]) {
+    const slug = entry.slug;
+    if (!slug || !/^(nba|nhl|nfl|mlb|ncaab|ncaaf)-/.test(slug)) continue;
+    let shouldCheck = false;
+    if (entry.gameStartTime) {
+      const startMs = new Date(entry.gameStartTime).getTime();
+      shouldCheck = (now - startMs) < 14 * 3600_000 && (startMs - now) < 24 * 3600_000;
+    } else if (entry.endDate) {
+      const rawEnd = entry.endDate.trim();
+      const endMs = /^\d{4}-\d{2}-\d{2}$/.test(rawEnd)
+        ? new Date(rawEnd + "T23:59:59Z").getTime()
+        : new Date(rawEnd).getTime();
+      shouldCheck = endMs > now - 6 * 3600_000 && endMs < now + 24 * 3600_000;
+    }
+    if (shouldCheck) toCheck.add(slug);
+  }
+
+  if (toCheck.size === 0) return;
+
+  // ── Group slugs by (sportPath, date) ─────────────────────────────────────
+  // Make ONE ESPN scoreboard API call per sport+date instead of per-slug calls.
+  // This reduces 60+ sequential calls to ~3-5 parallel calls.
+  type SportGroup = { sportPath: string; date: string; slugs: string[] };
+  const groups = new Map<string, SportGroup>();
+  for (const slug of toCheck) {
+    const parsed = parseSlugForESPN(slug);
+    if (!parsed) continue;
+    const key = `${parsed.sportPath}|${parsed.date}`;
+    if (!groups.has(key)) groups.set(key, { sportPath: parsed.sportPath, date: parsed.date, slugs: [] });
+    groups.get(key)!.slugs.push(slug);
+  }
+  // ── Fetch each group in parallel ─────────────────────────────────────────
+  await Promise.all([...groups.values()].map(async (group) => {
+    try {
+      const url = `https://site.api.espn.com/apis/site/v2/sports/${group.sportPath}/scoreboard?dates=${group.date}`;
+      const res = await fetchWithRetry(url, 2, 6000);
+      if (!res.ok) return;
+      const data = await res.json();
+      const events: any[] = data.events || [];
+
+      function teamsMatch(s: string, e: string): boolean {
+        if (e === s) return true;
+        const overlap = Math.min(s.length, e.length, 3);
+        if (overlap < 3) return false;
+        return e.startsWith(s.slice(0, overlap)) || s.startsWith(e.slice(0, overlap));
+      }
+
+      for (const slug of group.slugs) {
+        const parsed = parseSlugForESPN(slug);
+        if (!parsed) continue;
+        const slugTeams = [
+          POLY_TO_ESPN[parsed.t1.toLowerCase()] || parsed.t1.toLowerCase(),
+          POLY_TO_ESPN[parsed.t2.toLowerCase()] || parsed.t2.toLowerCase(),
+        ];
+        let matched = false;
+        for (const event of events) {
+          const comp = (event.competitions || [])[0];
+          if (!comp) continue;
+          const home = (comp.competitors || []).find((c: any) => c.homeAway === "home");
+          const away = (comp.competitors || []).find((c: any) => c.homeAway === "away");
+          if (!home || !away) continue;
+          const espnAbbrs = [
+            (home.team?.abbreviation || "").toLowerCase(),
+            (away.team?.abbreviation || "").toLowerCase(),
+          ];
+          const matchCount = slugTeams.filter(s => espnAbbrs.some(e => teamsMatch(s, e))).length;
+          if (matchCount < 2) continue;
+          const st = event.status?.type || {};
+          const period = event.status?.period || 0;
+          const isLive = !st.completed && (
+            st.name === "STATUS_IN_PROGRESS" ||
+            /in.progress|in progress|live|progress/i.test(st.name || "") ||
+            (period > 0 && !st.completed)
+          );
+          espnLiveGames.set(slug, isLive);
+          matched = true;
+          break;
+        }
+        // If no ESPN event matched, mark as not live (pregame or finished)
+        if (!matched) espnLiveGames.set(slug, false);
+      }
+    } catch { /* ESPN unavailable, skip this group */ }
+  }));
 }
 
 /**
@@ -1151,6 +1290,10 @@ const POLY_TO_ESPN: Record<string, string> = {
   phx: "phx",   // Phoenix Suns stays "PHX" in ESPN
   phf: "phi",   // Philly
   sea: "sea",
+  mon: "mtl",   // Montréal Canadiens (Polymarket "mon" → ESPN "MTL")
+  cal: "cgy",   // Calgary Flames (Polymarket "cal" → ESPN "CGY")
+  was: "wsh",   // Washington (NBA: "WAS" → ESPN "WSH")
+  utah: "uta",  // Utah Jazz/Hockey Club (Polymarket "utah" → ESPN "UTA")
 };
 
 async function fetchESPNGameScore(slug: string): Promise<GameScore | null> {
@@ -1801,6 +1944,17 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   refreshESPNLiveGames().catch(() => {});
   setInterval(() => { refreshESPNLiveGames().catch(() => {}); }, 90_000);
 
+  // ── GET /api/_debug/espn (temp debug — shows ESPN live cache state) ──────────
+  app.get("/api/_debug/espn", (_req, res) => {
+    const cache: Record<string, boolean> = {};
+    for (const [k, v] of espnLiveGames) cache[k] = v;
+    const gst: Record<string, string> = {};
+    for (const [k, v] of gameSlugToGST) gst[k] = v;
+    // Show all NHL/NBA slugs from sharedMarketDb for debugging
+    const seenSlugsList = [...seenEventSlugs].sort();
+    res.json({ espnLiveGames: cache, gameSlugToGST: gst, sharedMarketDbSize: sharedMarketDb.size, seenEventSlugsCount: seenEventSlugs.size, seenEventSlugs: seenSlugsList.filter(s => /^(nba|nhl|nfl|mlb|ncaab|ncaaf)-/.test(s)) });
+  });
+
   // ── GET /api/traders ────────────────────────────────────────────────────────
   app.get("/api/traders", async (req, res) => {
     try {
@@ -2113,7 +2267,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/signals", async (req, res) => {
     try {
       const sportsOnly = req.query.sports !== "false";
-      const cKey = `signals-elite-v25-${sportsOnly ? "sp" : "all"}`;
+      const cKey = `signals-elite-v26-${sportsOnly ? "sp" : "all"}`;
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -2178,7 +2332,21 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       // Populate module-level sharedMarketDb for alerts functions (non-blocking, best-effort)
       sharedMarketDb.clear();
-      for (const [k, v] of marketDb) sharedMarketDb.set(k, v);
+      for (const [k, v] of marketDb) {
+        sharedMarketDb.set(k, v);
+        // Also populate the slug→GST lookup so O/U and spread market variants can
+        // inherit gameStartTime from their base game slug.
+        if (v.slug && v.gameStartTime) {
+          const bs = baseGameSlug(v.slug);
+          gameSlugToGST.set(v.slug, v.gameStartTime);
+          if (bs !== v.slug) gameSlugToGST.set(bs, v.gameStartTime); // index by base too
+        }
+      }
+      // Trigger ESPN refresh now that sharedMarketDb has slugs populated.
+      // This ensures ESPN live-status is current for the NEXT signal generation
+      // cycle (after the 2-min cache expires), especially important on startup
+      // where the initial ESPN refresh runs before market data is loaded.
+      refreshESPNLiveGames().catch(() => {});
 
       // Populate module-level sharedTraderMap for /api/traders endpoint.
       // Refresh if stale (older than 10 min) or if we have more traders now.
@@ -2235,6 +2403,18 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
         const condId = trade.conditionId || "";
         if (!condId) continue;
+
+        // Collect sports event slugs for ESPN background refresh BEFORE any filtering.
+        // trade.slug is the true Polymarket event slug (e.g. "nhl-ana-ott-2026-03-14-total-6pt5"),
+        // which is what ESPN lookups need. Must be collected before the stale/closed-market gates.
+        {
+          const es = trade.slug || "";
+          if (es && /^(nba|nhl|nfl|mlb|ncaab|ncaaf)-/.test(es)) {
+            seenEventSlugs.add(es);
+            const bs = baseGameSlug(es);
+            if (bs !== es) seenEventSlugs.add(bs);
+          }
+        }
 
         // Use market DB for enrichment (tokenIds, slug, endDate)
         // NOT as a hard gate — game markets close quickly and won't be in active DB
@@ -2578,6 +2758,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             if (!isSportsRelated(title.toLowerCase())) continue;
             const condId = pos.conditionId || "";
             if (!condId) continue;
+            // Collect sports event slugs BEFORE any filtering (for ESPN background refresh)
+            {
+              const es = pos.slug || pos.eventSlug || "";
+              if (es && /^(nba|nhl|nfl|mlb|ncaab|ncaaf)-/.test(es)) {
+                seenEventSlugs.add(es);
+                const bs = baseGameSlug(es);
+                if (bs !== es) seenEventSlugs.add(bs);
+              }
+            }
             const outcomeIdx = pos.outcomeIndex ?? (pos.outcome === "Yes" ? 0 : 1);
             const side: "YES"|"NO" = outcomeIdx === 0 ? "YES" : "NO";
             const mapKey = `${condId}-${side}`;
@@ -3010,7 +3199,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   // ── GET /api/signals/fast ─── Live feed: stricter quality gates ──────────────
   app.get("/api/signals/fast", async (req, res) => {
     try {
-      const cKey = "signals-fast-v6";
+      const cKey = "signals-fast-v7";
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
