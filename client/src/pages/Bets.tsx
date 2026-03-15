@@ -95,50 +95,97 @@ export function isSignalSnoozed(signalId: string): boolean {
   return true;
 }
 
-// ─── Auto-grading hook ────────────────────────────────────────────────────────
+// ─── Auto-grading helpers ─────────────────────────────────────────────────────
 
 const AUTO_GRADE_INTERVAL_MS = 5 * 60 * 1000;
 const MIN_AGE_BEFORE_GRADE_MS = 60 * 60 * 1000;
+const REVERIFY_WINDOW_MS = 72 * 60 * 60 * 1000; // Re-verify grades within last 72h
+
+function calcPnlFromGrade(bet: TrackedBet, won: boolean): number {
+  if (!won) return -bet.betAmount;
+  if (bet.americanOdds !== undefined) {
+    return bet.americanOdds > 0
+      ? bet.betAmount * (bet.americanOdds / 100)
+      : bet.betAmount * (100 / Math.abs(bet.americanOdds));
+  }
+  return bet.side === "YES"
+    ? bet.betAmount * (1 - bet.entryPrice) / bet.entryPrice
+    : bet.betAmount * bet.entryPrice / (1 - bet.entryPrice);
+}
+
+async function resolveViaSlug(
+  bet: TrackedBet
+): Promise<{ outcome: "YES" | "NO"; finalPrice: number | null } | { marketOpen: true } | null> {
+  if (!bet.conditionId && !bet.slug) return null;
+  const slugParam = bet.slug ? `?slug=${encodeURIComponent(bet.slug)}` : "";
+  const res = await fetch(`/api/market/resolve/${encodeURIComponent(bet.conditionId || "unknown")}${slugParam}`);
+  if (!res.ok) return null;
+  const data: { resolved: boolean; outcome: "YES" | "NO" | null; finalPrice: number | null; marketOpen?: boolean } = await res.json();
+  if (data.marketOpen) return { marketOpen: true };
+  if (!data.resolved || !data.outcome) return null;
+  return { outcome: data.outcome, finalPrice: data.finalPrice };
+}
 
 function useAutoGrade(bets: TrackedBet[], patchBet: (id: string, patch: Partial<TrackedBet>) => void) {
   useEffect(() => {
     async function checkResolutions() {
       const now = Date.now();
+
+      // 1. Grade open bets that are old enough
       const openBets = bets.filter(b =>
         b.status === "open" &&
-        b.conditionId &&
+        (b.conditionId || b.slug) &&
         (now - (b.betDate || 0)) > MIN_AGE_BEFORE_GRADE_MS
       );
-      if (openBets.length === 0) return;
 
       for (const bet of openBets) {
         try {
-          const res = await fetch(`/api/market/resolve/${encodeURIComponent(bet.conditionId!)}`);
-          if (!res.ok) continue;
-          const data: { resolved: boolean; outcome: "YES" | "NO" | null; finalPrice: number | null } = await res.json();
-          if (!data.resolved || !data.outcome) continue;
-
-          let pnl = 0;
-          const won = data.outcome === bet.side;
-          if (won) {
-            if (bet.americanOdds !== undefined) {
-              pnl = bet.americanOdds > 0
-                ? bet.betAmount * (bet.americanOdds / 100)
-                : bet.betAmount * (100 / Math.abs(bet.americanOdds));
-            } else {
-              pnl = bet.side === "YES"
-                ? bet.betAmount * (1 - bet.entryPrice) / bet.entryPrice
-                : bet.betAmount * bet.entryPrice / (1 - bet.entryPrice);
-            }
-          } else {
-            pnl = -bet.betAmount;
-          }
+          const result = await resolveViaSlug(bet);
+          if (!result || "marketOpen" in result) continue;
+          const won = result.outcome === bet.side;
           patchBet(bet.id, {
             status: won ? "won" : "lost",
-            resolvedPrice: data.finalPrice ?? undefined,
-            resolvedDate: Date.now(),
-            pnl: Math.round(pnl * 100) / 100,
+            resolvedPrice: result.finalPrice ?? undefined,
+            resolvedDate: now,
+            pnl: Math.round(calcPnlFromGrade(bet, won) * 100) / 100,
           });
+        } catch {}
+      }
+
+      // 2. Re-verify recently auto-graded bets (catches wrong grades from the old broken system)
+      const recentlyResolved = bets.filter(b =>
+        b.status !== "open" &&
+        (b.conditionId || b.slug) &&
+        b.resolvedDate &&
+        (now - b.resolvedDate) < REVERIFY_WINDOW_MS
+      );
+
+      for (const bet of recentlyResolved) {
+        try {
+          const result = await resolveViaSlug(bet);
+          if (!result) continue;
+
+          // Market is confirmed genuinely open — the existing grade must be wrong (old broken system)
+          if ("marketOpen" in result) {
+            patchBet(bet.id, {
+              status: "open",
+              resolvedPrice: undefined,
+              resolvedDate: undefined,
+              pnl: undefined,
+            });
+            continue;
+          }
+
+          const correctWon = result.outcome === bet.side;
+          const correctStatus = correctWon ? "won" : "lost";
+          if (correctStatus !== bet.status) {
+            patchBet(bet.id, {
+              status: correctStatus,
+              resolvedPrice: result.finalPrice ?? undefined,
+              resolvedDate: bet.resolvedDate,
+              pnl: Math.round(calcPnlFromGrade(bet, correctWon) * 100) / 100,
+            });
+          }
         } catch {}
       }
     }
@@ -147,6 +194,50 @@ function useAutoGrade(bets: TrackedBet[], patchBet: (id: string, patch: Partial<
     const iv = setInterval(checkResolutions, AUTO_GRADE_INTERVAL_MS);
     return () => clearInterval(iv);
   }, [bets.length]);
+}
+
+async function verifyAllBetGrades(
+  bets: TrackedBet[],
+  patchBet: (id: string, patch: Partial<TrackedBet>) => void
+): Promise<{ fixed: number; checked: number }> {
+  const gradeable = bets.filter(b => b.conditionId || b.slug);
+  let fixed = 0;
+  for (const bet of gradeable) {
+    try {
+      const result = await resolveViaSlug(bet);
+      if (!result) continue;
+
+      // Market confirmed genuinely open → re-open any wrong grade from old system
+      if ("marketOpen" in result) {
+        if (bet.status !== "open") {
+          patchBet(bet.id, { status: "open", resolvedPrice: undefined, resolvedDate: undefined, pnl: undefined });
+          fixed++;
+        }
+        continue;
+      }
+
+      const correctWon = result.outcome === bet.side;
+      const correctStatus = correctWon ? "won" : "lost";
+      if (bet.status === "open") {
+        patchBet(bet.id, {
+          status: correctStatus,
+          resolvedPrice: result.finalPrice ?? undefined,
+          resolvedDate: Date.now(),
+          pnl: Math.round(calcPnlFromGrade(bet, correctWon) * 100) / 100,
+        });
+        fixed++;
+      } else if (correctStatus !== bet.status) {
+        patchBet(bet.id, {
+          status: correctStatus,
+          resolvedPrice: result.finalPrice ?? undefined,
+          resolvedDate: bet.resolvedDate ?? Date.now(),
+          pnl: Math.round(calcPnlFromGrade(bet, correctWon) * 100) / 100,
+        });
+        fixed++;
+      }
+    } catch {}
+  }
+  return { fixed, checked: gradeable.length };
 }
 
 // ─── Format helpers ───────────────────────────────────────────────────────────
@@ -416,6 +507,8 @@ export default function Bets() {
   const queryClient = useQueryClient();
   const [showAddForm, setShowAddForm] = useState(false);
   const [filter, setFilter] = useState<"all" | "open" | "resolved">("all");
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [verifyResult, setVerifyResult] = useState<string | null>(null);
 
   const { data: bets = [], isLoading } = useQuery<TrackedBet[]>({
     queryKey: ["/api/bets"],
@@ -501,6 +594,21 @@ export default function Bets() {
     patchMutation.mutate({ id, patch });
   }
 
+  async function handleVerifyAll() {
+    setVerifyLoading(true);
+    setVerifyResult(null);
+    try {
+      const { fixed, checked } = await verifyAllBetGrades(bets, patchBet);
+      await queryClient.invalidateQueries({ queryKey: ["/api/bets"] });
+      setVerifyResult(fixed > 0 ? `Fixed ${fixed} of ${checked} bets` : `All ${checked} bets confirmed correct`);
+    } catch {
+      setVerifyResult("Error during verification");
+    } finally {
+      setVerifyLoading(false);
+      setTimeout(() => setVerifyResult(null), 6000);
+    }
+  }
+
   useAutoGrade(bets, patchBet);
 
   const openBets = bets.filter(b => b.status === "open");
@@ -525,10 +633,28 @@ export default function Bets() {
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">Track bets from signals. Synced to database — persists across devices.</p>
         </div>
-        <Button onClick={() => setShowAddForm(f => !f)} size="sm" className="gap-1.5" data-testid="button-add-bet-open">
-          <Plus className="w-3.5 h-3.5" /> Log Bet
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleVerifyAll}
+            size="sm"
+            variant="outline"
+            className="gap-1.5 text-xs"
+            disabled={verifyLoading || bets.length === 0}
+            data-testid="button-verify-grades"
+          >
+            <RefreshCw className={`w-3 h-3 ${verifyLoading ? "animate-spin" : ""}`} />
+            {verifyLoading ? "Verifying…" : "Verify Grades"}
+          </Button>
+          <Button onClick={() => setShowAddForm(f => !f)} size="sm" className="gap-1.5" data-testid="button-add-bet-open">
+            <Plus className="w-3.5 h-3.5" /> Log Bet
+          </Button>
+        </div>
       </div>
+      {verifyResult && (
+        <div className={`text-xs px-3 py-1.5 rounded-md border ${verifyResult.startsWith("Fixed") ? "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300" : verifyResult.startsWith("Error") ? "bg-red-50 dark:bg-red-950/30 border-red-200 text-red-700" : "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300"}`}>
+          {verifyResult}
+        </div>
+      )}
 
       {showAddForm && (
         <AddBetForm

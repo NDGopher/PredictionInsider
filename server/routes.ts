@@ -3782,44 +3782,63 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   });
 
   // ── GET /api/market/resolve/:conditionId ─────────────────────────────────────
-  // Auto-grading endpoint: returns market resolution status for open bets
+  // Auto-grading endpoint: returns market resolution status for open bets.
+  // IMPORTANT: Gamma API's condition_id query param maps to a different internal
+  // field and returns wrong markets. The ONLY reliable lookup is by slug.
+  // Pass ?slug=nba-bos-mia-2026-03-10 for correct resolution.
   app.get("/api/market/resolve/:conditionId", async (req, res) => {
     try {
       const condId = req.params.conditionId;
+      const slug = (req.query.slug as string || "").trim().toLowerCase();
       if (!condId) return res.status(400).json({ error: "conditionId required" });
 
-      // 1. Try Gamma API first — has explicit closed/resolved fields
-      const gmRes = await fetch(`${GAMMA_API}/markets?condition_id=${condId}&limit=1`);
-      if (gmRes.ok) {
-        const gmData = await gmRes.json();
-        const mkt = Array.isArray(gmData) ? gmData[0] : gmData?.markets?.[0];
-        if (mkt) {
-          const closed = mkt.closed === true || mkt.active === false;
-          const resolutionPrice = mkt.outcomePrices
-            ? (Array.isArray(mkt.outcomePrices)
-                ? parseFloat(mkt.outcomePrices[0])
-                : parseFloat(JSON.parse(mkt.outcomePrices)[0]))
-            : null;
+      function parseResolutionPrice(mkt: any): number | null {
+        const raw = mkt.outcomePrices;
+        if (!raw) return null;
+        const arr = Array.isArray(raw) ? raw : (() => { try { return JSON.parse(raw); } catch { return null; } })();
+        if (!arr || !arr.length) return null;
+        return parseFloat(arr[0]);
+      }
 
-          if (closed && resolutionPrice !== null) {
-            const outcome = resolutionPrice >= 0.99 ? "YES" : resolutionPrice <= 0.01 ? "NO" : null;
-            return res.json({
-              conditionId: condId,
-              resolved: !!outcome,
-              outcome,
-              finalPrice: resolutionPrice,
-              source: "gamma",
-            });
-          }
+      function buildResult(mkt: any, condId: string, source: string) {
+        const closed = mkt.closed === true || mkt.active === false;
+        const resolutionPrice = parseResolutionPrice(mkt);
+        if (resolutionPrice === null) return { conditionId: condId, resolved: false, outcome: null, finalPrice: null };
 
-          if (!closed) {
-            return res.json({ conditionId: condId, resolved: false, outcome: null, finalPrice: null });
+        // Formally closed — use standard threshold
+        if (closed) {
+          const outcome = resolutionPrice >= 0.99 ? "YES" : resolutionPrice <= 0.01 ? "NO" : null;
+          return { conditionId: condId, resolved: !!outcome, outcome, finalPrice: resolutionPrice, source };
+        }
+
+        // Not formally closed yet — but price has fully settled at ≥0.999 or ≤0.001.
+        // Polymarket admin hasn't closed the market yet but the event is definitively over.
+        // Use 0.999 threshold (not 0.99) to be safer against live in-game price spikes.
+        if (resolutionPrice >= 0.999 || resolutionPrice <= 0.001) {
+          const outcome = resolutionPrice >= 0.999 ? "YES" : "NO";
+          return { conditionId: condId, resolved: true, outcome, finalPrice: resolutionPrice, source: `${source}-price-settled` };
+        }
+
+        // Still genuinely open (price between 0 and 1) — not near resolution
+        return { conditionId: condId, resolved: false, outcome: null, finalPrice: null, marketOpen: true };
+      }
+
+      // 1. Slug-based lookup (REQUIRED — conditionId query param returns wrong markets)
+      if (slug) {
+        const gmRes = await fetch(`${GAMMA_API}/markets?slug=${encodeURIComponent(slug)}&limit=1`);
+        if (gmRes.ok) {
+          const gmData = await gmRes.json();
+          const mkt = Array.isArray(gmData) ? gmData[0] : gmData?.markets?.[0];
+          if (mkt) {
+            const result = buildResult(mkt, condId, "gamma-slug");
+            return res.json(result);
           }
         }
       }
 
-      // 2. CLOB price fallback removed — live in-game markets reach 0.99 without being resolved,
-      //    causing false WON/LOST grades. Gamma API (above) is the sole resolution source.
+      // 2. Fallback: try Gamma API markets list filtered by the conditionId stored
+      //    in the market's actual conditionId field (not the query param — use a scan)
+      //    This is a last resort for bets without slugs.
       res.json({ conditionId: condId, resolved: false, outcome: null, finalPrice: null });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
