@@ -109,6 +109,10 @@ All 42 curated traders have PNL sourced from Polymarket's official closed positi
 
 **Auto-refresh**: `startCanonicalPNLRefresh()` in `eliteAnalysis.ts` runs 30s after startup, then every 24h. All 42 wallets are patched via `patchProfileWithCanonicalPNL()`.
 
+**Concurrency mutex**: `_scheduledRefreshRunning` flag in `eliteAnalysis.ts` prevents concurrent refresh runs. Both the auto-refresh timer and the manual `POST /api/elite/admin/refresh-canonical-pnl` endpoint call `runCanonicalPNLRefreshForAll()` which checks and holds the same mutex, so starting a manual refresh 5 seconds after auto-refresh begins will silently skip rather than double-process all 42 wallets.
+
+**Regression guard**: Inside `patchProfileWithCanonicalPNL()`, if the API returns a `closedCount` that is more than 15% below the previously-stored `closedPositionCount` (and that stored count is >100), the update is skipped with a `WARN` log. This prevents the Avarice31-style regression where a non-deterministic API response returns 7191 positions instead of 17844 and would overwrite good data with $3.5M inflated PNL.
+
 **JSONB preservation**: The UPSERT SQL in `runAnalysisForTrader()` uses JSONB merge with `CASE WHEN pnlSource='closed_positions_api' THEN preserve_canonical ELSE '{}' END` — so the regular 24h analysis won't overwrite canonical PNL.
 
 **Manual trigger**: `POST /api/elite/admin/refresh-canonical-pnl`

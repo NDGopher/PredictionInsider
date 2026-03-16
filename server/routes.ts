@@ -6,7 +6,8 @@ import {
   resolveUsernameToWallet, generateTraderCSV, curatedWalletSet, curatedWalletToUsername,
   settleUnresolvedTrades, fetchFullTradeHistory, computeTraderProfile,
   settleAllUnresolvedTradesGlobal, fetchAllActivity, computeTraderProfileFromActivity,
-  CURATED_TRADERS, classifySport, patchProfileWithCanonicalPNL, fetchCanonicalPNL
+  CURATED_TRADERS, classifySport, patchProfileWithCanonicalPNL, fetchCanonicalPNL,
+  runCanonicalPNLRefreshForAll
 } from "./eliteAnalysis";
 
 const elitePool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -409,6 +410,7 @@ function computeConfidence(
 // for all curated elite traders. Used by signal scoring for sport-specific ROI.
 type CanonicalEntry = {
   overallROI: number;
+  roiCapital: number;
   winRate: number;
   totalTrades: number;
   qualityScore: number;
@@ -428,6 +430,7 @@ async function loadCanonicalMetricsFromDB(): Promise<Map<string, CanonicalEntry>
         quality_score,
         tags,
         (metrics->>'overallROI')::float          AS overall_roi,
+        (metrics->>'roiCapital')::float          AS roi_capital,
         (metrics->>'winRate')::float             AS win_rate,
         (metrics->>'totalTrades')::int           AS total_trades,
         metrics->'roiBySport'                    AS roi_by_sport,
@@ -439,6 +442,7 @@ async function loadCanonicalMetricsFromDB(): Promise<Map<string, CanonicalEntry>
     for (const r of rows) {
       m.set(r.wallet.toLowerCase(), {
         overallROI: parseFloat(r.overall_roi ?? "0") || 0,
+        roiCapital: parseFloat(r.roi_capital ?? "0") || 0,
         winRate: parseFloat(r.win_rate ?? "0") || 0,
         totalTrades: parseInt(r.total_trades ?? "0") || 0,
         qualityScore: parseInt(r.quality_score ?? "0") || 0,
@@ -1425,6 +1429,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                p.quality_score, p.tags, p.computed_at,
                p.metrics->>'totalTrades' as total_trades,
                p.metrics->>'overallROI' as overall_roi,
+               p.metrics->>'roiCapital' as roi_capital,
                p.metrics->>'last90dROI' as last90d_roi,
                p.metrics->>'winRate' as win_rate,
                p.metrics->>'sharpeScore' as sharpe_score,
@@ -1669,27 +1674,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.post("/api/elite/admin/refresh-canonical-pnl", async (_req, res) => {
     try {
       const { rows } = await elitePool.query(
-        `SELECT wallet, username FROM elite_traders WHERE wallet NOT LIKE 'pending-%' ORDER BY username`
+        `SELECT COUNT(*) as cnt FROM elite_traders WHERE wallet NOT LIKE 'pending-%'`
       );
-      res.json({ message: "Canonical PNL refresh started", wallets: rows.length });
-      setImmediate(async () => {
-        const results: any[] = [];
-        for (const r of rows) {
-          try {
-            const result = await patchProfileWithCanonicalPNL(r.wallet);
-            if (result) results.push(result);
-            await new Promise(res => setTimeout(res, 200)); // gentle rate limit
-          } catch (e: any) {
-            console.error(`[canonical-pnl] error for ${r.wallet}:`, e.message);
-          }
-        }
-        const sorted = [...results].sort((a, b) => b.totalPNL - a.totalPNL);
-        console.log(`[canonical-pnl] Done — patched ${results.length} profiles`);
-        console.log(`[canonical-pnl] Top 5 by total PNL:`);
-        for (const r of sorted.slice(0, 5)) {
-          console.log(`  ${r.username}: $${r.totalPNL?.toFixed(0)} (realized=$${r.realizedPNL?.toFixed(0)}, unrealized=$${r.unrealizedPNL?.toFixed(0)})`);
-        }
-      });
+      const count = parseInt(rows[0]?.cnt ?? "0");
+      res.json({ message: "Canonical PNL refresh started", wallets: count });
+      // Uses the same mutex as the auto-refresh — blocks concurrent runs
+      setImmediate(() => runCanonicalPNLRefreshForAll());
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }

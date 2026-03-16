@@ -1,0 +1,61 @@
+For picking traders to tail, you should not rely on the PolymarketAnalytics-style ROI alone; you want something closer to “return on capital” plus a few other filters.
+
+What to prioritize
+For each trader, you ideally want:
+
+Sustained positive PnL
+
+Overall PnL significantly positive over a decent sample of markets, not just one lucky hit.
+
+Edge, not just win rate
+
+High win rate can be meaningless if they’re always laying horrible prices (e.g., buying at 0.80 to win 0.20).
+​
+
+Look for traders with good PnL and reasonable-win-rate across many markets; avoid “77% win rate, breakeven PnL” types.
+
+Category consistency
+
+Filter by category (Politics, Sports, Crypto) and look at PnL + win rate per category; tail them only where they’re consistently profitable.
+
+Risk profile / drawdowns
+
+Big PnL with insane swings is harder to follow than slightly lower PnL with smoother equity. Articles on top traders emphasize “long-term positive expectations, low volatility” as desirable.
+​
+
+Which ROI to use for tailing
+Use both metrics, but for different purposes:
+
+1) PA-style ROI = PnL / (wins + losses)
+
+Use this mainly to replicate PolymarketAnalytics rankings and sanity-check your scraping. It’s a good “PnL efficiency per dollar of realized PnL flow” and matches their leaderboard behavior.
+​
+
+It’s useful as a relative sort key among traders on the same platform, but remember it’s not real capital ROI.
+
+2) Capital-style ROI = PnL / total_invested (or equity)
+
+This is the one that matters for “if I copy this person, how fast does my bankroll grow?”.
+
+If you can reconstruct something like average or peak capital at risk, PnL ÷ that capital is the better signal for who’s actually growing money efficiently, like the 2.6% and 11.3% ROI numbers cited for top accounts.
+​
+
+In your bot:
+
+Keep your new ROI_pa = PnL / (winsGross + lossesGross) so you match PolymarketAnalytics.
+
+Add a separate ROI_capital = PnL / total_invested_estimate (or PnL / peak_equity if you can approximate).
+
+Rank candidates first by PnL and ROI_capital, then use ROI_pa, win rate, and category PnL as secondary filters.
+
+Practical “tail this trader” checklist
+Before auto-following someone:
+
+PnL: strong positive over many resolved markets.
+
+ROI_capital: clearly positive, not just noise.
+
+Category PnL: only tail them in categories where they’re consistently up.
+
+Behavior: no obvious “zombie losses” (huge bags sitting at ~0 forever), which can fake a nice win rate.
+​

@@ -64,6 +64,7 @@ interface TraderMetrics {
   redeemableCount?: number;
   redeemableValue?: number;
   totalInvested?: number;
+  roiCapital?: number;
   pnlWinRate?: number;
   pnlSource?: string;
   pnlUpdatedAt?: string;
@@ -395,11 +396,12 @@ function TraderDeepDive({ wallet, username }: { wallet: string; username: string
       {m && (
         <>
           {/* Key stats grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-6 gap-2">
             {[
               { label: "Total USDC", value: fmtUSDC(m.totalUSDC), icon: DollarSign },
               { label: "Avg Bet", value: fmtUSDC(m.avgBetSize), icon: Target },
-              { label: "Overall ROI", value: fmtROI(m.overallROI), icon: TrendingUp, color: roiColor(m.overallROI) },
+              { label: "PA ROI", value: fmtROI(m.overallROI), icon: TrendingUp, color: roiColor(m.overallROI) },
+              { label: "Capital ROI", value: fmtROI(m.roiCapital ?? null), icon: TrendingUp, color: roiColor(m.roiCapital ?? 0) },
               { label: "Win Rate", value: fmt(m.winRate, "%"), icon: Award },
               { label: "Sharpe", value: fmt(m.sharpeScore), icon: Activity, color: m.sharpeScore >= 1 ? "text-green-600 dark:text-green-400" : "" },
             ].map(({ label, value, icon: Icon, color }) => (
@@ -666,6 +668,7 @@ function TraderCard({ trader }: { trader: EliteTrader }) {
       : "Analyzed";
 
   const overallROI = trader.overall_roi ? parseFloat(trader.overall_roi) : null;
+  const roiCapital = trader.roi_capital ? parseFloat(trader.roi_capital) : null;
   const last90dROI = trader.last90d_roi ? parseFloat(trader.last90d_roi) : null;
   const winRate = trader.win_rate ? parseFloat(trader.win_rate) : null;
 
@@ -710,8 +713,8 @@ function TraderCard({ trader }: { trader: EliteTrader }) {
         {(overallROI != null || winRate != null) && (
           <div className="grid grid-cols-4 gap-1.5 mt-2.5">
             {[
-              { label: "ROI", value: fmtROI(overallROI), color: overallROI != null ? roiColor(overallROI) : "" },
-              { label: "90d ROI", value: fmtROI(last90dROI), color: last90dROI != null ? roiColor(last90dROI) : "" },
+              { label: "PA ROI", value: fmtROI(overallROI), color: overallROI != null ? roiColor(overallROI) : "" },
+              { label: "Cap ROI", value: fmtROI(roiCapital), color: roiCapital != null ? roiColor(roiCapital) : "" },
               { label: "Win%", value: fmt(winRate, "%"), color: "" },
               { label: "Trades/d", value: trader.trades_per_day ? parseFloat(trader.trades_per_day).toFixed(1) : "—", color: "" },
             ].map(({ label, value, color }) => (

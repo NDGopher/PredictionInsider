@@ -76,18 +76,18 @@ export function loadBetsFromStorage(): TrackedBet[] {
 // ─── Snooze helpers (still localStorage – these are ephemeral) ───────────────
 
 const SNOOZE_KEY = "pi_snoozed";
-export function getSnoozed(): Record<string, number> {
+function getSnoozed(): Record<string, number> {
   try { return JSON.parse(localStorage.getItem(SNOOZE_KEY) || "{}"); } catch { return {}; }
 }
-export function snoozeSignal(signalId: string, until: number) {
+function snoozeSignal(signalId: string, until: number) {
   const s = getSnoozed(); s[signalId] = until;
   localStorage.setItem(SNOOZE_KEY, JSON.stringify(s));
 }
-export function unsnoozeSignal(signalId: string) {
+function unsnoozeSignal(signalId: string) {
   const s = getSnoozed(); delete s[signalId];
   localStorage.setItem(SNOOZE_KEY, JSON.stringify(s));
 }
-export function isSignalSnoozed(signalId: string): boolean {
+function isSignalSnoozed(signalId: string): boolean {
   const s = getSnoozed();
   const until = s[signalId];
   if (!until) return false;
