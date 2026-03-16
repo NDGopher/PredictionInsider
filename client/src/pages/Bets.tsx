@@ -108,9 +108,9 @@ function calcPnlFromGrade(bet: TrackedBet, won: boolean): number {
       ? bet.betAmount * (bet.americanOdds / 100)
       : bet.betAmount * (100 / Math.abs(bet.americanOdds));
   }
-  return bet.side === "YES"
-    ? bet.betAmount * (1 - bet.entryPrice) / bet.entryPrice
-    : bet.betAmount * bet.entryPrice / (1 - bet.entryPrice);
+  // entryPrice is always the purchased token's price (YES price for YES bets, NO price for NO bets).
+  // Win formula is identical for both sides: risk * (1 - tokenPrice) / tokenPrice
+  return bet.betAmount * (1 - bet.entryPrice) / bet.entryPrice;
 }
 
 async function resolveViaSlug(
@@ -271,10 +271,9 @@ function AddBetForm({ onAdd, onCancel, prefill }: {
 
   const priceNum = parseFloat(entryPrice) / 100;
   const amtNum = parseFloat(betAmount);
+  // entryPrice is the purchased token's price — same formula for YES and NO
   const potentialPnl = !isNaN(priceNum) && !isNaN(amtNum) && priceNum > 0 && priceNum < 1
-    ? side === "YES"
-      ? amtNum * (1 - priceNum) / priceNum
-      : amtNum * priceNum / (1 - priceNum)
+    ? amtNum * (1 - priceNum) / priceNum
     : 0;
 
   return (
@@ -341,10 +340,9 @@ function BetCard({ bet, onResolve, onDelete, onUpdateNotes, onReopen }: {
   const [notes, setNotes] = useState(bet.notes || "");
 
   const priceNum = bet.entryPrice || 0;
+  // entryPrice is always the purchased token's price — same formula for YES and NO
   const potentialPnl = bet.betAmount > 0 && priceNum > 0 && priceNum < 1
-    ? bet.side === "YES"
-      ? bet.betAmount * (1 - priceNum) / priceNum
-      : bet.betAmount * priceNum / (1 - priceNum)
+    ? bet.betAmount * (1 - priceNum) / priceNum
     : 0;
 
   const statusColor = {
@@ -553,9 +551,8 @@ export default function Bets() {
           ? bet.betAmount * (bet.americanOdds / 100)
           : bet.betAmount * (100 / Math.abs(bet.americanOdds));
       }
-      return bet.side === "YES"
-        ? bet.betAmount * (1 - bet.entryPrice) / bet.entryPrice
-        : bet.betAmount * bet.entryPrice / (1 - bet.entryPrice);
+      // entryPrice is always the purchased token's price — same formula for YES and NO
+      return bet.betAmount * (1 - bet.entryPrice) / bet.entryPrice;
     }
     return -bet.betAmount;
   }
