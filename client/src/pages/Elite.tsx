@@ -858,7 +858,7 @@ export default function Elite() {
               }`}
               data-testid={`sort-${s}`}
             >
-              {s === "quality" ? "Quality Score" : s === "roi" ? "Overall ROI" : "Name"}
+              {s === "quality" ? "Quality Score" : s === "roi" ? "PA ROI %" : "Name"}
             </button>
           ))}
         </div>

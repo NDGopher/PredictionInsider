@@ -1674,31 +1674,43 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
 
 // Compute a quality score from canonical metrics (0-100)
 function computeCanonicalQualityScore(c: CanonicalPNL): number {
-  const pnl = c.totalPNL;
-  const roi = c.overallROI;
-  const wr = c.pnlWinRate;
+  const pnl    = c.totalPNL;
+  const roi    = c.overallROI;   // PA-style: PNL / (wins + losses gross) — primary skill signal
+  const capRoi = c.roiCapital;   // Capital ROI: used as credibility check
+  const wr     = c.pnlWinRate;
   const trades = c.closedCount;
-  const roi30 = c.last30dROI;
+  const roi30  = c.last30dROI;
+  const roi90  = c.last90dROI;
 
-  // PNL size component (0-25 pts): logarithmic scale, $100K = 20pts, $1M = 25pts
-  const pnlPts = pnl <= 0 ? 0
-    : Math.min(25, Math.round(Math.log10(Math.max(pnl, 1)) / Math.log10(1_000_000) * 25));
+  // ── ROI (0–40 pts): Primary skill signal — dominates the score ──────────
+  // 5% = 13pts, 10% = 27pts, 15%+ = 40pts
+  const roiPts = roi <= 0 ? 0 : Math.min(40, Math.round(roi / 15 * 40));
 
-  // ROI component (0-25 pts): 5% ROI = 15pts, 10%+ = 25pts (cap at 25)
-  const roiPts = roi <= 0 ? 0 : Math.min(25, Math.round(roi / 10 * 25));
+  // ── Sample credibility (0–20 pts): ROI needs volume to be trustworthy ───
+  // 300 trades = 6pts, 1000 = 13pts, 3000+ = 20pts (log curve)
+  const tradePts = trades < 10 ? 0
+    : Math.min(20, Math.round(Math.log(trades) / Math.log(3000) * 20));
 
-  // Win rate component (0-20 pts): 50% = 0pts, 60% = 15pts, 70%+ = 20pts
-  const wrPts = wr < 50 ? 0 : Math.min(20, Math.round((wr - 50) / 20 * 20));
+  // ── Win rate (0–15 pts): consistency of being right ────────────────────
+  // 50% = 0pts, 60% = 6pts, 70% = 12pts, 80%+ = 15pts
+  const wrPts = wr < 50 ? 0 : Math.min(15, Math.round((wr - 50) / 30 * 15));
 
-  // Sample size / volume (0-15 pts): 100 trades = 5pts, 1000+ = 15pts
-  const tradePts = Math.min(15, Math.round(Math.min(trades, 2000) / 2000 * 15));
+  // ── PNL at scale (0–15 pts): proves edge works with real money ──────────
+  // log scale: $50K = 9pts, $500K = 14pts, $1M+ = 15pts
+  // If Capital ROI < 1%, limit to 8pts (PNL may be from huge volume, not true edge)
+  const rawPnlPts = pnl <= 0 ? 0
+    : Math.min(15, Math.round(Math.log10(Math.max(pnl, 1)) / Math.log10(1_000_000) * 15));
+  const capRoiCredible = capRoi !== null && capRoi > 1;
+  const pnlPts = (capRoi === null || capRoiCredible) ? rawPnlPts : Math.min(rawPnlPts, 8);
 
-  // Recent momentum (0-15 pts): last30d ROI vs overall
+  // ── Recent momentum (0–10 pts): is the edge holding up? ─────────────────
+  // Full 10pts if 30d ROI ≥ overall, partial if positive but lower, 0 if negative
+  // Also bonus path: if 90d ROI is positive, rescue 5pts even if 30d is down
   const momentumPts = roi30 > 0
-    ? (roi30 >= roi ? 15 : Math.round((roi30 / Math.max(roi, 1)) * 15))
-    : 0;
+    ? (roi30 >= roi ? 10 : Math.round((roi30 / Math.max(roi, 1)) * 10))
+    : (roi90 > 0 ? 5 : 0);
 
-  return Math.min(99, Math.max(1, pnlPts + roiPts + wrPts + tradePts + momentumPts));
+  return Math.min(99, Math.max(1, roiPts + tradePts + wrPts + pnlPts + momentumPts));
 }
 
 // Patch an existing trader profile with canonical PNL + full metrics.
