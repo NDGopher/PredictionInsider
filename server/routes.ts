@@ -378,6 +378,7 @@ function computeConfidence(
   traderCount: number,
   avgQuality: number,
   counterTraderCount: number = 0,
+  relBetSize: number = 1,           // how many × normal bet size this play is (conviction multiplier)
 ): { score: number; breakdown: Record<string, number> } {
   const roiPct = Math.round(Math.min(Math.max(avgROI / 60, 0), 1) * 100 * 0.40);
 
@@ -389,19 +390,29 @@ function computeConfidence(
   const valuePct = valueDelta > 0 ? Math.round(Math.min(valueDelta * 600, 1) * 100 * 0.20) : 0;
   const sizePct  = Math.round(Math.min(avgNetUsdc / 15_000, 1) * 100 * 0.10);
 
+  // Relative bet size bonus (0–10 pts): the OddsJam key signal.
+  // When a sharp trader bets 3x+ their normal amount, they have unusually high conviction.
+  // 1–1.5x = 0 (routine), 2x = 3pts, 3-4x = 5pts, 5-6x = 7pts, 7-9x = 9pts, 10x+ = 10pts
+  const relSizePts = relBetSize >= 10 ? 10
+                   : relBetSize >= 7  ? 9
+                   : relBetSize >= 5  ? 7
+                   : relBetSize >= 3  ? 5
+                   : relBetSize >= 2  ? 3
+                   : 0;
+
   // Tier bonus: more qualified traders = higher ceiling
   const tierBonus = traderCount >= 3 && avgQuality >= 50 ? 8
                   : traderCount >= 2 ? 4
                   : avgQuality >= 75 ? 3
                   : 0;
 
-  const base = roiPct + consPct + valuePct + sizePct;
-  // Single-trader signals: cap at 62 regardless of formula
-  const score = traderCount === 1 ? Math.min(base + tierBonus, 62) : Math.min(base + tierBonus, 95);
+  const base = roiPct + consPct + valuePct + sizePct + relSizePts;
+  // Single-trader signals: cap at 68 (raised from 62 to allow relBetSize to push high-conviction single bets higher)
+  const score = traderCount === 1 ? Math.min(base + tierBonus, 68) : Math.min(base + tierBonus, 95);
 
   return {
     score: Math.max(score, 5),
-    breakdown: { roiPct, consensusPct: consPct, valuePct, sizePct, tierBonus },
+    breakdown: { roiPct, consensusPct: consPct, valuePct, sizePct, relSizePts, tierBonus },
   };
 }
 
@@ -2596,8 +2607,21 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           ? (avgEntry - currentPrice - SLIPPAGE)
           : ((1 - avgEntry) - (1 - currentPrice) - SLIPPAGE);
 
+        // ── Insider Stats (OddsJam-style "WHY THIS BET?" metrics) ─────────────
+        // relBetSize: weighted avg of (this_bet / trader_normal_bet) — the conviction multiplier.
+        // Computed BEFORE confidence so it can boost the signal score (8x normal = 9 extra pts).
+        const relBetSize = (() => {
+          const w = dominant.reduce((s, e) => s + e.totalSize, 0) || 1;
+          return Math.round(dominant.reduce((s, e) => {
+            const cm = canonicalMap.get(e.address.toLowerCase());
+            const avgBet = cm?.roiBySport?.[signalSport]?.avgBet
+              || Math.max(e.traderInfo.volume / 100, 50);
+            return s + (e.totalSize / avgBet) * (e.totalSize / w);
+          }, 0) * 10) / 10;
+        })();
+
         const { score: confidence, breakdown } = computeConfidence(
-          avgROI, consensusPct, valueDelta, avgSize, dominant.length, avgQuality, counterTraderCount
+          avgROI, consensusPct, valueDelta, avgSize, dominant.length, avgQuality, counterTraderCount, relBetSize
         );
 
         const tier = dominant.length >= 3 && avgQuality >= 45 ? "HIGH"
@@ -2619,18 +2643,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const isActionable = priceStatus === "actionable" || priceStatus === "dip";
         const bigPlayScore = computeBigPlayScore(totalDominantSize, dominant.length);
         const dominantSorted = [...dominant].sort((a, b) => b.totalSize - a.totalSize);
-
-        // ── Insider Stats (OddsJam-style "WHY THIS BET?" metrics) ─────────────
-        // relBetSize: how large is this bet vs each trader's typical sports bet (conviction signal)
-        const relBetSize = (() => {
-          const w = dominant.reduce((s, e) => s + e.totalSize, 0) || 1;
-          return Math.round(dominant.reduce((s, e) => {
-            const cm = canonicalMap.get(e.address.toLowerCase());
-            const avgBet = cm?.roiBySport?.[signalSport]?.avgBet
-              || Math.max(e.traderInfo.volume / 100, 50);
-            return s + (e.totalSize / avgBet) * (e.totalSize / w);
-          }, 0) * 10) / 10;
-        })();
         // slippagePct: how much did the price move after the insiders bought (conviction indicator)
         const slippagePct = Math.round((side === "YES"
           ? (currentPrice - avgEntry) * 100
@@ -2929,8 +2941,20 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                 return s + ((cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : (lbMap.get(t.wallet)?.qualityScore ?? 20));
               }, 0) / pg.traders.length)
             : 20;
+          // ── Insider Stats (OddsJam-style "WHY THIS BET?" metrics) ───────────
+          // pgRelBetSize: computed BEFORE confidence so it boosts the signal score
+          const pgTotalWeight = pg.totalValue || 1;
+          const pgRelBetSize = (() => {
+            return Math.round(pg.traders.reduce((s, t) => {
+              const cm = canonicalMap.get(t.wallet.toLowerCase());
+              const avgBet = cm?.roiBySport?.[pgSport]?.avgBet
+                || Math.max((lbMap.get(t.wallet)?.volume ?? 1000) / 100, 50);
+              return s + (t.currentValue / avgBet) * (t.currentValue / pgTotalWeight);
+            }, 0) * 10) / 10;
+          })();
+
           const { score: confidence, breakdown } = computeConfidence(
-            avgROI, consensusPct, valueDelta, avgSize, pg.traders.length, avgQualityForScore, counterTraderCount
+            avgROI, consensusPct, valueDelta, avgSize, pg.traders.length, avgQualityForScore, counterTraderCount, pgRelBetSize
           );
 
           const mTypeRaw = categoriseMarket(pg.question, resolvedEndDate, resolvedGameStartTime, pg.slug || pgMarket?.slug);
@@ -2949,17 +2973,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const pgYesTokenId = pg.yesAsset || pgMarket?.tokenIds?.[0];
           const pgNoTokenId  = pg.noAsset  || pgMarket?.tokenIds?.[1];
           const tradersSorted = [...pg.traders].sort((a, b) => b.currentValue - a.currentValue);
-
-          // ── Insider Stats (OddsJam-style "WHY THIS BET?" metrics) ───────────
-          const pgTotalWeight = pg.totalValue || 1;
-          const pgRelBetSize = (() => {
-            return Math.round(pg.traders.reduce((s, t) => {
-              const cm = canonicalMap.get(t.wallet.toLowerCase());
-              const avgBet = cm?.roiBySport?.[pgSport]?.avgBet
-                || Math.max((lbMap.get(t.wallet)?.volume ?? 1000) / 100, 50);
-              return s + (t.currentValue / avgBet) * (t.currentValue / pgTotalWeight);
-            }, 0) * 10) / 10;
-          })();
           const pgSlippagePct = Math.round((pg.side === "YES"
             ? (avgCurPrice - avgEntry) * 100
             : (avgEntry - avgCurPrice) * 100) * 10) / 10;

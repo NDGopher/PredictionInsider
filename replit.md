@@ -138,6 +138,18 @@ Loaded in **Phase 1** of `/api/signals` alongside `buildMarketDatabase()` — fu
 2. `canonicalMap.get(wallet)?.overallROI` — if non-zero
 3. `lbMap.get(wallet)?.roi` — activity-based estimate (fallback)
 
+**`computeConfidence` formula (5 components + tier bonus):**
+| Component | Weight | Notes |
+|---|---|---|
+| Trader ROI | 0–40 pts | `min(avgROI / 60, 1) * 40` |
+| Consensus | 0–30 pts | After counter-trader penalty |
+| Value edge | 0–20 pts | `min(valueDelta * 600, 1) * 20` |
+| Absolute size | 0–10 pts | `min(avgNetUsdc / 15000, 1) * 10` |
+| **Conviction size** | **0–10 pts** | **relBetSize: 2x=3, 3x=5, 5x=7, 7x=9, 10x+=10** |
+| Tier bonus | 0–8 pts | 3+ traders at quality ≥50 = 8 |
+
+**relBetSize computed BEFORE confidence call** — `relBetSize` (weighted avg of each trader's bet ÷ their sport-specific `avgBet`) is now an actual scoring input, not just display data. This is the primary OddsJam-style conviction signal.
+
 **Counter-trader consensus penalty** (in `computeConfidence`):
 - Each tracked trader on the opposite side reduces effective consensus by 20 points (max −40)
 - Formula: `adjustedConsPct = max(0, consensusPct − counterTraderCount * 20)` then scored normally

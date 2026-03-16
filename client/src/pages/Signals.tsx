@@ -202,6 +202,16 @@ function ScoreBreakdown({ breakdown, confidence, signal }: {
       low: (breakdown.sizePct ?? 0) < 3,
     },
     {
+      label: "Conviction Size (10%)",
+      val: breakdown.relSizePts ?? 0,
+      max: 10,
+      color: "bg-rose-500",
+      note: (signal as any)?.relBetSize > 1
+        ? `${((signal as any).relBetSize as number).toFixed(1)}× their normal bet`
+        : "routine bet size",
+      low: (breakdown.relSizePts ?? 0) === 0,
+    },
+    {
       label: "Quality Bonus",
       val: breakdown.tierBonus ?? 0,
       max: 15,
