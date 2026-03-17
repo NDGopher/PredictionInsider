@@ -1,0 +1,426 @@
+You're actually very close — the issues you're seeing are exactly the ones that appear when building Polymarket analytics. The good news: all the problems in your logs have clear root causes. The bad news: several architectural decisions in your current pipeline are causing cascading errors.
+
+I'll walk through each problem you pasted, explain why it's happening, and show how to fix it correctly.
+
+1. The Biggest Bug: You're Calculating PnL Wrong
+
+You wrote that your system may be:
+
+summing gross wins instead of net profit
+
+That is almost certainly correct.
+
+Your /closed-positions logic likely does something like:
+
+total_wins = sum(win_amount)
+total_losses = sum(loss_amount)
+
+pnl = total_wins - total_losses
+
+This is incorrect for Polymarket.
+
+Polymarket payouts already include the stake.
+
+Example:
+
+Buy YES @ 0.40
+Size = 100
+Cost = $40
+
+If win:
+Payout = $100
+
+Actual profit:
+
+profit = payout - cost
+profit = 100 - 40 = 60
+
+If your code records:
+
+win = 100
+loss = 40
+
+then:
+
+100 - 40 = 60
+
+which works.
+
+But many APIs return:
+
+payout = 100
+loss = 0
+
+Then your formula becomes:
+
+100 - 0 = 100
+
+2.5x inflated.
+
+Multiply this across thousands of markets and you get numbers like:
+
+kch123 = $57M
+
+when the real number is:
+
+$191K
+Correct PnL Formula
+
+You must compute:
+
+profit = payout - total_cost
+
+Where:
+
+total_cost = sum(price * shares)
+
+Final wallet PnL:
+
+PnL =
+    sum(SELL proceeds)
+  + sum(REDEEM payouts)
+  - sum(BUY cost)
+
+NOT:
+
+wins - losses
+2. The /closed-positions Endpoint Is Not Reliable
+
+This endpoint is convenient but dangerous.
+
+Problems:
+
+1. Missing older markets
+2. Missing partial closes
+3. Missing redemptions
+4. Pagination inconsistencies
+
+This explains your observation:
+
+activity confirms kch123 is down $2.3M but incomplete
+
+Correct — activity endpoint often misses older redeems.
+
+Correct Method
+
+You must reconstruct PnL from raw trades.
+
+Pipeline:
+
+TRADES
++ REDEEMS
++ MARKET RESOLUTION
+
+Then calculate positions.
+
+3. The Sports Filter Problem
+
+Your instinct to filter by slug was good:
+
+classifySportFromSlug
+
+But slugs are unreliable.
+
+Example sports markets:
+
+world-series-champion
+super-bowl-winner
+stanley-cup-winner
+nba-finals-mvp
+
+But many sports markets look like:
+
+will-lebron-score-30-points
+caitlin-clark-points
+ohtani-home-run
+
+Slug classifiers break quickly.
+
+Correct Sports Filter
+
+Use market category from markets API.
+
+Source:
+
+https://gamma-api.polymarket.com/markets
+
+Field:
+
+category
+
+Examples:
+
+sports
+politics
+crypto
+pop-culture
+world
+
+Your filter should be:
+
+WHERE category = 'sports'
+
+NOT slug parsing.
+
+4. The Pagination Bug You Found
+
+You correctly discovered:
+
+pageWins === 0 stops pagination if page has non-sports wins
+
+Correct.
+
+The fix you made was good:
+
+stop only if page.length == 0
+
+This prevents skipping later sports trades.
+
+5. The Regression Guard Problem
+
+Your system blocked updated values because:
+
+new_value < stored_value
+
+But the new values are correct.
+
+This guard is dangerous for analytics systems.
+
+Recommended approach:
+
+only block if drop > 90%
+
+Example:
+
+if new_value < stored_value * 0.1:
+    flag anomaly
+
+Not block.
+
+6. Your Page Size Bottleneck
+
+You discovered:
+
+API limit = 50
+
+Correct.
+
+For a trader with:
+
+54,000 positions
+
+You need:
+
+1,080 requests
+
+That’s why production systems never fetch per-wallet.
+
+Correct Ingestion Strategy
+
+Ingest global trades once.
+
+Example:
+
+/trades?limit=1000&offset=X
+
+Store everything locally.
+
+Then query:
+
+SELECT * FROM trades WHERE wallet = ?
+
+This makes wallet analysis instant.
+
+7. Why swisstony Looked Like $106M
+
+Classic double-count bug.
+
+Example:
+
+BUY 100 shares @ .40
+SELL 100 shares @ .60
+
+True profit:
+
+20
+
+If your code sums notional:
+
+BUY volume = 40
+SELL volume = 60
+
+You might record:
+
+profit = 60
+
+Which is 3x inflated.
+
+8. Why Your Numbers Look So Bad
+
+Your logs reveal three simultaneous bugs.
+
+Bug 1
+
+Gross payout counted as profit.
+
+Bug 2
+
+Political markets included.
+
+Bug 3
+
+Partial closes miscounted.
+
+Combined inflation:
+
+10x – 300x
+
+Exactly what you're seeing.
+
+9. Correct Architecture (Stable Version)
+
+You should move to this system:
+
+trade_ingestor
+      ↓
+postgres
+      ↓
+position_builder
+      ↓
+pnl_engine
+
+Where:
+
+position builder
+
+tracks:
+
+wallet
+market
+outcome
+shares
+avg_cost
+Example Position Algorithm
+
+Pseudo-code:
+
+for trade in trades:
+
+    if BUY:
+        shares += size
+        cost += price * size
+
+    if SELL:
+        shares -= size
+        realized += size * (price - avg_cost)
+10. Correct Sports PnL Query
+
+Once you store markets:
+
+SQL becomes trivial:
+
+SELECT SUM(pnl)
+FROM positions
+JOIN markets ON positions.market_id = markets.id
+WHERE markets.category = 'sports'
+
+No slug parsing.
+
+11. Your Current System Is Doing Too Much Live
+
+You're recomputing:
+
+wins
+losses
+pagination
+classification
+
+per wallet.
+
+This is expensive and fragile.
+
+Correct approach:
+
+Precompute:
+
+wallet_stats_daily
+
+Example table:
+
+wallet
+category
+pnl
+volume
+trades
+winrate
+
+Then dashboard queries are instant.
+
+12. What I Would Fix First
+
+Priority order:
+
+1️⃣ Fix PnL math
+
+Switch to:
+
+payout - cost
+2️⃣ Stop using /closed-positions
+
+Use:
+
+/trades
+/activity
+3️⃣ Remove slug classification
+
+Use:
+
+market.category
+4️⃣ Remove regression blocking
+
+Replace with anomaly alert only.
+
+5️⃣ Move to global ingestion
+
+Stop per-wallet crawling.
+
+13. Quick Sanity Check for Your Engine
+
+If your analyzer is correct:
+
+Top sports traders should look like:
+
+$50K – $500K profit
+
+NOT:
+
+$50M
+
+Polymarket markets are too thin for that.
+
+14. One More Critical Insight
+
+Many of the biggest traders hedge positions across outcomes.
+
+Example:
+
+YES @ .45
+NO @ .58
+
+Your analyzer must treat these as two independent positions.
+
+Otherwise PnL gets distorted.
+
+15. If you want, I can help you fix this very quickly
+
+If you send:
+
+• your fetchCanonicalPNL function
+• your sports classifier
+• one sample trade record
+
+I can rewrite the core PnL engine so it produces accurate numbers like the Polymarket leaderboard.
+
+It usually takes ~120 lines of code to get a perfect analyzer.
+
+And honestly — based on what you posted — you're about 80% of the way there, you just got trapped in the three classic Polymarket data pitfalls.

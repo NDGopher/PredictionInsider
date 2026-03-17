@@ -1503,10 +1503,21 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
   const ms30 = now - 30 * 86_400_000;
   const ms90 = now - 90 * 86_400_000;
 
-  // ── 1. Build compact Settled array streaming from API (no raw object accumulation) ───
-  // Each entry has: _pnl (net), _invested (USDC), _ts (Unix sec), _win (bool),
-  //                 slug, title (for category classification)
-  // We build Settled objects on-the-fly to minimise memory for large wallets (e.g. 54K+ wins).
+  // ── Build ALL-TIME PNL using two complementary endpoints ────────────────────────
+  //
+  // ENDPOINT 1: /closed-positions → returns ALL settled positions sorted by realizedPnl DESC.
+  //   realizedPnl is NET profit (payout - cost), already computed by Polymarket.
+  //   We paginate until we've seen all positive entries (then losses start appearing).
+  //   This captures wins AND positions sold at a loss (partial closes).
+  //
+  // ENDPOINT 2: /positions?closed=true → returns unredeemed/pending-settled positions.
+  //   For these, cashPnl = current mark-to-market = true net PNL for resolved markets:
+  //   positive for unclaimed wins, negative for unrecouped losses (tokens worth $0).
+  //   These do NOT appear in /closed-positions yet (no redemption transaction).
+  //
+  // NO SPORTS FILTER: We include ALL categories for all-time PNL matching
+  // polymarketanalytics.com. Category breakdown (closedByCategory) is computed
+  // separately using slug classification for per-sport metrics.
   type Settled = {
     _pnl: number; _invested: number; _ts: number; _win: boolean;
     slug: string; title: string;
@@ -1517,57 +1528,57 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
 
   const allSettled: Settled[] = [];
 
-  // ── 1a. Fetch ALL winning closed positions (/closed-positions returns ONLY wins) ───
-  // API hard-caps at 50 items/page. Cap at 2000 pages (100K positions) to bound very
-  // large market-maker wallets. Delay is 40ms (vs 80ms) to keep the job under 2 min.
-  const PAGE = 50;
-  const MAX_WIN_PAGES = 2000; // max 100K winning positions per wallet
+  // ── 1a. Wins + sold-at-loss from /closed-positions ────────────────────────────
+  // Sorted by realizedPnl DESC. We stop when the API returns fewer records than
+  // the limit (true end of data) OR after 30 consecutive all-dust pages.
+  // 30 pages = 1500 positions of near-zero PNL — safe for traders (like kch123)
+  // whose sorted list has a large zero-PnL zone between wins and losses, while
+  // still preventing runaway pagination for traders with millions of micro-positions.
+  const PAGE = 50; // Polymarket /closed-positions returns max 50 per page
+  const MAX_PAGES = 2000; // cap at 100K positions
+  const MAX_ZERO_PAGES = 30; // stop after 1500 consecutive near-zero positions
   let offset = 0;
-  let winPages = 0;
+  let pages = 0;
+  let consecutiveZeroPages = 0;
   while (true) {
     const data = await fetchJson(
       `${DATA_API}/closed-positions?user=${addr}&limit=${PAGE}&offset=${offset}`
     );
     if (!Array.isArray(data) || data.length === 0) break;
-    // CRITICAL: /closed-positions returns ALL settled positions sorted by realizedPnl DESC.
-    // At deep pagination it includes losing positions (realizedPnl < 0). We ONLY want TRUE wins
-    // here; losses will be captured separately from /positions?closed=true to avoid double-counting.
-    let pageWins = 0;          // sports wins counted this page
-    let pageAnyWins = 0;       // total positive-PNL positions on page (incl. non-sports)
+    let pageAny = 0;
     for (const p of data) {
       const pnl = parseFloat(p.realizedPnl) || 0;
-      if (pnl <= 0.01) continue;
-      pageAnyWins++;
-      // ── SPORTS-ONLY FILTER: skip non-sports positions (politics, crypto, etc.) ──
+      if (Math.abs(pnl) <= 0.01) continue;
+      pageAny++;
       const slug  = p.slug || p.eventSlug || "";
       const title = p.title || "";
-      const cat   = classifySportFromSlug(slug, title);
-      if (cat === "Other" || cat === "Politics" || cat === "Finance/Crypto") continue;
       allSettled.push({
         _pnl:      pnl,
         _invested: investedUSDC(p.avgPrice, p.totalBought),
         _ts:       p.timestamp || 0,
-        _win:      true,
+        _win:      pnl > 0,
         slug,
         title,
       });
-      pageWins++;
     }
-    // Stop when NO positive-PNL positions at all (not just no sports wins),
-    // so we don't skip sports wins on pages that happen to be all-political.
-    if (pageAnyWins === 0) break;
+    if (pageAny === 0) {
+      consecutiveZeroPages++;
+      if (consecutiveZeroPages >= MAX_ZERO_PAGES) break;
+    } else {
+      consecutiveZeroPages = 0;
+    }
     if (data.length < PAGE) break;
     offset += PAGE;
-    winPages++;
-    if (winPages >= MAX_WIN_PAGES) break;
+    pages++;
+    if (pages >= MAX_PAGES) break;
     await new Promise(r => setTimeout(r, 40));
   }
 
-  // ── 1b. Fetch ALL losing positions from /positions?closed=true ───────────────────
-  // The /positions?closed=true endpoint returns all settled positions for a wallet.
-  // We filter cashPnl < -0.01 to capture only genuine losses (not tiny float dust).
-  // NOTE: losses also appear deep in /closed-positions (negative realizedPnl) but we
-  // intentionally excluded them above to avoid double-counting.
+  // ── 1b. Unredeemed LOSSES from /positions?closed=true ────────────────────────
+  // Captures resolved positions where user has NOT yet redeemed/settled.
+  // For losing positions (tokens worth $0): cashPnl = -initialValue (the true loss).
+  // We only capture losses here — unredeemed WINS are counted in redeemableValue below.
+  // No double-counting: /closed-positions only has realizedPnl for actual transactions.
   let loseOffset = 0;
   let emptyLossPages = 0;
   while (true) {
@@ -1575,36 +1586,34 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
       `${DATA_API}/positions?user=${addr}&limit=500&offset=${loseOffset}&sizeThreshold=0&closed=true`
     );
     if (!Array.isArray(data) || data.length === 0) break;
-    // Only include confirmed losses (cashPnl < -0.01) from SPORTS markets only
-    let pageLosses = 0;        // sports losses counted this page
-    let pageAnyLosses = 0;     // total negative-PNL positions on page (incl. non-sports)
+    let pageLosses = 0;
     for (const p of data) {
       const pnl = parseFloat(p.cashPnl) || 0;
-      if (pnl >= -0.01) continue;
-      pageAnyLosses++;
-      // ── SPORTS-ONLY FILTER: skip non-sports positions (politics, crypto, etc.) ──
+      if (pnl >= -0.01) continue; // only genuine losses (cashPnl < 0)
+      // CRITICAL: Only include positions from RESOLVED markets (curPrice must be 0 or 1).
+      // curPrice between 0.001–0.999 = still active/open market (e.g., 2028 futures).
+      // Including unresolved positions would count unrealized paper losses as settled losses.
+      const curPrice = parseFloat(p.curPrice) || 0;
+      const isResolved = curPrice < 0.001 || curPrice > 0.999;
+      if (!isResolved) continue; // skip open/unresolved markets
+      pageLosses++;
       const slug  = p.slug || p.eventSlug || "";
       const title = p.title || "";
-      const cat   = classifySportFromSlug(slug, title);
-      if (cat === "Other" || cat === "Politics" || cat === "Finance/Crypto") continue;
+      const ts    = p.endDate ? Math.floor(new Date(p.endDate).getTime() / 1000) : 0;
       allSettled.push({
         _pnl:      pnl,
         _invested: investedUSDC(p.avgPrice, p.totalBought),
-        // endDate is a UTC string (e.g. "2024-11-07T00:00:00Z") for losing positions
-        _ts:       p.endDate ? Math.floor(new Date(p.endDate).getTime() / 1000) : 0,
+        _ts:       ts,
         _win:      false,
         slug,
         title,
       });
-      pageLosses++;
     }
-    // Only increment emptyLossPages when the page has NO losses at all (not just no sports losses),
-    // to avoid stopping before we've seen all sports losses in non-sports-heavy pages.
-    if (pageAnyLosses === 0) { emptyLossPages++; if (emptyLossPages >= 5) break; }
+    if (pageLosses === 0) { emptyLossPages++; if (emptyLossPages >= 5) break; }
     else emptyLossPages = 0;
     if (data.length < 500) break;
     loseOffset += 500;
-    if (loseOffset >= 200_000) break;
+    if (loseOffset >= 300_000) break;
     await new Promise(r => setTimeout(r, 40));
   }
 
@@ -1712,9 +1721,11 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
   const activePositions = openPositions.filter(p => !p.redeemable && (parseFloat(p.curPrice) || 0) > 0);
   const redeemablePositions = openPositions.filter(p => p.redeemable);
 
-  // NOTE: redeemable positions are already streamed into allSettled (step 1b), so
-  // include ONLY truly active (live, unresolved) positions in unrealizedPNL to avoid
-  // double-counting settled losses that appear in both step 1b and the open list.
+  // Step 1b adds LOSING closed positions (cashPnl < 0) to allSettled.
+  // Redeemable winning positions are NOT in step 1b (cashPnl > 0 was skipped).
+  // Redeemable losers have currentValue=0 so redeemableValue = 0 for them.
+  // Result: no double-counting. Active (live market) positions are accounted
+  // for separately via unrealizedPNL. Redeemable winners via redeemableValue.
   const activeUnrealizedPNL = activePositions.reduce((s: number, p: any) => s + (parseFloat(p.cashPnl) || 0), 0);
   const unrealizedPNL = activeUnrealizedPNL; // live open positions only — no double-count
   const redeemableValue = redeemablePositions.reduce((s: number, p: any) => s + (parseFloat(p.currentValue) || 0), 0);
@@ -1836,24 +1847,21 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
     const existingMetrics: any = existingProfile.rows[0]?.metrics ?? {};
     const prevClosedCount: number = existingMetrics.closedPositionCount ?? 0;
 
-    // ── Regression safeguard: Polymarket API sometimes returns far fewer positions
-    //    than a previous run (e.g. Avarice31: 7191 vs 17844). If the new count is
-    //    more than 15% below what we already have AND PNL also regressed significantly,
-    //    skip the update to avoid overwriting good data with an incomplete API response.
-    //    If PNL improved or stayed similar, always allow the update (old count may have been wrong).
+    // ── Regression safeguard (relaxed): only block clearly broken API responses ──
+    // With ALL-TIME PNL (all categories), counts should only go up. Block only if
+    // count dropped >80% (likely empty/broken API page) AND PNL became negative when
+    // it was previously strongly positive (which would only happen from a bug).
     const prevPNL: number = existingMetrics.overallPNL ?? 0;
-    const countRegressed = prevClosedCount > 100 && c.closedCount < prevClosedCount * 0.85;
-    const pnlThreshold = Math.max(1000, Math.abs(prevPNL) * 0.10); // 10% of prevPNL or $1K min
-    const pnlRegressed = prevPNL > 0 && c.totalPNL < prevPNL - pnlThreshold;
-    if (countRegressed && pnlRegressed) {
+    const apiAppearsEmpty = prevClosedCount > 500 && c.closedCount < prevClosedCount * 0.2;
+    const pnlFlippedNegative = prevPNL > 10_000 && c.totalPNL < -1_000;
+    if (apiAppearsEmpty && pnlFlippedNegative) {
       console.warn(
-        `[Elite/PNL] ${username}: SKIPPED — API returned only ${c.closedCount} closed positions ` +
-        `vs ${prevClosedCount} stored, and PNL regressed from $${Math.round(prevPNL).toLocaleString()} to $${Math.round(c.totalPNL).toLocaleString()} (regression guard). Will retry next refresh.`
+        `[Elite/PNL] ${username}: SKIPPED — API looks broken (${c.closedCount} positions vs ${prevClosedCount} stored, PNL flipped to $${Math.round(c.totalPNL).toLocaleString()}). Will retry next refresh.`
       );
       return null;
     }
-    if (countRegressed && !pnlRegressed) {
-      console.log(`[Elite/PNL] ${username}: count dropped ${prevClosedCount}→${c.closedCount} but PNL OK ($${Math.round(c.totalPNL).toLocaleString()}) — allowing update`);
+    if (c.closedCount < prevClosedCount * 0.5 && prevClosedCount > 100) {
+      console.log(`[Elite/PNL] ${username}: count dropped ${prevClosedCount}→${c.closedCount} — allowing update (PNL=$${Math.round(c.totalPNL).toLocaleString()})`);
     }
 
     // Merge tags: replace sport tags with canonical ones, keep non-sport tags
