@@ -1,0 +1,107 @@
+Gemini said
+You are not crazy, and you have every right to be frustrated. It sounds like it should be incredibly easy—it's a public blockchain, after all! But your other AI kept messing it up because Polymarket's architecture is actually a massive headache to parse if you don't know exactly how they structure their data.
+
+Here is why it's been so hard:
+
+It's not standard token math: Polymarket uses ERC-1155 conditional tokens, not standard ERC-20s. You can't just scrape Polygonscan for simple transfers.
+
+Proxy Wallets: Users don't trade directly from their main wallets (EOAs); they interact through a Gnosis Safe proxy wallet under the hood.
+
+Fragmented APIs: You cannot pull everything from one place. Polymarket splits its data across three entirely different APIs: the CLOB API (for order books), the Gamma API (for market metadata/English descriptions), and the Data API (for positions and PnL).
+
+To build your sharp position analyzer, you need to combine the Data API (to get the wallet's PnL and trades) with the Gamma API (to translate the token IDs into actual sports and market names).
+
+Here is the exact blueprint and a Python script you can test right now.
+
+The API Endpoints You Need
+Total Portfolio Value: GET https://data-api.polymarket.com/value?user={address}
+
+Open Positions & PnL: GET https://data-api.polymarket.com/positions?user={address}
+
+Closed Positions (Historical): GET https://data-api.polymarket.com/closed-positions?user={address}
+
+Market Context (Sports/Categories): GET https://gamma-api.polymarket.com/markets/{market_id}
+
+The Starter Code (Python)
+Make sure you have requests installed (pip install requests). You can plug your example address right into this script to see how the data is structured.
+
+Python
+import requests
+
+def analyze_polymarket_wallet(wallet_address):
+    print(f"Analyzing Polymarket sharp wallet: {wallet_address}\n")
+    
+    # Polymarket splits its data across different APIs
+    DATA_API = "https://data-api.polymarket.com"
+    GAMMA_API = "https://gamma-api.polymarket.com"
+    
+    # 1. Fetch Total Portfolio Value
+    try:
+        val_url = f"{DATA_API}/value?user={wallet_address}"
+        val_res = requests.get(val_url)
+        if val_res.status_code == 200:
+            val_data = val_res.json()
+            # Depending on the exact payload, the key is usually 'totalValue' or similar
+            total_value = val_data.get('totalValue', 'N/A')
+            print("=== OVERALL PORTFOLIO ===")
+            print(f"Total Value: ${total_value}\n")
+    except Exception as e:
+        print(f"Failed to fetch total value: {e}")
+
+    # 2. Fetch Open Positions & PnL
+    try:
+        # Note: For massive sharp wallets, you will need to add '&offset=0&limit=100' and loop through pages.
+        pos_url = f"{DATA_API}/positions?user={wallet_address}"
+        pos_res = requests.get(pos_url)
+        
+        if pos_res.status_code == 200:
+            positions = pos_res.json()
+            
+            total_realized = 0
+            total_unrealized = 0
+            
+            print("=== OPEN POSITIONS ===")
+            # The API might return a direct list or a dictionary with a 'data' key
+            pos_list = positions if isinstance(positions, list) else positions.get('data', [])
+            
+            for pos in pos_list[:5]: # Just printing top 5 for the test
+                market_id = pos.get('marketId')
+                size = pos.get('size', 0)
+                realized_pnl = float(pos.get('realizedPnl', 0))
+                unrealized_pnl = float(pos.get('cashPnl', 0)) # Sometimes labeled 'cashPnl' or 'unrealizedPnl'
+                
+                total_realized += realized_pnl
+                total_unrealized += unrealized_pnl
+                
+                # 3. Fetch Market Metadata (to get Sports / Categories)
+                market_name = "Unknown Market"
+                category = "Unknown Category"
+                if market_id:
+                    market_res = requests.get(f"{GAMMA_API}/markets/{market_id}")
+                    if market_res.status_code == 200:
+                        market_data = market_res.json()
+                        market_name = market_data.get('question', 'Unknown Question')
+                        category = market_data.get('category', 'Unknown Category') # E.g., 'Sports', 'Politics'
+                
+                print(f"Market: {market_name[:50]}... | Category: {category}")
+                print(f"Size: {size} shares | Realized PnL: ${realized_pnl:.2f} | Unrealized PnL: ${unrealized_pnl:.2f}")
+                print("-" * 40)
+                
+            print(f"\nAggregated Realized PnL (Open): ${total_realized:.2f}")
+            print(f"Aggregated Unrealized PnL (Open): ${total_unrealized:.2f}")
+            
+        else:
+            print(f"Error hitting positions endpoint: Status {pos_res.status_code}")
+            
+    except Exception as e:
+        print(f"Error fetching positions: {e}")
+
+if __name__ == "__main__":
+    test_wallet = "0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c"
+    analyze_polymarket_wallet(test_wallet)
+Next Steps for Your Analyzer
+Pagination: Sharp wallets make thousands of trades. You will need to build a loop that passes &limit=100&offset=X to page through their entire closed-positions history.
+
+Rate Limiting: Polymarket's public endpoints generally allow ~100 requests/minute. Because you have to ping the Gamma API for every unique marketId to figure out the sport/category, you should cache the Gamma API responses in a local database (like SQLite) so you don't spam their servers and get blocked.
+
+Would you like me to write a caching function for the market metadata so you can loop through the wallet's entire history without hitting rate limits?

@@ -1428,38 +1428,72 @@ function classifySportFromSlug(slug: string, title?: string): string {
   const s = (slug || "").toLowerCase();
   const t = (title || "").toLowerCase();
 
-  // NHL / Ice Hockey (includes Winter Olympics hockey, mwoh/wwoh prefixes)
-  if (s.startsWith("nhl-") || t.includes("nhl ") || t.includes(" nhl") || t.includes("stanley cup") ||
-      t.includes("ice hockey") || s.startsWith("mwoh-") || s.startsWith("wwoh-") ||
+  // ── Explicit non-sports slug patterns (must come first to avoid false sports positives) ──
+  // Political markets — catch by slug patterns before sports rules can grab them
+  if (s.match(/president|election|democrat|republican|nominee|senate|congress|inaugur|popular-vote|electoral|midterm|balance-of-power|prime-minister|chancellor/))
+    return "Politics";
+  if (t.match(/trump|biden|harris|election|congress|senate|president|vote|poll|democrat|republican|poilievre|prime minister|government of canada|walz|sanders|warren|buttigieg|newsom|shapiro|talarico|khanna|moore.*presiden|gubernatorial/))
+    return "Politics";
+  if (t.match(/crypto|bitcoin|ethereum|fed rate|inflation|gdp|stock|nasdaq|defi/) ||
+      s.match(/bitcoin|ethereum|crypto|fed-rate|oil-price|crude-oil|gold-price|interest-rate|tariff/))
+    return "Finance/Crypto";
+
+  // ── NHL / Ice Hockey ──
+  if (s.startsWith("nhl-") || s.includes("stanley-cup") || t.includes("nhl ") || t.includes(" nhl") ||
+      t.includes("stanley cup") || t.includes("ice hockey") ||
+      s.startsWith("mwoh-") || s.startsWith("wwoh-") ||
       (t.includes("hockey") && (t.includes("olympic") || t.includes("winter")))) return "NHL";
 
-  if (s.startsWith("nba-") || s.includes("-nba-") || t.includes("nba ") || t.includes(" nba")) return "NBA";
-  if (s.startsWith("nfl-") || s.includes("super-bowl") || t.includes("nfl ") || t.includes("super bowl")) return "NFL";
-  if (s.startsWith("mlb-") || t.includes("mlb ") || t.includes("world series")) return "MLB";
+  // ── NBA ──
+  if (s.startsWith("nba-") || s.includes("-nba-") || s.includes("nba-champion") ||
+      t.includes("nba ") || t.includes(" nba")) return "NBA";
+
+  // ── NFL ──
+  if (s.startsWith("nfl-") || s.includes("super-bowl") || s.includes("superbowl") ||
+      s.includes("afc-champ") || s.includes("nfc-champ") ||
+      s.match(/^(afc|nfc)-champion/) ||
+      t.includes("nfl ") || t.includes("super bowl") ||
+      t.includes("afc champion") || t.includes("nfc champion")) return "NFL";
+
+  // ── MLB ──
+  if (s.startsWith("mlb-") || s.includes("world-series") || s.includes("alcs") || s.includes("nlcs") ||
+      t.includes("mlb ") || t.includes("world series") || t.includes("alcs") || t.includes("nlcs")) return "MLB";
+
+  // ── UFC/MMA ──
   if (s.startsWith("ufc-") || s.includes("-ufc-") || s.includes("-mma-") ||
       t.includes("ufc ") || t.includes("mma ") || t.includes("fight night")) return "UFC/MMA";
 
-  // Tennis — slug prefixes AND title-based (named tournaments and top players)
+  // ── Tennis ──
   if (s.match(/^(wta|atp|aus-|wimbledon|usopen-ten|roland)/) ||
       t.includes("tennis") || t.includes("grand slam") || t.includes("wimbledon") ||
       t.includes("us open") || t.includes("french open") || t.includes("australian open") ||
       t.match(/\b(alcaraz|sinner|djokovic|swiatek|medvedev|zverev|sabalenka|gauff|rublev|fritz|lehecka|tiafoe)\b/)) return "Tennis";
 
-  if (s.match(/^(cbb|ncaab|ncaaf|cfb)-/) || t.includes("ncaa") || t.includes("march madness")) return "College Sports";
+  // ── College Sports ──
+  if (s.match(/^(cbb|ncaab|ncaaf|cfb)-/) || s.includes("ncaa-tournament") ||
+      s.includes("college-football") || s.includes("march-madness") ||
+      t.includes("ncaa") || t.includes("march madness") || t.includes("college football")) return "College Sports";
 
-  // Soccer — extended slug prefixes (fl1=Ligue 1, eng/fra/ger/esp/ita/por/bel/ned/sco league slugs)
+  // ── Soccer ──
   if (s.match(/^(epl|lal|sea|bun|uel|ucl|mls|spl|bra|elc|ere|fl1|ligue|eng|fra|ger|esp|ita|por|bel|ned|sco|eur|con)-/) ||
-      t.includes("soccer") || t.includes("football") && !t.includes("super bowl") ||
-      t.includes("premier league") || t.includes("champions league") ||
+      s.includes("champions-league") || s.includes("europa-league") || s.includes("world-cup") ||
+      s.includes("euro-2024") || s.includes("euro-2025") || s.includes("copa-america") ||
+      t.includes("soccer") || (t.includes("football") && !t.includes("super bowl")) ||
+      t.includes("premier league") || t.includes("champions league") || t.includes("europa league") ||
       t.includes("la liga") || t.includes("bundesliga") || t.includes("serie a") ||
-      t.includes("copa") || t.includes("ligue 1") || t.includes("copa america")) return "Soccer";
+      t.includes("copa") || t.includes("ligue 1") || t.includes("world cup")) return "Soccer";
 
+  // ── eSports ──
   if (s.includes("esport") || s.includes("valorant") || s.includes("csgo") ||
       t.includes("esport") || t.includes("valorant") || t.includes("league of legends")) return "eSports";
-  if (s.startsWith("golf-") || t.includes("pga tour") || t.includes("masters") && t.includes("golf") || t.includes("golf")) return "Golf";
+
+  // ── Golf ──
+  if (s.startsWith("golf-") || (t.includes("masters") && t.includes("golf")) ||
+      t.includes("pga tour") || t.includes("lpga") || t.includes("golf")) return "Golf";
+
+  // ── Formula 1 ──
   if (s.match(/^(f1|formula)/) || t.includes("formula 1") || t.includes("grand prix")) return "Formula 1";
-  if (t.match(/trump|biden|harris|election|congress|senate|president|vote|poll|democrat|republican|poilievre|prime minister|government of canada/)) return "Politics";
-  if (t.match(/crypto|bitcoin|ethereum|fed rate|inflation|gdp|stock|nasdaq|defi/)) return "Finance/Crypto";
+
   return "Other";
 }
 
@@ -1484,8 +1518,12 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
   const allSettled: Settled[] = [];
 
   // ── 1a. Fetch ALL winning closed positions (/closed-positions returns ONLY wins) ───
+  // API hard-caps at 50 items/page. Cap at 2000 pages (100K positions) to bound very
+  // large market-maker wallets. Delay is 40ms (vs 80ms) to keep the job under 2 min.
   const PAGE = 50;
+  const MAX_WIN_PAGES = 2000; // max 100K winning positions per wallet
   let offset = 0;
+  let winPages = 0;
   while (true) {
     const data = await fetchJson(
       `${DATA_API}/closed-positions?user=${addr}&limit=${PAGE}&offset=${offset}`
@@ -1494,26 +1532,35 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
     // CRITICAL: /closed-positions returns ALL settled positions sorted by realizedPnl DESC.
     // At deep pagination it includes losing positions (realizedPnl < 0). We ONLY want TRUE wins
     // here; losses will be captured separately from /positions?closed=true to avoid double-counting.
-    let pageWins = 0;
+    let pageWins = 0;          // sports wins counted this page
+    let pageAnyWins = 0;       // total positive-PNL positions on page (incl. non-sports)
     for (const p of data) {
       const pnl = parseFloat(p.realizedPnl) || 0;
       if (pnl <= 0.01) continue;
+      pageAnyWins++;
+      // ── SPORTS-ONLY FILTER: skip non-sports positions (politics, crypto, etc.) ──
+      const slug  = p.slug || p.eventSlug || "";
+      const title = p.title || "";
+      const cat   = classifySportFromSlug(slug, title);
+      if (cat === "Other" || cat === "Politics" || cat === "Finance/Crypto") continue;
       allSettled.push({
         _pnl:      pnl,
         _invested: investedUSDC(p.avgPrice, p.totalBought),
         _ts:       p.timestamp || 0,
         _win:      true,
-        slug:      p.slug || p.eventSlug || "",
-        title:     p.title || "",
+        slug,
+        title,
       });
       pageWins++;
     }
-    // If no wins on this page, stop early (next pages have smaller/negative realizedPnl).
-    if (pageWins === 0) break;
+    // Stop when NO positive-PNL positions at all (not just no sports wins),
+    // so we don't skip sports wins on pages that happen to be all-political.
+    if (pageAnyWins === 0) break;
     if (data.length < PAGE) break;
     offset += PAGE;
-    if (offset >= 200_000) break;
-    await new Promise(r => setTimeout(r, 80));
+    winPages++;
+    if (winPages >= MAX_WIN_PAGES) break;
+    await new Promise(r => setTimeout(r, 40));
   }
 
   // ── 1b. Fetch ALL losing positions from /positions?closed=true ───────────────────
@@ -1528,29 +1575,37 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
       `${DATA_API}/positions?user=${addr}&limit=500&offset=${loseOffset}&sizeThreshold=0&closed=true`
     );
     if (!Array.isArray(data) || data.length === 0) break;
-    // Only include confirmed losses (cashPnl < -0.01)
-    let pageLosses = 0;
+    // Only include confirmed losses (cashPnl < -0.01) from SPORTS markets only
+    let pageLosses = 0;        // sports losses counted this page
+    let pageAnyLosses = 0;     // total negative-PNL positions on page (incl. non-sports)
     for (const p of data) {
       const pnl = parseFloat(p.cashPnl) || 0;
       if (pnl >= -0.01) continue;
+      pageAnyLosses++;
+      // ── SPORTS-ONLY FILTER: skip non-sports positions (politics, crypto, etc.) ──
+      const slug  = p.slug || p.eventSlug || "";
+      const title = p.title || "";
+      const cat   = classifySportFromSlug(slug, title);
+      if (cat === "Other" || cat === "Politics" || cat === "Finance/Crypto") continue;
       allSettled.push({
         _pnl:      pnl,
         _invested: investedUSDC(p.avgPrice, p.totalBought),
         // endDate is a UTC string (e.g. "2024-11-07T00:00:00Z") for losing positions
         _ts:       p.endDate ? Math.floor(new Date(p.endDate).getTime() / 1000) : 0,
         _win:      false,
-        slug:      p.slug || p.eventSlug || "",
-        title:     p.title || "",
+        slug,
+        title,
       });
       pageLosses++;
     }
-    // Stop after 5 consecutive pages with no losses (deep history is dust/open positions)
-    if (pageLosses === 0) { emptyLossPages++; if (emptyLossPages >= 5) break; }
+    // Only increment emptyLossPages when the page has NO losses at all (not just no sports losses),
+    // to avoid stopping before we've seen all sports losses in non-sports-heavy pages.
+    if (pageAnyLosses === 0) { emptyLossPages++; if (emptyLossPages >= 5) break; }
     else emptyLossPages = 0;
     if (data.length < 500) break;
     loseOffset += 500;
     if (loseOffset >= 200_000) break;
-    await new Promise(r => setTimeout(r, 80));
+    await new Promise(r => setTimeout(r, 40));
   }
 
   // ── 3. Aggregate metrics ──────────────────────────────────────────────────
