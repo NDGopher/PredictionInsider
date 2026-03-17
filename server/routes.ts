@@ -1411,10 +1411,23 @@ async function runActivitySyncForAll(wallets: string[], label = "Activity") {
 export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
 
   // ── Elite trader seeding + periodic refresh ───────────────────────────────
-  seedCuratedTraders().then(async () => {
-    console.log("[Elite] Curated traders seeded");
+  seedCuratedTraders().then(async (newWallets) => {
+    console.log(`[Elite] Curated traders seeded${newWallets.length ? ` (${newWallets.length} new: ${newWallets.map(w => w.slice(0, 8)).join(", ")})` : ""}`);
+
+    // Immediately kick off full analysis for any brand-new traders so their
+    // PNL/signals are populated without waiting for the periodic refresh cycle.
+    if (newWallets.length > 0) {
+      console.log(`[Startup] Triggering full refresh for ${newWallets.length} newly added traders...`);
+      setImmediate(() =>
+        runActivitySyncForAll(newWallets, "NewTrader").catch((e: Error) =>
+          console.error("[Startup] New-trader refresh error:", e.message)
+        )
+      );
+    }
+
     startPeriodicRefresh();
     startCanonicalPNLRefresh(); // runs 30s after startup, then every 24h
+
     // Auto-sync activity for all wallets on every server start (incremental, safe)
     try {
       const { rows } = await elitePool.query(

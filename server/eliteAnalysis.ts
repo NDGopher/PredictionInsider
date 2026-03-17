@@ -1344,23 +1344,31 @@ export async function generateTraderCSV(wallet: string): Promise<string> {
 
 // ─── Seed curated traders on startup ─────────────────────────────────────────
 
-export async function seedCuratedTraders(): Promise<void> {
+// Returns the list of wallet addresses that were newly inserted (not previously in DB).
+// Callers should trigger a full refresh for these wallets so their PNL/signals are
+// populated immediately rather than waiting for the next periodic refresh cycle.
+export async function seedCuratedTraders(): Promise<string[]> {
+  const newlyInserted: string[] = [];
+
   for (const t of CURATED_TRADERS) {
     const hasWallet = t.wallet && t.wallet.length > 0;
+    const effectiveWallet = hasWallet
+      ? t.wallet.toLowerCase()
+      : `pending-${t.username.toLowerCase()}`;
+
     try {
-      await pool.query(`
+      const { rowCount } = await pool.query(`
         INSERT INTO elite_traders (wallet, username, wallet_resolved, polymarket_url)
         VALUES ($1, $2, $3, $4)
         ON CONFLICT (wallet) DO NOTHING
-      `, [
-        hasWallet ? t.wallet.toLowerCase() : `pending-${t.username.toLowerCase()}`,
-        t.username,
-        hasWallet,
-        t.url || null,
-      ]);
+      `, [effectiveWallet, t.username, hasWallet, t.url || null]);
+
       if (hasWallet) {
-        curatedWalletSet.add(t.wallet.toLowerCase());
-        curatedWalletToUsername.set(t.wallet.toLowerCase(), t.username);
+        curatedWalletSet.add(effectiveWallet);
+        curatedWalletToUsername.set(effectiveWallet, t.username);
+        if ((rowCount ?? 0) > 0) {
+          newlyInserted.push(effectiveWallet);
+        }
       }
     } catch (_) { }
   }
@@ -1375,6 +1383,8 @@ export async function seedCuratedTraders(): Promise<void> {
       }
     }
   } catch (_) { }
+
+  return newlyInserted;
 }
 
 // ─── Background analysis for a trader ────────────────────────────────────────
