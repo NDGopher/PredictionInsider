@@ -85,9 +85,14 @@ export const curatedWalletSet = new Set<string>();
 export const curatedWalletToUsername = new Map<string, string>();
 
 // ─── Per-trader category filters (based on Gemini CSV analysis) ───────────────
-// autoTail: categories where this trader has strong edge — count their vote normally
-// doNotTail: categories where this trader loses money — exclude from signal consensus
-export const TRADER_CATEGORY_FILTERS: Record<string, { autoTail: string[]; doNotTail: string[] }> = {
+// autoTail:           sports where this trader has proven edge — count their vote normally
+// doNotTail:          sports where this trader loses money — exclude from signal consensus
+// doNotTailMarketTypes: market types to exclude regardless of sport (spread | total | moneyline | futures | other)
+export const TRADER_CATEGORY_FILTERS: Record<string, {
+  autoTail: string[];
+  doNotTail: string[];
+  doNotTailMarketTypes?: string[];
+}> = {
   "0x9c82c60829df081d593055ee5fa288870c051f13": { // Vetch — S-Tier CS2/NBA/NHL specialist
     autoTail:   ["NBA", "NHL", "CS2", "LoL"],
     doNotTail:  ["NFL", "College Sports", "Soccer", "Valorant", "Dota2"],
@@ -99,6 +104,13 @@ export const TRADER_CATEGORY_FILTERS: Record<string, { autoTail: string[]; doNot
   "0xe24838258b572f1771dffba3bcdde57a78def293": { // redskinrick — Elite NCAAB O/U specialist
     autoTail:   ["College Sports"],
     doNotTail:  ["NBA", "NHL", "NFL", "MLB", "Soccer", "Tennis", "UFC/MMA", "eSports", "Politics", "Other"],
+  },
+  "0x6c743aafd813475986dcd930f380a1f50901bd4e": { // middleoftheocean — Major Sports ML specialist (40-60c range)
+    // Elite edge: major sports moneylines — especially value ML (40-60c) in NBA/NFL/UFC/Soccer
+    // Gets crushed: spreads, totals (impulsive size, no handicapping edge), Politics, eSports, Crypto
+    autoTail:            ["NBA", "NFL", "UFC/MMA", "Soccer", "NHL", "MLB"],
+    doNotTail:           ["Politics", "eSports", "Finance/Crypto", "College Sports"],
+    doNotTailMarketTypes: ["spread", "total"],
   },
 };
 

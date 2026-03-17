@@ -3312,9 +3312,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           for (const t of (sig.traders || [])) {
             const w = (t.address || "").toLowerCase();
             if (!curatedWalletSet.has(w)) continue;
-            // Skip this trader's vote if the signal's sport is in their doNotTail list
+            // Skip this trader's vote if the signal's sport or market type is filtered
             const catFilter = TRADER_CATEGORY_FILTERS[w];
             if (catFilter && catFilter.doNotTail.includes(sigSportFull)) continue;
+            if (catFilter?.doNotTailMarketTypes?.length) {
+              const mktType = classifyMarketType(sig.marketQuestion || "");
+              if (catFilter.doNotTailMarketTypes.includes(mktType)) continue;
+            }
             const username = curatedWalletToUsername.get(w) || t.name || w.slice(0, 8);
             (sig.side === "YES" ? bucket.yes : bucket.no).push({ wallet: w, username });
           }
