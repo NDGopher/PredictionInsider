@@ -6,7 +6,7 @@ import {
   resolveUsernameToWallet, generateTraderCSV, curatedWalletSet, curatedWalletToUsername,
   settleUnresolvedTrades, fetchFullTradeHistory, computeTraderProfile,
   settleAllUnresolvedTradesGlobal, fetchAllActivity, computeTraderProfileFromActivity,
-  CURATED_TRADERS, KNOWN_ALIASES, MARKET_MAKER_WALLETS, classifySport, patchProfileWithCanonicalPNL, fetchCanonicalPNL,
+  CURATED_TRADERS, KNOWN_ALIASES, MARKET_MAKER_WALLETS, TRADER_CATEGORY_FILTERS, classifySport, classifySportFull, patchProfileWithCanonicalPNL, fetchCanonicalPNL,
   runCanonicalPNLRefreshForAll, computeMarketOFI, syncTraderPositions
 } from "./eliteAnalysis";
 
@@ -3307,12 +3307,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const mid = sig.marketId;
           if (!mktEliteMap.has(mid)) mktEliteMap.set(mid, { yes: [], no: [] });
           const bucket = mktEliteMap.get(mid)!;
+          const sigSportFull = classifySportFull(sig.sport || "", sig.marketQuestion || "");
           for (const t of (sig.traders || [])) {
             const w = (t.address || "").toLowerCase();
-            if (curatedWalletSet.has(w)) {
-              const username = curatedWalletToUsername.get(w) || t.name || w.slice(0, 8);
-              (sig.side === "YES" ? bucket.yes : bucket.no).push({ wallet: w, username });
-            }
+            if (!curatedWalletSet.has(w)) continue;
+            // Skip this trader's vote if the signal's sport is in their doNotTail list
+            const catFilter = TRADER_CATEGORY_FILTERS[w];
+            if (catFilter && catFilter.doNotTail.includes(sigSportFull)) continue;
+            const username = curatedWalletToUsername.get(w) || t.name || w.slice(0, 8);
+            (sig.side === "YES" ? bucket.yes : bucket.no).push({ wallet: w, username });
           }
         }
         // Enrich signals

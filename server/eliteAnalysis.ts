@@ -52,7 +52,6 @@ export const CURATED_TRADERS: { wallet: string; username: string; url?: string }
   { wallet: "0x20d6436849f930584892730c7f96ebb2ac763856", username: "0x20D6436849F930584892730C7F96eBB2Ac763856", url: "https://polymarket.com/@0x20D6436849F930584892730C7F96eBB2Ac763856-1768642056357" },
   { wallet: "0xee00ba338c59557141789b127927a55f5cc5cea1", username: "S-Works", url: "https://polymarket.com/@S-Works" },
   { wallet: "0xe40172522c7c64afa2d052ddae6c92cd0f417b88", username: "BoomLaLa", url: "https://polymarket.com/@BoomLaLa" },
-  { wallet: "0x9f138019d5481fdc5c59b93b0ae4b9b817cce0fd", username: "Bienville", url: "https://polymarket.com/@Bienville" },
   { wallet: "0x8c0b024c17831a0dde038547b7e791ae6a0d7aa5", username: "IBOV200K", url: "https://polymarket.com/@IBOV200K" },
   { wallet: "0x6b7c75862e64d6e976d2c08ad9f9b54add6c5f83", username: "tcp2", url: "https://polymarket.com/@tcp2" },
   { wallet: "0xec981ed70ae69c5cbcac08c1ba063e734f6bafcd", username: "0xheavy888", url: "https://polymarket.com/@0xheavy888" },
@@ -84,6 +83,33 @@ export const CURATED_TRADERS: { wallet: string; username: string; url?: string }
 
 export const curatedWalletSet = new Set<string>();
 export const curatedWalletToUsername = new Map<string, string>();
+
+// ─── Per-trader category filters (based on Gemini CSV analysis) ───────────────
+// autoTail: categories where this trader has strong edge — count their vote normally
+// doNotTail: categories where this trader loses money — exclude from signal consensus
+export const TRADER_CATEGORY_FILTERS: Record<string, { autoTail: string[]; doNotTail: string[] }> = {
+  "0x9c82c60829df081d593055ee5fa288870c051f13": { // Vetch — S-Tier CS2/NBA/NHL specialist
+    autoTail:   ["NBA", "NHL", "CS2", "LoL"],
+    doNotTail:  ["NFL", "College Sports", "Soccer", "Valorant", "Dota2"],
+  },
+  "0x9703676286b93c2eca71ca96e8757104519a69c2": { // TheMangler — A-Tier Political/Futures specialist
+    autoTail:   ["Politics", "Other"],
+    doNotTail:  ["NBA", "NHL", "NFL", "MLB", "Soccer", "Tennis", "UFC/MMA", "College Sports", "eSports"],
+  },
+};
+
+// ─── Detailed sport classifier (extends classifySport with esports sub-games) ─
+// Returns CS2 / Valorant / LoL / Dota2 instead of generic "eSports" so that
+// per-trader category filters can target specific games accurately.
+export function classifySportFull(sport: string, question: string): string {
+  if (sport !== "eSports") return sport;
+  const q = (question || "").toLowerCase();
+  if (q.includes("counter-strike") || q.includes("cs2")) return "CS2";
+  if (q.includes("valorant")) return "Valorant";
+  if (q.includes("league of legends") || q.includes("lol:")) return "LoL";
+  if (q.includes("dota 2") || q.includes("dota2")) return "Dota2";
+  return "eSports";
+}
 
 // ─── Slug → Sport classifier ──────────────────────────────────────────────────
 
