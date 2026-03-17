@@ -6,7 +6,7 @@ import {
   resolveUsernameToWallet, generateTraderCSV, curatedWalletSet, curatedWalletToUsername,
   settleUnresolvedTrades, fetchFullTradeHistory, computeTraderProfile,
   settleAllUnresolvedTradesGlobal, fetchAllActivity, computeTraderProfileFromActivity,
-  CURATED_TRADERS, classifySport, patchProfileWithCanonicalPNL, fetchCanonicalPNL,
+  CURATED_TRADERS, KNOWN_ALIASES, classifySport, patchProfileWithCanonicalPNL, fetchCanonicalPNL,
   runCanonicalPNLRefreshForAll, computeMarketOFI, syncTraderPositions
 } from "./eliteAnalysis";
 
@@ -2001,6 +2001,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       for (const t of traders) {
         const wallet = (t.wallet || "").toLowerCase();
         if (!wallet) continue;
+
+        // ── Alias guard: reject known alt-accounts so they can't pollute the oracle ──
+        const usernameKey = (t.username || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (KNOWN_ALIASES[usernameKey]) {
+          const alias = KNOWN_ALIASES[usernameKey];
+          console.warn(`[Ingest] Skipping known alias "${t.username}" → canonical: ${alias.canonicalUsername} | ${alias.reason}`);
+          summary.push({ username: t.username, status: "skipped_alias", canonical: alias.canonicalUsername });
+          continue;
+        }
 
         // Build the analysis metrics object to merge into the DB metrics JSONB
         const analysisMeta: Record<string, any> = {

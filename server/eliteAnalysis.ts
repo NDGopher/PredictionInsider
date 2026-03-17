@@ -7,6 +7,21 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 // ─── Known curated traders (pre-seeded) ──────────────────────────────────────
 
+/**
+ * KNOWN_ALIASES — maps a lowercase alt username to its canonical trader.
+ * Used by:
+ *  1. The ingest endpoint to reject duplicate wallets masquerading as new traders.
+ *  2. The consensus oracle to prevent double-counting the same entity.
+ * Add entries here whenever Gemini/research confirms two accounts are the same entity.
+ */
+export const KNOWN_ALIASES: Record<string, { canonicalWallet: string; canonicalUsername: string; reason: string }> = {
+  charliekirkevans: {
+    canonicalWallet: "0x13414a77a4be48988851c73dfd824d0168e70853",
+    canonicalUsername: "ShortFlutterStock",
+    reason: "Gemini: identical $13.98M capital, -14.55 Sharpe, same LCK/LPL top-5 wins. Same entity / mirror bot.",
+  },
+};
+
 export const CURATED_TRADERS: { wallet: string; username: string; url?: string }[] = [
   { wallet: "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee", username: "kch123", url: "https://polymarket.com/@kch123" },
   { wallet: "0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c", username: "DLEK", url: "https://polymarket.com/@DLEK" },

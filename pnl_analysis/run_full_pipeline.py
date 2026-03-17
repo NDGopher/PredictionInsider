@@ -69,7 +69,7 @@ ALL_TRADERS = [
     ("0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee", "kch123"),
     ("0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c", "DLEK"),
     ("0x44c58184f89a5c2f699dc8943009cb3d75a08d45", "JhonAlexanderHinestroza"),
-    ("0x13414a77a4be48988851c73dfd824d0168e70853", "ShortFlutterStock"),
+    ("0x13414a77a4be48988851c73dfd824d0168e70853", "ShortFlutterStock"),  # ALIAS: CharlieKirkEvans = same wallet/entity — do NOT add separately
     ("0x781caf04d98a281712caf1677877c442789fdb68", "Avarice31"),
     ("0xc5b5bbd42624a8f0c8dfa90221913007d8c77e80", "Capman"),
     ("0x84dbb7103982e3617704a2ed7d5b39691952aeeb", "ShucksIt69"),
