@@ -6,7 +6,7 @@ import {
   resolveUsernameToWallet, generateTraderCSV, curatedWalletSet, curatedWalletToUsername,
   settleUnresolvedTrades, fetchFullTradeHistory, computeTraderProfile,
   settleAllUnresolvedTradesGlobal, fetchAllActivity, computeTraderProfileFromActivity,
-  CURATED_TRADERS, KNOWN_ALIASES, classifySport, patchProfileWithCanonicalPNL, fetchCanonicalPNL,
+  CURATED_TRADERS, KNOWN_ALIASES, MARKET_MAKER_WALLETS, classifySport, patchProfileWithCanonicalPNL, fetchCanonicalPNL,
   runCanonicalPNLRefreshForAll, computeMarketOFI, syncTraderPositions
 } from "./eliteAnalysis";
 
@@ -640,7 +640,7 @@ async function fetchMidpoint(tokenId: string): Promise<number | null> {
 // elite analytics system — so updating CURATED_TRADERS in eliteAnalysis.ts
 // automatically propagates to both systems.
 const CURATED_ELITES: Array<{ addr: string; name: string }> = CURATED_TRADERS
-  .filter(t => t.wallet && t.wallet.length > 0 && !t.wallet.startsWith("pending-"))
+  .filter(t => t.wallet && t.wallet.length > 0 && !t.wallet.startsWith("pending-") && !MARKET_MAKER_WALLETS.has(t.wallet.toLowerCase()))
   .map(t => ({ addr: t.wallet, name: t.username }));
 
 // ─── Shared trader intelligence store ─────────────────────────────────────────
@@ -1425,7 +1425,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       );
     }
 
-    startPeriodicRefresh();
+    // startPeriodicRefresh() intentionally disabled — CSV analysis is the ONLY source of truth
     startCanonicalPNLRefresh(); // runs 30s after startup, then every 24h
 
     // Auto-sync activity for all wallets on every server start (incremental, safe)
@@ -1927,6 +1927,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const seen = new Set<string>();
       for (const trade of allTrades) {
         const wallet = (trade.proxyWallet || "").toLowerCase();
+        if (MARKET_MAKER_WALLETS.has(wallet)) continue; // exclude spread/arb bots
         const isTracked = lbMap.has(wallet);
         const isCurated = curatedSet.has(wallet);
         const size = parseFloat(trade.size || trade.amount || "0");
@@ -2354,6 +2355,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       for (const trade of allTrades) {
         const wallet = (trade.proxyWallet || "").toLowerCase();
+        if (MARKET_MAKER_WALLETS.has(wallet)) continue; // exclude spread/arb bots
         const isTracked = lbMap.has(wallet);
         const isCuratedHttp = curatedSetHttp.has(wallet);
         const size = parseFloat(trade.size || trade.amount || "0");
@@ -3499,7 +3501,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       const response = {
         signals,
-        topTraderCount: lbMap.size,
+        topTraderCount: CURATED_ELITES.length,
         marketsScanned: marketDb.size,
         newSignalCount: signals.filter(s => s.isNew).length,
         fetchedAt: now,
@@ -3709,12 +3711,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         });
       }
 
-      const uniqueTraders = new Set(allTrades.map((t: any) => t.proxyWallet).filter(Boolean)).size;
       signals.sort((a, b) => b.confidence - a.confidence);
 
       const response = {
         signals,
-        topTraderCount: uniqueTraders,
+        topTraderCount: CURATED_ELITES.length,
         marketsScanned: marketDb.size,
         newSignalCount: 0,
         fetchedAt: now,

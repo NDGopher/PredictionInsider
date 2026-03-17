@@ -638,7 +638,6 @@ function StatCard({
 export default function Dashboard() {
   const [signalTypeFilter, setSignalTypeFilter] = useState<"all" | "live" | "pregame" | "nofutures" | "actionable">("all");
   const [expandedAlerts, setExpandedAlerts] = useState<Set<string>>(new Set());
-  const [alertsCuratedOnly, setAlertsCuratedOnly] = useState(false);
   const [hiddenAlertIds, setHiddenAlertIds] = useState<Set<string>>(() => {
     try { return new Set(JSON.parse(localStorage.getItem("pi_hidden_alerts") || "[]")); } catch { return new Set(); }
   });
@@ -809,8 +808,8 @@ export default function Dashboard() {
             <StatCard
               icon={Users}
               label="Tracked Traders"
-              value={String(signalsData?.topTraderCount || traders.length)}
-              sub="Multi-window LB"
+              value={String(signalsData?.topTraderCount || 50)}
+              sub="Curated elite traders"
               color="bg-blue-500/10 text-blue-600 dark:text-blue-400"
             />
             <StatCard
@@ -839,25 +838,8 @@ export default function Dashboard() {
               </span>
             </div>
             <div className="flex items-center gap-2">
-              {/* Curated filter toggle */}
-              <div className="flex items-center rounded-md border border-border overflow-hidden text-[10px]">
-                <button
-                  onClick={() => setAlertsCuratedOnly(false)}
-                  data-testid="button-alerts-all-lb"
-                  className={`px-2 py-0.5 transition-colors ${!alertsCuratedOnly ? "bg-primary text-primary-foreground font-semibold" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  All LB
-                </button>
-                <button
-                  onClick={() => setAlertsCuratedOnly(true)}
-                  data-testid="button-alerts-elite-only"
-                  className={`px-2 py-0.5 transition-colors ${alertsCuratedOnly ? "bg-primary text-primary-foreground font-semibold" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  Elite 42
-                </button>
-              </div>
-              {alertsData?.alerts?.length ? (
-                <Badge variant="secondary" className="text-[10px]">{alertsData.alerts.length} bets</Badge>
+              {alertsData?.alerts?.filter((a: any) => a.isCurated).length ? (
+                <Badge variant="secondary" className="text-[10px]">{alertsData.alerts.filter((a: any) => a.isCurated).length} bets</Badge>
               ) : null}
             </div>
           </div>
@@ -899,7 +881,7 @@ export default function Dashboard() {
                 </div>
               )}
               {alertsData.alerts
-                .filter((alert: any) => !alertsCuratedOnly || alert.isCurated)
+                .filter((alert: any) => alert.isCurated)
                 .filter((alert: any) => showHiddenAlerts || !hiddenAlertIds.has(alert.id))
                 .slice(0, 15)
                 .map((alert: any) => {
@@ -1230,9 +1212,9 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="space-y-3">
         {/* Top Signals */}
-        <div className="lg:col-span-2 space-y-3">
+        <div className="space-y-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <h2 className="font-semibold text-sm">Top Signals</h2>
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -1319,71 +1301,6 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Top Traders Mini */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-sm">Top Traders</h2>
-            <Link href="/traders">
-              <Button size="sm" variant="ghost" className="gap-1.5 h-7 text-xs" data-testid="link-all-traders">
-                View all <ArrowRight className="w-3 h-3" />
-              </Button>
-            </Link>
-          </div>
-
-          <Card>
-            <CardContent className="p-2">
-              {tradersLoading ? (
-                <div className="space-y-1">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="px-3 py-2">
-                      <Skeleton className="h-4 w-2/3 mb-1" />
-                      <Skeleton className="h-3 w-1/3" />
-                    </div>
-                  ))}
-                </div>
-              ) : traders.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <Users className="w-6 h-6 text-muted-foreground mb-2" />
-                  <div className="text-xs text-muted-foreground">No trader data</div>
-                </div>
-              ) : (
-                <div className="divide-y divide-border/50">
-                  {traders.slice(0, 8).map((trader, i) => (
-                    <div
-                      key={trader.address}
-                      className="flex items-center justify-between px-3 py-2 rounded-md hover-elevate"
-                      data-testid={`trader-mini-${i}`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-[10px] text-muted-foreground w-4 shrink-0 font-mono">#{i + 1}</span>
-                        <div className="min-w-0">
-                          <div className="text-xs font-medium truncate">
-                            {trader.name || `${trader.address.slice(0, 6)}...${trader.address.slice(-4)}`}
-                          </div>
-                          <div className={`text-[10px] font-medium ${trader.roi >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
-                            {trader.roi >= 0 ? "+" : ""}{trader.roi.toFixed(1)}% ROI
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <div className={`text-xs font-semibold ${trader.pnl >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
-                          {trader.pnl >= 0 ? "+" : ""}
-                          {trader.pnl >= 1_000_000
-                            ? `$${(trader.pnl / 1_000_000).toFixed(1)}M`
-                            : trader.pnl >= 1000
-                            ? `$${(trader.pnl / 1000).toFixed(0)}K`
-                            : `$${trader.pnl.toFixed(0)}`}
-                        </div>
-                        <div className="text-[10px] text-muted-foreground">PNL</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
       </div>
 
       {/* How It Works */}
@@ -1396,8 +1313,8 @@ export default function Dashboard() {
             {[
               {
                 icon: Users,
-                title: `${signalsData?.topTraderCount || (traders.length > 0 ? traders.length : 150)}+ Tracked Traders`,
-                desc: "We pull from ALL, WEEK, and MONTH Polymarket leaderboards to build a database of elite sports traders — capturing both all-time greats and hot streaks.",
+                title: `${signalsData?.topTraderCount || 50} Curated Elite Traders`,
+                desc: "50 hand-picked Polymarket sharpies analyzed from raw trade CSVs. Scored on ROI, Sharpe ratio, win rate, and consistency — no leaderboard guesswork.",
               },
               {
                 icon: Activity,

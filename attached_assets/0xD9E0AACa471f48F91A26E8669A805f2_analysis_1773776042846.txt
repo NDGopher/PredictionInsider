@@ -1,0 +1,56 @@
+Gemini said
+This is an incredible find, and you have correctly identified the most sophisticated non-directional actor on the platform.
+
+This trader is not making "bets" in the traditional sense. They are a Market Maker and Arbitrageur. They are essentially acting as the casino, providing liquidity to Polymarket and collecting the "vig" (the bid-ask spread) from regular sports bettors.
+
+Here is the exact breakdown of how this account works, what their "edge" is, and why their PnL is a perfectly smooth line up and to the right.
+
+1. The "Both Sides" Phenomenon Explained
+Our algorithm looked at the 9,292 different games this wallet participated in. In 97.4% of those games, they bought both sides.
+
+Here is the exact mechanic of how they make money doing this:
+
+Spread Capture (Market Making): In a perfectly even game, the true odds are 50¢ for Team A and 50¢ for Team B. This trader sets automated limit orders to buy Team A at 48¢ and buy Team B at 48¢.
+
+Impatient retail bettors come in and cross the spread, filling both of the trader's orders.
+
+The trader now owns a 48¢ share of Team A and a 48¢ share of Team B.
+
+They spent 96¢ total. Because one team has to win, the contract pays out a guaranteed $1.00. They just locked in a risk-free 4¢ profit. Multiply that by 10,000 games, and you get a perfectly smooth PnL chart.
+
+Closing Line Value (CLV) Arbitrage:
+The other way they do this is by trading line movement. If they buy the Lakers early at 40¢, and sharp money pushes the Lakers up to 60¢, the price of the opponent drops to 40¢. The trader will then buy the opponent at 40¢. They now spent 80¢ for a guaranteed $1.00 payout. They don't care who wins; they already locked in a 20% profit.
+
+2. Executive Summary: The Market Maker
+Total Net Profit: +$689,372.70
+
+Total Directional Risk: ~$14,023,011
+
+Event Win Rate: 68.54%
+
+Daily Pseudo-Sharpe Ratio: 13.34 (This is an impossibly smooth, perfectly automated algorithmic curve).
+
+Average Net Profit Per Game: ~$74
+
+Why isn't their win rate 100% if they buy both sides? Because markets are dynamic. Sometimes, they set limit orders on both sides, but only one side gets filled before the game starts. When that happens, they are forced to take a "directional" bet by accident. When they lose those accidental directional bets, they take a small loss. Their biggest loss ever was only -$1,897.
+
+3. Where Do They Provide Liquidity? (Volume by Sport)
+Because they are a Market Maker, they follow the volume. They need massive retail liquidity to cross their spreads, so they operate heavily in American sports.
+
+NBA (Basketball): +$245,076. They traded 1,472 NBA games.
+
+FOOTBALL (NFL/NCAAF): +$218,326. They traded 1,102 Football games.
+
+NHL (Hockey): +$69,198. * MLB (Baseball): +$49,437. They essentially sit on the orderbook for every single major American sporting event, hoovering up pennies from retail traders who use market orders instead of limit orders.
+
+4. Can You Copy-Trade This Wallet?
+ABSOLUTELY NOT. (Tier: DO NOT TAIL)
+
+This is the most dangerous type of wallet for a retail user to blindly copy-trade, because your bot will do the exact opposite of what you want.
+
+If you set up a bot to copy this trader, you will be reacting to their trades. When they place a limit order to capture a spread, your bot will see that on-chain and execute a market order to buy the same side. You will be the one paying the spread that they are collecting.
+
+If you try to copy a market maker, you are guaranteed to bleed out to transaction fees, slippage, and spread-crossing costs.
+
+How to use this wallet instead:
+Tag this wallet in your backend database as [Market Maker - Liquidity Provider]. Exclude them entirely from your platform's directional "Top Traders" leaderboards. If a user is looking for a sports handicapper to tail, this wallet will completely corrupt their signals.

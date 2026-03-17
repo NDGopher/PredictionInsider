@@ -22,6 +22,16 @@ export const KNOWN_ALIASES: Record<string, { canonicalWallet: string; canonicalU
   },
 };
 
+/**
+ * MARKET_MAKER_WALLETS — wallets confirmed to be automated market-making / arb bots.
+ * These traders buy both sides of every market to capture spread, NOT directional bets.
+ * They MUST be excluded from all consensus signals and leaderboards.
+ * Tailing a market maker will guarantee losses (you pay their spread).
+ */
+export const MARKET_MAKER_WALLETS = new Set<string>([
+  "0xd9e0aaca471f489be338fd0f91a26e8669a805f2", // 0xD9E0AACa — 97.4% both-sides, Sharpe 13.34 algorithmic curve, DO NOT TAIL
+]);
+
 export const CURATED_TRADERS: { wallet: string; username: string; url?: string }[] = [
   { wallet: "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee", username: "kch123", url: "https://polymarket.com/@kch123" },
   { wallet: "0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c", username: "DLEK", url: "https://polymarket.com/@DLEK" },
