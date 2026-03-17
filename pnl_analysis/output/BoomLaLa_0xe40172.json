@@ -1,0 +1,280 @@
+{
+  "wallet": "0xe40172522c7c64afa2d052ddae6c92cd0f417b88",
+  "username": "BoomLaLa",
+  "total_profit": 590493.28,
+  "total_risked": 16266339.87,
+  "overall_roi": 3.63,
+  "win_rate": 56.46,
+  "avg_bet_size": 1738.04,
+  "total_events": 9359,
+  "pseudo_sharpe": 4.49,
+  "profitable_days": 279,
+  "total_days": 436,
+  "bond_count": 101,
+  "bond_risk": 62013.62,
+  "bond_profit": 1762.38,
+  "open_count": 388,
+  "open_risk": 574024.52,
+  "open_value": 2629.58,
+  "open_pnl": 18304.2,
+  "sport_stats": {
+    "MLB": {
+      "net_profit": 203344.02,
+      "roi": 3.43,
+      "win_rate": 52.6,
+      "events": 2042,
+      "avg_bet": 2905.37
+    },
+    "NBA": {
+      "net_profit": 101636.51,
+      "roi": 2.76,
+      "win_rate": 52.52,
+      "events": 1723,
+      "avg_bet": 2134.11
+    },
+    "NFL": {
+      "net_profit": 31965.07,
+      "roi": 2.77,
+      "win_rate": 60.46,
+      "events": 263,
+      "avg_bet": 4385.36
+    },
+    "NHL": {
+      "net_profit": 63139.74,
+      "roi": 3.13,
+      "win_rate": 54.14,
+      "events": 1762,
+      "avg_bet": 1143.38
+    },
+    "OTHER": {
+      "net_profit": 107636.14,
+      "roi": 5.4,
+      "win_rate": 63.03,
+      "events": 2981,
+      "avg_bet": 668.62
+    },
+    "POLITICS": {
+      "net_profit": 41.19,
+      "roi": 48.57,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 84.81
+    },
+    "SOCCER (LaLiga)": {
+      "net_profit": 7541.5,
+      "roi": 2.76,
+      "win_rate": 51.2,
+      "events": 125,
+      "avg_bet": 2182.4
+    },
+    "SOCCER (Other)": {
+      "net_profit": 75189.1,
+      "roi": 6.15,
+      "win_rate": 53.68,
+      "events": 462,
+      "avg_bet": 2646.07
+    }
+  },
+  "market_stats": {
+    "Futures": {
+      "net_profit": 873.52,
+      "roi": 1.7,
+      "win_rate": 66.67,
+      "events": 6
+    },
+    "Moneyline / Match": {
+      "net_profit": 708929.62,
+      "roi": 4.62,
+      "win_rate": 57.31,
+      "events": 8532
+    },
+    "Spread": {
+      "net_profit": -27044.05,
+      "roi": -23.32,
+      "win_rate": 46.67,
+      "events": 225
+    },
+    "Totals (O/U)": {
+      "net_profit": -92265.8,
+      "roi": -12.08,
+      "win_rate": 47.82,
+      "events": 596
+    }
+  },
+  "price_stats": {
+    "Favorite (60-80c)": {
+      "net_profit": 111608.67,
+      "roi": 1.88,
+      "win_rate": 65.31,
+      "events": 3295
+    },
+    "Flip (40-60c)": {
+      "net_profit": 234262.48,
+      "roi": 2.92,
+      "win_rate": 51.18,
+      "events": 4271
+    },
+    "Longshot (0-20c)": {
+      "net_profit": -15065.51,
+      "roi": -38.79,
+      "win_rate": 6.95,
+      "events": 187
+    },
+    "Safe (80-100c)": {
+      "net_profit": 75945.04,
+      "roi": 7.48,
+      "win_rate": 92.1,
+      "events": 633
+    },
+    "Underdog (20-40c)": {
+      "net_profit": 183742.59,
+      "roi": 14.5,
+      "win_rate": 35.97,
+      "events": 973
+    }
+  },
+  "side_stats": {
+    "No": {
+      "net_profit": 9465.65,
+      "roi": 2.77,
+      "positions": 2423
+    },
+    "Specific Selection": {
+      "net_profit": 601292.76,
+      "roi": 3.81,
+      "positions": 22630
+    },
+    "Yes": {
+      "net_profit": -20265.14,
+      "roi": -12.72,
+      "positions": 1068
+    }
+  },
+  "monthly_pnl": {
+    "2024-12": 346.73,
+    "2025-01": 60294.87,
+    "2025-02": 2790.33,
+    "2025-03": 36683.37,
+    "2025-04": 38366.9,
+    "2025-05": 51355.37,
+    "2025-06": 136893.62,
+    "2025-07": 6330.31,
+    "2025-08": -36437.42,
+    "2025-09": 68773.7,
+    "2025-10": -5194.76,
+    "2025-11": 11209.06,
+    "2025-12": 57208.85,
+    "2026-01": 85068.59,
+    "2026-02": 43003.25,
+    "2026-03": 47005.71
+  },
+  "top_wins": [
+    {
+      "title": "Nationals vs. Mets",
+      "sport_type": "MLB",
+      "total_pnl": 18887.282514,
+      "total_cost": 9736.661165275073,
+      "avg_price": 0.3080901459642318,
+      "status": "closed"
+    },
+    {
+      "title": "Athletics vs. Yankees",
+      "sport_type": "SOCCER (Other)",
+      "total_pnl": 12882.011333,
+      "total_cost": 7961.954852778913,
+      "avg_price": 0.36045929007562055,
+      "status": "closed"
+    },
+    {
+      "title": "Nuggets vs. 76ers",
+      "sport_type": "NBA",
+      "total_pnl": 10871.931813000001,
+      "total_cost": 28917.492649281092,
+      "avg_price": 0.5084111653252902,
+      "status": "closed"
+    },
+    {
+      "title": "Brewers vs. Padres",
+      "sport_type": "MLB",
+      "total_pnl": 10860.982079,
+      "total_cost": 5046.822674620787,
+      "avg_price": 0.3118072215974905,
+      "status": "closed"
+    },
+    {
+      "title": "Padres vs. Diamondbacks",
+      "sport_type": "MLB",
+      "total_pnl": 10087.742281,
+      "total_cost": 5511.0858656554865,
+      "avg_price": 0.31061370439940333,
+      "status": "closed"
+    }
+  ],
+  "top_losses": [
+    {
+      "title": "Penguins vs. Flyers",
+      "sport_type": "NHL",
+      "total_pnl": -17544.605836000002,
+      "total_cost": 41695.52583616,
+      "avg_price": 0.7974008333506858,
+      "status": "closed"
+    },
+    {
+      "title": "Islanders vs. Flyers",
+      "sport_type": "NHL",
+      "total_pnl": -15647.45485,
+      "total_cost": 16812.289503657707,
+      "avg_price": 0.7913863480817396,
+      "status": "closed"
+    },
+    {
+      "title": "Braves vs. Reds",
+      "sport_type": "MLB",
+      "total_pnl": -15211.192421000005,
+      "total_cost": 18042.648474078174,
+      "avg_price": 0.5729480153460389,
+      "status": "closed"
+    },
+    {
+      "title": "Bears vs. Eagles",
+      "sport_type": "NFL",
+      "total_pnl": -12545.115721000002,
+      "total_cost": 97236.21572093852,
+      "avg_price": 0.5201786332985138,
+      "status": "closed"
+    },
+    {
+      "title": "Tigers vs. Guardians",
+      "sport_type": "MLB",
+      "total_pnl": -12453.826153999998,
+      "total_cost": 15388.48118493864,
+      "avg_price": 0.5155005877225816,
+      "status": "closed"
+    }
+  ],
+  "top_sport": "MLB",
+  "best_price_bucket": "Underdog (20-40c)",
+  "best_market": "Moneyline / Match",
+  "quality_score": 43,
+  "tier": "B-Tier",
+  "tags": [
+    "\u2b50 B-Tier",
+    "\u26bd Global Soccer",
+    "\u26be MLB Expert",
+    "\ud83c\udfd2 NHL Pro",
+    "\ud83d\udcc8 Steady Performer",
+    "\u26d4 Fade Spreads"
+  ],
+  "tail_guide": "How to Tail BoomLaLa [B-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   OTHER \u2014 5.4% ROI, 2981 events, +$107,636\n   SOCCER (Other) \u2014 6.2% ROI, 462 events, +$75,189\n\n\ud83d\udcc8 Stick to Moneylines (4.6% ROI over 8532 events)\n\u26d4 Mute all Spread bets (-23.3% ROI)\n\u26d4 Mute all O/U bets (-12.1% ROI)\n\ud83c\udfaf Best price zone: Underdog (20-40c) (14.5% ROI, 973 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 102% of edge from 'Specific' side \u2014 copy that side only\n\ud83d\udcb0 Avg bet ~$1,738",
+  "score_breakdown": {
+    "sharpe_score": 16.9,
+    "roi_score": 6.1,
+    "wr_score": 6.5,
+    "cons_score": 6.4,
+    "vol_score": 5,
+    "base_score": 40.8,
+    "flip_bonus": 5,
+    "leakage_penalty": 3,
+    "midzone_roi": 8.7
+  }
+}

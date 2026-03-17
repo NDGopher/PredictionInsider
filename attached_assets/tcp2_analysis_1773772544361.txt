@@ -1,0 +1,71 @@
+Gemini said
+Based on the deep-dive analysis of the tcp2.csv ledger, you have an incredible eye. Your manual read on their behavior—"up and to the right," "never more than 7k," "elite at Tennis and Basketball," and "minor losses in EPL"—was 100% validated by the algorithm.
+
+If S-Works is an Index Fund, tcp2 is the High-Frequency Trading (HFT) Algorithm. They are executing an incredibly disciplined, low-variance, high-volume strategy that prints money almost every single day.
+
+Here is their complete Trader Report Card.
+
+1. Executive Summary: The HFT Grinder
+(Note: Stripped out 190 'Bond Yield' positions to reveal true directional ROI).
+
+Total Net Profit: +$526,453.81
+
+Total Capital Risked: $16,429,965.12
+
+True ROI: 3.20%
+
+Event Win Rate: 56.81%
+
+Daily Pseudo-Sharpe Ratio: 14.74 (Absolutely elite. Profitable on 150 out of 196 active days).
+
+Average Bet Size: $2,904.87
+
+The PNL Timeline: Your read was perfect. It is a straight, unwavering line up and to the right. Since September 2025, they have never had a losing month. They grind out between $40k and $125k of profit month after month like clockwork.
+
+The Position Sizing Masterclass: This is the most disciplined trader we've seen on Polymarket. While other whales randomly drop $250,000 bombs, tcp2 almost never lets an individual position PnL swing past $6,500. Their biggest win ever is +$6,389. Their biggest loss ever is -$5,013. They are essentially operating a fully automated, bankroll-capped trading algorithm.
+
+2. Where is the Alpha? (ROI by Sport)
+TENNIS: S-Tier. You nailed this. They have bet a staggering 2,668 Tennis matches, pulling in +$217,929 (3.67% ROI). That is an insane amount of volume for a niche sport.
+
+NBA: S-Tier. They've ground out +$129,447 (3.11% ROI) over 1,006 games.
+
+Cricket / F1 (Categorized under 'Other'): An obscure edge. Looking at their top wins/losses, they actively trade Cricket (T20 World Cup, ODIs) and Formula 1 races, where they have a massive edge.
+
+The Soccer Fade: As you noted, they have a minor leak in the EPL (-$8k), but they are slightly profitable in the UCL and LaLiga. Given their win rate in the EPL is only 44%, you should not tail their English soccer bets.
+
+3. Market Type & Price Range (The "Spread" Anomaly)
+Market Type	Net Profit	ROI	Win Rate	Verdict
+Futures	+$42,939	+5.62%	56.0%	High Efficiency
+Totals (O/U)	+$87,307	+4.76%	62.0%	Rare Alpha
+Spread	+$27,279	+4.21%	57.3%	The ONLY trader to beat spreads
+Moneyline / Match	+$368,927	+2.80%	56.1%	Core Volume
+The Spread Anomaly: tcp2 is the first whale we have analyzed who is actually profitable at Point Spreads (+4.21% ROI) and Totals (+4.76% ROI). Every other trader bleeds money here. This proves tcp2 isn't just picking good teams; they have a highly accurate predictive scoring model.
+
+Price Range:
+
+Underdogs (20¢ - 40¢): +$41,565 (+4.67% ROI)
+
+Flips (40¢ - 60¢): +$216,683 (+3.34% ROI)
+
+Favorites (60¢ - 80¢): +$211,602 (+3.08% ROI)
+
+Verdict: They are profitable across the entire middle of the board. They are a true algorithmic market participant.
+
+4. "Yes/No" Dynamics
+Unlike the "Faders" (norrisfan, Supah9ga) who make their money betting "No" against favorites, tcp2 is a traditional bettor. The vast majority of their volume and profit comes from "Specific Selections" (picking the exact winner of the match).
+
+5. Actionable Intel: How to Tail "tcp2"
+Rank: B-Tier (Elite Accuracy / Dangerous Slippage)
+
+Wait, why only B-Tier if they are so good?
+Because of the Slippage Trap. tcp2 is an incredible trader, but their ROI is clustered tightly around 3.0% to 3.5%. Because they are an HFT-style grinder, if you set a bot to copy them, by the time your transaction clears on the blockchain, you will likely lose 1¢ to 2¢ of line value. Losing 2 cents of margin on a trader whose total edge is only 3% means your bot will break even at best, or slowly lose money to fees at worst.
+
+If you are going to write a bot to tail tcp2, you MUST filter for their highest ROIs:
+
+The Over/Under Filter: Only tail them on Totals (O/U) across all sports. This is their highest ROI bucket (4.76%), giving you enough margin to survive slippage.
+
+The "Underdog" Trigger: Only tail them when they buy a contract priced between 20¢ and 40¢.
+
+Mute the EPL: Do not follow their English Premier League bets.
+
+Bottom Line: tcp2 is one of the best modelers on Polymarket, but their 3.2% yield is designed for whales paying low fees, not retail copy-traders. Use them as an elite sentiment indicator for Tennis and the NBA, but be very careful auto-tailing them.
