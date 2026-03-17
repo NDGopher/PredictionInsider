@@ -1,0 +1,37 @@
+Gemini said
+Based on the deep-dive analysis, your suspicion is exactly right, but with a major twist: CharlieKirkEvans and ShortFlutterStock are the exact same trader.
+
+The two CSVs are not technically identical files (which is why the file check flagged False), but the trading data inside them is practically a mirror image. They have the exact same total capital risked ($13.98 Million), the exact same Top 5 wins in the League of Legends LCK/LPL Playoffs, and the exact same catastrophic -14.55 Sharpe Ratio.
+
+Here is the breakdown of CharlieKirkEvans and how your system should handle them.
+
+1. Executive Summary: The "Bleed & Spike" Alt-Wallet
+(Note: 132 "Bond Yield" trades were stripped out to reveal true sports betting ROI).
+
+Total Net Profit: +$1,010,878.87
+
+Total Risked: $13,985,166.97
+
+Overall ROI: 7.23% * Event Win Rate: 53.10%
+
+Daily Pseudo-Sharpe: -14.55 (Negative consistency).
+
+The Strategy: This is an Esports Playoff Sniper. Just like ShortFlutterStock, this account bleeds money almost every single day. Out of over 100 active trading days, they lose money on 95% of them. They bleed out on random NBA (-$75k) and NHL (-$51k) games. Then, League of Legends Playoffs start, and they drop $150k+ nukes to win everything back in a single weekend.
+
+2. The Mega Signal Implications
+In our previous analysis, we saw that ShortFlutterStock heavily overlapped with 0xheavy888 and Andromeda1 to create the ultimate Esports "Mega Signal".
+
+Since CharlieKirkEvans is simply an alternate wallet or exact mirror bot for ShortFlutterStock, you do not want to count them as a unique signal in your consensus model. If CharlieKirkEvans and ShortFlutterStock both bet on T1, that is just one entity double-dipping, not a true consensus between two independent models.
+
+3. Final Verdict & Tier Placement
+Rank: C-Tier (High Variance / Do Not Auto-Tail)
+
+Because your scoring formula heavily penalizes negative Sharpe ratios and high variance (and rightly so), CharlieKirkEvans belongs exactly where ShortFlutterStock is: C-Tier.
+
+Why C-Tier is correct: If a retail user hooks an automated copy-trading bot to this wallet, they will experience weeks of painful, daily bankroll drain as this trader misses random basketball games. The user will almost certainly panic and disconnect the bot right before the trader drops a $100k LoL playoff nuke. You cannot safely auto-tail a trader with a -14.5 Sharpe ratio.
+
+How to track them instead:
+
+Mute Everything Except Esports: If you do track them, configure your backend to ignore every single NBA, NHL, and Tennis bet they place.
+
+Combine their wallets: In your backend database, tag CharlieKirkEvans and ShortFlutterStock under the same parent entity so your "Mega Signal" consensus algorithm doesn't get tricked into thinking two independent whales are agreeing on a pick.
