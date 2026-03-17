@@ -431,7 +431,7 @@ type CanonicalEntry = {
 };
 
 let _canonicalCache: Map<string, CanonicalEntry> | null = null;
-let _canonicalCacheAt = 0;
+let _canonicalCacheAt = 0; // set to 0 to force reload on first request
 
 async function loadCanonicalMetricsFromDB(): Promise<Map<string, CanonicalEntry>> {
   if (_canonicalCache && Date.now() - _canonicalCacheAt < 10 * 60_000) return _canonicalCache;
@@ -440,9 +440,9 @@ async function loadCanonicalMetricsFromDB(): Promise<Map<string, CanonicalEntry>
       SELECT wallet,
         quality_score,
         tags,
-        (metrics->>'overallROI')::float          AS overall_roi,
-        (metrics->>'roiCapital')::float          AS roi_capital,
-        (metrics->>'winRate')::float             AS win_rate,
+        COALESCE(NULLIF(metrics->>'csvDirectionalROI',''), metrics->>'overallROI')::float  AS overall_roi,
+        (metrics->>'roiCapital')::float                                                    AS roi_capital,
+        COALESCE(NULLIF(metrics->>'csvWinRate',''), metrics->>'winRate')::float            AS win_rate,
         (metrics->>'totalTrades')::int           AS total_trades,
         metrics->'roiBySport'                    AS roi_by_sport,
         metrics->'roiByMarketType'               AS roi_by_market_type
@@ -2858,8 +2858,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           relBetSize, slippagePct, insiderSportsROI, insiderTrades, insiderWinRate,
           traders: dominantSorted.slice(0, 8).map(e => {
             const cm = canonicalMap.get(e.address.toLowerCase());
-            // Display canonical overall ROI — more accurate than sport-specific settled ROI
-            // which misses open profitable positions
+            // Display CSV-based ROI when available (strips wash trades / bond-yield farming).
+            // Falls back to canonicalMap overallROI (already COALESCE-preferring CSV data),
+            // then to live leaderboard ROI as last resort.
             const displayROI = cm?.overallROI ?? e.traderInfo.roi;
             const displayQuality = (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : e.traderInfo.qualityScore;
             const sportEntry = cm?.roiBySport?.[signalSport];

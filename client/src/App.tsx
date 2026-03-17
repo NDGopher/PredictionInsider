@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import Dashboard from "@/pages/Dashboard";
-import Traders from "@/pages/Traders";
 import Signals from "@/pages/Signals";
 import Markets from "@/pages/Markets";
 import Bets from "@/pages/Bets";
@@ -58,7 +57,6 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
-      <Route path="/traders" component={Traders} />
       <Route path="/signals" component={Signals} />
       <Route path="/markets" component={Markets} />
       <Route path="/bets" component={Bets} />
