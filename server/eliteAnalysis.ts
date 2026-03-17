@@ -50,6 +50,9 @@ export const CURATED_TRADERS: { wallet: string; username: string; url?: string }
   { wallet: "0x9c82c60829df081d593055ee5fa288870c051f13", username: "Vetch", url: "https://polymarket.com/@Vetch" },
   { wallet: "0x25867077c891354137bbaf7fde12eec6949cc893", username: "TTdes", url: "https://polymarket.com/@TTdes" },
   { wallet: "0x4133bcbad1d9c41de776646696f41c34d0a65e70", username: "EF203F2IPFC2ICP20W-CP3", url: "https://polymarket.com/@EF203F2IPFC2ICP20W-CP3" },
+  { wallet: "0x57cd939930fd119067ca9dc42b22b3e15708a0fb", username: "Supah9ga", url: "https://polymarket.com/@Supah9ga" },
+  { wallet: "0xe72bb501df5306c75c89383d48a1e81073fbb0a0", username: "norrisfan", url: "https://polymarket.com/@norrisfan" },
+  { wallet: "0x036c159d5a348058a81066a76b89f35926d4178d", username: "HedgeMaster88", url: "https://polymarket.com/@HedgeMaster88" },
 ];
 
 // ─── In-memory set for fast signal lookup ────────────────────────────────────

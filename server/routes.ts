@@ -1678,7 +1678,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
- metrics. Fast: no activity fetch, no recompute.
+  // ── POST /api/elite/admin/refresh-canonical-pnl ─────────────────────────
+  // Refresh canonical PNL for ALL wallets. Only updates canonical PNL
+  // metrics. Fast: no activity fetch, no recompute.
   app.post("/api/elite/admin/refresh-canonical-pnl", async (_req, res) => {
     try {
       const { rows } = await elitePool.query(
