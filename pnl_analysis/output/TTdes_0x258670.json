@@ -1,0 +1,269 @@
+{
+  "wallet": "0x25867077c891354137bbaf7fde12eec6949cc893",
+  "username": "TTdes",
+  "total_profit": 88889.53,
+  "total_risked": 1166026.07,
+  "overall_roi": 7.62,
+  "win_rate": 55.35,
+  "avg_bet_size": 1504.55,
+  "total_events": 775,
+  "pseudo_sharpe": 11.14,
+  "profitable_days": 151,
+  "total_days": 175,
+  "bond_count": 5,
+  "bond_risk": 23500.64,
+  "bond_profit": 355.51,
+  "open_count": 341,
+  "open_risk": 391747.42,
+  "open_value": 40103.42,
+  "open_pnl": -240417.81,
+  "sport_stats": {
+    "NHL": {
+      "net_profit": 60110.25,
+      "roi": 8.29,
+      "win_rate": 53.63,
+      "events": 537,
+      "avg_bet": 1350.53
+    },
+    "OTHER": {
+      "net_profit": 1458.16,
+      "roi": 2.29,
+      "win_rate": 68.42,
+      "events": 19,
+      "avg_bet": 3345.81
+    },
+    "POLITICS": {
+      "net_profit": -9368.25,
+      "roi": -9.99,
+      "win_rate": 52.17,
+      "events": 23,
+      "avg_bet": 4076.06
+    },
+    "SOCCER (EPL)": {
+      "net_profit": 13366.49,
+      "roi": 33.04,
+      "win_rate": 54.55,
+      "events": 44,
+      "avg_bet": 919.55
+    },
+    "SOCCER (LaLiga)": {
+      "net_profit": 5196.51,
+      "roi": 12.07,
+      "win_rate": 65.85,
+      "events": 41,
+      "avg_bet": 1049.91
+    },
+    "SOCCER (Other)": {
+      "net_profit": -10375.96,
+      "roi": -13.09,
+      "win_rate": 53.68,
+      "events": 95,
+      "avg_bet": 834.63
+    },
+    "SOCCER (UCL)": {
+      "net_profit": 2340.45,
+      "roi": 76.56,
+      "win_rate": 100.0,
+      "events": 2,
+      "avg_bet": 1528.49
+    },
+    "TENNIS": {
+      "net_profit": 26161.88,
+      "roi": 22.24,
+      "win_rate": 85.71,
+      "events": 14,
+      "avg_bet": 8401.24
+    }
+  },
+  "market_stats": {
+    "Futures": {
+      "net_profit": 580.18,
+      "roi": 0.44,
+      "win_rate": 62.5,
+      "events": 24
+    },
+    "Moneyline / Match": {
+      "net_profit": 85632.73,
+      "roi": 8.92,
+      "win_rate": 56.63,
+      "events": 671
+    },
+    "Spread": {
+      "net_profit": 1535.59,
+      "roi": 13.89,
+      "win_rate": 29.41,
+      "events": 17
+    },
+    "Totals (O/U)": {
+      "net_profit": 1141.02,
+      "roi": 1.78,
+      "win_rate": 46.03,
+      "events": 63
+    }
+  },
+  "price_stats": {
+    "Favorite (60-80c)": {
+      "net_profit": 26274.86,
+      "roi": 15.14,
+      "win_rate": 70.83,
+      "events": 96
+    },
+    "Flip (40-60c)": {
+      "net_profit": 48889.71,
+      "roi": 5.94,
+      "win_rate": 53.19,
+      "events": 549
+    },
+    "Longshot (0-20c)": {
+      "net_profit": -4754.27,
+      "roi": -90.81,
+      "win_rate": 20.0,
+      "events": 5
+    },
+    "Safe (80-100c)": {
+      "net_profit": -1271.75,
+      "roi": -1.79,
+      "win_rate": 88.89,
+      "events": 18
+    },
+    "Underdog (20-40c)": {
+      "net_profit": 19750.97,
+      "roi": 21.09,
+      "win_rate": 48.6,
+      "events": 107
+    }
+  },
+  "side_stats": {
+    "No": {
+      "net_profit": 2843.89,
+      "roi": 1.21,
+      "positions": 162
+    },
+    "Specific Selection": {
+      "net_profit": 67513.01,
+      "roi": 8.65,
+      "positions": 672
+    },
+    "Yes": {
+      "net_profit": 18532.63,
+      "roi": 12.4,
+      "positions": 116
+    }
+  },
+  "monthly_pnl": {
+    "1970-01": 577.87,
+    "2024-09": 462.76,
+    "2024-11": 8365.86,
+    "2025-01": 610.98,
+    "2025-04": -16059.44,
+    "2025-05": -11642.7,
+    "2025-06": 7702.99,
+    "2025-07": 10456.31,
+    "2025-08": 3825.69,
+    "2025-09": 15210.21,
+    "2025-10": 16382.46,
+    "2025-11": 61065.63,
+    "2025-12": 90292.78,
+    "2026-01": 70397.75,
+    "2026-02": 41824.22,
+    "2026-03": 41027.47,
+    "2026-11": -3736.37,
+    "2028-11": 0.0
+  },
+  "top_wins": [
+    {
+      "title": "Will Carlos Alcaraz win the 2025 US Open?",
+      "sport_type": "TENNIS",
+      "total_pnl": 16621.382048,
+      "total_cost": 32035.594226180576,
+      "avg_price": 0.6785176713929134,
+      "status": "closed"
+    },
+    {
+      "title": "Will the Florida Panthers win the 2025 Stanley Cup?",
+      "sport_type": "OTHER",
+      "total_pnl": 9284.529252000002,
+      "total_cost": 16396.297577774985,
+      "avg_price": 0.4444400776915064,
+      "status": "closed"
+    },
+    {
+      "title": "Stars vs. Canadiens",
+      "sport_type": "NHL",
+      "total_pnl": 8624.434088,
+      "total_cost": 7678.011889596593,
+      "avg_price": 0.470973,
+      "status": "closed"
+    },
+    {
+      "title": "Devils vs. Maple Leafs",
+      "sport_type": "NHL",
+      "total_pnl": 7020.0,
+      "total_cost": 5980.000000000001,
+      "avg_price": 0.46,
+      "status": "closed"
+    },
+    {
+      "title": "Devils vs. Islanders",
+      "sport_type": "NHL",
+      "total_pnl": 6626.762656999999,
+      "total_cost": 11431.161866609727,
+      "avg_price": 0.5000183183644196,
+      "status": "closed"
+    }
+  ],
+  "top_losses": [
+    {
+      "title": "Will United States win the Men's Ice Hockey gold medal at the 2026 Winter Olympics?",
+      "sport_type": "SOCCER (Other)",
+      "total_pnl": -14423.962913512889,
+      "total_cost": 14423.962913512889,
+      "avg_price": 0.5267678666984151,
+      "status": "open"
+    },
+    {
+      "title": "Predators vs. Penguins",
+      "sport_type": "NHL",
+      "total_pnl": -11603.399944588,
+      "total_cost": 11603.399944588,
+      "avg_price": 0.43184,
+      "status": "open"
+    },
+    {
+      "title": "NHL Playoffs: Maple Leafs vs. Panthers (To Advance)",
+      "sport_type": "NHL",
+      "total_pnl": -11067.000133,
+      "total_cost": 11153.359632166621,
+      "avg_price": 0.42501000000000005,
+      "status": "closed"
+    },
+    {
+      "title": "Will Pierre Poilievre lose his seat?",
+      "sport_type": "OTHER",
+      "total_pnl": -9277.922471,
+      "total_cost": 9277.922471375612,
+      "avg_price": 0.831237,
+      "status": "closed"
+    },
+    {
+      "title": "Will the Liberal Party win the most seats in the next Canadian election?",
+      "sport_type": "POLITICS",
+      "total_pnl": -6970.858782,
+      "total_cost": 7270.212269079246,
+      "avg_price": 0.23939968007293191,
+      "status": "closed"
+    }
+  ],
+  "top_sport": "NHL",
+  "best_price_bucket": "Underdog (20-40c)",
+  "best_market": "Moneyline / Match",
+  "quality_score": 61,
+  "tier": "A-Tier",
+  "tags": [
+    "\u2b50\u2b50 A-Tier",
+    "\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f EPL Expert",
+    "\ud83c\udfd2 NHL Pro",
+    "\ud83d\udc8e Consistent Grinder"
+  ],
+  "tail_guide": "How to Tail TTdes [A-Tier]\n\n\u2705 FOLLOW on: NHL (+$60,110, 8.3% ROI), TENNIS (+$26,162, 22.2% ROI), SOCCER (EPL) (+$13,366, 33.0% ROI)\n\ud83d\udeab AVOID on: POLITICS (-10.0% ROI), SOCCER (Other) (-13.1% ROI)\n\ud83d\udcc8 Stick to Moneylines (8.9% ROI over 671 events)\n\ud83c\udfaf Best price range: Underdog (20-40c) (21.1% ROI, 107 events)\n\ud83d\udca1 76% of profit comes from 'Specific' contracts \u2014 copy that side\n\ud83d\udcb0 Avg bet ~$1,505"
+}
