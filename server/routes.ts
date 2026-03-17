@@ -7,7 +7,7 @@ import {
   settleUnresolvedTrades, fetchFullTradeHistory, computeTraderProfile,
   settleAllUnresolvedTradesGlobal, fetchAllActivity, computeTraderProfileFromActivity,
   CURATED_TRADERS, classifySport, patchProfileWithCanonicalPNL, fetchCanonicalPNL,
-  runCanonicalPNLRefreshForAll, computeMarketOFI
+  runCanonicalPNLRefreshForAll, computeMarketOFI, syncTraderPositions
 } from "./eliteAnalysis";
 
 const elitePool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -1678,10 +1678,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
-  // ── POST /api/elite/admin/refresh-canonical-pnl ──────────────────────────
-  // For each of the 42 curated traders, fetches canonical PNL from Polymarket's
-  // /closed-positions API (sum of realizedPnl — matches official Polymarket numbers)
-  // and patches elite_trader_profiles metrics. Fast: no activity fetch, no recompute.
+ metrics. Fast: no activity fetch, no recompute.
   app.post("/api/elite/admin/refresh-canonical-pnl", async (_req, res) => {
     try {
       const { rows } = await elitePool.query(

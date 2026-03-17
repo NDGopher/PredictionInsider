@@ -1542,261 +1542,324 @@ function classifySportFromSlug(slug: string, title?: string): string {
   return "Other";
 }
 
+// ─── Position storage: Python-script-parity local DB ─────────────────────────
+// Replicates the Python CSV approach: fetch all positions once, store locally,
+// and use event-level aggregation (group by eventSlug) to match Polymarket PNL.
+// total_pnl = realizedPnl + cashPnl per position — the exact formula from the script.
+
+let _posTableReady = false;
+async function initPositionsTable(): Promise<void> {
+  if (_posTableReady) return;
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS elite_trader_positions (
+      wallet        TEXT    NOT NULL,
+      asset         TEXT    NOT NULL,
+      condition_id  TEXT    NOT NULL DEFAULT '',
+      avg_price     FLOAT   NOT NULL DEFAULT 0,
+      total_bought  FLOAT   NOT NULL DEFAULT 0,
+      realized_pnl  FLOAT   NOT NULL DEFAULT 0,
+      cash_pnl      FLOAT   NOT NULL DEFAULT 0,
+      cur_price     FLOAT   NOT NULL DEFAULT 0,
+      current_value FLOAT   NOT NULL DEFAULT 0,
+      redeemable    BOOLEAN NOT NULL DEFAULT FALSE,
+      title         TEXT    NOT NULL DEFAULT '',
+      slug          TEXT    NOT NULL DEFAULT '',
+      event_slug    TEXT    NOT NULL DEFAULT '',
+      outcome       TEXT    NOT NULL DEFAULT '',
+      status        TEXT    NOT NULL DEFAULT 'closed',
+      end_date      TEXT    NOT NULL DEFAULT '',
+      position_ts   BIGINT  NOT NULL DEFAULT 0,
+      total_pnl     FLOAT   NOT NULL DEFAULT 0,
+      main_category TEXT    NOT NULL DEFAULT 'Other',
+      synced_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (wallet, asset)
+    )
+  `);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_etp_wallet ON elite_trader_positions(wallet)`);
+  _posTableReady = true;
+}
+
+// Fetch ALL positions for a wallet from Polymarket and upsert into the local DB.
+// Equivalent to running the Python script for a wallet — handles full history in one pass.
+// Returns the number of positions upserted.
+export async function syncTraderPositions(wallet: string): Promise<number> {
+  const addr = wallet.toLowerCase();
+  const posMap = new Map<string, any>();
+
+  // ── Step 1: /closed-positions → all finalized transactions, has realizedPnl ──
+  // Sorted by realizedPnl DESC. Paginate until end of data or 30 consecutive dust pages.
+  let offset = 0, pages = 0, zeroPages = 0;
+  while (true) {
+    const data = await fetchJson(
+      `${DATA_API}/closed-positions?user=${addr}&limit=50&offset=${offset}`
+    );
+    if (!Array.isArray(data) || data.length === 0) break;
+    let nonZero = 0;
+    for (const p of data) {
+      if (!p.asset) continue;
+      posMap.set(p.asset, { ...p, _fromClosed: true, status: "closed" });
+      if (Math.abs(parseFloat(p.realizedPnl) || 0) > 0.01) nonZero++;
+    }
+    if (nonZero === 0) { zeroPages++; if (zeroPages >= 30) break; } else zeroPages = 0;
+    if (data.length < 50) break;
+    offset += 50; pages++;
+    if (pages >= 2000) break;
+    await new Promise(r => setTimeout(r, 80));
+  }
+
+  // ── Step 2: /positions (all current holdings — open + redeemable, has cashPnl) ──
+  offset = 0;
+  while (true) {
+    const data = await fetchJson(
+      `${DATA_API}/positions?user=${addr}&limit=500&offset=${offset}&sizeThreshold=0`
+    );
+    if (!Array.isArray(data) || data.length === 0) break;
+    for (const p of data) {
+      if (!p.asset) continue;
+      const existing = posMap.get(p.asset);
+      if (existing?._fromClosed) {
+        // Overlay cashPnl + open state onto already-fetched closed record
+        posMap.set(p.asset, {
+          ...existing,
+          cashPnl:      p.cashPnl,
+          curPrice:     p.curPrice,
+          currentValue: p.currentValue,
+          redeemable:   p.redeemable,
+          status:       "closed",
+        });
+      } else {
+        posMap.set(p.asset, { ...p, status: "open" });
+      }
+    }
+    if (data.length < 500) break;
+    offset += 500;
+    if (offset >= 50_000) break;
+    await new Promise(r => setTimeout(r, 80));
+  }
+
+  // ── Step 3: /positions?closed=true → pending/unredeemed resolved positions ──
+  offset = 0;
+  while (true) {
+    const data = await fetchJson(
+      `${DATA_API}/positions?user=${addr}&limit=500&offset=${offset}&sizeThreshold=0&closed=true`
+    );
+    if (!Array.isArray(data) || data.length === 0) break;
+    for (const p of data) {
+      if (!p.asset) continue;
+      const existing = posMap.get(p.asset);
+      if (!existing) {
+        posMap.set(p.asset, { ...p, status: "closed" });
+      } else if (!existing._fromClosed) {
+        posMap.set(p.asset, {
+          ...existing,
+          cashPnl:  p.cashPnl  ?? existing.cashPnl,
+          curPrice: p.curPrice ?? existing.curPrice,
+          status:   "closed",
+        });
+      }
+    }
+    if (data.length < 500) break;
+    offset += 500;
+    if (offset >= 50_000) break;
+    await new Promise(r => setTimeout(r, 80));
+  }
+
+  // ── Upsert all positions to DB ──────────────────────────────────────────────
+  for (const [asset, p] of posMap) {
+    const realizedPnl  = parseFloat(p.realizedPnl)  || 0;
+    const cashPnl      = parseFloat(p.cashPnl)      || 0;
+    const totalPnl     = realizedPnl + cashPnl; // Python script: total_position_pnl
+    const evSlug       = p.eventSlug || p.slug || "";
+    const cat          = classifySportFromSlug(evSlug || p.slug || "", p.title || "");
+    await pool.query(`
+      INSERT INTO elite_trader_positions
+        (wallet, asset, condition_id, avg_price, total_bought, realized_pnl, cash_pnl,
+         cur_price, current_value, redeemable, title, slug, event_slug, outcome, status,
+         end_date, position_ts, total_pnl, main_category, synced_at)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,NOW())
+      ON CONFLICT (wallet, asset) DO UPDATE SET
+        realized_pnl  = EXCLUDED.realized_pnl,
+        cash_pnl      = EXCLUDED.cash_pnl,
+        cur_price     = EXCLUDED.cur_price,
+        current_value = EXCLUDED.current_value,
+        redeemable    = EXCLUDED.redeemable,
+        status        = EXCLUDED.status,
+        total_pnl     = EXCLUDED.total_pnl,
+        main_category = EXCLUDED.main_category,
+        synced_at     = NOW()
+    `, [
+      addr, asset,
+      p.conditionId || "",
+      parseFloat(p.avgPrice) || 0, parseFloat(p.totalBought) || 0,
+      realizedPnl, cashPnl,
+      parseFloat(p.curPrice) || 0, parseFloat(p.currentValue) || 0,
+      Boolean(p.redeemable),
+      p.title || "", p.slug || "", evSlug, p.outcome || "",
+      p.status || "closed",
+      p.endDate || "",
+      parseInt(p.timestamp) || 0,
+      totalPnl, cat,
+    ]);
+  }
+
+  return posMap.size;
+}
+
+// ─── fetchCanonicalPNL — Python-script-parity event-level aggregation ─────────
+// 1. Syncs all positions for the wallet to DB (fast upsert on subsequent calls)
+// 2. Groups by eventSlug to net out multi-bet games (moneyline + spread + O/U etc.)
+// 3. Win/loss is determined at EVENT level — exactly how Polymarket displays PNL
 export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
   const addr = wallet.toLowerCase();
-  const now = Date.now();
+  await initPositionsTable();
+
+  // Sync all positions (Python script equivalent) and store in DB
+  const synced = await syncTraderPositions(addr);
+  console.log(`[Elite/PNL] ${addr.slice(0, 10)}: synced ${synced} positions to local DB`);
+
+  // Read back from DB — all positions for this wallet
+  const { rows } = await pool.query(
+    `SELECT * FROM elite_trader_positions WHERE wallet = $1`, [addr]
+  );
+
+  const now  = Date.now();
   const ms30 = now - 30 * 86_400_000;
   const ms90 = now - 90 * 86_400_000;
 
-  // ── Build ALL-TIME PNL using two complementary endpoints ────────────────────────
-  //
-  // ENDPOINT 1: /closed-positions → returns ALL settled positions sorted by realizedPnl DESC.
-  //   realizedPnl is NET profit (payout - cost), already computed by Polymarket.
-  //   We paginate until we've seen all positive entries (then losses start appearing).
-  //   This captures wins AND positions sold at a loss (partial closes).
-  //
-  // ENDPOINT 2: /positions?closed=true → returns unredeemed/pending-settled positions.
-  //   For these, cashPnl = current mark-to-market = true net PNL for resolved markets:
-  //   positive for unclaimed wins, negative for unrecouped losses (tokens worth $0).
-  //   These do NOT appear in /closed-positions yet (no redemption transaction).
-  //
-  // NO SPORTS FILTER: We include ALL categories for all-time PNL matching
-  // polymarketanalytics.com. Category breakdown (closedByCategory) is computed
-  // separately using slug classification for per-sport metrics.
-  type Settled = {
-    _pnl: number; _invested: number; _ts: number; _win: boolean;
-    slug: string; title: string;
-  };
+  // Separate by state
+  const closedRows       = rows.filter(r => r.status === "closed");
+  const openRows         = rows.filter(r => r.status === "open");
+  const activePositions  = openRows.filter(r => !r.redeemable && r.cur_price > 0.001 && r.cur_price < 0.999);
+  const redeemablePositions = openRows.filter(r => r.redeemable);
 
-  const investedUSDC = (avgPrice: any, totalBought: any): number =>
-    Math.abs((parseFloat(avgPrice) || 0) * (parseFloat(totalBought) || 0));
-
-  const allSettled: Settled[] = [];
-
-  // ── 1a. Wins + sold-at-loss from /closed-positions ────────────────────────────
-  // Sorted by realizedPnl DESC. We stop when the API returns fewer records than
-  // the limit (true end of data) OR after 30 consecutive all-dust pages.
-  // 30 pages = 1500 positions of near-zero PNL — safe for traders (like kch123)
-  // whose sorted list has a large zero-PnL zone between wins and losses, while
-  // still preventing runaway pagination for traders with millions of micro-positions.
-  const PAGE = 50; // Polymarket /closed-positions returns max 50 per page
-  const MAX_PAGES = 2000; // cap at 100K positions
-  const MAX_ZERO_PAGES = 30; // stop after 1500 consecutive near-zero positions
-  let offset = 0;
-  let pages = 0;
-  let consecutiveZeroPages = 0;
-  while (true) {
-    const data = await fetchJson(
-      `${DATA_API}/closed-positions?user=${addr}&limit=${PAGE}&offset=${offset}`
-    );
-    if (!Array.isArray(data) || data.length === 0) break;
-    let pageAny = 0;
-    for (const p of data) {
-      const pnl = parseFloat(p.realizedPnl) || 0;
-      if (Math.abs(pnl) <= 0.01) continue;
-      pageAny++;
-      const slug  = p.slug || p.eventSlug || "";
-      const title = p.title || "";
-      allSettled.push({
-        _pnl:      pnl,
-        _invested: investedUSDC(p.avgPrice, p.totalBought),
-        _ts:       p.timestamp || 0,
-        _win:      pnl > 0,
-        slug,
-        title,
+  // ── Event-level aggregation (Python script's key insight) ──────────────────
+  // Group all closed positions by eventSlug. Net out all bets on the same game
+  // (YES + NO, moneyline + spread + totals). This gives the exact PNL Polymarket shows.
+  const eventMap = new Map<string, {
+    pnl: number; invested: number; ts: number; sport: string; positions: number;
+  }>();
+  for (const row of closedRows) {
+    const key = (row.event_slug || row.slug || row.condition_id || row.asset).trim();
+    const inv = (row.avg_price || 0) * (row.total_bought || 0);
+    const existing = eventMap.get(key);
+    if (!existing) {
+      eventMap.set(key, {
+        pnl: row.total_pnl, invested: inv,
+        ts: row.position_ts || 0,
+        sport: row.main_category || "Other", positions: 1,
       });
-    }
-    if (pageAny === 0) {
-      consecutiveZeroPages++;
-      if (consecutiveZeroPages >= MAX_ZERO_PAGES) break;
     } else {
-      consecutiveZeroPages = 0;
+      existing.pnl      += row.total_pnl;
+      existing.invested += inv;
+      if ((row.position_ts || 0) > existing.ts) existing.ts = row.position_ts;
+      existing.positions++;
     }
-    if (data.length < PAGE) break;
-    offset += PAGE;
-    pages++;
-    if (pages >= MAX_PAGES) break;
-    await new Promise(r => setTimeout(r, 40));
   }
 
-  // ── 1b. Unredeemed LOSSES from /positions?closed=true ────────────────────────
-  // Captures resolved positions where user has NOT yet redeemed/settled.
-  // For losing positions (tokens worth $0): cashPnl = -initialValue (the true loss).
-  // We only capture losses here — unredeemed WINS are counted in redeemableValue below.
-  // No double-counting: /closed-positions only has realizedPnl for actual transactions.
-  let loseOffset = 0;
-  let emptyLossPages = 0;
-  while (true) {
-    const data = await fetchJson(
-      `${DATA_API}/positions?user=${addr}&limit=500&offset=${loseOffset}&sizeThreshold=0&closed=true`
-    );
-    if (!Array.isArray(data) || data.length === 0) break;
-    let pageLosses = 0;
-    for (const p of data) {
-      const pnl = parseFloat(p.cashPnl) || 0;
-      if (pnl >= -0.01) continue; // only genuine losses (cashPnl < 0)
-      // CRITICAL: Only include positions from RESOLVED markets (curPrice must be 0 or 1).
-      // curPrice between 0.001–0.999 = still active/open market (e.g., 2028 futures).
-      // Including unresolved positions would count unrealized paper losses as settled losses.
-      const curPrice = parseFloat(p.curPrice) || 0;
-      const isResolved = curPrice < 0.001 || curPrice > 0.999;
-      if (!isResolved) continue; // skip open/unresolved markets
-      pageLosses++;
-      const slug  = p.slug || p.eventSlug || "";
-      const title = p.title || "";
-      const ts    = p.endDate ? Math.floor(new Date(p.endDate).getTime() / 1000) : 0;
-      allSettled.push({
-        _pnl:      pnl,
-        _invested: investedUSDC(p.avgPrice, p.totalBought),
-        _ts:       ts,
-        _win:      false,
-        slug,
-        title,
-      });
-    }
-    if (pageLosses === 0) { emptyLossPages++; if (emptyLossPages >= 5) break; }
-    else emptyLossPages = 0;
-    if (data.length < 500) break;
-    loseOffset += 500;
-    if (loseOffset >= 300_000) break;
-    await new Promise(r => setTimeout(r, 40));
+  // Build event list — each entry is one EVENT (game/market-group)
+  const allEvents: Array<{ pnl: number; invested: number; ts: number; sport: string; win: boolean }> = [];
+  let totalGains = 0, totalLosses = 0, totalInvested = 0, wins = 0;
+  for (const [, ev] of eventMap) {
+    const win = ev.pnl > 0.001;
+    if (win) { totalGains += ev.pnl; wins++; } else { totalLosses += Math.abs(ev.pnl); }
+    totalInvested += ev.invested;
+    allEvents.push({ pnl: ev.pnl, invested: ev.invested, ts: ev.ts, sport: ev.sport, win });
   }
 
-  // ── 3. Aggregate metrics ──────────────────────────────────────────────────
-  const realizedPNL   = allSettled.reduce((s, c) => s + c._pnl, 0);
-  const totalInvested = allSettled.reduce((s, c) => s + c._invested, 0);
-  const wins          = allSettled.filter(c => c._win).length;
-  const pnlWinRate    = allSettled.length > 0
-    ? Math.round((wins / allSettled.length) * 1000) / 10 : 0;
+  const realizedPNL = totalGains - totalLosses;
+  const roiDenom    = totalGains + totalLosses;
+  const overallROI  = roiDenom > 0 ? Math.round((realizedPNL / roiDenom) * 10000) / 100 : 0;
+  const pnlWinRate  = allEvents.length > 0 ? Math.round((wins / allEvents.length) * 1000) / 10 : 0;
 
-  // Correct ROI denominator: net profit from wins + net losses from losses
-  // Formula: PNL / (winsGross + lossesGross) — matches PolymarketAnalytics
-  const winsGross    = allSettled.filter(c => c._win).reduce((s, c) => s + c._pnl, 0);
-  const lossesGross  = allSettled.filter(c => !c._win).reduce((s, c) => s + Math.abs(c._pnl), 0);
-  const roiDenom     = winsGross + lossesGross;
-  const overallROI   = roiDenom > 0
-    ? Math.round((realizedPNL / roiDenom) * 10000) / 100 : 0;
-
-  // Bet size distribution (USDC)
-  const betSizes = allSettled.map(c => c._invested).filter(v => v > 0);
+  // Bet size distribution at position level (more granular than event level)
+  const betSizes      = closedRows.map(r => (r.avg_price || 0) * (r.total_bought || 0)).filter(v => v > 0);
   const avgBetUSDC    = betSizes.length > 0 ? Math.round(mean(betSizes) * 100) / 100 : 0;
   const medianBetUSDC = betSizes.length > 0 ? Math.round(median(betSizes) * 100) / 100 : 0;
 
-  // ── 4. Time-windowed metrics (30d / 90d) ─────────────────────────────────
-  const closed30 = allSettled.filter(c => c._ts * 1000 > ms30);
-  const closed90 = allSettled.filter(c => c._ts * 1000 > ms90);
+  // ── Time-windowed metrics (event-level) ───────────────────────────────────
+  const ev30 = allEvents.filter(e => e.ts * 1000 > ms30);
+  const ev90 = allEvents.filter(e => e.ts * 1000 > ms90);
+  const pnl30 = ev30.reduce((s, e) => s + e.pnl, 0);
+  const pnl90 = ev90.reduce((s, e) => s + e.pnl, 0);
+  const inv30 = ev30.reduce((s, e) => s + e.invested, 0);
+  const inv90 = ev90.reduce((s, e) => s + e.invested, 0);
+  const wins30 = ev30.filter(e => e.win).length;
+  const wins90 = ev90.filter(e => e.win).length;
+  const wg30 = ev30.filter(e =>  e.win).reduce((s, e) => s + e.pnl, 0);
+  const lg30 = ev30.filter(e => !e.win).reduce((s, e) => s + Math.abs(e.pnl), 0);
+  const wg90 = ev90.filter(e =>  e.win).reduce((s, e) => s + e.pnl, 0);
+  const lg90 = ev90.filter(e => !e.win).reduce((s, e) => s + Math.abs(e.pnl), 0);
+  const last30dROI = (wg30 + lg30) > 0 ? Math.round((pnl30 / (wg30 + lg30)) * 10000) / 100 : 0;
+  const last90dROI = (wg90 + lg90) > 0 ? Math.round((pnl90 / (wg90 + lg90)) * 10000) / 100 : 0;
+  const winRate30  = ev30.length > 0 ? Math.round((wins30 / ev30.length) * 1000) / 10 : 0;
+  const winRate90  = ev90.length > 0 ? Math.round((wins90 / ev90.length) * 1000) / 10 : 0;
 
-  const pnl30  = closed30.reduce((s, c) => s + c._pnl, 0);
-  const pnl90  = closed90.reduce((s, c) => s + c._pnl, 0);
-  const inv30  = closed30.reduce((s, c) => s + c._invested, 0);
-  const inv90  = closed90.reduce((s, c) => s + c._invested, 0);
-  const wins30 = closed30.filter(c => c._win).length;
-  const wins90 = closed90.filter(c => c._win).length;
-
-  const wg30 = closed30.filter(c => c._win).reduce((s, c) => s + c._pnl, 0);
-  const lg30 = closed30.filter(c => !c._win).reduce((s, c) => s + Math.abs(c._pnl), 0);
-  const wg90 = closed90.filter(c => c._win).reduce((s, c) => s + c._pnl, 0);
-  const lg90 = closed90.filter(c => !c._win).reduce((s, c) => s + Math.abs(c._pnl), 0);
-  const last30dROI  = (wg30 + lg30) > 0 ? Math.round((pnl30 / (wg30 + lg30)) * 10000) / 100 : 0;
-  const last90dROI  = (wg90 + lg90) > 0 ? Math.round((pnl90 / (wg90 + lg90)) * 10000) / 100 : 0;
-  const winRate30   = closed30.length > 0 ? Math.round((wins30 / closed30.length) * 1000) / 10 : 0;
-  const winRate90   = closed90.length > 0 ? Math.round((wins90 / closed90.length) * 1000) / 10 : 0;
-
-  // ── 5. Monthly breakdown ─────────────────────────────────────────────────
+  // ── Monthly breakdown (event-level) ──────────────────────────────────────
   const byMonth: Record<string, { pnl: number; invested: number; count: number; wins: number; winsGross: number; lossesGross: number }> = {};
-  for (const c of allSettled) {
-    if (!c._ts) continue;
-    const d = new Date(c._ts * 1000);
+  for (const ev of allEvents) {
+    if (!ev.ts) continue;
+    const d   = new Date(ev.ts * 1000);
     const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
     if (!byMonth[key]) byMonth[key] = { pnl: 0, invested: 0, count: 0, wins: 0, winsGross: 0, lossesGross: 0 };
-    byMonth[key].pnl      += c._pnl;
-    byMonth[key].invested += c._invested;
-    byMonth[key].count++;
-    if (c._win) { byMonth[key].wins++; byMonth[key].winsGross += c._pnl; }
-    else { byMonth[key].lossesGross += Math.abs(c._pnl); }
+    byMonth[key].pnl += ev.pnl; byMonth[key].invested += ev.invested; byMonth[key].count++;
+    if (ev.win) { byMonth[key].wins++; byMonth[key].winsGross += ev.pnl; }
+    else { byMonth[key].lossesGross += Math.abs(ev.pnl); }
   }
   const monthlyROI = Object.entries(byMonth)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([month, d]) => {
       const denom = d.winsGross + d.lossesGross;
       return {
-        month,
-        roi:        denom > 0 ? Math.round((d.pnl / denom) * 10000) / 100 : 0,
-        pnl:        Math.round(d.pnl * 100) / 100,
-        invested:   Math.round(d.invested),
-        tradeCount: d.count,
-        wins:       d.wins,
+        month, roi: denom > 0 ? Math.round((d.pnl / denom) * 10000) / 100 : 0,
+        pnl: Math.round(d.pnl * 100) / 100, invested: Math.round(d.invested),
+        tradeCount: d.count, wins: d.wins,
       };
     });
 
-  // ── 6. Category breakdown (USDC invested — not shares) ───────────────────
+  // ── Sport/category breakdown (event-level) ────────────────────────────────
   const closedByCategory: Record<string, { pnl: number; positions: number; wins: number; invested: number; winsGross: number; lossesGross: number }> = {};
-  for (const c of allSettled) {
-    const cat = classifySportFromSlug(c.slug, c.title);
-    if (!closedByCategory[cat]) closedByCategory[cat] = { pnl: 0, positions: 0, wins: 0, invested: 0, winsGross: 0, lossesGross: 0 };
-    closedByCategory[cat].pnl      += c._pnl;
-    closedByCategory[cat].invested += c._invested;
-    closedByCategory[cat].positions++;
-    if (c._win) { closedByCategory[cat].wins++; closedByCategory[cat].winsGross += c._pnl; }
-    else { closedByCategory[cat].lossesGross += Math.abs(c._pnl); }
+  for (const ev of allEvents) {
+    if (!closedByCategory[ev.sport]) closedByCategory[ev.sport] = { pnl: 0, positions: 0, wins: 0, invested: 0, winsGross: 0, lossesGross: 0 };
+    closedByCategory[ev.sport].pnl += ev.pnl;
+    closedByCategory[ev.sport].invested += ev.invested;
+    closedByCategory[ev.sport].positions++;
+    if (ev.win) { closedByCategory[ev.sport].wins++; closedByCategory[ev.sport].winsGross += ev.pnl; }
+    else { closedByCategory[ev.sport].lossesGross += Math.abs(ev.pnl); }
   }
   for (const cat of Object.keys(closedByCategory)) {
-    closedByCategory[cat].pnl      = Math.round(closedByCategory[cat].pnl * 100) / 100;
-    closedByCategory[cat].invested = Math.round(closedByCategory[cat].invested * 100) / 100;
-    closedByCategory[cat].winsGross = Math.round(closedByCategory[cat].winsGross * 100) / 100;
-    closedByCategory[cat].lossesGross = Math.round(closedByCategory[cat].lossesGross * 100) / 100;
+    closedByCategory[cat].pnl          = Math.round(closedByCategory[cat].pnl * 100) / 100;
+    closedByCategory[cat].invested     = Math.round(closedByCategory[cat].invested * 100) / 100;
+    closedByCategory[cat].winsGross    = Math.round(closedByCategory[cat].winsGross * 100) / 100;
+    closedByCategory[cat].lossesGross  = Math.round(closedByCategory[cat].lossesGross * 100) / 100;
   }
 
-  // ── 6. Open positions (paginated) ─────────────────────────────────────────
-  const openPositions: any[] = [];
-  let openOffset = 0;
-  while (true) {
-    const openPage = await fetchJson(
-      `${DATA_API}/positions?user=${addr}&limit=500&offset=${openOffset}&sizeThreshold=0`
-    );
-    if (!Array.isArray(openPage) || openPage.length === 0) break;
-    openPositions.push(...openPage);
-    if (openPage.length < 500) break;
-    openOffset += 500;
-    if (openOffset >= 10_000) break;
-    await new Promise(r => setTimeout(r, 80));
-  }
-
-  // Separate active (live market) from redeemable (resolved, awaiting claim)
-  const activePositions = openPositions.filter(p => !p.redeemable && (parseFloat(p.curPrice) || 0) > 0);
-  const redeemablePositions = openPositions.filter(p => p.redeemable);
-
-  // Step 1b adds LOSING closed positions (cashPnl < 0) to allSettled.
-  // Redeemable winning positions are NOT in step 1b (cashPnl > 0 was skipped).
-  // Redeemable losers have currentValue=0 so redeemableValue = 0 for them.
-  // Result: no double-counting. Active (live market) positions are accounted
-  // for separately via unrealizedPNL. Redeemable winners via redeemableValue.
-  const activeUnrealizedPNL = activePositions.reduce((s: number, p: any) => s + (parseFloat(p.cashPnl) || 0), 0);
-  const unrealizedPNL = activeUnrealizedPNL; // live open positions only — no double-count
-  const redeemableValue = redeemablePositions.reduce((s: number, p: any) => s + (parseFloat(p.currentValue) || 0), 0);
+  // ── Open / unrealized ─────────────────────────────────────────────────────
+  const activeUnrealizedPNL = activePositions.reduce((s, r) => s + (r.cash_pnl || 0), 0);
+  const unrealizedPNL       = activeUnrealizedPNL;
+  const redeemableValue     = redeemablePositions.reduce((s, r) => s + (r.current_value || 0), 0);
 
   return {
-    realizedPNL:        Math.round(realizedPNL * 100) / 100,
-    unrealizedPNL:      Math.round(unrealizedPNL * 100) / 100,
+    realizedPNL:         Math.round(realizedPNL * 100) / 100,
+    unrealizedPNL:       Math.round(unrealizedPNL * 100) / 100,
     activeUnrealizedPNL: Math.round(activeUnrealizedPNL * 100) / 100,
-    totalPNL:           Math.round((realizedPNL + unrealizedPNL + redeemableValue) * 100) / 100,
-    closedCount:        allSettled.length,
-    openCount:          openPositions.length,
-    activeOpenCount:    activePositions.length,
-    redeemableCount:    redeemablePositions.length,
-    redeemableValue:    Math.round(redeemableValue * 100) / 100,
-    totalInvested:      Math.round(totalInvested * 100) / 100,
+    totalPNL:            Math.round((realizedPNL + unrealizedPNL + redeemableValue) * 100) / 100,
+    closedCount:         closedRows.length,
+    openCount:           openRows.length,
+    activeOpenCount:     activePositions.length,
+    redeemableCount:     redeemablePositions.length,
+    redeemableValue:     Math.round(redeemableValue * 100) / 100,
+    totalInvested:       Math.round(totalInvested * 100) / 100,
     overallROI,
-    roiCapital:         totalInvested > 0
+    roiCapital:          totalInvested > 0
       ? Math.round(((realizedPNL + unrealizedPNL + redeemableValue) / totalInvested) * 10000) / 100
       : 0,
-    last30dPNL:         Math.round(pnl30 * 100) / 100,
-    last30dInvested:    Math.round(inv30 * 100) / 100,
-    last30dCount:       closed30.length,
+    last30dPNL:      Math.round(pnl30 * 100) / 100,
+    last30dInvested: Math.round(inv30 * 100) / 100,
+    last30dCount:    ev30.length,
     last30dROI,
-    last90dPNL:         Math.round(pnl90 * 100) / 100,
-    last90dInvested:    Math.round(inv90 * 100) / 100,
-    last90dCount:       closed90.length,
+    last90dPNL:      Math.round(pnl90 * 100) / 100,
+    last90dInvested: Math.round(inv90 * 100) / 100,
+    last90dCount:    ev90.length,
     last90dROI,
     pnlWinRate,
     winRate30,
