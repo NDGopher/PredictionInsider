@@ -1,0 +1,37 @@
+My Thoughts on the Current State
+You have the right intuition. The platform's value isn't just showing who made money, but showing your users exactly how to extract that money without getting burned by a whale's blind spots.
+
+If your Replit environment is currently just grading on PNL/Volume, it’s going to keep spitting out false positives (like putting lynxtitan in B-Tier and capman in A-Tier). We need to replace Replit's naive grading formula with our custom Actionable Edge Score.
+
+Next Steps for Your Replit Implementation
+To make this platform scale automatically, here is the roadmap to pass to your developer (or to implement yourself in Replit):
+
+Step 1: Implement the "Data Sanitizer" Pipeline
+Before Replit even calculates a score, it needs to clean the data using the logic we built.
+
+The Bond Filter: Write a function that immediately flags and removes any position where outcome == 'No' and avgPrice >= 0.95.
+
+The Hedge Fix: Ensure the backend aggregates data by eventSlug (the specific game) rather than individual conditionIds so that hedges are netted out.
+
+Step 2: Build the "Actionable Edge" Algorithm
+Replace the current tiering formula in Replit with a weighted algorithm:
+
+35% Weight - Daily Sharpe Ratio: (Consistency). How many profitable days vs. losing days?
+
+35% Weight - Filtered ROI: The trader's ROI after the Bond Yields and Hedges are netted out.
+
+20% Weight - The "Leakage" Penalty: Calculate the trader's ROI by sport. If they are deeply negative in a high-volume category (like CemeterySun in LaLiga), apply a penalty to their global score to protect copy-traders.
+
+10% Weight - The Underdog/Flip Bonus: Give a mathematical boost to traders who generate their profit in the 20¢ to 60¢ range, as this proves a real pricing edge.
+
+Step 3: Automate the Frontend "Tailing Guides"
+Instead of just displaying the Tier, program Replit to output a dynamic JSON payload for each trader's profile that feeds the UI.
+
+Run the print_stats('sport_type') and print_stats('market_type') logic.
+
+Set thresholds: If ROI > 5% and Win Rate > 50% in a specific bucket, have the API send a tag to the frontend: "🟢 AUTO-TAIL: [Sport] [Market]".
+
+If ROI < -2%, send: "🔴 AVOID: [Sport] [Market]".
+
+Step 4: Backtesting
+Once the new algorithm is written in Replit, run your top 50 historical CSVs through it. If capman and JhonAlexnaderHinestroza don't automatically bubble up to S-Tier, we tweak the weightings.
