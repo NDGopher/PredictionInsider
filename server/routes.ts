@@ -437,8 +437,12 @@ type CanonicalEntry = {
   totalTrades: number;
   qualityScore: number;
   tags: string[];
-  roiBySport: Record<string, { roi: number; tradeCount: number; winRate: number; avgBet: number }>;
-  roiByMarketType: Record<string, { roi: number; tradeCount: number; winRate: number }>;
+  roiBySport: Record<string, { roi: number; tradeCount: number; winRate: number; avgBet: number; medianBet?: number }>;
+  roiByMarketType: Record<string, { roi: number; tradeCount: number; winRate: number; avgBet?: number; medianBet?: number }>;
+  // Per sport×marketType deep table — key: "NBA|moneyline", "Soccer|total", etc.
+  roiBySportMarketType: Record<string, { roi: number; tradeCount: number; winRate: number; avgBet: number; medianBet: number }>;
+  // Per price bucket — key: "Flip (40-60c)", "Underdog (20-40c)", etc.
+  priceStats: Record<string, { roi: number; winRate: number; events: number }>;
 };
 
 let _canonicalCache: Map<string, CanonicalEntry> | null = null;
@@ -454,9 +458,11 @@ async function loadCanonicalMetricsFromDB(): Promise<Map<string, CanonicalEntry>
         COALESCE(NULLIF(metrics->>'csvDirectionalROI',''), metrics->>'overallROI')::float  AS overall_roi,
         (metrics->>'roiCapital')::float                                                    AS roi_capital,
         COALESCE(NULLIF(metrics->>'csvWinRate',''), metrics->>'winRate')::float            AS win_rate,
-        (metrics->>'totalTrades')::int           AS total_trades,
-        metrics->'roiBySport'                    AS roi_by_sport,
-        metrics->'roiByMarketType'               AS roi_by_market_type
+        (metrics->>'totalTrades')::int                  AS total_trades,
+        metrics->'roiBySport'                           AS roi_by_sport,
+        metrics->'roiByMarketType'                      AS roi_by_market_type,
+        metrics->'roiBySportMarketType'                 AS roi_by_sport_market_type,
+        metrics->'csvPriceStats'                        AS price_stats
       FROM elite_trader_profiles
       WHERE wallet IS NOT NULL
     `);
@@ -471,6 +477,8 @@ async function loadCanonicalMetricsFromDB(): Promise<Map<string, CanonicalEntry>
         tags: Array.isArray(r.tags) ? r.tags : [],
         roiBySport: r.roi_by_sport ?? {},
         roiByMarketType: r.roi_by_market_type ?? {},
+        roiBySportMarketType: r.roi_by_sport_market_type ?? {},
+        priceStats: r.price_stats ?? {},
       });
     }
     _canonicalCache = m;
@@ -2059,6 +2067,94 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           csvAnalyzedAt:        new Date().toISOString(),
         };
 
+        // ── Build roiBySport (normalized keys matching classifySportFull output) ──
+        // CRITICAL: this is what loadCanonicalMetricsFromDB queries — must be populated.
+        // Python sport keys: "NBA", "SOCCER (EPL)", "SOCCER (UCL)", "TENNIS", "ESPORTS", etc.
+        // Routes keys:       "NBA",     "Soccer",       "UCL",       "Tennis", "eSports", etc.
+        const pythonToRoutesSport: Record<string, string> = {
+          "NBA": "NBA", "NFL": "NFL", "NHL": "NHL", "MLB": "MLB",
+          "TENNIS": "Tennis", "UFC/MMA": "UFC/MMA", "ESPORTS": "eSports",
+          "POLITICS": "Politics", "OTHER": "Other",
+          "SOCCER (EPL)": "Soccer", "SOCCER (LaLiga)": "Soccer",
+          "SOCCER (SerieA)": "Soccer", "SOCCER (Other)": "Soccer",
+          "SOCCER (UCL)": "UCL", "SOCCER (UEL)": "UEL",
+        };
+        const roiBySportAgg: Record<string, { roi: number; tradeCount: number; winRate: number;
+          avgBet: number; medianBet: number; netProfit: number; totalCost: number }> = {};
+        for (const [pythonSport, stat] of Object.entries(t.sport_stats || {}) as [string, any][]) {
+          const routesSport = pythonToRoutesSport[pythonSport] ?? "Other";
+          if (!roiBySportAgg[routesSport]) {
+            roiBySportAgg[routesSport] = { roi: 0, tradeCount: 0, winRate: 0, avgBet: 0, medianBet: 0, netProfit: 0, totalCost: 0 };
+          }
+          const agg = roiBySportAgg[routesSport];
+          // Weighted aggregation for soccer leagues that share the "Soccer" bucket
+          const prevCost = agg.totalCost;
+          const thisCost = (stat.avg_bet || 0) * (stat.events || 0);
+          const totalCost = prevCost + thisCost;
+          agg.netProfit  += (stat.net_profit || 0);
+          agg.totalCost  = totalCost;
+          agg.tradeCount += (stat.events   || 0);
+          agg.avgBet     = totalCost > 0 ? totalCost / Math.max(agg.tradeCount, 1) : 0;
+          // For median: use the sub-league with most events as the representative
+          if (stat.events > (agg.tradeCount - stat.events)) {
+            agg.medianBet = stat.median_bet || stat.avg_bet || 0;
+            agg.winRate   = stat.win_rate || 0;
+          }
+          agg.roi = agg.totalCost > 0 ? (agg.netProfit / agg.totalCost) * 100 : 0;
+        }
+        const roiBySport: Record<string, any> = {};
+        for (const [sport, agg] of Object.entries(roiBySportAgg)) {
+          roiBySport[sport] = {
+            roi:        Math.round(agg.roi * 10) / 10,
+            tradeCount: agg.tradeCount,
+            winRate:    Math.round(agg.winRate * 10) / 10,
+            avgBet:     Math.round(agg.avgBet),
+            medianBet:  Math.round(agg.medianBet),
+          };
+        }
+        analysisMeta.roiBySport = roiBySport;
+
+        // ── Build roiByMarketType (normalized keys) ───────────────────────────────
+        // Python types: "Moneyline / Match", "Totals (O/U)", "Spread", "Futures"
+        // Routes types: "moneyline",           "total",        "spread", "futures"
+        const pythonToRoutesMkt: Record<string, string> = {
+          "Moneyline / Match": "moneyline",
+          "Totals (O/U)":      "total",
+          "Spread":            "spread",
+          "Futures":           "futures",
+        };
+        const roiByMarketType: Record<string, any> = {};
+        for (const [pythonMkt, stat] of Object.entries(t.market_stats || {}) as [string, any][]) {
+          const routesMkt = pythonToRoutesMkt[pythonMkt] ?? pythonMkt;
+          roiByMarketType[routesMkt] = {
+            roi:        stat.roi ?? 0,
+            tradeCount: stat.events ?? 0,
+            winRate:    stat.win_rate ?? 0,
+            avgBet:     stat.avg_bet ?? 0,
+            medianBet:  stat.median_bet ?? stat.avg_bet ?? 0,
+          };
+        }
+        analysisMeta.roiByMarketType = roiByMarketType;
+
+        // ── Store sport×marketType deep table (normalized keys) ───────────────────
+        // Keys already normalized by Python: "NBA|Moneyline / Match", "Soccer|Totals (O/U)", etc.
+        // Translate the market-type portion to routes format for easy lookup.
+        if (t.sport_market_stats) {
+          const roiBySportMarketType: Record<string, any> = {};
+          for (const [key, stat] of Object.entries(t.sport_market_stats) as [string, any][]) {
+            const [sport, pythonMkt] = key.split("|");
+            const routesMkt = pythonToRoutesMkt[pythonMkt] ?? pythonMkt;
+            roiBySportMarketType[`${sport}|${routesMkt}`] = {
+              roi:        stat.roi ?? 0,
+              tradeCount: stat.events ?? 0,
+              winRate:    stat.win_rate ?? 0,
+              avgBet:     Math.round(stat.avg_bet ?? 0),
+              medianBet:  Math.round(stat.median_bet ?? stat.avg_bet ?? 0),
+            };
+          }
+          analysisMeta.roiBySportMarketType = roiBySportMarketType;
+        }
+
         // Use the Python-computed quality score (Gemini Copy-Trade Metric v2).
         // Python is the authoritative scorer — it includes the Flip/Underdog bonus
         // and Leakage Penalty which cannot be replicated here without full price/sport data.
@@ -2773,22 +2869,55 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           ? (avgEntry - currentPrice - SLIPPAGE)
           : ((1 - avgEntry) - (1 - currentPrice) - SLIPPAGE);
 
+        // Compute market category early — needed for sport×mktType median bet lookup
+        const marketCategory = classifyMarketType(mw.question);
+        // Detailed sport key (resolves UCL/UEL from slug, LoL/CS2 from question title)
+        const signalSportDetailed = classifySportFull(signalSport, mw.question || "", mw.slug || "");
+        const sportMktKey = `${signalSportDetailed}|${marketCategory}`;
+
         // ── Insider Stats (OddsJam-style "WHY THIS BET?" metrics) ─────────────
-        // relBetSize: weighted avg of (this_bet / trader_normal_bet) — the conviction multiplier.
-        // Computed BEFORE confidence so it can boost the signal score (8x normal = 9 extra pts).
+        // relBetSize: weighted avg of (this_bet / trader_median_in_sport+mktType)
+        // Priority: sport×mktType median → sport median → sport avg → volume fallback
         const relBetSize = (() => {
           const w = dominant.reduce((s, e) => s + e.totalSize, 0) || 1;
           return Math.round(dominant.reduce((s, e) => {
             const cm = canonicalMap.get(e.address.toLowerCase());
-            const avgBet = cm?.roiBySport?.[signalSport]?.avgBet
-              || Math.max(e.traderInfo.volume / 100, 50);
-            return s + (e.totalSize / avgBet) * (e.totalSize / w);
+            const smEntry = cm?.roiBySportMarketType?.[sportMktKey];
+            const sEntry  = cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport];
+            const medianBet = (smEntry?.medianBet && smEntry.medianBet > 0) ? smEntry.medianBet
+              : (sEntry?.medianBet && sEntry.medianBet > 0)                  ? sEntry.medianBet
+              : (sEntry?.avgBet    && sEntry.avgBet    > 0)                  ? sEntry.avgBet
+              : Math.max(e.traderInfo.volume / 100, 50);
+            return s + (e.totalSize / medianBet) * (e.totalSize / w);
           }, 0) * 10) / 10;
         })();
 
-        const { score: confidence, breakdown } = computeConfidence(
+        // ── Price range bonus: is the current price in their winning zone? ─────
+        // Uses per-trader price-bucket stats from CSV analysis (csvPriceStats in DB).
+        // -8 to +8 pts applied after computeConfidence.
+        const priceBucket = currentPrice < 0.20 ? "Longshot (0-20c)"
+          : currentPrice < 0.40 ? "Underdog (20-40c)"
+          : currentPrice < 0.60 ? "Flip (40-60c)"
+          : currentPrice < 0.80 ? "Favorite (60-80c)"
+          : "Safe (80-100c)";
+        const priceRangeAdj = (() => {
+          let pts = 0, count = 0;
+          for (const e of dominant) {
+            const cm = canonicalMap.get(e.address.toLowerCase());
+            const stat = (cm?.priceStats as any)?.[priceBucket] as { roi?: number; events?: number } | undefined;
+            if (!stat || !stat.events || stat.events < 8) continue;
+            const roi = stat.roi ?? 0;
+            if (roi > 15) pts += 8; else if (roi > 8) pts += 5; else if (roi > 3) pts += 2;
+            else if (roi < -15) pts -= 8; else if (roi < -8) pts -= 5; else if (roi < -3) pts -= 2;
+            count++;
+          }
+          return count > 0 ? Math.max(-8, Math.min(8, Math.round(pts / count))) : 0;
+        })();
+
+        const { score: rawConf, breakdown } = computeConfidence(
           avgROI, consensusPct, valueDelta, avgSize, dominant.length, avgQuality, counterTraderCount, relBetSize
         );
+        const confidence = Math.max(5, Math.min(95, rawConf + priceRangeAdj));
 
         const tier = dominant.length >= 3 && avgQuality >= 45 ? "HIGH"
                    : dominant.length >= 2 ? "MED" : "SINGLE";
@@ -2800,7 +2929,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
         const isSports = isSportsRelated(mw.question);
         const mTypeRaw2 = categoriseMarket(mw.question, mw.endDate || mInfo?.endDate, mInfo?.gameStartTime, mw.slug || mInfo?.slug);
-        const marketCategory = classifyMarketType(mw.question);
+        // marketCategory already computed above for sport×mktType lookup — reuse here
         // Specific game markets (moneyline/spread/total) should be PREGAME, not FUTURES
         const mType = (mTypeRaw2 === "futures" && marketCategory !== "futures") ? "pregame" : mTypeRaw2;
         const priceStatus  = computePriceStatus(currentPrice, avgEntry, side);
@@ -2813,12 +2942,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const slippagePct = Math.round((side === "YES"
           ? (currentPrice - avgEntry) * 100
           : (avgEntry - currentPrice) * 100) * 10) / 10;
-        // insiderSportsROI: sport-specific canonical ROI (from closed-positions API — accurate),
-        // falling back to overall canonical ROI if sport has fewer than 10 positions.
+        // insiderSportsROI: sport-specific canonical ROI — uses detailed sport key (UCL, LoL, etc.)
+        // with fallback to generic sport, then overall ROI.
         const insiderSportsROI = Math.round(
           dominant.reduce((s, e) => {
             const cm = canonicalMap.get(e.address.toLowerCase());
-            const sportEntry = cm?.roiBySport?.[signalSport];
+            const sportEntry = cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport];
             const roi = (sportEntry && (sportEntry.tradeCount ?? 0) >= 10)
               ? sportEntry.roi
               : (cm?.overallROI ?? e.traderInfo.roi);
@@ -2828,14 +2957,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // insiderTrades: sport-specific closed position count from canonical API
         const insiderTrades = dominant.reduce((s, e) => {
           const cm = canonicalMap.get(e.address.toLowerCase());
-          const sportCount = cm?.roiBySport?.[signalSport]?.tradeCount ?? 0;
+          const sportCount = (cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport])?.tradeCount ?? 0;
           return s + (sportCount > 0 ? sportCount : ((cm?.totalTrades ?? 0) > 0 ? cm!.totalTrades : Math.max(Math.round(e.traderInfo.volume / 500), 1)));
         }, 0);
         // insiderWinRate: canonical win rate weighted by bet size
         const insiderWinRate = Math.round(
           dominant.reduce((s, e) => {
             const cm = canonicalMap.get(e.address.toLowerCase());
-            const wr = cm?.roiBySport?.[signalSport]?.winRate ?? cm?.winRate ?? 0;
+            const wr = (cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport])?.winRate ?? cm?.winRate ?? 0;
             return s + wr * e.totalSize;
           }, 0) / (totalDominantWeight || 1) * 10
         ) / 10;
@@ -2851,6 +2980,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           marketCategory,
           isActionable,
           priceStatus,
+          priceRangeAdj,
+          priceBucket,
           bigPlayScore,
           consensusPct: Math.round(consensusPct),
           valueDelta: Math.round(valueDelta * 1000) / 1000,
@@ -2874,7 +3005,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             // then to live leaderboard ROI as last resort.
             const displayROI = cm?.overallROI ?? e.traderInfo.roi;
             const displayQuality = (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : e.traderInfo.qualityScore;
-            const sportEntry = cm?.roiBySport?.[signalSport];
+            const sportEntry = cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport];
             const avgEP = e.prices.reduce((a,b)=>a+b,0)/e.prices.length;
             return {
               address: e.address,
@@ -2900,7 +3031,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           }),
           counterTraders: counterEntries.slice(0, 4).map(e => {
             const cm = canonicalMap.get(e.address.toLowerCase());
-            const sportEntry = cm?.roiBySport?.[signalSport];
+            const sportEntry = cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport];
             return {
               address: e.address,
               name: e.traderInfo.name,
@@ -3108,27 +3239,57 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                 return s + ((cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : (lbMap.get(t.wallet)?.qualityScore ?? 20));
               }, 0) / pg.traders.length)
             : 20;
+          // Compute market category early for sport×mktType lookup
+          const pgMarketCategory = classifyMarketType(pg.question);
+          const pgSportDetailed = classifySportFull(pgSport, pg.question || "", pg.slug || pgMarket?.slug || "");
+          const pgSportMktKey = `${pgSportDetailed}|${pgMarketCategory}`;
+
           // ── Insider Stats (OddsJam-style "WHY THIS BET?" metrics) ───────────
-          // pgRelBetSize: computed BEFORE confidence so it boosts the signal score
+          // pgRelBetSize: sport×mktType specific median bet — the conviction multiplier
           const pgTotalWeight = pg.totalValue || 1;
           const pgRelBetSize = (() => {
             return Math.round(pg.traders.reduce((s, t) => {
               const cm = canonicalMap.get(t.wallet.toLowerCase());
-              const avgBet = cm?.roiBySport?.[pgSport]?.avgBet
-                || Math.max((lbMap.get(t.wallet)?.volume ?? 1000) / 100, 50);
-              return s + (t.currentValue / avgBet) * (t.currentValue / pgTotalWeight);
+              const smEntry = cm?.roiBySportMarketType?.[pgSportMktKey];
+              const sEntry  = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
+              const medianBet = (smEntry?.medianBet && smEntry.medianBet > 0) ? smEntry.medianBet
+                : (sEntry?.medianBet && sEntry.medianBet > 0)                  ? sEntry.medianBet
+                : (sEntry?.avgBet    && sEntry.avgBet    > 0)                  ? sEntry.avgBet
+                : Math.max((lbMap.get(t.wallet)?.volume ?? 1000) / 100, 50);
+              return s + (t.currentValue / medianBet) * (t.currentValue / pgTotalWeight);
             }, 0) * 10) / 10;
           })();
 
-          const { score: confidence, breakdown } = computeConfidence(
+          // ── Price range bonus for positions path ─────────────────────────────
+          const pgPriceBucket = avgCurPrice < 0.20 ? "Longshot (0-20c)"
+            : avgCurPrice < 0.40 ? "Underdog (20-40c)"
+            : avgCurPrice < 0.60 ? "Flip (40-60c)"
+            : avgCurPrice < 0.80 ? "Favorite (60-80c)"
+            : "Safe (80-100c)";
+          const pgPriceRangeAdj = (() => {
+            let pts = 0, count = 0;
+            for (const t of pg.traders) {
+              const cm = canonicalMap.get(t.wallet.toLowerCase());
+              const stat = (cm?.priceStats as any)?.[pgPriceBucket] as { roi?: number; events?: number } | undefined;
+              if (!stat || !stat.events || stat.events < 8) continue;
+              const roi = stat.roi ?? 0;
+              if (roi > 15) pts += 8; else if (roi > 8) pts += 5; else if (roi > 3) pts += 2;
+              else if (roi < -15) pts -= 8; else if (roi < -8) pts -= 5; else if (roi < -3) pts -= 2;
+              count++;
+            }
+            return count > 0 ? Math.max(-8, Math.min(8, Math.round(pts / count))) : 0;
+          })();
+
+          const { score: pgRawConf, breakdown } = computeConfidence(
             avgROI, consensusPct, valueDelta, avgSize, pg.traders.length, avgQualityForScore, counterTraderCount, pgRelBetSize
           );
+          const confidence = Math.max(5, Math.min(95, pgRawConf + pgPriceRangeAdj));
 
           const mTypeRaw = categoriseMarket(pg.question, resolvedEndDate, resolvedGameStartTime, pg.slug || pgMarket?.slug);
-          const marketCategory = classifyMarketType(pg.question);
+          // pgMarketCategory already computed above
           // Specific game markets (moneyline/spread/total) should show as PREGAME, not FUTURES
           // even if the game is > 7 days away. FUTURES badge is reserved for season/championship bets.
-          const mType = (mTypeRaw === "futures" && marketCategory !== "futures") ? "pregame" : mTypeRaw;
+          const mType = (mTypeRaw === "futures" && pgMarketCategory !== "futures") ? "pregame" : mTypeRaw;
           const priceStatus  = computePriceStatus(avgCurPrice, avgEntry, pg.side);
           // Stale signal filter: price moved >5¢ past sharp entry in wrong direction
           if (priceStatus === "moved" && Math.abs(avgCurPrice - avgEntry) > 0.05) continue;
@@ -3143,12 +3304,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const pgSlippagePct = Math.round((pg.side === "YES"
             ? (avgCurPrice - avgEntry) * 100
             : (avgEntry - avgCurPrice) * 100) * 10) / 10;
-          // insiderSportsROI: sport-specific canonical ROI (from closed-positions API — accurate),
-          // falling back to overall canonical ROI if sport has fewer than 10 positions.
+          // insiderSportsROI: detailed sport key (UCL, LoL, etc.) with fallback to generic sport
           const pgInsiderSportsROI = Math.round(
             pg.traders.reduce((s, t) => {
               const cm = canonicalMap.get(t.wallet.toLowerCase());
-              const sportEntry = cm?.roiBySport?.[pgSport];
+              const sportEntry = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
               const roi = (sportEntry && sportEntry.tradeCount >= 10)
                 ? sportEntry.roi
                 : (cm?.overallROI ?? lbMap.get(t.wallet)?.roi ?? 0);
@@ -3158,14 +3318,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           // insiderTrades: canonical closed position count (actual trades completed)
           const pgInsiderTrades = pg.traders.reduce((s, t) => {
             const cm = canonicalMap.get(t.wallet.toLowerCase());
-            const sportCount = cm?.roiBySport?.[pgSport]?.tradeCount ?? 0;
+            const sportCount = (cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport])?.tradeCount ?? 0;
             return s + (sportCount > 0 ? sportCount : ((cm?.totalTrades ?? 0) > 0 ? cm!.totalTrades : Math.max(Math.round((lbMap.get(t.wallet)?.volume ?? 500) / 500), 1)));
           }, 0);
           // insiderWinRate: canonical win rate weighted by bet size
           const pgInsiderWinRate = Math.round(
             pg.traders.reduce((s, t) => {
               const cm = canonicalMap.get(t.wallet.toLowerCase());
-              const wr = cm?.roiBySport?.[pgSport]?.winRate ?? cm?.winRate ?? 0;
+              const wr = (cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport])?.winRate ?? cm?.winRate ?? 0;
               return s + wr * t.currentValue;
             }, 0) / pgTotalWeight * 10
           ) / 10;
@@ -3179,9 +3339,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             outcome: pg.side, side: pg.side,
             confidence, tier: pg.traders.length >= 3 ? "HIGH" : "MED",
             marketType: mType, isSports: true,
-            marketCategory,
+            marketCategory: pgMarketCategory,
             isActionable,
             priceStatus,
+            priceRangeAdj: pgPriceRangeAdj,
+            priceBucket: pgPriceBucket,
             bigPlayScore,
             consensusPct: 100,
             valueDelta: Math.round(valueDelta * 1000) / 1000,
@@ -3235,7 +3397,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               if (!oppPg?.traders?.length) return [];
               return oppPg.traders.slice(0, 4).map(t => {
                 const cm = canonicalMap.get(t.wallet.toLowerCase());
-                const sportEntry = cm?.roiBySport?.[pgSport];
+                const sportEntry = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
                 return {
                   address: t.wallet,
                   name: t.name,

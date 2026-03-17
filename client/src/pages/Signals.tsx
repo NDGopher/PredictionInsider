@@ -855,6 +855,23 @@ function SignalCard({ signal, mode, onSnoozed, onBetTracked, ofiData }: {
                         <span className="text-xs font-bold text-foreground">{((signal as any).insiderTrades as number).toLocaleString()}</span>
                       </div>
                     )}
+                    {(signal as any).priceBucket && (
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-[10px] text-muted-foreground whitespace-nowrap">Price Zone</span>
+                        <span className={`text-[10px] font-bold truncate text-right ${
+                          ((signal as any).priceRangeAdj ?? 0) > 0 ? "text-green-600 dark:text-green-400"
+                          : ((signal as any).priceRangeAdj ?? 0) < 0 ? "text-red-500"
+                          : "text-foreground"
+                        }`}>
+                          {(signal as any).priceBucket}
+                          {(signal as any).priceRangeAdj !== 0 && (signal as any).priceRangeAdj !== undefined &&
+                            <span className="ml-1 opacity-70">
+                              {(signal as any).priceRangeAdj > 0 ? `+${(signal as any).priceRangeAdj}` : (signal as any).priceRangeAdj}
+                            </span>
+                          }
+                        </span>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] text-muted-foreground">Insiders</span>
                       <span className="text-xs font-bold text-foreground">{signal.traderCount}</span>

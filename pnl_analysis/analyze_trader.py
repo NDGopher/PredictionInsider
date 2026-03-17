@@ -147,6 +147,7 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
             "win_rate":   round(s_wr, 2),
             "events":     len(grp),
             "avg_bet":    round(grp["total_cost"].mean(), 2),
+            "median_bet": round(float(grp["total_cost"].median()), 2),
         }
 
     # ── Market Type Breakdown ────────────────────────────────────
@@ -160,6 +161,36 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
             "roi":        round(m_roi, 2),
             "win_rate":   round(grp["is_win"].mean() * 100, 2),
             "events":     len(grp),
+            "avg_bet":    round(grp["total_cost"].mean(), 2),
+            "median_bet": round(float(grp["total_cost"].median()), 2),
+        }
+
+    # ── Sport × Market Type Breakdown (deep conviction analysis) ─
+    # Keys use normalized sport names matching routes.ts classifySportFull output.
+    # e.g. "NBA|Moneyline / Match", "Soccer|Totals (O/U)", "UCL|Moneyline / Match"
+    def _norm_sport(raw: str) -> str:
+        if "UCL" in raw:           return "UCL"
+        if "SOCCER" in raw:        return "Soccer"
+        if raw == "TENNIS":        return "Tennis"
+        if raw == "ESPORTS":       return "eSports"
+        if raw == "POLITICS":      return "Politics"
+        if raw == "OTHER":         return "Other"
+        return raw  # NBA, NHL, NFL, MLB, MLB unchanged
+
+    agg["sport_norm"] = agg["sport_type"].apply(_norm_sport)
+    sport_market_stats = {}
+    for (s_norm, mtype), grp in agg.groupby(["sport_norm", "market_type"]):
+        sm_profit = grp["total_pnl"].sum()
+        sm_cost   = grp["total_cost"].sum()
+        sm_roi    = (sm_profit / sm_cost * 100) if sm_cost > 0 else 0
+        key = f"{s_norm}|{mtype}"
+        sport_market_stats[key] = {
+            "net_profit": round(sm_profit, 2),
+            "roi":        round(sm_roi, 2),
+            "win_rate":   round(grp["is_win"].mean() * 100, 2),
+            "events":     len(grp),
+            "avg_bet":    round(grp["total_cost"].mean(), 2),
+            "median_bet": round(float(grp["total_cost"].median()), 2),
         }
 
     # ── Price Bucket Breakdown ───────────────────────────────────
@@ -403,6 +434,7 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
         # Breakdowns
         "sport_stats":      sport_stats,
         "market_stats":     market_stats,
+        "sport_market_stats": sport_market_stats,
         "price_stats":      price_stats,
         "side_stats":       side_stats,
         "monthly_pnl":      monthly_data,
