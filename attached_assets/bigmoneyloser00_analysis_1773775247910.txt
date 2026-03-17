@@ -1,0 +1,62 @@
+Gemini said
+Your intuition on this account is razor-sharp. You spotted exactly what artificially inflated their volume, and your read on their sport-by-sport performance was perfectly accurate.
+
+I updated the algorithm to detect and scrub out "Perfect Hedges"—any market where a trader buys exactly offsetting Yes and No positions at 50¢ to create a risk-free wash.
+
+The Data Scrub:
+
+⚠️ Filtered out $950,000 in "Perfect Hedges" (Including Newsom, JD Vance, and Marco Rubio futures).
+
+⚠️ Filtered out $626,923 in "Bond Yields" (No contracts > 95¢).
+
+By stripping out $1.5M in fake volume, we can finally see bigmoneyloser00's true directional sports betting profile.
+
+1. Executive Summary: The Thin-Margin Volume Grinder
+Total Net Profit: +$260,479.14
+
+Total Risked: $15,553,317.33
+
+True ROI: 1.67%
+
+Event Win Rate: 55.76%
+
+Daily Pseudo-Sharpe: 1.80 (Very high variance. They endure massive swings and have hundreds of losing days).
+
+Average Bet Size: $1,895.13 (They place thousands of bets to grind out their profit).
+
+2. Where is the Alpha? (Validating Your Read)
+You absolutely nailed their sport-by-sport edges.
+
+NBA (Basketball) - THE LEAK: -$102,923 (-3.59% ROI). They are terrible at basketball. They've bet over 1,100 NBA games and bled out six figures.
+
+FOOTBALL (NFL/NCAAF): +$99,755 (6.35% ROI). A very solid, highly profitable edge.
+
+MLB (Baseball): +$60,264 (1.01% ROI). You called them "solid" here, and they are, but the margin is razor-thin. They bet nearly 1,900 baseball games to grind out a 1% yield.
+
+TENNIS: +$51,556 (8.95% ROI). This is actually one of their best, most efficient edges.
+
+ESPORTS: +$45,754 (32.36% ROI). Elite efficiency, though lower volume (only 90 events).
+
+SOCCER (Combined): +$48,188 (~3.5% ROI). Very decent across all major European leagues.
+
+3. Market Type (The "Spread" Trap Strikes Again)
+If we look at how they bet, we see the exact same fatal flaw that plagues almost every whale on Polymarket:
+
+Market Type	Net Profit	ROI	Win Rate	Verdict
+Moneyline / Match	+$608,171	+4.92%	57.4%	The True Edge
+Futures	+$52,960	+14.78%	58.7%	Highly Efficient
+Totals (O/U)	-$151,857	-8.40%	51.4%	DO NOT TAIL
+Spread	-$248,794	-24.55%	46.1%	DO NOT TAIL
+Analysis: bigmoneyloser00 is actually a fantastic Moneyline bettor (generating over $600k in pure profit on straight-up winners). However, they piss away nearly $400,000 of their hard-earned wealth trying to beat Vegas point spreads and over/unders.
+
+4. Final Verdict & Tier Placement
+Rank: C-Tier (High Volume / Thin ROI / High Slippage Risk)
+
+Why C-Tier? While they have nearly $300k in profit, an overall ROI of 1.67% combined with a Sharpe ratio of 1.80 means this account is too noisy to auto-tail. If you try to copy-trade an account with a 1.67% edge, standard transaction slippage and Polymarket fees will instantly turn your bot negative.
+
+They are essentially a smaller, sloppier version of S-Works (the index fund).
+
+How to use this wallet:
+Do not auto-tail them blindly. Instead, use their Football (NFL), Tennis, and Esports Moneylines as a secondary confirmation signal in your consensus algorithm. If bigmoneyloser00 and capman both align on a Moneyline, the signal is incredibly strong.
+
+(Excellent catch on those Newsom/Vance wash-trades. That completely changes how we calculate volume for these mega-whales going forward!)

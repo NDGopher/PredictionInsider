@@ -2191,7 +2191,12 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
       UPDATE elite_trader_profiles
       SET metrics = metrics || $2::jsonb,
           computed_at = NOW(),
-          quality_score = $3,
+          quality_score = CASE
+            WHEN (metrics->>'csvQualityScore') IS NOT NULL
+              AND (metrics->>'csvQualityScore') <> ''
+            THEN quality_score
+            ELSE $3
+          END,
           tags = $4
       WHERE wallet = $1
     `, [w, JSON.stringify(canonicalMetrics), quantScore, mergedTags]);

@@ -1452,18 +1452,21 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                t.polymarket_url, t.notes,
                p.quality_score, p.tags, p.computed_at,
                p.metrics->>'totalTrades' as total_trades,
-               p.metrics->>'overallROI' as overall_roi,
+               COALESCE(NULLIF(p.metrics->>'csvDirectionalROI',''), p.metrics->>'overallROI') as overall_roi,
                p.metrics->>'roiCapital' as roi_capital,
                p.metrics->>'last90dROI' as last90d_roi,
-               p.metrics->>'winRate' as win_rate,
-               p.metrics->>'sharpeScore' as sharpe_score,
-               p.metrics->>'avgBetSize' as avg_bet_size,
+               COALESCE(NULLIF(p.metrics->>'csvWinRate',''), p.metrics->>'winRate') as win_rate,
+               COALESCE(NULLIF(p.metrics->>'csvPseudoSharpe',''), p.metrics->>'sharpeScore') as sharpe_score,
+               COALESCE(NULLIF(p.metrics->>'csvAvgBetSize',''), p.metrics->>'avgBetSize') as avg_bet_size,
                p.metrics->>'tradesPerDay' as trades_per_day,
-               p.metrics->>'topSport' as top_sport,
+               COALESCE(NULLIF(p.metrics->>'csvTopSport',''), p.metrics->>'topSport') as top_sport,
                p.metrics->>'topMarketType' as top_market_type,
                p.metrics->>'consistencyRating' as consistency_rating,
-               p.metrics->>'overallPNL' as overall_pnl,
-               p.metrics->>'totalUSDC' as total_usdc
+               COALESCE(NULLIF(p.metrics->>'csvDirectionalPNL',''), p.metrics->>'overallPNL') as overall_pnl,
+               p.metrics->>'totalUSDC' as total_usdc,
+               p.metrics->>'csvTier' as csv_tier,
+               p.metrics->>'csvQualityScore' as csv_quality_score,
+               p.metrics->>'csvTailGuide' as csv_tail_guide
         FROM elite_traders t
         LEFT JOIN elite_trader_profiles p ON p.wallet = t.wallet
         ORDER BY COALESCE(p.quality_score, 0) DESC

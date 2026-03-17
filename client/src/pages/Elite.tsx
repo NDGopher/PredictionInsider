@@ -39,6 +39,9 @@ interface EliteTrader {
   consistency_rating: string | null;
   overall_pnl: string | null;
   total_usdc: string | null;
+  csv_tier: string | null;
+  csv_quality_score: string | null;
+  csv_tail_guide: string | null;
 }
 
 interface TraderMetrics {
@@ -778,6 +781,14 @@ function TraderCard({ trader }: { trader: EliteTrader }) {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            {trader.csv_tier && (
+              <div className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                trader.csv_tier === "S-Tier" ? "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300" :
+                trader.csv_tier === "A-Tier" ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300" :
+                trader.csv_tier === "B-Tier" ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300" :
+                "bg-muted text-muted-foreground"
+              }`}>{trader.csv_tier}</div>
+            )}
             {qs != null && (
               <div className="flex flex-col items-center">
                 <div className={`text-xl font-bold tabular-nums ${qualityColor(qs)}`}>{qs}</div>
@@ -805,7 +816,7 @@ function TraderCard({ trader }: { trader: EliteTrader }) {
         {(overallROI != null || winRate != null) && (
           <div className="grid grid-cols-4 gap-1.5 mt-2.5">
             {[
-              { label: "PA ROI", value: fmtROI(overallROI), color: overallROI != null ? roiColor(overallROI) : "" },
+              { label: trader.csv_tier ? "CSV ROI" : "PA ROI", value: fmtROI(overallROI), color: overallROI != null ? roiColor(overallROI) : "" },
               { label: "Win%", value: fmt(winRate, "%"), color: "" },
               { label: "Trades/d", value: trader.trades_per_day ? parseFloat(trader.trades_per_day).toFixed(1) : "—", color: "" },
               {
