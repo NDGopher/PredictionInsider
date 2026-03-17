@@ -379,6 +379,12 @@ function SignalExpandedPanel({ signal, onClose }: { signal: Signal; onClose: () 
             PRICE MOVED
           </span>
         )}
+        {(s as any).relBetSize >= 3 && (s as any).hasCuratedElite && (
+          <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-700 dark:text-violet-300 border border-violet-500/30"
+            title={`Elite trader bet ${((s as any).relBetSize as number).toFixed(1)}× their typical stake`}>
+            🔥 {((s as any).relBetSize as number).toFixed(1)}× NORMAL
+          </span>
+        )}
         {(s.bigPlayScore ?? 0) >= 2 && (
           <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20">
             <DollarSign className="w-2.5 h-2.5" />BIG PLAY

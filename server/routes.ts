@@ -324,12 +324,17 @@ function computeIsActionable(currentPrice: number, avgEntry: number, side: "YES"
 }
 
 /** Score for "big play": how large is this bet */
-function computeBigPlayScore(totalUsdc: number, traderCount: number): number {
+function computeBigPlayScore(totalUsdc: number, traderCount: number, relBetSize: number = 1): number {
   const avg = totalUsdc / Math.max(traderCount, 1);
-  if (totalUsdc >= 30_000 || avg >= 15_000) return 3; // huge
-  if (totalUsdc >= 10_000 || avg >= 5_000)  return 2; // big
-  if (totalUsdc >= 3_000  || avg >= 1_500)  return 1; // notable
-  return 0;
+  let base = totalUsdc >= 30_000 || avg >= 15_000 ? 3  // huge
+           : totalUsdc >= 10_000 || avg >= 5_000  ? 2  // big
+           : totalUsdc >= 3_000  || avg >= 1_500  ? 1  // notable
+           : 0;
+  // Conviction upgrade: if the trader(s) are betting well above their normal, bump one tier.
+  // A $4K bet at 5× normal is a stronger signal than a routine $4K play.
+  if (relBetSize >= 5 && base < 3) base = Math.min(base + 2, 3);
+  else if (relBetSize >= 3 && base < 3) base = Math.min(base + 1, 3);
+  return base;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -390,14 +395,14 @@ function computeConfidence(
   const valuePct = valueDelta > 0 ? Math.round(Math.min(valueDelta * 600, 1) * 100 * 0.20) : 0;
   const sizePct  = Math.round(Math.min(avgNetUsdc / 15_000, 1) * 100 * 0.10);
 
-  // Relative bet size bonus (0–10 pts): the OddsJam key signal.
-  // When a sharp trader bets 3x+ their normal amount, they have unusually high conviction.
-  // 1–1.5x = 0 (routine), 2x = 3pts, 3-4x = 5pts, 5-6x = 7pts, 7-9x = 9pts, 10x+ = 10pts
-  const relSizePts = relBetSize >= 10 ? 10
-                   : relBetSize >= 7  ? 9
-                   : relBetSize >= 5  ? 7
-                   : relBetSize >= 3  ? 5
-                   : relBetSize >= 2  ? 3
+  // Relative bet size bonus (0–15 pts): the core conviction signal.
+  // When a sharp bets 3x+ their normal, they have unusually high conviction — weight it heavily.
+  // <2x = 0 (routine), 2x = 4pts, 3-4x = 7pts, 5-6x = 10pts, 7-9x = 13pts, 10x+ = 15pts
+  const relSizePts = relBetSize >= 10 ? 15
+                   : relBetSize >= 7  ? 13
+                   : relBetSize >= 5  ? 10
+                   : relBetSize >= 3  ? 7
+                   : relBetSize >= 2  ? 4
                    : 0;
 
   // Tier bonus: more qualified traders = higher ceiling
@@ -407,8 +412,14 @@ function computeConfidence(
                   : 0;
 
   const base = roiPct + consPct + valuePct + sizePct + relSizePts;
-  // Single-trader signals: cap at 68 (raised from 62 to allow relBetSize to push high-conviction single bets higher)
-  const score = traderCount === 1 ? Math.min(base + tierBonus, 68) : Math.min(base + tierBonus, 95);
+  // Single-trader cap: dynamically raised when the trader is betting well above their normal.
+  // A curated elite betting 5x their norm at 50¢ with no opposition deserves a high score.
+  // After computeConfidence, the curated-elite post-hoc boost adds +8 per elite on top.
+  const singleCap = relBetSize >= 5 ? 82
+                  : relBetSize >= 3 ? 76
+                  : relBetSize >= 2 ? 72
+                  : 68;
+  const score = traderCount === 1 ? Math.min(base + tierBonus, singleCap) : Math.min(base + tierBonus, 95);
 
   return {
     score: Math.max(score, 5),
@@ -2796,7 +2807,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // Stale signal filter: price moved >5¢ past sharp entry in wrong direction — not actionable
         if (priceStatus === "moved" && Math.abs(currentPrice - avgEntry) > 0.05) continue;
         const isActionable = priceStatus === "actionable" || priceStatus === "dip";
-        const bigPlayScore = computeBigPlayScore(totalDominantSize, dominant.length);
+        const bigPlayScore = computeBigPlayScore(totalDominantSize, dominant.length, relBetSize);
         const dominantSorted = [...dominant].sort((a, b) => b.totalSize - a.totalSize);
         // slippagePct: how much did the price move after the insiders bought (conviction indicator)
         const slippagePct = Math.round((side === "YES"
@@ -3122,7 +3133,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           // Stale signal filter: price moved >5¢ past sharp entry in wrong direction
           if (priceStatus === "moved" && Math.abs(avgCurPrice - avgEntry) > 0.05) continue;
           const isActionable = priceStatus === "actionable" || priceStatus === "dip";
-          const bigPlayScore = computeBigPlayScore(pg.totalValue, pg.traders.length);
+          const bigPlayScore = computeBigPlayScore(pg.totalValue, pg.traders.length, pgRelBetSize);
           const id = `pos-${pg.conditionId}-${pg.side}`;
           const isNew = !seenSignalIds.has(id);
           seenSignalIds.add(id);
