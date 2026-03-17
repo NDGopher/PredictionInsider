@@ -23,35 +23,40 @@
       "roi": -9.88,
       "win_rate": 58.33,
       "events": 24,
-      "avg_bet": 12709.83
+      "avg_bet": 12709.83,
+      "median_bet": 5439.95
     },
     "SOCCER (EPL)": {
       "net_profit": -10987.43,
       "roi": -1.77,
       "win_rate": 53.33,
       "events": 15,
-      "avg_bet": 41350.03
+      "avg_bet": 41350.03,
+      "median_bet": 22965.67
     },
     "SOCCER (LaLiga)": {
       "net_profit": 161715.77,
       "roi": 45.84,
       "win_rate": 70.0,
       "events": 10,
-      "avg_bet": 35280.89
+      "avg_bet": 35280.89,
+      "median_bet": 31807.32
     },
     "SOCCER (Other)": {
       "net_profit": 225699.19,
       "roi": 10.22,
       "win_rate": 46.46,
       "events": 127,
-      "avg_bet": 17390.06
+      "avg_bet": 17390.06,
+      "median_bet": 4499.24
     },
     "SOCCER (UCL)": {
       "net_profit": 494310.24,
       "roi": 66.16,
       "win_rate": 90.0,
       "events": 10,
-      "avg_bet": 74713.22
+      "avg_bet": 74713.22,
+      "median_bet": 34228.78
     }
   },
   "market_stats": {
@@ -59,25 +64,115 @@
       "net_profit": -523.77,
       "roi": -2.28,
       "win_rate": 0.0,
-      "events": 1
+      "events": 1,
+      "avg_bet": 22965.67,
+      "median_bet": 22965.67
     },
     "Moneyline / Match": {
       "net_profit": 882937.09,
       "roi": 32.16,
       "win_rate": 55.96,
-      "events": 109
+      "events": 109,
+      "avg_bet": 25185.51,
+      "median_bet": 6828.35
     },
     "Spread": {
       "net_profit": -111641.59,
       "roi": -82.75,
       "win_rate": 0.0,
-      "events": 6
+      "events": 6,
+      "avg_bet": 22485.18,
+      "median_bet": 16013.04
     },
     "Totals (O/U)": {
       "net_profit": 69832.13,
       "roi": 5.25,
       "win_rate": 51.43,
-      "events": 70
+      "events": 70,
+      "avg_bet": 19009.55,
+      "median_bet": 6149.64
+    }
+  },
+  "sport_market_stats": {
+    "Other|Moneyline / Match": {
+      "net_profit": -37820.87,
+      "roi": -15.16,
+      "win_rate": 50.0,
+      "events": 18,
+      "avg_bet": 13857.42,
+      "median_bet": 4532.81
+    },
+    "Other|Spread": {
+      "net_profit": -20907.12,
+      "roi": -75.45,
+      "win_rate": 0.0,
+      "events": 1,
+      "avg_bet": 27709.33,
+      "median_bet": 27709.33
+    },
+    "Other|Totals (O/U)": {
+      "net_profit": 28594.08,
+      "roi": 102.51,
+      "win_rate": 100.0,
+      "events": 5,
+      "avg_bet": 5578.61,
+      "median_bet": 5314.28
+    },
+    "Soccer|Futures": {
+      "net_profit": -523.77,
+      "roi": -2.28,
+      "win_rate": 0.0,
+      "events": 1,
+      "avg_bet": 22965.67,
+      "median_bet": 22965.67
+    },
+    "Soccer|Moneyline / Match": {
+      "net_profit": 584449.43,
+      "roi": 30.41,
+      "win_rate": 53.57,
+      "events": 84,
+      "avg_bet": 22878.21,
+      "median_bet": 6516.66
+    },
+    "Soccer|Spread": {
+      "net_profit": -90557.4,
+      "roi": -100.0,
+      "win_rate": 0.0,
+      "events": 4,
+      "avg_bet": 22639.35,
+      "median_bet": 9076.73
+    },
+    "Soccer|Totals (O/U)": {
+      "net_profit": -116940.72,
+      "roi": -10.2,
+      "win_rate": 46.03,
+      "events": 63,
+      "avg_bet": 18195.31,
+      "median_bet": 6299.9
+    },
+    "UCL|Moneyline / Match": {
+      "net_profit": 336308.54,
+      "roi": 58.59,
+      "win_rate": 100.0,
+      "events": 7,
+      "avg_bet": 82002.4,
+      "median_bet": 38500.71
+    },
+    "UCL|Spread": {
+      "net_profit": -177.07,
+      "roi": -1.06,
+      "win_rate": 0.0,
+      "events": 1,
+      "avg_bet": 16644.33,
+      "median_bet": 16644.33
+    },
+    "UCL|Totals (O/U)": {
+      "net_profit": 158178.77,
+      "roi": 101.09,
+      "win_rate": 100.0,
+      "events": 2,
+      "avg_bet": 78235.57,
+      "median_bet": 78235.57
     }
   },
   "price_stats": {

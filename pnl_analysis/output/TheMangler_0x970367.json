@@ -23,77 +23,88 @@
       "roi": 45.21,
       "win_rate": 100.0,
       "events": 2,
-      "avg_bet": 4735.89
+      "avg_bet": 4735.89,
+      "median_bet": 4735.89
     },
     "NBA": {
       "net_profit": 433682.13,
       "roi": 47.79,
       "win_rate": 65.38,
       "events": 26,
-      "avg_bet": 34900.13
+      "avg_bet": 34900.13,
+      "median_bet": 26197.8
     },
     "NFL": {
       "net_profit": 827265.37,
       "roi": 92.98,
       "win_rate": 80.0,
       "events": 5,
-      "avg_bet": 177944.98
+      "avg_bet": 177944.98,
+      "median_bet": 34863.59
     },
     "NHL": {
       "net_profit": 74364.27,
       "roi": 17.4,
       "win_rate": 51.16,
       "events": 86,
-      "avg_bet": 4968.96
+      "avg_bet": 4968.96,
+      "median_bet": 2613.19
     },
     "OTHER": {
       "net_profit": 1082062.25,
       "roi": 72.81,
       "win_rate": 73.58,
       "events": 53,
-      "avg_bet": 28041.22
+      "avg_bet": 28041.22,
+      "median_bet": 7586.28
     },
     "POLITICS": {
       "net_profit": 1873932.33,
       "roi": 132.06,
       "win_rate": 66.67,
       "events": 33,
-      "avg_bet": 43000.52
+      "avg_bet": 43000.52,
+      "median_bet": 25125.99
     },
     "SOCCER (EPL)": {
       "net_profit": 53521.49,
       "roi": 71.51,
       "win_rate": 100.0,
       "events": 2,
-      "avg_bet": 37420.1
+      "avg_bet": 37420.1,
+      "median_bet": 37420.1
     },
     "SOCCER (LaLiga)": {
       "net_profit": 23663.76,
       "roi": 31.73,
       "win_rate": 66.67,
       "events": 3,
-      "avg_bet": 24859.72
+      "avg_bet": 24859.72,
+      "median_bet": 24930.84
     },
     "SOCCER (Other)": {
       "net_profit": 61707.0,
       "roi": 92.41,
       "win_rate": 83.33,
       "events": 6,
-      "avg_bet": 11129.08
+      "avg_bet": 11129.08,
+      "median_bet": 3456.94
     },
     "SOCCER (UCL)": {
       "net_profit": 361486.58,
       "roi": 158.67,
       "win_rate": 100.0,
       "events": 2,
-      "avg_bet": 113910.42
+      "avg_bet": 113910.42,
+      "median_bet": 113910.42
     },
     "TENNIS": {
       "net_profit": 12.12,
       "roi": 0.93,
       "win_rate": 50.0,
       "events": 2,
-      "avg_bet": 648.72
+      "avg_bet": 648.72,
+      "median_bet": 648.72
     }
   },
   "market_stats": {
@@ -101,13 +112,147 @@
       "net_profit": 3906614.73,
       "roi": 140.23,
       "win_rate": 86.0,
-      "events": 50
+      "events": 50,
+      "avg_bet": 55715.42,
+      "median_bet": 32027.87
     },
     "Moneyline / Match": {
       "net_profit": 889364.3,
       "roi": 31.78,
       "win_rate": 57.06,
-      "events": 170
+      "events": 170,
+      "avg_bet": 16462.78,
+      "median_bet": 4305.06
+    }
+  },
+  "sport_market_stats": {
+    "MLB|Futures": {
+      "net_profit": 4281.72,
+      "roi": 45.21,
+      "win_rate": 100.0,
+      "events": 2,
+      "avg_bet": 4735.89,
+      "median_bet": 4735.89
+    },
+    "NBA|Futures": {
+      "net_profit": 435698.09,
+      "roi": 102.73,
+      "win_rate": 100.0,
+      "events": 6,
+      "avg_bet": 70688.17,
+      "median_bet": 48041.59
+    },
+    "NBA|Moneyline / Match": {
+      "net_profit": -2015.96,
+      "roi": -0.42,
+      "win_rate": 55.0,
+      "events": 20,
+      "avg_bet": 24163.72,
+      "median_bet": 19928.4
+    },
+    "NFL|Futures": {
+      "net_profit": -2982.83,
+      "roi": -8.56,
+      "win_rate": 0.0,
+      "events": 1,
+      "avg_bet": 34863.59,
+      "median_bet": 34863.59
+    },
+    "NFL|Moneyline / Match": {
+      "net_profit": 830248.2,
+      "roi": 97.12,
+      "win_rate": 100.0,
+      "events": 4,
+      "avg_bet": 213715.33,
+      "median_bet": 150251.67
+    },
+    "NHL|Futures": {
+      "net_profit": 55143.12,
+      "roi": 149.56,
+      "win_rate": 100.0,
+      "events": 3,
+      "avg_bet": 12290.42,
+      "median_bet": 8492.03
+    },
+    "NHL|Moneyline / Match": {
+      "net_profit": 19221.15,
+      "roi": 4.92,
+      "win_rate": 49.4,
+      "events": 83,
+      "avg_bet": 4704.32,
+      "median_bet": 2456.19
+    },
+    "Other|Futures": {
+      "net_profit": 1144361.6,
+      "roi": 98.55,
+      "win_rate": 90.48,
+      "events": 21,
+      "avg_bet": 55296.72,
+      "median_bet": 11505.5
+    },
+    "Other|Moneyline / Match": {
+      "net_profit": -62299.35,
+      "roi": -19.17,
+      "win_rate": 62.5,
+      "events": 32,
+      "avg_bet": 10154.8,
+      "median_bet": 4931.7
+    },
+    "Politics|Futures": {
+      "net_profit": 1819732.68,
+      "roi": 238.83,
+      "win_rate": 70.0,
+      "events": 10,
+      "avg_bet": 76192.19,
+      "median_bet": 52258.4
+    },
+    "Politics|Moneyline / Match": {
+      "net_profit": 54199.65,
+      "roi": 8.25,
+      "win_rate": 65.22,
+      "events": 23,
+      "avg_bet": 28569.36,
+      "median_bet": 19088.87
+    },
+    "Soccer|Futures": {
+      "net_profit": 88894.74,
+      "roi": 68.67,
+      "win_rate": 100.0,
+      "events": 4,
+      "avg_bet": 32365.15,
+      "median_bet": 37326.27
+    },
+    "Soccer|Moneyline / Match": {
+      "net_profit": 49997.52,
+      "roi": 57.65,
+      "win_rate": 71.43,
+      "events": 7,
+      "avg_bet": 12390.46,
+      "median_bet": 5599.39
+    },
+    "Tennis|Futures": {
+      "net_profit": -0.98,
+      "roi": -100.0,
+      "win_rate": 0.0,
+      "events": 1,
+      "avg_bet": 0.98,
+      "median_bet": 0.98
+    },
+    "Tennis|Moneyline / Match": {
+      "net_profit": 13.1,
+      "roi": 1.01,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 1296.46,
+      "median_bet": 1296.46
+    },
+    "UCL|Futures": {
+      "net_profit": 361486.58,
+      "roi": 158.67,
+      "win_rate": 100.0,
+      "events": 2,
+      "avg_bet": 113910.42,
+      "median_bet": 113910.42
     }
   },
   "price_stats": {
