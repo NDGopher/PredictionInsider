@@ -1,0 +1,77 @@
+Based on the deep-dive analysis of the lynxtitan.csv ledger, we are looking at a completely different archetype from the previous whales. If capman was a high-efficiency sniper, lynxtitan is a High-Stakes "Favorite" Grinder. They push massive institutional volume to grind out a very thin, low-margin yield by betting on high-probability outcomes. Here is their full Trader Report Card and exactly how you should (and shouldn't) tail them.1. Executive Summary: The Heavy Favorite GrinderTotal Net Profit: +$267,420.99Total Capital Risked: $21,005,841.37 (Massive volume)Overall ROI: 1.27% (Very thin margin)Event Win Rate: 57.67%Daily Pseudo-Sharpe Ratio: 2.96 (Moderate consistency; they endure some choppy drawdown periods due to their low ROI).Average Bet Size: $2,662.34 (But they frequently drop $30k–$100k+ bombs).The Strategy: lynxtitan operates like a bank. They are willing to risk $100,000 to win $5,000. Because they lay heavy juice on favorites, a single upset can wipe out the profits from 10 winning bets, which explains their relatively thin 1.27% ROI despite a 58% win rate.2. Where is the Alpha? (ROI by Sport)This trader pushes volume across the board, but their most reliable edges are in Tennis, Soccer, and the NBA.NBA: Their highest volume bucket. They have risked a massive amount of capital here (avg bet: $11,176 per game) to grind out $72,494 profit (1.00% ROI).Tennis: Much higher efficiency. They have bet over 1,600 Tennis matches, netting $58,683 (1.52% ROI).Soccer: Their highest yield sport. They made $31,285 profit (2.65% ROI) across 220 matches.Esports & Football: Fade them. They are negative in Esports (-1.12% ROI) and basically break-even in the NFL/CFB.3. Market Type Analysis (The Moneyline Rule)If you are ranking lynxtitan on what markets to tail, the data could not be clearer:Market TypeNet ProfitROIWin RateVerdictMoneyline / Match+$312,348+1.73%58.3%TIE YOUR BOT TO THIS.Futures-$2,650-0.33%66.0%AvoidTotals (O/U)-$15,916-0.91%50.5%DO NOT TAIL.Spreads-$26,360-6.11%45.3%DO NOT TAIL.The Pattern: Just like capman, lynxtitan is excellent at picking straight-up winners but loses heavily when forced to deal with point spreads and totals. Never tail their Over/Under or Spread bets.4. Price Range Analysis (The "Safe" Zone)This trader is the exact opposite of our Underdog specialists. They are terrified of underdogs and coin-flips.Price BucketNet ProfitROIWin RateVerdictSafe (80¢ - $1.00)+$163,262+2.19%74.3%Core Edge (High conviction)Favorite (60¢ - 80¢)+$137,965+1.59%60.8%Solid GrindingFlip (40¢ - 60¢)-$34,805-0.79%49.5%Losing MoneyUnderdog (< 40¢)+$985~0.00%35.1%Break-even / NoiseAnalysis: lynxtitan generates 100% of their profit by buying contracts priced above 60¢. When the market is a 50/50 "Flip" (40¢–60¢), they are actually slightly worse than a coin toss and lose money.5. Bet Sizing & "Outsized" Risk PatternsUnlike other traders, lynxtitan frequently places outsized bets that carry massive risk:The Oscars Whiff: Their largest recorded bet was $109,959 on Michael B. Jordan to win Best Actor at the 98th Academy Awards (priced at a heavy 88¢). It's currently sitting at a -$13,573 loss.The Tennis Conviction: Their second-largest bet was $77,697 on Carlos Alcaraz to beat Alexander Zverev at the Australian Open at 60¢ (which they won).The NBA Sizing: Their average bet size in the NBA is over $11,000. When they bet the NBA, they are moving markets.6. Closing Line Value (CLV) TrackingAs requested, here is how we handle CLV for this trader:The Data Limitation: The current Polymarket API payload (our CSV) exports two critical data points: the Entry Price (avgPrice) and the Final Resolution Price (curPrice). True Closing Line Value (CLV) is calculated by taking the difference between the trader's Entry Price and the market's price at the exact moment the event begins (e.g., tip-off).Because the CSV does not contain historical orderbook snapshots for the exact start time of the games, we cannot mathematically calculate true pre-game CLV here without plugging into an external odds-archive API. However, because lynxtitan has a 1.27% ROI primarily betting 80¢+ favorites, their CLV edge is likely extremely narrow. They aren't beating the closing line by 10 cents; they are likely beating it by 1 or 2 cents on massive volume.
+Gemini said
+Based on the deep-dive analysis of the lynxtitan.csv ledger, we are looking at a completely different archetype from the previous whales. If capman was a high-efficiency sniper, lynxtitan is a High-Stakes "Favorite" Grinder. They push massive institutional volume to grind out a very thin, low-margin yield by betting on high-probability outcomes. Here is their full Trader Report Card and exactly how you should (and shouldn't) tail them.
+
+1. Executive Summary: The Heavy Favorite Grinder
+Total Net Profit: +$267,420.99
+
+Total Capital Risked: $21,005,841.37 (Massive volume)
+
+Overall ROI: 1.27% (Very thin margin)
+
+Event Win Rate: 57.67%
+
+Daily Pseudo-Sharpe Ratio: 2.96 (Moderate consistency; they endure some choppy drawdown periods due to their low ROI).
+
+Average Bet Size: $2,662.34 (But they frequently drop $30k–$100k+ bombs).
+
+The Strategy: lynxtitan operates like a bank. They are willing to risk $100,000 to win $5,000. Because they lay heavy juice on favorites, a single upset can wipe out the profits from 10 winning bets, which explains their relatively thin 1.27% ROI despite a 58% win rate.
+
+2. Where is the Alpha? (ROI by Sport)
+This trader pushes volume across the board, but their most reliable edges are in Tennis, Soccer, and the NBA.
+
+NBA: Their highest volume bucket. They have risked a massive amount of capital here (avg bet: $11,176 per game) to grind out $72,494 profit (1.00% ROI).
+
+Tennis: Much higher efficiency. They have bet over 1,600 Tennis matches, netting $58,683 (1.52% ROI).
+
+Soccer: Their highest yield sport. They made $31,285 profit (2.65% ROI) across 220 matches.
+
+Esports & Football: Fade them. They are negative in Esports (-1.12% ROI) and basically break-even in the NFL/CFB.
+
+3. Market Type Analysis (The Moneyline Rule)
+If you are ranking lynxtitan on what markets to tail, the data could not be clearer:
+
+Market Type	Net Profit	ROI	Win Rate	Verdict
+Moneyline / Match	+$312,348	+1.73%	58.3%	TIE YOUR BOT TO THIS.
+Futures	-$2,650	-0.33%	66.0%	Avoid
+Totals (O/U)	-$15,916	-0.91%	50.5%	DO NOT TAIL.
+Spreads	-$26,360	-6.11%	45.3%	DO NOT TAIL.
+The Pattern: Just like capman, lynxtitan is excellent at picking straight-up winners but loses heavily when forced to deal with point spreads and totals. Never tail their Over/Under or Spread bets.
+
+4. Price Range Analysis (The "Safe" Zone)
+This trader is the exact opposite of our Underdog specialists. They are terrified of underdogs and coin-flips.
+
+Price Bucket	Net Profit	ROI	Win Rate	Verdict
+Safe (80¢ - $1.00)	+$163,262	+2.19%	74.3%	Core Edge (High conviction)
+Favorite (60¢ - 80¢)	+$137,965	+1.59%	60.8%	Solid Grinding
+Flip (40¢ - 60¢)	-$34,805	-0.79%	49.5%	Losing Money
+Underdog (< 40¢)	+$985	~0.00%	35.1%	Break-even / Noise
+Analysis: lynxtitan generates 100% of their profit by buying contracts priced above 60¢. When the market is a 50/50 "Flip" (40¢–60¢), they are actually slightly worse than a coin toss and lose money.
+
+5. Bet Sizing & "Outsized" Risk Patterns
+Unlike other traders, lynxtitan frequently places outsized bets that carry massive risk:
+
+The Oscars Whiff: Their largest recorded bet was $109,959 on Michael B. Jordan to win Best Actor at the 98th Academy Awards (priced at a heavy 88¢). It's currently sitting at a -$13,573 loss.
+
+The Tennis Conviction: Their second-largest bet was $77,697 on Carlos Alcaraz to beat Alexander Zverev at the Australian Open at 60¢ (which they won).
+
+The NBA Sizing: Their average bet size in the NBA is over $11,000. When they bet the NBA, they are moving markets.
+
+6. Closing Line Value (CLV) Tracking
+As requested, here is how we handle CLV for this trader:
+
+The Data Limitation: The current Polymarket API payload (our CSV) exports two critical data points: the Entry Price (avgPrice) and the Final Resolution Price (curPrice). True Closing Line Value (CLV) is calculated by taking the difference between the trader's Entry Price and the market's price at the exact moment the event begins (e.g., tip-off).
+
+Because the CSV does not contain historical orderbook snapshots for the exact start time of the games, we cannot mathematically calculate true pre-game CLV here without plugging into an external odds-archive API. However, because lynxtitan has a 1.27% ROI primarily betting 80¢+ favorites, their CLV edge is likely extremely narrow. They aren't beating the closing line by 10 cents; they are likely beating it by 1 or 2 cents on massive volume.
+
+Final Verdict & Ranking
+Rank: B-Tier (Capital Intensive / Low Yield)
+
+How to Copy-Trade lynxtitan:
+You have to be careful tailing lynxtitan because their 1.2% ROI means you will likely lose money to fees/slippage if you aren't perfectly aligned with their entries.
+
+Only tail their Tennis and Soccer Moneylines. These are their highest efficiency markets (1.5% - 2.6% ROI).
+
+Wait for the 80¢+ "Locks". Their only true edge is identifying heavily favored outcomes that are slightly underpriced in the 80¢–95¢ range.
+
+Fade the "Flips": If they enter a market at 50¢, ignore it. They have no statistical edge on close games.

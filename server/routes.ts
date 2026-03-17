@@ -1984,6 +1984,112 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     res.json({ espnLiveGames: cache, gameSlugToGST: gst, sharedMarketDbSize: sharedMarketDb.size, seenEventSlugsCount: seenEventSlugs.size, seenEventSlugs: seenSlugsList.filter(s => /^(nba|nhl|nfl|mlb|ncaab|ncaaf)-/.test(s)) });
   });
 
+  // ── POST /api/elite/traders/ingest-analysis ────────────────────────────────
+  // Accepts JSON output from pnl_analysis/run_full_pipeline.py and updates
+  // every trader's quality_score, tier, tags, and analysis metrics in the DB.
+  app.post("/api/elite/traders/ingest-analysis", async (req, res) => {
+    try {
+      const { traders } = req.body as { traders: any[] };
+      if (!Array.isArray(traders) || traders.length === 0) {
+        res.status(400).json({ error: "Expected { traders: [...] }" });
+        return;
+      }
+
+      let updated = 0;
+      const summary: any[] = [];
+
+      for (const t of traders) {
+        const wallet = (t.wallet || "").toLowerCase();
+        if (!wallet) continue;
+
+        // Build the analysis metrics object to merge into the DB metrics JSONB
+        const analysisMeta: Record<string, any> = {
+          // Directional (bond-filtered) stats — the true edge
+          csvDirectionalROI:    t.overall_roi,
+          csvDirectionalPNL:    t.total_profit,
+          csvTotalRisked:       t.total_risked,
+          csvWinRate:           t.win_rate,
+          csvAvgBetSize:        t.avg_bet_size,
+          csvPseudoSharpe:      t.pseudo_sharpe,
+          csvTotalEvents:       t.total_events,
+          csvProfitableDays:    t.profitable_days,
+          csvTotalDays:         t.total_days,
+          csvBondCount:         t.bond_count,
+          csvBondRisk:          t.bond_risk,
+          csvOpenCount:         t.open_count,
+          csvOpenRisk:          t.open_risk,
+          csvOpenPnl:           t.open_pnl,
+          csvTopSport:          t.top_sport,
+          csvBestPriceBucket:   t.best_price_bucket,
+          csvBestMarketType:    t.best_market,
+          csvTier:              t.tier,
+          csvQualityScore:      t.quality_score,
+          csvSportStats:        t.sport_stats,
+          csvMarketStats:       t.market_stats,
+          csvPriceStats:        t.price_stats,
+          csvSideStats:         t.side_stats,
+          csvMonthlyPnl:        t.monthly_pnl,
+          csvTopWins:           t.top_wins,
+          csvTopLosses:         t.top_losses,
+          csvTailGuide:         t.tail_guide,
+          csvAnalyzedAt:        new Date().toISOString(),
+        };
+
+        // Compute the canonical quality score from the CSV-derived metrics
+        // Formula: ROI(40) + Sharpe(25) + WinRate(15) + Volume(10) + Consistency(10)
+        const roi      = t.overall_roi    || 0;
+        const sharpe   = t.pseudo_sharpe  || 0;
+        const wr       = t.win_rate       || 0;
+        const risked   = t.total_risked   || 0;
+        const profDays = t.profitable_days || 0;
+        const totDays  = t.total_days      || 1;
+
+        const roiScore   = Math.min(Math.max(roi / 20 * 40, 0), 40);
+        const sharpeScr  = Math.min(Math.max(sharpe / 12 * 25, 0), 25);
+        const wrScore    = Math.min(Math.max((wr - 50) / 15 * 15, 0), 15);
+        const volScore   = Math.min(Math.max(Math.log10(Math.max(risked, 1)) / Math.log10(5_000_000) * 10, 0), 10);
+        const consScore  = Math.min(Math.max((profDays / totDays) * 10, 0), 10);
+        const newQuality = Math.round(roiScore + sharpeScr + wrScore + volScore + consScore);
+
+        // Tags from Python — store as-is
+        const newTags: string[] = t.tags || [];
+
+        await elitePool.query(`
+          UPDATE elite_trader_profiles
+          SET
+            quality_score = $2,
+            tags          = $3,
+            metrics       = COALESCE(metrics, '{}'::jsonb) || $4::jsonb,
+            computed_at   = NOW()
+          WHERE wallet = $1
+        `, [wallet, newQuality, newTags, JSON.stringify(analysisMeta)]);
+
+        updated++;
+        summary.push({
+          username:      t.username,
+          wallet:        wallet.slice(0, 10),
+          tier:          t.tier,
+          quality_score: newQuality,
+          roi:           t.overall_roi,
+          pnl:           t.total_profit,
+        });
+      }
+
+      // Clear cached trader lists so next page load reflects new scores
+      delete cache["traders-curated-v2-sports"];
+      delete cache["traders-curated-v2-all"];
+
+      const ranked = summary.sort((a, b) => b.quality_score - a.quality_score);
+      console.log(`[IngestAnalysis] Updated ${updated} traders`);
+      ranked.forEach((r, i) => console.log(`  #${i+1} ${r.username} — ${r.tier} (Q=${r.quality_score}) ROI=${r.roi?.toFixed(1)}% PnL=$${Math.round(r.pnl || 0).toLocaleString()}`));
+
+      res.json({ updated, summary: ranked });
+    } catch (err: any) {
+      console.error("[IngestAnalysis] Error:", err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // ── GET /api/traders ────────────────────────────────────────────────────────
   app.get("/api/traders", async (req, res) => {
     try {

@@ -1,0 +1,184 @@
+Here is the exact framework and Python code we’ve built together to analyze these Polymarket whales. You can drop this straight into Replit, upload any trader's CSV, and it will generate the exact same "Trader Report Card" we've been using.
+
+What This Analysis Does (The Logic)
+When evaluating a Polymarket whale to see if they are worth copy-trading, raw profit isn't enough. A trader might be up $1 Million just because they got lucky on a massive political bet, while they actually lose money on sports. Our script strips away the noise to find their true Mathematical Edge.
+
+Here is what the code specifically corrects for and analyzes:
+
+The "Hedge" Fix (Event-Level Aggregation): Bettors frequently buy multiple sides of the same game (e.g., Lakers Moneyline + Lakers Spread). If you just look at individual positions, the win rate and ROI are distorted. The script groups everything by the eventSlug (the specific game) so we can see if they actually made money on the event as a whole.
+
+The "Bond Yield" Filter: As we discovered with geniusMC and norrisfan, whales park millions of dollars in "No" contracts priced at 98¢+ just to earn a 1-2% risk-free yield. This ruins their sports betting ROI. The script identifies these "Bond" trades and separates them from their true "Directional" sports bets.
+
+Price Bucketing: It sorts their bets into 5 probability buckets (Longshots, Underdogs, Flips, Favorites, Safe). This tells us if a trader is a "Favorite Grinder" or an "Underdog Sniper."
+
+Market Type & Sport Classification: It reads the URLs (slugs) to figure out exactly what sport and bet type they are playing. This reveals their "Fatal Flaws" (e.g., "This trader is a genius at Soccer Moneylines but bleeds money on Basketball Spreads").
+
+The "Fade" Indicator: It breaks down whether their profit comes from picking specific teams, or by betting "No" against public favorites.
+
+The Code (For Replit)
+Create a file called main.py in Replit, upload your CSV file to the workspace, and paste this code. Just change the FILE_NAME variable at the top.
+
+Python
+import pandas as pd
+import numpy as np
+
+# ==========================================
+# CONFIGURATION
+# ==========================================
+FILE_NAME = 'Supah9ga.csv'  # Change this to your uploaded CSV filename
+
+print(f"Loading and analyzing {FILE_NAME}...\n")
+
+# Load data
+df = pd.read_csv(FILE_NAME)
+
+# ==========================================
+# PREPROCESSING & CLEANING
+# ==========================================
+# Calculate actual risked capital (Cost Basis)
+df['calculated_cost'] = df.apply(
+    lambda row: row['totalBought'] * row['avgPrice'] if row['status'] == 'closed' else row['initialValue'], 
+    axis=1
+)
+# Grouping ID ensures we combine hedges/multiple bets on the exact same game
+df['grouping_id'] = df['eventSlug'].fillna(df['slug'])
+
+# ==========================================
+# FEATURE ENGINEERING (CLASSIFIERS)
+# ==========================================
+def get_sport(row):
+    comb = (str(row.get('slug', '')) + " " + str(row.get('title', ''))).lower()
+    if 'epl-' in comb or 'premier league' in comb: return 'SOCCER (EPL)'
+    if 'lal-' in comb or 'la liga' in comb: return 'SOCCER (LaLiga)'
+    if 'ucl-' in comb or 'champions league' in comb: return 'SOCCER (UCL)'
+    if any(x in comb for x in ['soccer', 'fl1-', 'bun-', 'mls-', 'sea-', 'es2-', 'eredivisie']): return 'SOCCER (Other)'
+    if any(x in comb for x in ['nba-', 'basketball', 'nba:']): return 'NBA'
+    if any(x in comb for x in ['nfl-', 'football', 'super-bowl', 'cfb-']): return 'FOOTBALL'
+    if any(x in comb for x in ['nhl-', 'hockey']): return 'NHL'
+    if any(x in comb for x in ['mlb-', 'baseball']): return 'MLB'
+    if any(x in comb for x in ['tennis', 'atp-', 'wta-']): return 'TENNIS'
+    if any(x in comb for x in ['lol-', 'cs2', 'esports', 'dota']): return 'ESPORTS'
+    return 'OTHER'
+
+def get_market_type(row):
+    title = str(row.get('title', '')).lower()
+    if 'spread' in title or '(+' in title or '(-' in title: return 'Spread'
+    if 'o/u' in title or 'over' in title or 'under' in title or 'total' in title: return 'Totals (O/U)'
+    if 'win the' in title or 'champion' in title or 'mvp' in title or 'award' in title or 'draft' in title: return 'Futures'
+    return 'Moneyline / Match'
+
+def get_bet_side(row):
+    outcome = str(row.get('outcome', '')).lower()
+    if outcome == 'yes': return 'Yes'
+    if outcome == 'no': return 'No'
+    return 'Specific Selection'
+
+df['sport_type'] = df.apply(get_sport, axis=1)
+df['market_type'] = df.apply(get_market_type, axis=1)
+df['bet_side'] = df.apply(get_bet_side, axis=1)
+
+# ==========================================
+# THE "BOND YIELD" FILTER
+# ==========================================
+# Identify "No" bets placed at 95 cents or higher (Yield farming, not sports betting)
+df['is_bond_yield'] = (df['bet_side'] == 'No') & (df['avgPrice'] >= 0.95)
+
+bond_df = df[df['is_bond_yield']]
+directional_df = df[~df['is_bond_yield']].copy()
+
+if not bond_df.empty:
+    bond_profit = bond_df['total_position_pnl'].sum()
+    bond_risk = bond_df['calculated_cost'].sum()
+    print(f"⚠️ Filtered out {len(bond_df)} 'Bond Yield' positions.")
+    print(f"   Bond Risk: ${bond_risk:,.2f} | Bond Profit: ${bond_profit:,.2f}\n")
+
+# ==========================================
+# EVENT AGGREGATION (NETTING OUT HEDGES)
+# ==========================================
+event_agg = directional_df.groupby('grouping_id').agg({
+    'total_position_pnl': 'sum',
+    'calculated_cost': 'sum',
+    'sport_type': 'first',
+    'market_type': 'first',
+    'endDate': 'first',
+    'title': 'first',
+    'status': 'last'
+}).reset_index()
+
+# Calculate the weighted average entry price for the whole event
+def w_avg(group):
+    weights = group['calculated_cost'] + 1e-9
+    return np.average(group['avgPrice'], weights=weights)
+
+avg_prices = directional_df.groupby('grouping_id').apply(w_avg).reset_index(name='avgPrice')
+event_agg = pd.merge(event_agg, avg_prices, on='grouping_id')
+event_agg['is_win'] = event_agg['total_position_pnl'] > 0
+
+# ==========================================
+# METRICS & REPORTING
+# ==========================================
+total_profit = event_agg['total_position_pnl'].sum()
+total_risked = event_agg['calculated_cost'].sum()
+overall_roi = (total_profit / total_risked) * 100 if total_risked > 0 else 0
+win_rate = event_agg['is_win'].mean() * 100
+avg_bet_size = event_agg['calculated_cost'].mean()
+
+print("="*50)
+print("🏆 DIRECTIONAL SPORTS BETTING REPORT")
+print("="*50)
+print(f"Total Profit: ${total_profit:,.2f}")
+print(f"Total Risked: ${total_risked:,.2f}")
+print(f"Overall ROI:  {overall_roi:.2f}%")
+print(f"Win Rate:     {win_rate:.2f}%")
+print(f"Avg Bet Size: ${avg_bet_size:,.2f}")
+
+# Pseudo-Sharpe Ratio
+event_agg['date'] = pd.to_datetime(event_agg['endDate'], errors='coerce').dt.date
+daily_pnl = event_agg.groupby('date')['total_position_pnl'].sum()
+sharpe = (daily_pnl.mean() / daily_pnl.std()) * np.sqrt(365) if daily_pnl.std() != 0 else 0
+print(f"Daily Pseudo-Sharpe: {sharpe:.2f}")
+
+# Reusable breakdown printer
+def print_stats(groupby_col, title_name):
+    stats = event_agg.groupby(groupby_col).agg({
+        'total_position_pnl': 'sum',
+        'calculated_cost': 'mean',
+        'is_win': ['sum', 'count']
+    })
+    stats.columns = ['Net_Profit', 'Avg_Bet_Size', 'Wins', 'Total_Events']
+    stats['ROI_Pct'] = (stats['Net_Profit'] / event_agg.groupby(groupby_col)['calculated_cost'].sum()) * 100
+    stats['Win_Rate_Pct'] = (stats['Wins'] / stats['Total_Events']) * 100
+    stats = stats.sort_values('Net_Profit', ascending=False)
+    
+    pd.options.display.float_format = '{:,.2f}'.format
+    print(f"\n--- BY {title_name.upper()} ---")
+    print(stats[['Net_Profit', 'ROI_Pct', 'Win_Rate_Pct', 'Avg_Bet_Size', 'Total_Events']])
+
+print_stats('sport_type', 'Sport')
+print_stats('market_type', 'Market Type')
+
+# Price Buckets
+bins = [0, 0.2, 0.4, 0.6, 0.8, 1.0]
+labels = ['Longshot (0-20c)', 'Underdog (20-40c)', 'Flip (40-60c)', 'Favorite (60-80c)', 'Safe (80-100c)']
+event_agg['price_bucket'] = pd.cut(event_agg['avgPrice'], bins=bins, labels=labels)
+print_stats('price_bucket', 'Price Range (Entry)')
+
+# Yes vs No vs Specific
+pos_side = directional_df.groupby('bet_side').agg({
+    'total_position_pnl': 'sum',
+    'calculated_cost': 'sum',
+    'status': 'count'
+})
+pos_side.columns = ['Net_Profit', 'Total_Risked', 'Total_Positions']
+pos_side['ROI_Pct'] = (pos_side['Net_Profit'] / pos_side['Total_Risked']) * 100
+print("\n--- 'YES' vs 'NO' DYNAMICS ---")
+print(pos_side.sort_values('Net_Profit', ascending=False))
+
+# Current Open Risk
+open_events = event_agg[event_agg['status'] == 'open']
+print("\n--- CURRENT OPEN TRADES ---")
+print(f"Total Open Events: {len(open_events)}")
+if not open_events.empty:
+    print(f"Average Open Risk: ${open_events['calculated_cost'].mean():,.2f}")
+    print("\nTop 5 Largest Open Bets:")
+    print(open_events.sort_values('calculated_cost', ascending=False)[['title', 'calculated_
