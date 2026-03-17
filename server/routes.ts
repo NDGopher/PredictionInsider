@@ -3308,7 +3308,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const mid = sig.marketId;
           if (!mktEliteMap.has(mid)) mktEliteMap.set(mid, { yes: [], no: [] });
           const bucket = mktEliteMap.get(mid)!;
-          const sigSportFull = classifySportFull(sig.sport || "", sig.marketQuestion || "");
+          const sigSportFull = classifySportFull(sig.sport || "", sig.marketQuestion || "", (sig as any).slug || "");
           for (const t of (sig.traders || [])) {
             const w = (t.address || "").toLowerCase();
             if (!curatedWalletSet.has(w)) continue;

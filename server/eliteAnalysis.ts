@@ -103,6 +103,14 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
     autoTail:   ["College Sports"],
     doNotTail:  ["NBA", "NHL", "NFL", "MLB", "Soccer", "Tennis", "UFC/MMA", "eSports", "Politics", "Other"],
   },
+  "0x5c3a1a602848565bb16165fcd460b00c3d43020b": { // CoryLahey — Global Grinder (NBA/NHL/EPL/LaLiga/NCAAB/Tennis)
+    // Pseudo-Sharpe 13.31 — crushes domestic soccer & NBA; gets demolished in UCL & NFL
+    // Beat totals (O/U) at 10.5% ROI; loses on spreads universally
+    // DO NOT TAIL on UCL (Champions League), NFL, spreads
+    autoTail:            ["NBA", "NHL", "Soccer", "College Sports", "Tennis"],
+    doNotTail:           ["UCL", "NFL", "Finance/Crypto", "Politics", "CS2", "Valorant", "LoL", "Dota2", "eSports"],
+    doNotTailMarketTypes: ["spread"],
+  },
   "0x52ecea7b3159f09db589e4f4ee64872fd0bba6f3": { // fkgggg2 — Elite LoL-only specialist (6.7M in hedges scrubbed)
     // True alpha is entirely LoL — every meaningful directional bet is LCK/LEC/LPL
     // NBA/other sport entries are near-zero wash residuals, not real signals
@@ -121,14 +129,24 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
 // ─── Detailed sport classifier (extends classifySport with esports sub-games) ─
 // Returns CS2 / Valorant / LoL / Dota2 instead of generic "eSports" so that
 // per-trader category filters can target specific games accurately.
-export function classifySportFull(sport: string, question: string): string {
-  if (sport !== "eSports") return sport;
-  const q = (question || "").toLowerCase();
-  if (q.includes("counter-strike") || q.includes("cs2")) return "CS2";
-  if (q.includes("valorant")) return "Valorant";
-  if (q.includes("league of legends") || q.includes("lol:")) return "LoL";
-  if (q.includes("dota 2") || q.includes("dota2")) return "Dota2";
-  return "eSports";
+// Also sub-classifies Soccer into UCL / UEL for traders with league-specific edge.
+export function classifySportFull(sport: string, question: string, slug?: string): string {
+  // eSports: sub-classify by game
+  if (sport === "eSports") {
+    const q = (question || "").toLowerCase();
+    if (q.includes("counter-strike") || q.includes("cs2")) return "CS2";
+    if (q.includes("valorant")) return "Valorant";
+    if (q.includes("league of legends") || q.includes("lol:")) return "LoL";
+    if (q.includes("dota 2") || q.includes("dota2")) return "Dota2";
+    return "eSports";
+  }
+  // Soccer: sub-classify Champions League / Europa League by slug prefix
+  if (sport === "Soccer" && slug) {
+    const s = slug.toLowerCase();
+    if (s.startsWith("ucl-")) return "UCL";
+    if (s.startsWith("uel-")) return "UEL";
+  }
+  return sport;
 }
 
 // ─── Slug → Sport classifier ──────────────────────────────────────────────────
