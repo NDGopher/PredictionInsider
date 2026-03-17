@@ -96,6 +96,10 @@ export const TRADER_CATEGORY_FILTERS: Record<string, { autoTail: string[]; doNot
     autoTail:   ["Politics", "Other"],
     doNotTail:  ["NBA", "NHL", "NFL", "MLB", "Soccer", "Tennis", "UFC/MMA", "College Sports", "eSports"],
   },
+  "0xe24838258b572f1771dffba3bcdde57a78def293": { // redskinrick — Elite NCAAB O/U specialist
+    autoTail:   ["College Sports"],
+    doNotTail:  ["NBA", "NHL", "NFL", "MLB", "Soccer", "Tennis", "UFC/MMA", "eSports", "Politics", "Other"],
+  },
 };
 
 // ─── Detailed sport classifier (extends classifySport with esports sub-games) ─

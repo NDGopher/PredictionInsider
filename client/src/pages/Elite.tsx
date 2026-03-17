@@ -114,18 +114,14 @@ interface TraderMetrics {
   // ── New intelligence metrics ──
   quantScore?: number;
   traderArchetype?: string;
-  avgClv?: number;
-  avgClv30d?: number;
-  clvSampleSize?: number;
+  csvPseudoSharpe?: number;
   uniqueMarketsDB?: number;
   tradesBuyCount?: number;
   settledTradesDB?: number;
-  icebergScore?: number;
-  icebergClusters?: number;
   monthlyVolume?: { month: string; volume: number }[];
   archetypeSignal?: {
     tradesPerDay: number; avgBetSize: number; avgPrice: number;
-    longshotPct: number; yesBuyPct: number; uniqueMarkets: number; icebergScore: number;
+    longshotPct: number; yesBuyPct: number; uniqueMarkets: number;
   };
 }
 
@@ -178,13 +174,6 @@ function archetypeIcon(archetype: string): string {
     "Balanced Trader": "📊",
   };
   return icons[archetype] || "📊";
-}
-
-function clvColor(v: number): string {
-  if (v > 5) return "text-green-600 dark:text-green-400";
-  if (v > 0) return "text-green-500/70";
-  if (v > -3) return "text-yellow-600 dark:text-yellow-400";
-  return "text-red-500";
 }
 
 // ─── Add Trader Form ──────────────────────────────────────────────────────────
@@ -458,10 +447,10 @@ function TraderDeepDive({ wallet, username }: { wallet: string; username: string
               { label: "Capital ROI", value: fmtROI(m.roiCapital ?? null), icon: TrendingUp, color: roiColor(m.roiCapital ?? 0) },
               { label: "Win Rate", value: fmt(m.winRate, "%"), icon: Award },
               {
-                label: "CLV",
-                value: m.avgClv != null ? `${m.avgClv >= 0 ? "+" : ""}${m.avgClv.toFixed(1)}%` : "—",
+                label: "Sharpe",
+                value: m.csvPseudoSharpe != null ? m.csvPseudoSharpe.toFixed(2) : "—",
                 icon: Activity,
-                color: m.avgClv != null ? clvColor(m.avgClv) : "",
+                color: m.csvPseudoSharpe != null && m.csvPseudoSharpe >= 1 ? "text-green-600 dark:text-green-400" : "",
               },
             ].map(({ label, value, icon: Icon, color }) => (
               <div key={label} className="bg-muted/40 rounded-lg p-2.5 border border-border/40">
@@ -605,7 +594,9 @@ function TraderDeepDive({ wallet, username }: { wallet: string; username: string
               <Badge variant={m.consistencyRating === "Excellent" ? "default" : "secondary"} className="text-[10px]">
                 {m.consistencyRating}
               </Badge>
-              <span className="text-xs text-muted-foreground">Sharpe: {fmt(m.sharpeScore)}</span>
+              {m.csvPseudoSharpe != null && (
+                <span className="text-xs text-muted-foreground">Sharpe: {m.csvPseudoSharpe.toFixed(2)}</span>
+              )}
               {m.maxConsecLosingMonths > 0 && (
                 <span className="text-xs text-muted-foreground">Max losing streak: {m.maxConsecLosingMonths} months</span>
               )}
@@ -638,39 +629,6 @@ function TraderDeepDive({ wallet, username }: { wallet: string; username: string
                 ))}
               </div>
             )}
-          </div>
-
-          {/* Intelligence metrics: CLV + Iceberg + Quant breakdown */}
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              {
-                label: "CLV (All-Time)",
-                value: m.avgClv != null ? `${m.avgClv >= 0 ? "+" : ""}${m.avgClv.toFixed(1)}%` : "—",
-                sub: m.clvSampleSize != null ? `${m.clvSampleSize} settled` : "",
-                color: m.avgClv != null ? clvColor(m.avgClv) : "",
-                help: "Entry edge vs closing price"
-              },
-              {
-                label: "CLV (30d)",
-                value: m.avgClv30d != null ? `${m.avgClv30d >= 0 ? "+" : ""}${m.avgClv30d.toFixed(1)}%` : "—",
-                sub: "recent",
-                color: m.avgClv30d != null ? clvColor(m.avgClv30d) : "",
-                help: "Last 30 days CLV"
-              },
-              {
-                label: "Iceberg",
-                value: m.icebergScore != null ? `${m.icebergScore.toFixed(1)}%` : "—",
-                sub: m.icebergClusters != null ? `${m.icebergClusters} clusters` : "",
-                color: (m.icebergScore ?? 0) > 15 ? "text-amber-600 dark:text-amber-400" : "",
-                help: "Hidden accumulation patterns"
-              },
-            ].map(({ label, value, sub, color, help }) => (
-              <div key={label} className="bg-muted/30 rounded-lg p-2.5 border border-border/30" title={help}>
-                <div className="text-[9px] text-muted-foreground mb-0.5">{label}</div>
-                <div className={`text-sm font-bold ${color}`}>{value}</div>
-                {sub && <div className="text-[9px] text-muted-foreground">{sub}</div>}
-              </div>
-            ))}
           </div>
 
           {/* Best bets */}

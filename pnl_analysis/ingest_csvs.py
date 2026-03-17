@@ -191,6 +191,22 @@ def main():
     for rank, r in enumerate(sorted(results, key=lambda x: -x.get("quality_score", 0)), 1):
         print(f"{rank:<5} {r['tier']:<8} {r['quality_score']:>5} {r['username']:<32} ${r['total_profit']:>12,.0f} {r['overall_roi']:>7.1f}%")
 
+    # ── Canonical overrides — applied AFTER CSV analysis ────────────────────
+    # Use these when Gemini's stripped analysis differs from raw CSV totals.
+    # The key is the full wallet address; fields override the result dict.
+    CANONICAL_OVERRIDES: dict[str, dict] = {
+        "0x9703676286b93c2eca71ca96e8757104519a69c2": {  # TheMangler
+            # Raw CSV includes ~$24M wash-trades + bond-yield parking.
+            # Gemini stripped directional ROI: 41.81% on $1.25M real risk.
+            "overall_roi": 41.81,
+        },
+    }
+    for r in all_results:
+        overrides = CANONICAL_OVERRIDES.get(r.get("wallet", ""))
+        if overrides:
+            r.update(overrides)
+            print(f"  📌 Canonical override applied for {r.get('username')}: {overrides}")
+
     if args.ingest:
         ingest_to_backend(all_results)
     else:
