@@ -254,7 +254,7 @@
   "top_sport": "SOCCER (EPL)",
   "best_price_bucket": "Underdog (20-40c)",
   "best_market": "Moneyline / Match",
-  "quality_score": 82,
+  "quality_score": 79,
   "tier": "S-Tier",
   "tags": [
     "\u2b50\u2b50\u2b50 S-Tier",
@@ -269,5 +269,16 @@
     "\u26d4 Fade NBA",
     "\u26d4 Fade UCL"
   ],
-  "tail_guide": "How to Tail Supah9ga [S-Tier]\n\n\u2705 FOLLOW on: SOCCER (EPL) (+$323,080, 39.9% ROI), SOCCER (LaLiga) (+$224,238, 51.9% ROI), SOCCER (Other) (+$212,487, 24.6% ROI)\n\ud83d\udeab AVOID on: NBA (-9.0% ROI), SOCCER (UCL) (-20.2% ROI)\n\ud83d\udcc8 Stick to Moneylines (15.9% ROI over 408 events)\n\ud83c\udfaf Best price range: Underdog (20-40c) (61.7% ROI, 115 events)\n\ud83d\udca1 79% of profit comes from 'No' contracts \u2014 copy that side\n\u26a1 Normal bet ~$9,808 \u2014 set alert for 3x above average (high-conviction)"
+  "tail_guide": "How to Tail Supah9ga [S-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   SOCCER (EPL) \u2014 39.9% ROI, 67 events, +$323,080\n   SOCCER (LaLiga) \u2014 51.9% ROI, 39 events, +$224,238\n   SOCCER (Other) \u2014 24.6% ROI, 98 events, +$212,487\n\n\ud83d\udd34 DO NOT TAIL:\n   SOCCER (UCL) \u2014 ROI -20.2%, $-160,715\n   NBA \u2014 ROI -9.0%, $-40,364\n\n\ud83d\udcc8 Stick to Moneylines (15.9% ROI over 408 events)\n\ud83c\udfaf Best price zone: Underdog (20-40c) (61.7% ROI, 115 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 79% of edge from 'No' side \u2014 copy that side only\n\u26a1 Normal bet ~$9,808 \u2014 alert at 3x average for high-conviction plays",
+  "score_breakdown": {
+    "sharpe_score": 30,
+    "roi_score": 25,
+    "wr_score": 1.6,
+    "cons_score": 9.3,
+    "vol_score": 4.9,
+    "base_score": 70.9,
+    "flip_bonus": 15,
+    "leakage_penalty": 7,
+    "midzone_roi": 31.9
+  }
 }

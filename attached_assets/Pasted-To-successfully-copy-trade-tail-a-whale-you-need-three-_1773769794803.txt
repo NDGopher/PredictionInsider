@@ -1,0 +1,101 @@
+To successfully copy-trade (tail) a whale, you need three things: High ROI (to absorb slippage), Consistency (high Sharpe ratio), and Isolatable Edges (clear rules on what to filter out).
+
+Based on all the data we've processed, here is the Definitive Tailing Cheat Sheet. You can use these exact logic rules to program your bots.
+
+🏆 TIER 1: The "Set & Forget" Snipers (S-Tier)
+These traders have massive ROIs, incredible consistency, and very few "leaks." You can confidently automate tailing them with minimal filters.
+
+1. capman (The High-Efficiency Grinder)
+Target Markets: Moneylines in NBA, NHL, and NCAAB (College Basketball).
+
+The Poison (DO NOT TAIL): Spreads and Totals (O/U).
+
+Price Range: Flips (40¢–60¢) and Underdogs (20¢–40¢).
+
+Bet Sizing Signal: Their average bet is ~$300. If you see them drop $2,500+ on a Moneyline, their model has found massive Closing Line Value. Tail aggressively.
+
+2. JhonAlexnaderHinestroza (The Global Soccer God)
+Target Markets: Soccer Moneylines (Any league, anywhere in the world).
+
+The Poison: Esports (too volatile).
+
+Price Range: Strictly 0¢ to 60¢. They have a ~78% ROI on longshots and 22% ROI on underdogs. If they bet a favorite (>60¢), ignore it.
+
+Bet Sizing Signal: ~$3k average. Extremely steady.
+
+3. HedgeMaster88 (The Champions League Whale)
+Target Markets: Champions League (UCL) & LaLiga Moneylines. (90% win rate in UCL).
+
+The Poison: Point Spreads. (They are 0% win-rate on spreads).
+
+Price Range: 20¢ to 60¢.
+
+Bet Sizing Signal: Follow their "No" bets on heavily favored European teams.
+
+🎯 TIER 2: The "Strict Filter" Faders (A-Tier)
+These traders are brilliant, but they have one or two massive blind spots. You MUST program your bot to filter out their bad habits.
+
+4. Supah9ga (The "No" Specialist)
+Target Markets: EPL and LaLiga. Specifically, when they buy the "No" contract against a favorite.
+
+The Poison: Champions League (UCL) and the NBA. They get crushed here.
+
+Price Range: 20¢ to 40¢ (Buying "No" at 30¢ means they are fading a 70¢ favorite).
+
+5. norrisfan (The Underdog Fader)
+Target Markets: EPL, LaLiga, and NHL (Buying "No" contracts).
+
+The Poison: The NBA. Do not let your bot copy their basketball trades.
+
+Price Range: 20¢ to 40¢ underdogs.
+
+Special Filter: Ignore any "No" bet placed at 95¢ or higher (these are 1% Bond Yield trades).
+
+6. TTdes (The Ice & Pitch Modeler)
+Target Markets: NHL and Soccer Moneylines.
+
+The Poison: Political Futures and Canadian Elections.
+
+Price Range: 20¢ to 60¢. (22% ROI on Underdogs).
+
+Bet Sizing Signal: Normal bet is $1.5k. If they drop $20k+ on a Tennis Future (like Alcaraz), tail it.
+
+7. charliekirkevans (The Esports Quant)
+Target Markets: League of Legends (LCK/LPL).
+
+The Poison: Traditional Sports (NBA/NFL) and Politics. They have no edge there.
+
+Price Range: 0¢ to 40¢ Underdogs (33% ROI on Esports longshots).
+
+⚖️ TIER 3: The "Barbell & Niche" Bettors (B-Tier)
+These traders require manual review. They are highly profitable but rely on outsized risk or highly specific niches.
+
+8. geniusMC (The Heavy Artillery)
+Target Markets: Totals (O/U) and the Seattle Seahawks. (52% ROI on Totals).
+
+The Poison: Spreads and "Bond Yields" (>95¢ No bets).
+
+Why B-Tier: Their average bet is $125k, and they tie up millions in 6-month futures. It's hard for a normal bankroll to replicate their exact portfolio weighting.
+
+9. CemeterySun (The EPL Bomber)
+Target Markets: EPL "No" Contracts.
+
+The Poison: LaLiga, Champions League, and the NBA.
+
+Bet Sizing Signal: They place hundreds of $500 "feeler" bets that lose. You ONLY want to tail them when their bet size exceeds $25,000 in the EPL.
+
+10. avarice31 (The Football Favorite Hunter)
+Target Markets: NFL & NCAAF Moneylines.
+
+The Poison: Spreads, Totals, and Soccer.
+
+Price Range: 80¢ to $1.00 ("Safe" locks).
+
+Why B-Tier: A 4% ROI betting heavy favorites means if your bot suffers even 1¢ or 2¢ of price slippage, your personal ROI will drop to zero.
+
+🛑 TIER 4: The "Do Not Tail" Zone (D-Tier)
+Use these wallets to read market sentiment, but do not copy their trades.
+
+RN1: A Market Maker. They push $122M in volume for a 4.5% ROI. You cannot copy them without getting eaten alive by fees and slippage.
+
+lynxtitan: A 1.2% ROI laying heavy juice on 80¢+ favorites. One upset wipes out 20 wins.

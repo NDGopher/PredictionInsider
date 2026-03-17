@@ -203,19 +203,64 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
     monthly_pnl  = agg.groupby("month")["total_pnl"].sum()
     monthly_data = {str(k): round(v, 2) for k, v in monthly_pnl.items()}
 
-    # ── Quality Score & Tier ─────────────────────────────────────
-    # ROI contribution (max 40 pts — reaches max at ~20% ROI)
-    roi_score    = min(max(overall_roi / 20 * 40, 0), 40)
-    # Sharpe contribution (max 25 pts — reaches max at Sharpe 12)
-    sharpe_score = min(max(pseudo_sharpe / 12 * 25, 0), 25)
-    # Win rate bonus above 50% (max 15 pts)
-    wr_score     = min(max((win_rate - 50) / 15 * 15, 0), 15)
-    # Volume (log-scaled, max 10 pts — reaches max at $5M risked)
-    vol_score    = min(max(np.log10(max(total_risked, 1)) / np.log10(5_000_000) * 10, 0), 10)
-    # Consistency bonus: profitable days (max 10 pts)
-    cons_score   = min(max(profitable_days / max(total_days, 1) * 10, 0), 10)
+    # ── Quality Score & Tier (Gemini Copy-Trade Metric v2) ───────
+    #
+    # Philosophy: reward Sharpe heavily (predictable daily edge),
+    # penalise "leakage" (sports where blindly tailing loses money),
+    # bonus for operating in the hardest-to-beat 20–60c price zone.
+    #
+    # Base components (max 85 pts):
+    #   Sharpe  30 pts — max at Sharpe=8  (best proxy for copy-trade safety)
+    #   ROI     25 pts — max at 15% ROI   (reduced; volume no longer inflates)
+    #   WinRate 15 pts — bonus above 50%
+    #   Consist 10 pts — % profitable days
+    #   Volume   5 pts — log-scaled (secondary signal)
+    #
+    # Adjustments:
+    #   Flip/Underdog Bonus  +15 pts max — ROI > 0 in 20–60c zone proves edge
+    #   Leakage Penalty      -15 pts max — large net losses in a sport category
 
-    quality_score = round(roi_score + sharpe_score + wr_score + vol_score + cons_score)
+    # Base components
+    sharpe_score = min(max(pseudo_sharpe / 8  * 30, 0), 30)   # 30 pts, ceil Sharpe=8
+    roi_score    = min(max(overall_roi   / 15 * 25, 0), 25)   # 25 pts, ceil ROI=15%
+    wr_score     = min(max((win_rate - 50) / 15 * 15, 0), 15) # 15 pts
+    cons_score   = min(max(profitable_days / max(total_days, 1) * 10, 0), 10)
+    vol_score    = min(max(np.log10(max(total_risked, 1)) / np.log10(5_000_000) * 5, 0), 5)
+
+    base_score = sharpe_score + roi_score + wr_score + cons_score + vol_score  # 0–85
+
+    # Flip / Underdog Multiplier (+15 pts max)
+    # Average ROI across the 20–60c price buckets (where edge is hardest to find)
+    flip_data     = price_stats.get("Flip (40-60c)",    {})
+    underdog_data = price_stats.get("Underdog (20-40c)", {})
+    midzone_vals  = []
+    if flip_data.get("events", 0)     >= 10: midzone_vals.append(flip_data["roi"])
+    if underdog_data.get("events", 0) >= 10: midzone_vals.append(underdog_data["roi"])
+    midzone_roi = sum(midzone_vals) / len(midzone_vals) if midzone_vals else 0
+
+    if   midzone_roi >= 15: flip_bonus = 15
+    elif midzone_roi >= 10: flip_bonus = 10
+    elif midzone_roi >=  5: flip_bonus =  5
+    else:                   flip_bonus =  0
+
+    # Leakage Penalty (-15 pts max)
+    # Penalise sports where a blindly tailing user would lose money.
+    # Measured relative to total profit so large earners are held to account.
+    leakage_pts = 0
+    for sport, stat in sport_stats.items():
+        if stat["events"] >= 10 and stat["roi"] < -5 and stat["net_profit"] < -5_000:
+            loss_ratio = abs(stat["net_profit"]) / max(total_profit, 1)
+            if   loss_ratio >= 0.30: leakage_pts += 10
+            elif loss_ratio >= 0.10: leakage_pts +=  5
+            else:                    leakage_pts +=  2
+    # Spread always penalised if meaningful negative ROI
+    sp = market_stats.get("Spread", {})
+    if sp.get("events", 0) >= 10 and sp.get("roi", 0) < -10:
+        leakage_pts += 3
+    leakage_penalty = min(leakage_pts, 15)
+
+    quality_score = round(base_score + flip_bonus - leakage_penalty)
+    quality_score = max(0, min(quality_score, 100))
 
     if   quality_score >= 70: tier = "S-Tier"
     elif quality_score >= 50: tier = "A-Tier"
@@ -374,6 +419,19 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
         "tier":             tier,
         "tags":             tags,
         "tail_guide":       tail_guide,
+
+        # Score breakdown (for transparency / debugging)
+        "score_breakdown": {
+            "sharpe_score":     round(sharpe_score, 1),
+            "roi_score":        round(roi_score, 1),
+            "wr_score":         round(wr_score, 1),
+            "cons_score":       round(cons_score, 1),
+            "vol_score":        round(vol_score, 1),
+            "base_score":       round(base_score, 1),
+            "flip_bonus":       flip_bonus,
+            "leakage_penalty":  leakage_penalty,
+            "midzone_roi":      round(midzone_roi, 1),
+        },
     }
 
 
@@ -386,34 +444,53 @@ def _build_tail_guide(username, tier, sport_stats, market_stats, price_stats,
     lines = [f"How to Tail {username} [{tier}]"]
     lines.append("")
 
-    # Best sport
-    valid_sports = [(k, v) for k, v in sport_stats.items() if v["events"] >= 10 and v["net_profit"] > 0]
-    valid_sports.sort(key=lambda x: x[1]["net_profit"], reverse=True)
-    if valid_sports:
-        top3 = ", ".join([f"{k} (+${v['net_profit']:,.0f}, {v['roi']:.1f}% ROI)" for k, v in valid_sports[:3]])
-        lines.append(f"✅ FOLLOW on: {top3}")
+    # ── GREEN zone: AUTO-TAIL signals (ROI > 5%, events > 20) ────
+    auto_tail = [(k, v) for k, v in sport_stats.items()
+                 if v["events"] >= 20 and v["roi"] > 5 and v["net_profit"] > 0]
+    auto_tail.sort(key=lambda x: x[1]["net_profit"], reverse=True)
+    if auto_tail:
+        lines.append("🟢 AUTO-TAIL:")
+        for sport, stat in auto_tail[:3]:
+            lines.append(f"   {sport} — {stat['roi']:.1f}% ROI, {stat['events']} events, +${stat['net_profit']:,.0f}")
+    elif any(v["events"] >= 10 and v["net_profit"] > 0 for v in sport_stats.values()):
+        # Fall back to profitable sports with fewer events
+        valid = [(k, v) for k, v in sport_stats.items() if v["events"] >= 10 and v["net_profit"] > 0]
+        valid.sort(key=lambda x: x[1]["net_profit"], reverse=True)
+        lines.append("✅ FOLLOW on:")
+        for sport, stat in valid[:3]:
+            lines.append(f"   {sport} — {stat['roi']:.1f}% ROI, +${stat['net_profit']:,.0f}")
 
-    # Avoid sports
-    avoid_sports = [(k, v) for k, v in sport_stats.items() if v["events"] >= 10 and v["roi"] < -5 and v["net_profit"] < -5_000]
-    if avoid_sports:
-        avoid3 = ", ".join([f"{k} ({v['roi']:.1f}% ROI)" for k, v in avoid_sports])
-        lines.append(f"🚫 AVOID on: {avoid3}")
+    lines.append("")
 
-    # Market type
+    # ── RED zone: DO NOT TAIL (ROI < -2% OR win rate < 45%) ──────
+    do_not_tail = [(k, v) for k, v in sport_stats.items()
+                   if v["events"] >= 10 and (v["roi"] < -2 or v["win_rate"] < 45) and v["net_profit"] < -2_000]
+    do_not_tail.sort(key=lambda x: x[1]["net_profit"])
+    if do_not_tail:
+        lines.append("🔴 DO NOT TAIL:")
+        for sport, stat in do_not_tail[:3]:
+            reason = f"ROI {stat['roi']:.1f}%" if stat["roi"] < -2 else f"Win Rate {stat['win_rate']:.0f}%"
+            lines.append(f"   {sport} — {reason}, ${stat['net_profit']:,.0f}")
+        lines.append("")
+
+    # Market type filter
     ml = market_stats.get("Moneyline / Match", {})
     sp = market_stats.get("Spread", {})
     ou = market_stats.get("Totals (O/U)", {})
     if ml.get("roi", 0) > 0:
         lines.append(f"📈 Stick to Moneylines ({ml.get('roi',0):.1f}% ROI over {ml.get('events',0)} events)")
     if sp.get("events", 0) >= 10 and sp.get("roi", 0) < -3:
-        lines.append(f"⛔ Never tail Spread bets ({sp['roi']:.1f}% ROI)")
+        lines.append(f"⛔ Mute all Spread bets ({sp['roi']:.1f}% ROI)")
     if ou.get("events", 0) >= 10 and ou.get("roi", 0) < -3:
-        lines.append(f"⛔ Never tail O/U bets ({ou['roi']:.1f}% ROI)")
+        lines.append(f"⛔ Mute all O/U bets ({ou['roi']:.1f}% ROI)")
 
     # Price sweet spot
     if best_price_bucket:
         bucket = price_stats.get(best_price_bucket, {})
-        lines.append(f"🎯 Best price range: {best_price_bucket} ({bucket.get('roi',0):.1f}% ROI, {bucket.get('events',0)} events)")
+        lines.append(f"🎯 Best price zone: {best_price_bucket} ({bucket.get('roi',0):.1f}% ROI, {bucket.get('events',0)} events)")
+
+    # Bond filter reminder if applicable
+    lines.append("⚠️  Strip any bet at avgPrice ≥ 0.95 — those are bond-yield trades, not signals")
 
     # Bet side
     no_profit   = side_stats.get("No", {}).get("net_profit", 0)
@@ -421,14 +498,15 @@ def _build_tail_guide(username, tier, sport_stats, market_stats, price_stats,
     spec_profit = side_stats.get("Specific Selection", {}).get("net_profit", 0)
     total_side  = no_profit + yes_profit + spec_profit
     if total_side > 0:
-        pcts = [(k, v, round(v / total_side * 100)) for k, v in [("No", no_profit), ("Yes", yes_profit), ("Specific", spec_profit)] if v > 0]
+        pcts = [(k, v, round(v / total_side * 100)) for k, v in
+                [("No", no_profit), ("Yes", yes_profit), ("Specific", spec_profit)] if v > 0]
         pcts.sort(key=lambda x: -x[1])
         if pcts[0][2] > 55:
-            lines.append(f"💡 {pcts[0][2]}% of profit comes from '{pcts[0][0]}' contracts — copy that side")
+            lines.append(f"💡 {pcts[0][2]}% of edge from '{pcts[0][0]}' side — copy that side only")
 
     # Average bet sizing
     if avg_bet >= 2_000:
-        lines.append(f"⚡ Normal bet ~${avg_bet:,.0f} — set alert for 3x above average (high-conviction)")
+        lines.append(f"⚡ Normal bet ~${avg_bet:,.0f} — alert at 3x average for high-conviction plays")
     else:
         lines.append(f"💰 Avg bet ~${avg_bet:,.0f}")
 

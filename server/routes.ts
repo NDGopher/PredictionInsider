@@ -2035,21 +2035,31 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           csvAnalyzedAt:        new Date().toISOString(),
         };
 
-        // Compute the canonical quality score from the CSV-derived metrics
-        // Formula: ROI(40) + Sharpe(25) + WinRate(15) + Volume(10) + Consistency(10)
-        const roi      = t.overall_roi    || 0;
-        const sharpe   = t.pseudo_sharpe  || 0;
-        const wr       = t.win_rate       || 0;
-        const risked   = t.total_risked   || 0;
-        const profDays = t.profitable_days || 0;
-        const totDays  = t.total_days      || 1;
+        // Use the Python-computed quality score (Gemini Copy-Trade Metric v2).
+        // Python is the authoritative scorer — it includes the Flip/Underdog bonus
+        // and Leakage Penalty which cannot be replicated here without full price/sport data.
+        // Fall back to re-computing a simplified v2 score only if Python didn't supply one.
+        let newQuality: number;
+        if (typeof t.quality_score === "number" && t.quality_score > 0) {
+          newQuality = t.quality_score;
+        } else {
+          // v2 simplified fallback (no flip bonus / leakage — treat as conservative floor)
+          const roi      = t.overall_roi    || 0;
+          const sharpe   = t.pseudo_sharpe  || 0;
+          const wr       = t.win_rate       || 0;
+          const risked   = t.total_risked   || 0;
+          const profDays = t.profitable_days || 0;
+          const totDays  = t.total_days      || 1;
+          const sharpeScr  = Math.min(Math.max(sharpe / 8  * 30, 0), 30);
+          const roiScore   = Math.min(Math.max(roi    / 15 * 25, 0), 25);
+          const wrScore    = Math.min(Math.max((wr - 50) / 15 * 15, 0), 15);
+          const consScore  = Math.min(Math.max((profDays / totDays) * 10, 0), 10);
+          const volScore   = Math.min(Math.max(Math.log10(Math.max(risked, 1)) / Math.log10(5_000_000) * 5, 0), 5);
+          newQuality = Math.round(sharpeScr + roiScore + wrScore + consScore + volScore);
+        }
 
-        const roiScore   = Math.min(Math.max(roi / 20 * 40, 0), 40);
-        const sharpeScr  = Math.min(Math.max(sharpe / 12 * 25, 0), 25);
-        const wrScore    = Math.min(Math.max((wr - 50) / 15 * 15, 0), 15);
-        const volScore   = Math.min(Math.max(Math.log10(Math.max(risked, 1)) / Math.log10(5_000_000) * 10, 0), 10);
-        const consScore  = Math.min(Math.max((profDays / totDays) * 10, 0), 10);
-        const newQuality = Math.round(roiScore + sharpeScr + wrScore + volScore + consScore);
+        // Store score breakdown if present
+        if (t.score_breakdown) analysisMeta.csvScoreBreakdown = t.score_breakdown;
 
         // Tags from Python — store as-is
         const newTags: string[] = t.tags || [];

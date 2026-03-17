@@ -241,10 +241,10 @@
   "top_sport": "OTHER",
   "best_price_bucket": "Underdog (20-40c)",
   "best_market": "Moneyline / Match",
-  "quality_score": 72,
-  "tier": "S-Tier",
+  "quality_score": 69,
+  "tier": "A-Tier",
   "tags": [
-    "\u2b50\u2b50\u2b50 S-Tier",
+    "\u2b50\u2b50 A-Tier",
     "\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f EPL Expert",
     "\ud83c\udfd2 NHL Pro",
     "\u274c No-Contract Fader",
@@ -256,5 +256,16 @@
     "\u26d4 Fade UCL",
     "\u26d4 Fade LaLiga"
   ],
-  "tail_guide": "How to Tail CemeterySun [S-Tier]\n\n\u2705 FOLLOW on: OTHER (+$1,219,369, 85.5% ROI), SOCCER (EPL) (+$1,126,828, 74.7% ROI), SOCCER (Other) (+$581,293, 33.0% ROI)\n\ud83d\udeab AVOID on: NBA (-6.0% ROI), SOCCER (LaLiga) (-62.1% ROI), SOCCER (UCL) (-9.1% ROI)\n\ud83d\udcc8 Stick to Moneylines (13.8% ROI over 158 events)\n\u26d4 Never tail O/U bets (-23.2% ROI)\n\ud83c\udfaf Best price range: Underdog (20-40c) (99.9% ROI, 35 events)\n\ud83d\udca1 136% of profit comes from 'No' contracts \u2014 copy that side\n\u26a1 Normal bet ~$53,504 \u2014 set alert for 3x above average (high-conviction)"
+  "tail_guide": "How to Tail CemeterySun [A-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   OTHER \u2014 85.5% ROI, 45 events, +$1,219,369\n   SOCCER (Other) \u2014 33.0% ROI, 87 events, +$581,293\n   NHL \u2014 7.3% ROI, 54 events, +$153,375\n\n\ud83d\udd34 DO NOT TAIL:\n   SOCCER (LaLiga) \u2014 ROI -62.1%, $-1,061,265\n   NBA \u2014 ROI -6.0%, $-360,933\n   SOCCER (UCL) \u2014 ROI -9.1%, $-115,276\n\n\ud83d\udcc8 Stick to Moneylines (13.8% ROI over 158 events)\n\u26d4 Mute all O/U bets (-23.2% ROI)\n\ud83c\udfaf Best price zone: Underdog (20-40c) (99.9% ROI, 35 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 136% of edge from 'No' side \u2014 copy that side only\n\u26a1 Normal bet ~$53,504 \u2014 alert at 3x average for high-conviction plays",
+  "score_breakdown": {
+    "sharpe_score": 30,
+    "roi_score": 16.3,
+    "wr_score": 9.3,
+    "cons_score": 8.6,
+    "vol_score": 5,
+    "base_score": 69.2,
+    "flip_bonus": 15,
+    "leakage_penalty": 15,
+    "midzone_roi": 49.2
+  }
 }

@@ -288,7 +288,7 @@
   "top_sport": "OTHER",
   "best_price_bucket": "Longshot (0-20c)",
   "best_market": "Moneyline / Match",
-  "quality_score": 39,
+  "quality_score": 41,
   "tier": "B-Tier",
   "tags": [
     "\u2b50 B-Tier",
@@ -300,5 +300,16 @@
     "\ud83d\udc0b Big Bettor",
     "\u26d4 Fade Spreads"
   ],
-  "tail_guide": "How to Tail LynxTitan [B-Tier]\n\n\u2705 FOLLOW on: OTHER (+$401,964, 6.9% ROI), NBA (+$78,696, 1.2% ROI), TENNIS (+$57,207, 1.5% ROI)\n\ud83d\udcc8 Stick to Moneylines (3.0% ROI over 7056 events)\n\u26d4 Never tail Spread bets (-6.1% ROI)\n\ud83c\udfaf Best price range: Longshot (0-20c) (133.1% ROI, 177 events)\n\ud83d\udca1 88% of profit comes from 'Yes' contracts \u2014 copy that side\n\u26a1 Normal bet ~$2,589 \u2014 set alert for 3x above average (high-conviction)"
+  "tail_guide": "How to Tail LynxTitan [B-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   OTHER \u2014 6.9% ROI, 3806 events, +$401,964\n   SOCCER (EPL) \u2014 6.8% ROI, 108 events, +$43,823\n   POLITICS \u2014 139.1% ROI, 34 events, +$31,761\n\n\ud83d\udd34 DO NOT TAIL:\n   SOCCER (Other) \u2014 ROI -2.9%, $-17,582\n\n\ud83d\udcc8 Stick to Moneylines (3.0% ROI over 7056 events)\n\u26d4 Mute all Spread bets (-6.1% ROI)\n\ud83c\udfaf Best price zone: Longshot (0-20c) (133.1% ROI, 177 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 88% of edge from 'Yes' side \u2014 copy that side only\n\u26a1 Normal bet ~$2,589 \u2014 alert at 3x average for high-conviction plays",
+  "score_breakdown": {
+    "sharpe_score": 16.6,
+    "roi_score": 5.6,
+    "wr_score": 7.8,
+    "cons_score": 5.6,
+    "vol_score": 5,
+    "base_score": 40.6,
+    "flip_bonus": 0,
+    "leakage_penalty": 0,
+    "midzone_roi": 2.2
+  }
 }

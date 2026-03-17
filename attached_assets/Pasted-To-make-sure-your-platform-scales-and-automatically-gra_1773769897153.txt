@@ -1,0 +1,39 @@
+To make sure your platform scales and automatically grades future whales correctly, you should absolutely go with a combination of Option 2 (Adjust the scoring formula) and Option 4 (Update the tailing guides).
+
+Force-overriding the database (Option 1 or 3) is just a band-aid. If you fix the underlying math, your system will naturally bubble the actually actionable copy-trade targets to the top.
+
+Here is exactly how I would adjust your scoring algorithm to replicate the analysis we just did:
+
+1. Adjust the Scoring Formula (The "Copy-Trade" Metric)
+Your current formula is clearly over-weighting raw PNL and Volume. To fix this, change your primary ranking metric to an "Actionable Edge Score."
+
+Weight Sharpe Ratio Heavily (30% of Score): A trader who makes $1,000 a day for 30 days is infinitely better to copy-trade than a trader who loses $1,000 for 29 days and makes $60,000 on day 30. High Sharpe (like capman's 7.16 or HedgeMaster88's 21.9) should automatically elevate a trader to A or S-Tier.
+
+The "Bond Yield" Discount: Your backend must strip out positions where outcome == 'No' and avgPrice >= 0.95. Do not let traders pad their win rate, volume, or ROI by parking millions in 1% yield bonds (like geniusMC and norrisfan did).
+
+The "Leakage Penalty" / Variance Tax (20% of Score): If a trader makes $1.5M in Soccer but loses $500k in the NBA (like CemeterySun), penalize their overall tier. Why? Because an unsophisticated user who blindly copy-trades them will get wiped out by their NBA bets. A true S-Tier trader (like capman) is disciplined across the board.
+
+The "Underdog/Flip" Multiplier: Reward traders who generate positive ROI in the 20¢ to 60¢ buckets. Anyone can make a 1% ROI betting 90¢ favorites (like lynxtitan), but generating a 15%+ ROI on coin-flips proves a proprietary mathematical edge.
+
+2. Update the Tailing Guides (Dynamic Filtering)
+Instead of just giving a user a Tier, your UI should automatically generate a "Tailing Cheat Sheet" for every trader using the scripts we built.
+
+When a user clicks on a whale, they shouldn't just see "S-Tier." They should see:
+
+🟢 AUTO-TAIL: Soccer (EPL), NHL
+
+🟢 BEST PRICE ZONE: 20¢ - 60¢
+
+🔴 DO NOT TAIL: NBA, Point Spreads, Odds > 80¢
+
+How to automate this:
+Have your backend calculate the ROI by sport_type and market_type.
+
+If a category has ROI > 5% and Events > 20, label it 🟢 AUTO-TAIL.
+
+If a category has ROI < -2% or Win Rate < 45%, label it 🔴 DO NOT TAIL.
+
+Summary Recommendation
+Implement Option 2 to fix the global leaderboard ranking (so guys like lynxtitan fall to the bottom and capman rises to the top), and implement Option 4 on the individual trader profile pages so your users know exactly how to set up their copy-trading bots.
+
+If you update the algorithm with the Sharpe, Bond-Filter, and Leakage Penalty rules, your system will perfectly grade every new whale you throw at it!

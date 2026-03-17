@@ -265,5 +265,16 @@
     "\ud83c\udfd2 NHL Pro",
     "\ud83d\udc8e Consistent Grinder"
   ],
-  "tail_guide": "How to Tail TTdes [A-Tier]\n\n\u2705 FOLLOW on: NHL (+$60,110, 8.3% ROI), TENNIS (+$26,162, 22.2% ROI), SOCCER (EPL) (+$13,366, 33.0% ROI)\n\ud83d\udeab AVOID on: POLITICS (-10.0% ROI), SOCCER (Other) (-13.1% ROI)\n\ud83d\udcc8 Stick to Moneylines (8.9% ROI over 671 events)\n\ud83c\udfaf Best price range: Underdog (20-40c) (21.1% ROI, 107 events)\n\ud83d\udca1 76% of profit comes from 'Specific' contracts \u2014 copy that side\n\ud83d\udcb0 Avg bet ~$1,505"
+  "tail_guide": "How to Tail TTdes [A-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   NHL \u2014 8.3% ROI, 537 events, +$60,110\n   SOCCER (EPL) \u2014 33.0% ROI, 44 events, +$13,366\n   SOCCER (LaLiga) \u2014 12.1% ROI, 41 events, +$5,197\n\n\ud83d\udd34 DO NOT TAIL:\n   SOCCER (Other) \u2014 ROI -13.1%, $-10,376\n   POLITICS \u2014 ROI -10.0%, $-9,368\n\n\ud83d\udcc8 Stick to Moneylines (8.9% ROI over 671 events)\n\ud83c\udfaf Best price zone: Underdog (20-40c) (21.1% ROI, 107 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 76% of edge from 'Specific' side \u2014 copy that side only\n\ud83d\udcb0 Avg bet ~$1,505",
+  "score_breakdown": {
+    "sharpe_score": 30,
+    "roi_score": 12.7,
+    "wr_score": 5.4,
+    "cons_score": 8.6,
+    "vol_score": 4.5,
+    "base_score": 61.2,
+    "flip_bonus": 10,
+    "leakage_penalty": 10,
+    "midzone_roi": 13.5
+  }
 }

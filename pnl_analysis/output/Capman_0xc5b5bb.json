@@ -278,10 +278,10 @@
   "top_sport": "NBA",
   "best_price_bucket": "Flip (40-60c)",
   "best_market": "Moneyline / Match",
-  "quality_score": 66,
-  "tier": "A-Tier",
+  "quality_score": 81,
+  "tier": "S-Tier",
   "tags": [
-    "\u2b50\u2b50 A-Tier",
+    "\u2b50\u2b50\u2b50 S-Tier",
     "\u26bd Global Soccer",
     "\ud83c\udfae Esports Analyst",
     "\ud83c\udfc0 NBA Expert",
@@ -291,5 +291,16 @@
     "\ud83d\udcc8 Moneyline Pro",
     "\u26d4 Fade Spreads"
   ],
-  "tail_guide": "How to Tail Capman [A-Tier]\n\n\u2705 FOLLOW on: NBA (+$68,884, 13.8% ROI), OTHER (+$67,935, 10.9% ROI), NHL (+$40,494, 16.2% ROI)\n\ud83d\udcc8 Stick to Moneylines (20.1% ROI over 4906 events)\n\u26d4 Never tail Spread bets (-12.9% ROI)\n\u26d4 Never tail O/U bets (-12.8% ROI)\n\ud83c\udfaf Best price range: Flip (40-60c) (15.8% ROI, 2084 events)\n\ud83d\udca1 100% of profit comes from 'Specific' contracts \u2014 copy that side\n\ud83d\udcb0 Avg bet ~$320"
+  "tail_guide": "How to Tail Capman [S-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   NBA \u2014 13.8% ROI, 764 events, +$68,884\n   OTHER \u2014 10.9% ROI, 2981 events, +$67,935\n   NHL \u2014 16.2% ROI, 714 events, +$40,494\n\n\ud83d\udcc8 Stick to Moneylines (20.1% ROI over 4906 events)\n\u26d4 Mute all Spread bets (-12.9% ROI)\n\u26d4 Mute all O/U bets (-12.8% ROI)\n\ud83c\udfaf Best price zone: Flip (40-60c) (15.8% ROI, 2084 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 100% of edge from 'Specific' side \u2014 copy that side only\n\ud83d\udcb0 Avg bet ~$320",
+  "score_breakdown": {
+    "sharpe_score": 27.0,
+    "roi_score": 18.7,
+    "wr_score": 11.8,
+    "cons_score": 7.3,
+    "vol_score": 4.7,
+    "base_score": 69.5,
+    "flip_bonus": 15,
+    "leakage_penalty": 3,
+    "midzone_roi": 15.3
+  }
 }
