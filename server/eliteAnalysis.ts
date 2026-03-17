@@ -103,6 +103,12 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
     autoTail:   ["College Sports"],
     doNotTail:  ["NBA", "NHL", "NFL", "MLB", "Soccer", "Tennis", "UFC/MMA", "eSports", "Politics", "Other"],
   },
+  "0x52ecea7b3159f09db589e4f4ee64872fd0bba6f3": { // fkgggg2 — Elite LoL-only specialist (6.7M in hedges scrubbed)
+    // True alpha is entirely LoL — every meaningful directional bet is LCK/LEC/LPL
+    // NBA/other sport entries are near-zero wash residuals, not real signals
+    autoTail:   ["LoL"],
+    doNotTail:  ["NBA", "NHL", "NFL", "MLB", "Soccer", "Tennis", "UFC/MMA", "CS2", "Valorant", "Dota2", "College Sports", "Politics", "Other", "Finance/Crypto"],
+  },
   "0x6c743aafd813475986dcd930f380a1f50901bd4e": { // middleoftheocean — Major Sports ML specialist (40-60c range)
     // Elite edge: major sports moneylines — especially value ML (40-60c) in NBA/NFL/UFC/Soccer
     // Gets crushed: spreads, totals (impulsive size, no handicapping edge), Politics, eSports, Crypto
