@@ -528,7 +528,13 @@ function TrackBetModal({
   );
 }
 
-function SignalCard({ signal, mode, onSnoozed, onBetTracked }: { signal: Signal; mode: "elite" | "fast"; onSnoozed?: (id: string) => void; onBetTracked?: () => void }) {
+function SignalCard({ signal, mode, onSnoozed, onBetTracked, ofiData }: {
+  signal: Signal;
+  mode: "elite" | "fast";
+  onSnoozed?: (id: string) => void;
+  onBetTracked?: () => void;
+  ofiData?: { ofi: number; totalBuyVolume: number; totalSellVolume: number; buyerCount: number; sellerCount: number } | null;
+}) {
   const [expanded, setExpanded] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [livePrice, setLivePrice] = useState<number | null>(null);
@@ -755,6 +761,31 @@ function SignalCard({ signal, mode, onSnoozed, onBetTracked }: { signal: Signal;
                 </div>
               </div>
             </div>
+
+            {/* OFI Bar — Order Flow Imbalance */}
+            {ofiData && (Math.abs(ofiData.ofi) > 100 || ofiData.totalBuyVolume + ofiData.totalSellVolume > 500) && (() => {
+              const total = ofiData.totalBuyVolume + ofiData.totalSellVolume;
+              const buyPct = total > 0 ? (ofiData.totalBuyVolume / total) * 100 : 50;
+              const ofiDir = ofiData.ofi > 0 ? "BUY" : "SELL";
+              const intensity = Math.min(Math.abs(ofiData.ofi) / (total || 1) * 100, 100);
+              return (
+                <div className="mt-2 rounded-md bg-muted/30 px-2.5 py-1.5 flex items-center gap-2" title={`Order Flow: ${ofiData.buyerCount} buyers ($${ofiData.totalBuyVolume.toLocaleString()}) vs ${ofiData.sellerCount} sellers ($${ofiData.totalSellVolume.toLocaleString()})`}>
+                  <div className="text-[9px] font-semibold text-muted-foreground shrink-0">OFI</div>
+                  <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${buyPct > 55 ? "bg-green-500" : buyPct < 45 ? "bg-red-500" : "bg-yellow-500"}`}
+                      style={{ width: `${buyPct}%` }}
+                    />
+                  </div>
+                  <div className={`text-[9px] font-bold shrink-0 ${ofiDir === "BUY" ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                    {ofiDir} {intensity.toFixed(0)}%
+                  </div>
+                  <div className="text-[9px] text-muted-foreground shrink-0">
+                    {ofiData.buyerCount}B/{ofiData.sellerCount}S
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* WHY THIS BET? — OddsJam-style conviction metrics */}
             {((signal as any).relBetSize > 0 || (signal as any).insiderSportsROI !== undefined) && (
@@ -1477,6 +1508,18 @@ export default function Signals() {
     return new Set(Object.entries(s).filter(([, v]) => v > now).map(([k]) => k));
   });
 
+  // Market OFI (Order Flow Imbalance) — buy vs sell pressure per market
+  const { data: ofiRaw } = useQuery<Array<{ conditionId: string; ofi: number; totalBuyVolume: number; totalSellVolume: number; buyerCount: number; sellerCount: number }>>({
+    queryKey: ["/api/elite/market-ofi"],
+    queryFn: () => fetch("/api/elite/market-ofi?days=7").then(r => r.json()),
+    staleTime: 120_000,
+  });
+  const ofiMap = useMemo(() => {
+    const m = new Map<string, { ofi: number; totalBuyVolume: number; totalSellVolume: number; buyerCount: number; sellerCount: number }>();
+    if (Array.isArray(ofiRaw)) ofiRaw.forEach(item => m.set(item.conditionId, item));
+    return m;
+  }, [ofiRaw]);
+
   // Tracked bets — load from API (primary) with localStorage fallback for instant hydration
   const { data: trackedBetsApi } = useQuery<Array<{ conditionId?: string; status: string }>>({
     queryKey: ["/api/bets"],
@@ -2065,6 +2108,7 @@ export default function Signals() {
                   mode={mode}
                   onSnoozed={handleSnoozed}
                   onBetTracked={refreshTrackedIds}
+                  ofiData={(signal as any).marketId ? ofiMap.get((signal as any).marketId) ?? null : null}
                 />
               </div>
             );

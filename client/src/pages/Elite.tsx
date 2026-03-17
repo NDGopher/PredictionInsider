@@ -100,10 +100,30 @@ interface TraderMetrics {
   midrangeCount: number;
   guaranteeROI: number;
   guaranteeCount: number;
-  bestBets: {
+  bestBets?: {
     title: string; slug: string; sport: string; marketType: string;
     side: string; price: number; size: number; pnl: number; date: string;
   }[];
+  bestBetsDB?: {
+    title: string; slug: string; sport: string; marketType: string;
+    side: string; price: number; size: number; pnl: number; date: string;
+  }[];
+  // ── New intelligence metrics ──
+  quantScore?: number;
+  traderArchetype?: string;
+  avgClv?: number;
+  avgClv30d?: number;
+  clvSampleSize?: number;
+  uniqueMarketsDB?: number;
+  tradesBuyCount?: number;
+  settledTradesDB?: number;
+  icebergScore?: number;
+  icebergClusters?: number;
+  monthlyVolume?: { month: string; volume: number }[];
+  archetypeSignal?: {
+    tradesPerDay: number; avgBetSize: number; avgPrice: number;
+    longshotPct: number; yesBuyPct: number; uniqueMarkets: number; icebergScore: number;
+  };
 }
 
 // ─── Format helpers ────────────────────────────────────────────────────────────
@@ -141,6 +161,27 @@ function qualityBg(q: number | null): string {
 
 function roiColor(v: number): string {
   return v >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500";
+}
+
+function archetypeIcon(archetype: string): string {
+  const icons: Record<string, string> = {
+    "Information Trader": "🔬",
+    "Sharp Scalper": "⚡",
+    "Whale": "🐋",
+    "Long-Shot Hunter": "🎯",
+    "Momentum Trader": "🚀",
+    "Market Maker": "⚖️",
+    "Diversified Grinder": "🔄",
+    "Balanced Trader": "📊",
+  };
+  return icons[archetype] || "📊";
+}
+
+function clvColor(v: number): string {
+  if (v > 5) return "text-green-600 dark:text-green-400";
+  if (v > 0) return "text-green-500/70";
+  if (v > -3) return "text-yellow-600 dark:text-yellow-400";
+  return "text-red-500";
 }
 
 // ─── Add Trader Form ──────────────────────────────────────────────────────────
@@ -334,12 +375,22 @@ function TraderDeepDive({ wallet, username }: { wallet: string; username: string
       {/* Header */}
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <h2 className="text-lg font-bold">{username}</h2>
             {qs != null && (
-              <div className={`text-2xl font-bold tabular-nums ${qualityColor(qs)}`} data-testid={`quality-score-${wallet}`}>
-                {qs}
+              <div className="flex items-center gap-1.5">
+                <div className={`text-2xl font-bold tabular-nums ${qualityColor(qs)}`} data-testid={`quality-score-${wallet}`}>
+                  {qs}
+                </div>
+                <div className="text-[9px] text-muted-foreground leading-tight">
+                  <div>Quant</div><div>Score</div>
+                </div>
               </div>
+            )}
+            {m?.traderArchetype && (
+              <Badge className="text-[10px] px-2 py-0.5 bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/30 border">
+                {archetypeIcon(m.traderArchetype)} {m.traderArchetype}
+              </Badge>
             )}
           </div>
           {m && (
@@ -403,7 +454,12 @@ function TraderDeepDive({ wallet, username }: { wallet: string; username: string
               { label: "PA ROI", value: fmtROI(m.overallROI), icon: TrendingUp, color: roiColor(m.overallROI) },
               { label: "Capital ROI", value: fmtROI(m.roiCapital ?? null), icon: TrendingUp, color: roiColor(m.roiCapital ?? 0) },
               { label: "Win Rate", value: fmt(m.winRate, "%"), icon: Award },
-              { label: "Sharpe", value: fmt(m.sharpeScore), icon: Activity, color: m.sharpeScore >= 1 ? "text-green-600 dark:text-green-400" : "" },
+              {
+                label: "CLV",
+                value: m.avgClv != null ? `${m.avgClv >= 0 ? "+" : ""}${m.avgClv.toFixed(1)}%` : "—",
+                icon: Activity,
+                color: m.avgClv != null ? clvColor(m.avgClv) : "",
+              },
             ].map(({ label, value, icon: Icon, color }) => (
               <div key={label} className="bg-muted/40 rounded-lg p-2.5 border border-border/40">
                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-1">
@@ -581,19 +637,52 @@ function TraderDeepDive({ wallet, username }: { wallet: string; username: string
             )}
           </div>
 
+          {/* Intelligence metrics: CLV + Iceberg + Quant breakdown */}
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              {
+                label: "CLV (All-Time)",
+                value: m.avgClv != null ? `${m.avgClv >= 0 ? "+" : ""}${m.avgClv.toFixed(1)}%` : "—",
+                sub: m.clvSampleSize != null ? `${m.clvSampleSize} settled` : "",
+                color: m.avgClv != null ? clvColor(m.avgClv) : "",
+                help: "Entry edge vs closing price"
+              },
+              {
+                label: "CLV (30d)",
+                value: m.avgClv30d != null ? `${m.avgClv30d >= 0 ? "+" : ""}${m.avgClv30d.toFixed(1)}%` : "—",
+                sub: "recent",
+                color: m.avgClv30d != null ? clvColor(m.avgClv30d) : "",
+                help: "Last 30 days CLV"
+              },
+              {
+                label: "Iceberg",
+                value: m.icebergScore != null ? `${m.icebergScore.toFixed(1)}%` : "—",
+                sub: m.icebergClusters != null ? `${m.icebergClusters} clusters` : "",
+                color: (m.icebergScore ?? 0) > 15 ? "text-amber-600 dark:text-amber-400" : "",
+                help: "Hidden accumulation patterns"
+              },
+            ].map(({ label, value, sub, color, help }) => (
+              <div key={label} className="bg-muted/30 rounded-lg p-2.5 border border-border/30" title={help}>
+                <div className="text-[9px] text-muted-foreground mb-0.5">{label}</div>
+                <div className={`text-sm font-bold ${color}`}>{value}</div>
+                {sub && <div className="text-[9px] text-muted-foreground">{sub}</div>}
+              </div>
+            ))}
+          </div>
+
           {/* Best bets */}
-          {m.bestBets?.length > 0 && (
+          {((m.bestBets?.length ?? 0) > 0 || (m.bestBetsDB?.length ?? 0) > 0) && (
             <div>
               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
                 <Star className="w-3 h-3" /> Best Trades
               </div>
               <div className="space-y-1.5">
-                {m.bestBets.slice(0, 5).map((b, i) => (
+                {(m.bestBets ?? m.bestBetsDB ?? []).slice(0, 5).map((b, i) => (
                   <div key={i} className="flex items-center justify-between gap-2 p-2 rounded-md bg-muted/30 border border-border/40">
                     <div className="min-w-0 flex-1">
                       <div className="text-xs font-medium truncate">{b.title}</div>
                       <div className="text-[9px] text-muted-foreground">
-                        {b.sport} · {b.marketType} · {b.side} @ {Math.round(b.price * 100)}¢ · {fmtUSDC(b.size)}
+                        {b.sport} · {b.side} @ {Math.round(b.price * 100)}¢ · {fmtUSDC(b.size)}
                       </div>
                     </div>
                     <div className="text-xs font-bold text-green-600 dark:text-green-400 shrink-0">
@@ -623,7 +712,11 @@ function TraderDeepDive({ wallet, username }: { wallet: string; username: string
           )}
 
           <div className="text-[10px] text-muted-foreground pt-1 border-t border-border/40">
-            Analysis covers {m.totalTrades.toLocaleString()} trades ({m.settledTrades} settled) · Last computed {data?.profile?.computed_at ? new Date(data.profile.computed_at).toLocaleString() : "—"}
+            {m.totalTrades?.toLocaleString() ?? m.tradesBuyCount?.toLocaleString() ?? "—"} trades ({m.settledTradesDB ?? m.settledTrades ?? 0} settled in DB)
+            {" · "}Last computed {data?.profile?.computed_at ? new Date(data.profile.computed_at).toLocaleString() : "—"}
+            {m.pnlSource === "closed_positions_api" && (
+              <span className="text-green-600 dark:text-green-400"> · ✓ Canonical PNL</span>
+            )}
           </div>
         </>
       )}
@@ -668,8 +761,6 @@ function TraderCard({ trader }: { trader: EliteTrader }) {
       : "Analyzed";
 
   const overallROI = trader.overall_roi ? parseFloat(trader.overall_roi) : null;
-  const roiCapital = trader.roi_capital ? parseFloat(trader.roi_capital) : null;
-  const last90dROI = trader.last90d_roi ? parseFloat(trader.last90d_roi) : null;
   const winRate = trader.win_rate ? parseFloat(trader.win_rate) : null;
 
   return (
@@ -688,7 +779,10 @@ function TraderCard({ trader }: { trader: EliteTrader }) {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {qs != null && (
-              <div className={`text-xl font-bold tabular-nums ${qualityColor(qs)}`}>{qs}</div>
+              <div className="flex flex-col items-center">
+                <div className={`text-xl font-bold tabular-nums ${qualityColor(qs)}`}>{qs}</div>
+                <div className="text-[8px] text-muted-foreground">QS</div>
+              </div>
             )}
             <button
               onClick={() => setExpanded(e => !e)}
@@ -700,23 +794,25 @@ function TraderCard({ trader }: { trader: EliteTrader }) {
           </div>
         </div>
 
-        {/* Tags */}
-        {(trader.tags?.length ?? 0) > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
-            {(trader.tags || []).slice(0, 4).map(tag => (
-              <Badge key={tag} variant="secondary" className="text-[9px] py-0">{tag}</Badge>
-            ))}
-          </div>
-        )}
+        {/* Tags + Archetype */}
+        <div className="flex flex-wrap gap-1 mt-2">
+          {(trader.tags || []).slice(0, 3).map(tag => (
+            <Badge key={tag} variant="secondary" className="text-[9px] py-0">{tag}</Badge>
+          ))}
+        </div>
 
         {/* Metrics strip */}
         {(overallROI != null || winRate != null) && (
           <div className="grid grid-cols-4 gap-1.5 mt-2.5">
             {[
               { label: "PA ROI", value: fmtROI(overallROI), color: overallROI != null ? roiColor(overallROI) : "" },
-              { label: "Cap ROI", value: fmtROI(roiCapital), color: roiCapital != null ? roiColor(roiCapital) : "" },
               { label: "Win%", value: fmt(winRate, "%"), color: "" },
               { label: "Trades/d", value: trader.trades_per_day ? parseFloat(trader.trades_per_day).toFixed(1) : "—", color: "" },
+              {
+                label: "PNL",
+                value: trader.overall_pnl ? fmtUSDC(parseFloat(trader.overall_pnl)) : "—",
+                color: trader.overall_pnl ? roiColor(parseFloat(trader.overall_pnl)) : "",
+              },
             ].map(({ label, value, color }) => (
               <div key={label} className="bg-muted/30 rounded p-1.5 text-center">
                 <div className="text-[9px] text-muted-foreground">{label}</div>

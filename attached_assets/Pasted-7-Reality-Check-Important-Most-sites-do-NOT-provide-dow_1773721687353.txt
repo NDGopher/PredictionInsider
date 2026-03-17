@@ -1,0 +1,152 @@
+7. Reality Check (Important)
+
+Most sites do NOT provide downloadable full trade histories.
+
+Why?
+
+Because they all do the same thing internally:
+
+index blockchain
+store trades in database
+compute metrics
+display summaries
+
+But they rarely expose the raw dataset.
+
+So your difficulty pulling data is normal.
+
+Even experienced devs complain about Polymarket data access.
+
+8. The Only Real Ways to Get FULL Trade History
+
+There are basically three methods in the ecosystem:
+
+Method 1 — Analytics Sites
+
+Examples:
+
+Polyscan
+
+Predicts.guru
+
+PolyViewer
+
+IYKYK Markets
+
+Pros:
+
+easy
+visual dashboards
+no coding
+
+Cons:
+
+no raw export
+limited API access
+Method 2 — Blockchain Explorer
+
+You can manually inspect trades using
+
+Polygonscan
+
+Search wallet → filter transactions → decode events.
+
+Pros:
+
+complete
+trustless
+
+Cons:
+
+painful
+not structured
+Method 3 — Build an Indexer (what these sites did)
+
+They run something like:
+
+Polygon node
+↓
+event indexer
+↓
+trade database
+↓
+wallet analytics
+
+That’s how they compute:
+
+ROI
+PNL
+win rate
+trade history
+positions
+9. Brutal Truth About Polymarket Data
+
+Polymarket is one of the worst APIs in crypto for analytics.
+
+Major problems:
+
+no wallet trade history endpoint
+no official PnL endpoint
+no historical orderbook
+pagination limits
+
+So analytics sites:
+
+rebuild the dataset themselves
+10. The Tool I Recommend You Try First
+
+If your goal is:
+
+“See full wallet breakdowns quickly”
+
+Start with:
+
+1️⃣ Polyscan
+2️⃣ Predicts.guru
+
+Paste a wallet like:
+
+0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c
+
+You should see:
+
+PnL
+positions
+win rate
+trading activity
+11. Important: How PolymarketAnalytics Actually Works
+
+Sites like PolymarketAnalytics usually:
+
+index every trade globally
+store in postgres
+compute wallet metrics
+
+Meaning:
+
+They don’t fetch trades per wallet.
+
+They do:
+
+fetch all trades
+then filter by wallet
+
+This is the key insight.
+
+12. If You Want the Real Fix (Highly Recommended)
+
+Instead of:
+
+fetch wallet trades
+
+You should:
+
+download ALL trades
+store locally
+query by wallet
+
+This solves:
+
+missing history
+pagination limits
+API bugs

@@ -845,48 +845,32 @@ export async function computeTraderProfileFromActivity(wallet: string): Promise<
     accountAgeDays: Math.round(accountAgeDays),
     tradesPerDay: Math.round(tradesPerDay * 100) / 100,
     avgTradesPerWeek: Math.round(tradesPerDay * 7 * 10) / 10,
-    overallROI: Math.round(overallROI * 10000) / 100,
-    overallPNL: Math.round(settledPnl * 100) / 100,
-    winRate: Math.round(winRate * 1000) / 10,
-    last30dROI: Math.round(last30dROI * 10000) / 100,
-    last90dROI: Math.round(last90dROI * 10000) / 100,
-    bigBetROI: Math.round(bigBetROI * 10000) / 100,
-    smallBetROI: Math.round(smallBetROI * 10000) / 100,
-    sharpeScore: Math.round(sharpeScore * 100) / 100,
+    // NOTE: overallROI / overallPNL / winRate are EXCLUDED here — canonical owns those
+    sharpeFromActivity: Math.round(sharpeScore * 100) / 100,
     consistencyRating, maxConsecLosingMonths: maxLosing,
-    monthlyROI, roiBySport, topSport, roiByMarketType, topMarketType,
+    roiBySportActivity: roiBySport, topSport, roiByMarketType, topMarketType,
     sportDistribution, avgBetBySport, sizingInsights,
-    yesROI: Math.round(yesROI * 10000) / 100,
-    noROI: Math.round(noROI * 10000) / 100,
     yesTradeCount: yesBuys, noTradeCount: noBuys, preferredSide,
-    longshotROI: Math.round(calcROI(longshotSettled) * 10000) / 100,
     longshotCount: positions.filter(p => p.avgPrice < 0.25).length,
-    midrangeROI: Math.round(calcROI(midSettled) * 10000) / 100,
     midrangeCount: positions.filter(p => p.avgPrice >= 0.25 && p.avgPrice <= 0.75).length,
-    guaranteeROI: Math.round(calcROI(guaranteeSettled) * 10000) / 100,
     guaranteeCount: positions.filter(p => p.avgPrice > 0.75).length,
     bestBets,
+    settledBets: settled.length,
     dataSource: "activity",
   };
 
+  // CRITICAL: activity analysis never owns canonical keys (overallPNL, overallROI, winRate).
+  // MERGE order: EXCLUDED (activity) as base, existing canonical on TOP so canonical wins.
+  // PostgreSQL jsonb: A || B → B wins for conflicting keys.
+  // So: EXCLUDED.metrics || existing → existing (canonical) wins for canonical keys.
   await pool.query(`
     INSERT INTO elite_trader_profiles (wallet, username, computed_at, metrics, tags, quality_score)
-    VALUES ($1, $2, NOW(), $3, $4, $5)
+    VALUES ($1, $2, NOW(), $3, $4, 0)
     ON CONFLICT (wallet) DO UPDATE SET
       username = EXCLUDED.username, computed_at = NOW(),
-      metrics = CASE
-        WHEN elite_trader_profiles.metrics->>'manualPnlOverride' = 'true'
-          OR elite_trader_profiles.metrics->>'pnlSource' = 'closed_positions_api'
-        THEN EXCLUDED.metrics || elite_trader_profiles.metrics
-        ELSE EXCLUDED.metrics
-        END,
-      tags = EXCLUDED.tags,
-      quality_score = CASE
-        WHEN elite_trader_profiles.metrics->>'pnlSource' = 'closed_positions_api'
-        THEN elite_trader_profiles.quality_score
-        ELSE EXCLUDED.quality_score
-        END
-  `, [w, username, JSON.stringify(metrics), tags, qualityScore]);
+      metrics = EXCLUDED.metrics || COALESCE(elite_trader_profiles.metrics, '{}'::jsonb),
+      tags = EXCLUDED.tags
+  `, [w, username, JSON.stringify(metrics), tags]);
 
   return { wallet: w, username, qualityScore, tags, metrics };
 }
@@ -1189,73 +1173,134 @@ export async function computeTraderProfile(wallet: string): Promise<any> {
       date: t.trade_timestamp,
     }));
 
-  const metrics = {
-    totalUSDC: Math.round(totalUSDC),
-    totalTrades: trades.length,
-    settledTrades: settled.length,
+  // ── CLV from settled trades ─────────────────────────────────────────────────
+  // For resolved binary markets: CLV = close_price - entry_price
+  // WIN: close = 1.0 → CLV = 1 - entry_price (positive = edge)
+  // LOSS: close = 0.0 → CLV = -entry_price (negative = poor entry)
+  const settledForClv = settled.filter(t => parseFloat(t.price) > 0 && parseFloat(t.price) < 1);
+  const avgClv = settledForClv.length > 0
+    ? settledForClv.reduce((s, t) => {
+        const p = parseFloat(t.price);
+        return s + (t.settled_outcome === "won" ? 1 - p : -p);
+      }, 0) / settledForClv.length
+    : 0;
+  const clv30d = settled30.filter(t => parseFloat(t.price) > 0 && parseFloat(t.price) < 1);
+  const avgClv30d = clv30d.length > 0
+    ? clv30d.reduce((s, t) => {
+        const p = parseFloat(t.price);
+        return s + (t.settled_outcome === "won" ? 1 - p : -p);
+      }, 0) / clv30d.length
+    : 0;
+
+  // ── Iceberg detection ────────────────────────────────────────────────────────
+  // Detect repeated buys in same market within 5 min window (stealth accumulation)
+  const tradesByCondition = new Map<string, typeof trades>();
+  for (const t of trades) {
+    if (!tradesByCondition.has(t.condition_id)) tradesByCondition.set(t.condition_id, []);
+    tradesByCondition.get(t.condition_id)!.push(t);
+  }
+  let icebergClusters = 0;
+  for (const [, condTrades] of tradesByCondition) {
+    const sorted = [...condTrades].sort((a, b) =>
+      new Date(a.trade_timestamp).getTime() - new Date(b.trade_timestamp).getTime()
+    );
+    for (let i = 0; i < sorted.length - 2; i++) {
+      const window = sorted.slice(i, i + 3);
+      const span = (new Date(window[window.length - 1].trade_timestamp).getTime() -
+                    new Date(window[0].trade_timestamp).getTime()) / 60000;
+      if (span <= 5 && window.length >= 3) { icebergClusters++; break; }
+    }
+  }
+  const icebergScore = Math.round((icebergClusters / Math.max(tradesByCondition.size, 1)) * 1000) / 10;
+
+  // ── Monthly volume trend ─────────────────────────────────────────────────────
+  const byMonthVol: Record<string, number> = {};
+  for (const t of trades) {
+    const d = new Date(t.trade_timestamp);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    byMonthVol[key] = (byMonthVol[key] || 0) + parseFloat(t.size);
+  }
+  const monthlyVolume = Object.entries(byMonthVol)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, volume]) => ({ month, volume: Math.round(volume) }));
+
+  // ── Behavioral archetype signal (for canonical to finalize) ─────────────────
+  const archetypeSignal = {
+    tradesPerDay: Math.round(tradesPerDay * 100) / 100,
     avgBetSize: Math.round(avgBetSize * 100) / 100,
-    medianBetSize: Math.round(medianBetSize * 100) / 100,
+    avgPrice: prices.length > 0 ? Math.round(mean(prices) * 1000) / 1000 : 0.5,
+    longshotPct: Math.round((trades.filter(t => parseFloat(t.price) < 0.25).length / Math.max(trades.length, 1)) * 1000) / 10,
+    yesBuyPct: Math.round((yesBuys / Math.max(trades.length, 1)) * 1000) / 10,
+    uniqueMarkets: tradesByCondition.size,
+    icebergScore,
+  };
+
+  // ── NOTE: overallPNL / overallROI / winRate are CANONICAL ONLY ──────────────
+  // These keys are owned exclusively by patchProfileWithCanonicalPNL.
+  // Trade-based computation uses only settled trades from our DB (incomplete —
+  // covers only the last ~3500 trades per wallet). Canonical /closed-positions
+  // covers ALL-TIME history and is the only accurate source.
+  // DO NOT add overallPNL / overallROI / winRate here.
+
+  const metrics = {
+    // ── Volume & sizing (from our full trade table) ──
+    totalUSDC: Math.round(totalUSDC),
+    tradesBuyCount: trades.length,
+    settledTradesDB: settled.length,
+    avgTradeSize: Math.round(avgBetSize * 100) / 100,
+    medianTradeSize: Math.round(medianBetSize * 100) / 100,
     betSizeStdDev: Math.round(betSizeStdDev * 100) / 100,
     betSizeCV: Math.round(betSizeCV * 1000) / 1000,
+    // ── Activity timing ──
     firstTradeDate: firstTrade,
     lastTradeDate: lastTrade,
     accountAgeDays: Math.round(accountAgeDays),
     tradesPerDay: Math.round(tradesPerDay * 100) / 100,
     avgTradesPerWeek: Math.round(tradesPerDay * 7 * 10) / 10,
-    overallROI: Math.round(overallROI * 10000) / 100,
-    overallPNL: Math.round(settledPnl * 100) / 100,
-    winRate: Math.round(winRate * 1000) / 10,
-    last30dROI: Math.round(last30dROI * 10000) / 100,
-    last90dROI: Math.round(last90dROI * 10000) / 100,
-    bigBetROI: Math.round(bigBetROI * 10000) / 100,
-    smallBetROI: Math.round(smallBetROI * 10000) / 100,
-    sharpeScore: Math.round(sharpeScore * 100) / 100,
+    // ── Behavioral metrics ──
+    sharpeFromDB: Math.round(sharpeScore * 100) / 100,
     consistencyRating,
     maxConsecLosingMonths: maxLosing,
-    monthlyROI,
-    roiBySport,
-    topSport,
-    roiByMarketType,
-    topMarketType,
     sportDistribution,
     avgBetBySport: Object.fromEntries(Object.entries(avgBetBySport).map(([k, v]) => [k, Math.round(v)])),
     sizingInsights,
-    yesROI: Math.round(yesROI * 10000) / 100,
-    noROI: Math.round(noROI * 10000) / 100,
     yesTradeCount: yesBuys,
     noTradeCount: noBuys,
     preferredSide,
-    longshotROI: Math.round(longshotROI * 10000) / 100,
     longshotCount: trades.filter(t => parseFloat(t.price) < 0.25).length,
-    midrangeROI: Math.round(midrangeROI * 10000) / 100,
     midrangeCount: trades.filter(t => parseFloat(t.price) >= 0.25 && parseFloat(t.price) <= 0.75).length,
-    guaranteeROI: Math.round(guaranteeROI * 10000) / 100,
     guaranteeCount: trades.filter(t => parseFloat(t.price) > 0.75).length,
-    bestBets,
+    // ── CLV from settled trades ──
+    avgClv: Math.round(avgClv * 10000) / 100,
+    avgClv30d: Math.round(avgClv30d * 10000) / 100,
+    clvSampleSize: settledForClv.length,
+    // ── Advanced behavioral signals ──
+    icebergScore,
+    icebergClusters,
+    uniqueMarketsInDB: tradesByCondition.size,
+    monthlyVolume,
+    archetypeSignal,
+    // ── Top bets from our DB (may be partial — canonical bestBets overrides) ──
+    bestBetsDB: bestBets,
+    dataSource: "trades_table",
   };
 
-  // Save to DB — canonical metrics (pnlSource=closed_positions_api) always win over activity-based
+  // ── Save trade-pattern metrics to DB ─────────────────────────────────────────
+  // CRITICAL: trade metrics NEVER own canonical keys (overallPNL, overallROI, winRate,
+  // closedPositionCount, pnlSource, quantScore, traderArchetype, avgClv, etc.).
+  // Those are exclusively written by patchProfileWithCanonicalPNL.
+  // PostgreSQL jsonb: A || B → B (RIGHT) wins for conflicting keys.
+  // So EXCLUDED || existing → existing (canonical) wins for canonical keys.
   await pool.query(`
     INSERT INTO elite_trader_profiles (wallet, username, computed_at, metrics, tags, quality_score)
-    VALUES ($1, $2, NOW(), $3, $4, $5)
+    VALUES ($1, $2, NOW(), $3, $4, 0)
     ON CONFLICT (wallet) DO UPDATE SET
       username = EXCLUDED.username,
       computed_at = NOW(),
-      metrics = CASE
-        WHEN elite_trader_profiles.metrics->>'manualPnlOverride' = 'true'
-          OR elite_trader_profiles.metrics->>'pnlSource' = 'closed_positions_api'
-        THEN EXCLUDED.metrics || elite_trader_profiles.metrics
-        ELSE EXCLUDED.metrics
-        END,
-      tags = EXCLUDED.tags,
-      quality_score = CASE
-        WHEN elite_trader_profiles.metrics->>'pnlSource' = 'closed_positions_api'
-        THEN elite_trader_profiles.quality_score
-        ELSE EXCLUDED.quality_score
-        END
-  `, [w, username, JSON.stringify(metrics), tags, qualityScore]);
+      metrics = EXCLUDED.metrics || COALESCE(elite_trader_profiles.metrics, '{}'::jsonb)
+  `, [w, username, JSON.stringify(metrics), tags]);
 
-  return { wallet: w, username, qualityScore, tags, metrics };
+  return { wallet: w, username, qualityScore: 0, tags, metrics };
 }
 
 // ─── CSV generator ─────────────────────────────────────────────────────────────
@@ -1804,6 +1849,91 @@ function computeCanonicalQualityScore(c: CanonicalPNL): number {
   return Math.min(99, Math.max(1, roiPts + tradePts + wrPts + pnlPts + momentumPts));
 }
 
+// ─── Quant Score (0–100 composite skill metric) ──────────────────────────────
+// Higher = better edge. Combines ROI, CLV, consistency, PNL scale, momentum.
+function computeQuantScore(params: {
+  overallROI: number;
+  avgClv: number;
+  monthlyROI: { roi: number }[];
+  totalPNL: number;
+  last30dROI: number;
+  closedCount: number;
+}): number {
+  const { overallROI, avgClv, monthlyROI, totalPNL, last30dROI, closedCount } = params;
+
+  // ROI component: 30pts max (30% ROI = max)
+  const roiPts = Math.min(30, Math.max(0, overallROI / 30 * 30));
+
+  // CLV component: 20pts max (10% CLV = max — positive means beating fair price)
+  const clvPts = Math.min(20, Math.max(0, (avgClv / 0.10) * 20));
+
+  // Consistency (Sharpe of monthly ROI): 25pts max — Sharpe ≥ 2.0 = max
+  let consistencyPts = 0;
+  if (monthlyROI.length >= 3) {
+    const rois = monthlyROI.map(m => m.roi);
+    const m = rois.reduce((s, r) => s + r, 0) / rois.length;
+    const variance = rois.reduce((s, r) => s + (r - m) ** 2, 0) / rois.length;
+    const sharpe = variance > 0 ? m / Math.sqrt(variance) : (m > 0 ? 2.5 : 0);
+    consistencyPts = Math.min(25, Math.max(0, (sharpe / 2.0) * 25));
+  }
+
+  // PNL scale: 15pts max ($1M = max)
+  const pnlPts = totalPNL <= 0 ? 0 : Math.min(15, (Math.log10(totalPNL) / Math.log10(1_000_000)) * 15);
+
+  // Momentum: 10pts max (last30dROI ≥ 30% = max)
+  const momentumPts = Math.min(10, Math.max(0, last30dROI / 30 * 10));
+
+  // Experience bonus: mild boost for sample size > 100 closed (prevents tiny-sample noise)
+  const expMultiplier = closedCount >= 100 ? 1.0 : closedCount >= 30 ? 0.85 : 0.7;
+
+  return Math.min(99, Math.max(1,
+    Math.round((roiPts + clvPts + consistencyPts + pnlPts + momentumPts) * expMultiplier)
+  ));
+}
+
+// ─── Trader Archetype classifier ─────────────────────────────────────────────
+type TraderArchetype =
+  | "Information Trader"
+  | "Sharp Scalper"
+  | "Whale"
+  | "Long-Shot Hunter"
+  | "Momentum Trader"
+  | "Market Maker"
+  | "Diversified Grinder"
+  | "Balanced Trader";
+
+function classifyTraderArchetype(params: {
+  overallROI: number;
+  avgClv: number;
+  tradesPerDay: number;
+  avgBetSize: number;
+  avgPrice: number;
+  longshotPct: number;
+  closedCount: number;
+  uniqueMarkets: number;
+  last30dROI: number;
+  winRate: number;
+}): TraderArchetype {
+  const { overallROI, avgClv, tradesPerDay, avgBetSize, avgPrice, longshotPct,
+          closedCount, uniqueMarkets, last30dROI, winRate } = params;
+
+  // Very high frequency, small bets → Market Maker
+  if (tradesPerDay > 20 && avgBetSize < 200) return "Market Maker";
+  // Huge bets → Whale (regardless of other metrics)
+  if (avgBetSize > 5000) return "Whale";
+  // Strong CLV + positive ROI → Information Trader (has access to real edges)
+  if (avgClv > 0.07 && overallROI > 15) return "Information Trader";
+  // Mostly longshots → Long-Shot Hunter
+  if (longshotPct > 40 && avgPrice < 0.22) return "Long-Shot Hunter";
+  // High frequency + moderate size + positive ROI → Sharp Scalper
+  if (tradesPerDay > 5 && avgBetSize < 800 && overallROI > 8) return "Sharp Scalper";
+  // Recent ROI much better than all-time (chasing hot streak) → Momentum Trader
+  if (last30dROI > overallROI * 1.5 && last30dROI > 15) return "Momentum Trader";
+  // Large market count + consistent ROI → Diversified Grinder
+  if (uniqueMarkets > 200 && overallROI > 5) return "Diversified Grinder";
+  return "Balanced Trader";
+}
+
 // Patch an existing trader profile with canonical PNL + full metrics.
 // This is the authoritative source of truth for all metric values displayed on the Traders page.
 export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
@@ -1868,6 +1998,60 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
     const nonSportTags = existingTags.filter((t: string) => !Object.values(sportTagMap).some(st => t === st));
     const mergedTags = [...new Set([...canonicalSportTags, ...nonSportTags])];
 
+    // ── CLV from settled trades in DB ─────────────────────────────────────────
+    // avg_clv = mean(1-price for wins, -price for losses) across all resolved binary positions
+    const clvRow = await pool.query(`
+      SELECT
+        AVG(CASE
+          WHEN settled_outcome = 'won' THEN 1.0 - CAST(price AS float)
+          WHEN settled_outcome = 'lost' THEN 0.0 - CAST(price AS float)
+        END)::float AS avg_clv,
+        AVG(CASE
+          WHEN settled_outcome = 'won' THEN 1.0 - CAST(price AS float)
+          WHEN settled_outcome = 'lost' THEN 0.0 - CAST(price AS float)
+        END) FILTER (WHERE trade_timestamp > NOW() - INTERVAL '30 days')::float AS clv_30d,
+        COUNT(CASE WHEN settled_outcome IS NOT NULL THEN 1 END) AS settled_count,
+        AVG(CAST(price AS float)) FILTER (WHERE is_buy) AS avg_entry_price,
+        COUNT(DISTINCT condition_id) AS unique_markets
+      FROM elite_trader_trades
+      WHERE wallet = $1 AND is_buy = TRUE
+        AND CAST(price AS float) > 0.001 AND CAST(price AS float) < 0.999
+    `, [w]);
+    const avgClv = clvRow.rows[0]?.avg_clv ?? 0;
+    const clv30d = clvRow.rows[0]?.clv_30d ?? 0;
+    const dbSettledCount = parseInt(clvRow.rows[0]?.settled_count ?? "0");
+    const dbAvgPrice = clvRow.rows[0]?.avg_entry_price ?? 0.5;
+    const dbUniqueMarkets = parseInt(clvRow.rows[0]?.unique_markets ?? "0");
+
+    // Fetch behavioral signals from existing metrics (written by trade analysis)
+    const tradeData = existingMetrics?.archetypeSignal ?? {};
+
+    // ── Quant Score (0-100) ───────────────────────────────────────────────────
+    const quantScore = computeQuantScore({
+      overallROI: c.overallROI,
+      avgClv: avgClv || 0,
+      monthlyROI: c.monthlyROI,
+      totalPNL: c.totalPNL,
+      last30dROI: c.last30dROI,
+      closedCount: c.closedCount,
+    });
+
+    // ── Trader Archetype ──────────────────────────────────────────────────────
+    const traderArchetype: TraderArchetype = classifyTraderArchetype({
+      overallROI: c.overallROI,
+      avgClv: avgClv || 0,
+      tradesPerDay: tradeData.tradesPerDay ?? existingMetrics.tradesPerDay ?? 1,
+      avgBetSize: c.avgBetUSDC,
+      avgPrice: dbAvgPrice,
+      longshotPct: tradeData.longshotPct ?? existingMetrics.longshotCount
+        ? (existingMetrics.longshotCount / Math.max(existingMetrics.tradesBuyCount ?? 1, 1)) * 100
+        : 10,
+      closedCount: c.closedCount,
+      uniqueMarkets: dbUniqueMarkets || tradeData.uniqueMarkets || 1,
+      last30dROI: c.last30dROI,
+      winRate: c.pnlWinRate,
+    });
+
     // All canonical metrics — these are authoritative and override activity-based values
     const canonicalMetrics = {
       overallPNL:          c.totalPNL,
@@ -1900,6 +2084,14 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
       monthlyROI:          c.monthlyROI,
       roiBySport,
       closedByCategory:    c.closedByCategory,
+      // ── New intelligence metrics ──────────────────────────────────────────
+      quantScore,
+      traderArchetype,
+      avgClv:              Math.round((avgClv || 0) * 10000) / 100,
+      avgClv30d:           Math.round((clv30d || 0) * 10000) / 100,
+      clvSampleSize:       dbSettledCount,
+      uniqueMarketsDB:     dbUniqueMarkets,
+      // ── Provenance ───────────────────────────────────────────────────────
       pnlSource:           "closed_positions_api",
       pnlUpdatedAt:        new Date().toISOString(),
     };
@@ -1911,13 +2103,12 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
           quality_score = $3,
           tags = $4
       WHERE wallet = $1
-    `, [w, JSON.stringify(canonicalMetrics), qualityScore, mergedTags]);
+    `, [w, JSON.stringify(canonicalMetrics), quantScore, mergedTags]);
 
     console.log(
       `[Elite/PNL] ${username}: pnl=$${c.totalPNL.toFixed(0)} ` +
-      `roi_pa=${c.overallROI.toFixed(1)}% roi_cap=${c.roiCapital.toFixed(1)}% 30d=${c.last30dROI.toFixed(1)}% 90d=${c.last90dROI.toFixed(1)}% ` +
-      `wr=${c.pnlWinRate.toFixed(1)}% qs=${qualityScore} ` +
-      `sportTags=[${canonicalSportTags.join(",")}] ` +
+      `roi=${c.overallROI.toFixed(1)}% wr=${c.pnlWinRate.toFixed(1)}% 30d=${c.last30dROI.toFixed(1)}% ` +
+      `qs=${quantScore} archetype="${traderArchetype}" clv=${((avgClv || 0) * 100).toFixed(1)}% ` +
       `(${c.closedCount} closed, ${c.activeOpenCount} live open)`
     );
     return { wallet: w, username, totalPNL: c.totalPNL, realizedPNL: c.realizedPNL, unrealizedPNL: c.unrealizedPNL };
@@ -1925,6 +2116,58 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
     console.error(`[Elite/PNL] patchProfileWithCanonicalPNL failed for ${wallet}:`, err.message);
     return null;
   }
+}
+
+// ─── Order Flow Imbalance (OFI) ──────────────────────────────────────────────
+// OFI = (elite_buy_vol - elite_sell_vol) / (buy + sell), range [-1, +1]
+// Positive = sharp money piling in. Negative = sharp money exiting.
+export async function computeMarketOFI(days = 7): Promise<Array<{
+  conditionId: string;
+  title: string;
+  slug: string;
+  sport: string;
+  ofi: number;
+  buyVolume: number;
+  sellVolume: number;
+  walletCount: number;
+  tradeCount: number;
+}>> {
+  const { rows } = await pool.query(`
+    SELECT
+      condition_id,
+      MAX(title) AS title,
+      MAX(slug) AS slug,
+      MAX(sport) AS sport,
+      SUM(CASE WHEN is_buy THEN CAST(price AS float) * CAST(size AS float) ELSE 0 END) AS buy_vol,
+      SUM(CASE WHEN NOT is_buy THEN CAST(price AS float) * CAST(size AS float) ELSE 0 END) AS sell_vol,
+      COUNT(DISTINCT wallet) AS wallet_count,
+      COUNT(*) AS trade_count
+    FROM elite_trader_trades
+    WHERE trade_timestamp > NOW() - INTERVAL '${days} days'
+      AND condition_id IS NOT NULL AND condition_id != ''
+    GROUP BY condition_id
+    HAVING SUM(CAST(price AS float) * CAST(size AS float)) > 50
+    ORDER BY wallet_count DESC, trade_count DESC
+    LIMIT 200
+  `);
+
+  return rows.map(r => {
+    const buy = parseFloat(r.buy_vol) || 0;
+    const sell = parseFloat(r.sell_vol) || 0;
+    const total = buy + sell;
+    const ofi = total > 0 ? Math.round(((buy - sell) / total) * 1000) / 1000 : 0;
+    return {
+      conditionId: r.condition_id,
+      title: r.title || "",
+      slug: r.slug || "",
+      sport: r.sport || "Other",
+      ofi,
+      buyVolume: Math.round(buy * 100) / 100,
+      sellVolume: Math.round(sell * 100) / 100,
+      walletCount: parseInt(r.wallet_count),
+      tradeCount: parseInt(r.trade_count),
+    };
+  });
 }
 
 // ─── Periodic refresh (every 24h) ────────────────────────────────────────────

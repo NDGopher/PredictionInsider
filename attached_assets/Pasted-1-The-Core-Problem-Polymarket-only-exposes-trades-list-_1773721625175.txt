@@ -1,0 +1,195 @@
+1. The Core Problem
+
+Polymarket only exposes:
+
+/trades — list of recent trades (limited pagination, often capped at 50–100 per call)
+
+/markets — market metadata
+
+/activity — wallet-level activity (somewhat incomplete)
+
+/closed-positions — positions, sometimes filtered or capped
+
+On-chain settlement (Polygon / Ethereum)
+
+Issues you encounter:
+
+Pagination caps — for active wallets like swisstony, tens of thousands of trades → hundreds/thousands of API calls.
+
+Missing older trades — if you rely only on /activity, older REDEEM or early trades may be missing.
+
+Mix of market types — sports, politics, crypto → need accurate filtering.
+
+Gross vs net PnL — some APIs report gross wins, not net after losses.
+
+API rate limits — prevents naïve looping over all pages.
+
+2. How Analytics Sites Solve It
+
+PolymarketAnalytics-style platforms reconstruct full trade history using a hybrid approach:
+
+a. On-chain + off-chain
+
+On-chain events (Polygon): settlement of positions, transfers of USDC, market resolutions.
+
+Every trade eventually results in a settled event on-chain.
+
+By monitoring these, you can reconstruct net profit/loss per market.
+
+API feeds (Polymarket’s off-chain REST API or websocket): gives trade timestamps, price, size, and sometimes counterparty.
+
+b. Incremental Snapshots + Backfill
+
+They continuously poll the API for new trades every few seconds or minutes.
+
+Keep local trade history in a database.
+
+For older history, they backfill using /closed-positions or historical snapshots.
+
+Combine with on-chain settlements to compute final PnL and verify completeness.
+
+c. Trade Linking
+
+Every market has unique market_slug.
+
+Every trade has position_id or some identifier.
+
+To calculate ROI or net PnL, link trades with:
+
+Entry price
+
+Exit/redeem price
+
+Market outcome
+
+This produces gross, net, and market-specific PnL.
+
+d. Categorization
+
+Use slug patterns or classification tables to filter sports vs politics vs crypto.
+
+Example: world-series-champion → sports, bernie-sanders-2028 → politics.
+
+This avoids inflated PnL from political markets when analyzing sports.
+
+3. Practical Steps to Reconstruct Full Trade History
+
+Here’s a concrete roadmap:
+
+Step 1: Local Trade Database
+
+Create tables like:
+
+wallet_trades:
+    wallet_address
+    trade_id
+    market_slug
+    timestamp
+    side (BUY/SELL)
+    size
+    price
+    settlement_status
+    pnl (nullable)
+    roi (nullable)
+Step 2: API & On-Chain Ingestion
+
+Poll /trades for each wallet, respecting pagination and rate limits.
+
+Poll /closed-positions to catch older positions (if still available).
+
+Listen for Polygon events for settlements:
+
+MarketResolved
+
+RedeemPosition
+
+Transfer (USDC in/out)
+
+Use these to calculate exact net PnL per trade.
+
+Step 3: PnL / ROI Calculation
+
+For each trade:
+
+Net position size = entry_size × entry_price
+
+Redemption value = outcome_value × position_size
+
+PnL = redemption_value − net position size
+
+ROI = PnL / net position size
+
+Always do this market by market.
+
+Aggregate by wallet, sport, market type, etc.
+
+4. Handling Huge Wallets
+
+For whales like swisstony:
+
+Batch API calls: store last_fetched_trade_id per wallet.
+
+Parallel ingestion: process multiple wallets concurrently, but throttle to avoid rate limits.
+
+Delayed reconciliation: for historical backfill, fetch trades in date ranges or pages.
+
+5. Detecting Missing Trades / Reconciling
+
+Compare on-chain USDC inflows/outflows with local PnL calculations.
+
+If discrepancies exist → fetch missing /closed-positions or trades.
+
+Some analytics platforms store a canonical snapshot of wallet balances per market to ensure nothing is missed.
+
+6. Sport-Specific Filtering
+
+Implement a robust classifier:
+
+def classify_sport(slug: str):
+    sport_keywords = ["nba", "nfl", "mlb", "stanley-cup", "world-series", "afc-champion", "super-bowl"]
+    for kw in sport_keywords:
+        if kw in slug.lower():
+            return True
+    return False
+
+Apply when computing PnL, ROI, trade counts.
+
+Avoid political or crypto markets if your focus is sports.
+
+7. Practical Tips
+
+Incremental ingestion is key — don’t try to pull everything at once.
+
+Cross-validate API + on-chain data to avoid missing trades.
+
+Always store trade IDs and timestamps for auditability.
+
+Compute PnL at settlement, not just on trade price, to avoid gross vs net issues.
+
+Precompute metrics per wallet to speed up dashboard queries.
+
+8. Optional: Using Polymarket Leaderboard as Ground Truth
+
+Polymarket’s /v1/leaderboard?window=all&category=sports gives pre-computed sports PnL per wallet.
+
+Use it to validate your own computed PnL.
+
+If your numbers diverge → likely missing trades or misclassified markets.
+
+✅ Summary
+
+To get full breakdowns like PolymarketAnalytics:
+
+Maintain a local trade database.
+
+Use API + on-chain settlement events to reconstruct full history.
+
+Compute PnL, ROI, and positions at settlement.
+
+Filter and categorize markets by type.
+
+Incrementally update and backfill missing trades.
+
+Cross-check against leaderboards or on-chain balances for validation.
+
+This approach will give you accurate per-wallet trade history, positions, and PnL, which is the foundation for all the advanced scoring, order-flow, and prediction engine analysis we’ve been discussing.

@@ -7,7 +7,7 @@ import {
   settleUnresolvedTrades, fetchFullTradeHistory, computeTraderProfile,
   settleAllUnresolvedTradesGlobal, fetchAllActivity, computeTraderProfileFromActivity,
   CURATED_TRADERS, classifySport, patchProfileWithCanonicalPNL, fetchCanonicalPNL,
-  runCanonicalPNLRefreshForAll
+  runCanonicalPNLRefreshForAll, computeMarketOFI
 } from "./eliteAnalysis";
 
 const elitePool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -1705,6 +1705,19 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const wallet = req.params.wallet.toLowerCase();
       const canonical = await fetchCanonicalPNL(wallet);
       res.json(canonical);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── GET /api/elite/market-ofi ────────────────────────────────────────────
+  // Order Flow Imbalance: elite buy vs sell pressure per market (last 7 days).
+  // OFI > 0 = sharp money flowing in; OFI < 0 = smart money exiting.
+  app.get("/api/elite/market-ofi", async (req, res) => {
+    try {
+      const days = Math.min(30, Math.max(1, parseInt(req.query.days as string) || 7));
+      const ofiData = await computeMarketOFI(days);
+      res.json(ofiData);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
