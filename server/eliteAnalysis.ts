@@ -1359,8 +1359,15 @@ export async function runAnalysisForTrader(wallet: string): Promise<void> {
     // Settle unsettled buy-trades via Gamma (keeps signals up to date)
     await settleUnresolvedTrades(w);
 
-    // Compute profile (prefers activity data for accurate PNL)
+    // Compute profile from activity (for open positions / recent signals)
     await computeTraderProfile(w);
+
+    // ALWAYS run canonical PNL at the end — this paginates ALL closed positions ever
+    // and is the only source that covers 100% of trade history.
+    // It overwrites any activity-based PNL/ROI estimates with accurate full-history numbers.
+    console.log(`[Elite] ${w}: running canonical PNL (full closed-positions history)...`);
+    await patchProfileWithCanonicalPNL(w);
+
     await pool.query(`UPDATE elite_traders SET last_analyzed_at = NOW() WHERE wallet = $1`, [w]);
     console.log(`[Elite] Analysis complete for ${w}`);
   } catch (err: any) {
