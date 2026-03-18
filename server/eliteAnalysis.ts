@@ -93,6 +93,15 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
   doNotTailMarketTypes?: string[];
   doNotTailSides?: string[];
 }> = {
+  "0xafd492974cd531aae7786210438ae46b42047e61": { // TheArena — S-Tier Esports Marksman (Q=77, ROI=11.6%, Sharpe=10.5)
+    // My engine: eSports 13.8% ROI / 253 events / +$162k. Zero hedges, zero bond yields.
+    // Gemini cross-check: LoL 11.08%, Valorant 23.22%, CoD 6.07% — all eSports, all positive.
+    // 99% of edge is "Specific Selection" (team picks, not binary Yes/No).
+    // "Live-map" strategy: hammers Game 2/3/4 winners in 40-60c flip range after seeing Game 1.
+    // Traditional sports: tiny volume with outsized losses — firmly muted.
+    autoTail:   ["LoL", "CS2", "Valorant", "Dota2", "CoD", "eSports"],
+    doNotTail:  ["NBA", "NFL", "NHL", "MLB", "Soccer", "UCL", "Tennis", "UFC/MMA", "College Sports", "Politics", "Other"],
+  },
   "0x53ecc53e7a69aad0e6dda60264cc2e363092df91": { // 0x53eCc53E7 — A-Tier NBA/NFL Futures Oracle (Q=69, ROI=13.8%)
     // My engine: NBA 30.2% ROI (+$79k), NFL 19% ROI (+$18k), NHL 11.4% ROI
     // Gemini cross-check: NBA 38% / NFL 7.5% / EPL high WR — both agree on direction
@@ -162,10 +171,12 @@ export function classifySportFull(sport: string, question: string, slug?: string
   // eSports: sub-classify by game
   if (sport === "eSports") {
     const q = (question || "").toLowerCase();
-    if (q.includes("counter-strike") || q.includes("cs2")) return "CS2";
-    if (q.includes("valorant")) return "Valorant";
-    if (q.includes("league of legends") || q.includes("lol:")) return "LoL";
-    if (q.includes("dota 2") || q.includes("dota2")) return "Dota2";
+    const sl = (slug || "").toLowerCase();
+    if (q.includes("counter-strike") || q.includes("cs2") || sl.startsWith("cs2-")) return "CS2";
+    if (q.includes("valorant") || sl.startsWith("val-")) return "Valorant";
+    if (q.includes("league of legends") || q.includes("lol:") || sl.startsWith("lol-")) return "LoL";
+    if (q.includes("dota 2") || q.includes("dota2") || sl.startsWith("dota2-")) return "Dota2";
+    if (q.includes("call of duty") || sl.startsWith("codmw-") || sl.startsWith("cod-")) return "CoD";
     return "eSports";
   }
   // Soccer: sub-classify Champions League / Europa League by slug prefix
