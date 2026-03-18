@@ -882,6 +882,19 @@ function cleanTeamName(raw: string): string {
     .trim();
 }
 
+// Resolves side ("YES"|"NO") from raw trade/position outcome data.
+// For O/U markets, Polymarket doesn't guarantee token 0 = Over, so we must
+// check the actual outcome string ("Over"/"Under") before falling back to index.
+function resolveSide(outcome: string | undefined | null, outcomeIndex: number | undefined | null): "YES" | "NO" {
+  const lo = (outcome || "").toLowerCase().trim();
+  if (lo === "over")  return "YES"; // Over → YES → label "Over X"
+  if (lo === "under") return "NO";  // Under → NO  → label "Under X"
+  if (lo === "yes")   return "YES";
+  if (lo === "no")    return "NO";
+  // Fall back to token index (0 = YES, 1 = NO)
+  return (outcomeIndex ?? 1) === 0 ? "YES" : "NO";
+}
+
 function computeOutcomeLabel(title: string, side: "YES" | "NO"): string {
   const t = title.trim();
   // O/U totals: "O/U 225.5" or "total 225.5"
@@ -1972,7 +1985,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         seen.add(key);
         const trader = lbMap.get(wallet);
         const displayNameSSE = curatedNamesSSE.get(wallet) || trader?.name || truncAddr(wallet);
-        const side = (trade.outcomeIndex === 0 || trade.outcome === "Yes") ? "YES" : "NO";
+        const side = resolveSide(trade.outcome, trade.outcomeIndex);
         const ts = trade.timestamp ? trade.timestamp * 1000 : (trade.createdAt ? new Date(trade.createdAt).getTime() : now);
         const condId = trade.conditionId || "";
         const dbEntry = sharedMarketDb.get(condId);
@@ -2556,7 +2569,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         seen.add(key);
 
         const trader = lbMap.get(wallet);
-        const side = (trade.outcomeIndex === 0 || trade.outcome === "Yes") ? "YES" : "NO";
+        const side = resolveSide(trade.outcome, trade.outcomeIndex);
         const ts    = trade.timestamp ? trade.timestamp * 1000 : (trade.createdAt ? new Date(trade.createdAt).getTime() : now);
         const alertCondId = trade.conditionId || "";
         const alertDbEntry = sharedMarketDb.get(alertCondId);
@@ -2610,7 +2623,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/signals", async (req, res) => {
     try {
       const sportsOnly = req.query.sports !== "false";
-      const cKey = `signals-elite-v28-${sportsOnly ? "sp" : "all"}`;
+      const cKey = `signals-elite-v29-${sportsOnly ? "sp" : "all"}`;
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -2792,8 +2805,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // Gate: tracked trader OR large bet
         if (!isTracked && size < LARGE_BET_THRESHOLD) continue;
 
-        const outcomeIdx = trade.outcomeIndex ?? (trade.outcome === "Yes" ? 0 : 1);
-        const side: "YES"|"NO" = outcomeIdx === 0 ? "YES" : "NO";
+        const side: "YES"|"NO" = resolveSide(trade.outcome, trade.outcomeIndex);
         const price = parseFloat(trade.price || "0.5");
         const asset = String(trade.asset || "");
 
@@ -3229,12 +3241,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                 if (bs !== es) seenEventSlugs.add(bs);
               }
             }
-            const outcomeIdx = pos.outcomeIndex ?? (pos.outcome === "Yes" ? 0 : 1);
-            const side: "YES"|"NO" = outcomeIdx === 0 ? "YES" : "NO";
+            const side: "YES"|"NO" = resolveSide(pos.outcome, pos.outcomeIndex);
             const mapKey = `${condId}-${side}`;
-            // Asset IDs from position data (YES=asset, NO=oppositeAsset when outcomeIdx=0)
-            const yesAssetFromPos = outcomeIdx === 0 ? String(pos.asset || "") : String(pos.oppositeAsset || "");
-            const noAssetFromPos  = outcomeIdx === 0 ? String(pos.oppositeAsset || "") : String(pos.asset || "");
+            // Asset IDs from position data: YES token = asset when side=YES
+            const isYesToken = side === "YES";
+            const yesAssetFromPos = isYesToken ? String(pos.asset || "") : String(pos.oppositeAsset || "");
+            const noAssetFromPos  = isYesToken ? String(pos.oppositeAsset || "") : String(pos.asset || "");
 
             if (!posMap.has(mapKey)) {
               // Fall back to marketDb endDate if pos.endDate is missing, then slug date
@@ -3713,8 +3725,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           if (price < 0.05 || price > 0.95) continue;
           const condId = trade.conditionId || "";
           if (!condId) continue;
-          const outcomeIdx = trade.outcomeIndex ?? (trade.outcome === "Yes" ? 0 : 1);
-          const side = outcomeIdx === 0 ? "YES" : "NO";
+          const side = resolveSide(trade.outcome, trade.outcomeIndex);
           const key = `${condId}|${side}`;
           if (!clusterMap.has(key)) clusterMap.set(key, []);
           const lbInfo = lbMap.get(wallet);
@@ -3928,7 +3939,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const wallet = trade.proxyWallet || "";
         if (!wallet) continue;
 
-        const side: "YES"|"NO" = (trade.outcome === "Yes" || trade.outcomeIndex === 0) ? "YES" : "NO";
+        const side: "YES"|"NO" = resolveSide(trade.outcome, trade.outcomeIndex);
         const price = parseFloat(trade.price || "0.5");
         const size  = parseFloat(trade.size  || "0");
         if (size < 150) continue; // skip tiny trades
@@ -4113,7 +4124,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           conditionId: mInfo?.conditionId || "",
           question: mInfo?.question || tokenId,
           slug: mInfo?.slug,
-          side: (mInfo?.outcomeIndex === 0 ? "YES" : "NO") as "YES"|"NO",
+          side: resolveSide(mInfo?.outcome, mInfo?.outcomeIndex),
           outcome: mInfo?.outcome || "Yes",
           netShares: Math.round(netShares),
           avgPrice: Math.round(avgPrice * 1000) / 1000,
@@ -4408,7 +4419,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         .map(t => ({
           t: t.timestamp ? t.timestamp * 1000 : new Date(t.createdAt || 0).getTime(),
           p: parseFloat(t.price || "0.5"),
-          side: (t.outcomeIndex ?? (t.outcome === "Yes" ? 0 : 1)) === 0 ? "YES" : "NO",
+          side: resolveSide(t.outcome, t.outcomeIndex),
         }))
         .filter(x => x.t > 0 && x.p > 0 && x.p < 1)
         .sort((a, b) => a.t - b.t);
