@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -108,16 +108,51 @@ function PriceBar({ price }: { price: number }) {
   );
 }
 
-function formatTimeLeft(endDate: string | null | undefined): string {
+function formatTimeLeft(endDate: string | null | undefined, gameStartTime?: string | null): string {
+  const now = Date.now();
+
+  // Prefer gameStartTime — it's the actual game start, not the market close time.
+  // Many Polymarket game markets set endDate = midnight UTC the following day so
+  // ALL of today's games show the same "18h Xm" countdown. gameStartTime is precise.
+  if (gameStartTime) {
+    const gstMs = new Date(gameStartTime).getTime();
+    const diff = gstMs - now;
+    if (diff < -4 * 3600_000) return ""; // started > 4h ago, don't display
+    if (diff <= 0) return "Live";
+    const h = Math.floor(diff / 3600_000);
+    const m = Math.floor((diff % 3600_000) / 60_000);
+    if (h === 0) return `${m}m`;
+    if (h < 24) return `${h}h ${m}m`;
+    const d = Math.floor(h / 24);
+    return `${d}d ${h % 24}h`;
+  }
+
   if (!endDate) return "";
-  const ms = new Date(endDate).getTime() - Date.now();
-  if (ms < 0) return "Ended";
-  const h = Math.floor(ms / 3600_000);
-  const m = Math.floor((ms % 3600_000) / 60_000);
+  const endMs = new Date(endDate).getTime();
+  const diff = endMs - now;
+  if (diff < 0) return "Ended";
+
+  // Detect bare-date endDates (midnight UTC — all same-day games share them).
+  // Show a human date instead of a countdown so every game card isn't "18h Xm".
+  const d = new Date(endDate);
+  const isMidnightUTC = d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0;
+  if (isMidnightUTC) {
+    const endDay = d.toISOString().slice(0, 10);          // "2026-03-19"
+    const todayDay = new Date(now).toISOString().slice(0, 10); // "2026-03-18"
+    const tomorrowDay = new Date(now + 86400_000).toISOString().slice(0, 10);
+    if (endDay === todayDay) return "Today";
+    if (endDay === tomorrowDay) return "Tonight";
+    // Game date is one day before the midnight close date
+    const gameDate = new Date(endMs - 86400_000);
+    return gameDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+
+  const h = Math.floor(diff / 3600_000);
+  const m = Math.floor((diff % 3600_000) / 60_000);
   if (h === 0) return `${m}m`;
   if (h < 24) return `${h}h ${m}m`;
-  const d = Math.floor(h / 24);
-  return `${d}d ${h % 24}h`;
+  const days = Math.floor(h / 24);
+  return `${days}d ${h % 24}h`;
 }
 
 function SharpActionBanner({ action }: { action: any }) {
@@ -148,10 +183,10 @@ function SharpActionBanner({ action }: { action: any }) {
   );
 }
 
-function MarketCard({ market, matchSignal }: { market: Market & { marketType?: string; gameStatus?: string; sharpAction?: any }; matchSignal?: any }) {
+function MarketCard({ market, matchSignal }: { market: Market & { marketType?: string; gameStatus?: string; sharpAction?: any; gameStartTime?: string }; matchSignal?: any }) {
   const [expanded, setExpanded] = useState(false);
   const pct = Math.round(market.currentPrice * 100);
-  const timeLeft = formatTimeLeft(market.endDate);
+  const timeLeft = formatTimeLeft(market.endDate, (market as any).gameStartTime);
   const gameStatus = market.gameStatus as string | undefined;
   const sharpAction = (market as any).sharpAction;
 
@@ -373,9 +408,18 @@ function MarketCard({ market, matchSignal }: { market: Market & { marketType?: s
 export default function Markets() {
   const queryClient = useQueryClient();
   const [search, setSearch]         = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sort, setSort]             = useState("soonest");
   const [priceFilter, setPriceFilter] = useState("all");
   const [marketType, setMarketType] = useState<MarketType>("upcoming");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounce: update debouncedSearch 400ms after the user stops typing
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setDebouncedSearch(search), 400);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [search]);
 
   // "live" is client-side filtered from "all"
   const apiType   = marketType === "live" ? "all" : marketType;
@@ -388,6 +432,15 @@ export default function Markets() {
     refetchInterval: marketType === "live" ? 15_000 : AUTO_REFRESH_MS, // faster for live
   });
 
+  // Live search: when user types >= 3 chars, query a wider Polymarket market pool
+  const isLiveSearching = debouncedSearch.length >= 3;
+  const { data: searchData, isFetching: isSearchFetching } = useQuery<MarketsResponse>({
+    queryKey: ["/api/markets/search", debouncedSearch],
+    queryFn: () => fetch(`/api/markets/search?q=${encodeURIComponent(debouncedSearch)}`).then(r => r.json()),
+    enabled: isLiveSearching,
+    staleTime: 60_000,
+  });
+
   // Fetch signals in the background so we can cross-reference trader profiles
   const { data: signalsData } = useQuery<{ signals: any[] }>({
     queryKey: ["/api/signals-elite", "markets-xref"],
@@ -398,7 +451,15 @@ export default function Markets() {
 
   const markets = (data?.markets || []) as (Market & { marketType?: string; gameStatus?: string })[];
 
-  const filtered = markets
+  // Merge live search results with base markets (deduped by id)
+  const mergedMarkets = (() => {
+    if (!isLiveSearching || !searchData?.markets) return markets;
+    const existingIds = new Set(markets.map(m => m.id));
+    const extras = (searchData.markets as any[]).filter(m => !existingIds.has(m.id));
+    return [...markets, ...extras] as typeof markets;
+  })();
+
+  const filtered = mergedMarkets
     .filter(m => {
       // Live tab: only show live game markets
       if (marketType === "live" && m.gameStatus !== "live") return false;
@@ -521,15 +582,22 @@ export default function Markets() {
 
       {/* Filters */}
       <div className="flex items-center gap-2 flex-wrap">
-        <div className="relative flex-1 min-w-[180px] max-w-xs">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-          <Input
-            placeholder="Search markets..."
-            className="pl-8 h-8 text-sm"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            data-testid="input-search-markets"
-          />
+        <div className="flex flex-col gap-1 flex-1 min-w-[180px] max-w-xs">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Search any Polymarket event..."
+              className="pl-8 h-8 text-sm"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              data-testid="input-search-markets"
+            />
+          </div>
+          {isLiveSearching && (
+            <span className="text-[10px] text-muted-foreground ml-1">
+              {isSearchFetching ? "Searching Polymarket…" : `+${(searchData?.markets?.filter(m => !markets.find(x => x.id === m.id))?.length ?? 0)} results from Polymarket`}
+            </span>
+          )}
         </div>
         <Select value={priceFilter} onValueChange={setPriceFilter}>
           <SelectTrigger className="w-36 h-8 text-sm" data-testid="select-price-filter">

@@ -119,6 +119,7 @@ export const marketSchema = z.object({
   volume: z.number(),
   liquidity: z.number(),
   endDate: z.string().optional(),
+  gameStartTime: z.string().optional(),
   active: z.boolean(),
   traderCount: z.number(),
   bestBid: z.number().optional(),

@@ -2382,6 +2382,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             question: entry.question,
             slug: entry.slug,
             endDate: entry.endDate,
+            gameStartTime: entry.gameStartTime,
             currentPrice: entry.currentPrice ?? 0.5,
             volume: entry.volume ?? 0,
             liquidity: entry.liquidity ?? 0,
@@ -2412,6 +2413,62 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
 
       res.json({ markets: markets.slice(0, limit), fetchedAt: Date.now(), total: markets.length });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message, markets: [], fetchedAt: Date.now(), total: 0 });
+    }
+  });
+
+  // ── GET /api/markets/search ── Full Polymarket text search ──────────────────
+  // Fetches a wider market pool (3 parallel Gamma batches = up to 2400 markets)
+  // and does local text filtering. Gamma's q= param is not reliable for search.
+  app.get("/api/markets/search", async (req, res) => {
+    try {
+      const q = ((req.query.q as string) || "").trim();
+      if (q.length < 2) { res.json({ markets: [], fetchedAt: Date.now(), total: 0 }); return; }
+
+      // Fetch wider pool: 3 parallel batches with offset. Cache for 10 min.
+      const cacheKey = "markets-search-pool";
+      let pool = getCache<any[]>(cacheKey);
+      if (!pool) {
+        const offsets = [0, 800, 1600];
+        const batches = await Promise.all(
+          offsets.map(offset =>
+            fetchWithRetry(`${GAMMA_API}/markets?active=true&closed=false&limit=800&offset=${offset}`)
+              .then(r => r.ok ? r.json() : [])
+              .then((d: any) => Array.isArray(d) ? d : (d?.data ?? []))
+              .catch(() => [])
+          )
+        );
+        // Deduplicate by conditionId
+        const seen = new Set<string>();
+        pool = [];
+        for (const batch of batches) {
+          for (const m of batch) {
+            const id = m.conditionId || m.id;
+            if (id && !seen.has(id)) { seen.add(id); pool.push(m); }
+          }
+        }
+        setCache(cacheKey, pool, 10 * 60_000);
+      }
+
+      const now = Date.now();
+      const lq = q.toLowerCase();
+      const results: any[] = [];
+      for (const m of pool) {
+        const question = m.question || m.title || "";
+        if (!question.toLowerCase().includes(lq)) continue;
+        if (m.active === false || m.closed === true) continue;
+        const endMs = m.endDate ? new Date(m.endDate).getTime() : Infinity;
+        if (endMs < now - 30 * 60_000) continue;
+        const parsed = parseMarket(m);
+        const mType = classifyMarketType(parsed.question);
+        const gameStatus = categoriseMarket(parsed.question, parsed.endDate, parsed.gameStartTime, parsed.slug);
+        const sharpAction = signalsByMarket.get(parsed.id || parsed.conditionId || "") ?? null;
+        results.push({ ...parsed, marketType: mType, gameStatus, sharpAction });
+        if (results.length >= 60) break;
+      }
+      results.sort((a, b) => (b.volume || 0) - (a.volume || 0));
+      res.json({ markets: results, fetchedAt: Date.now(), total: results.length });
     } catch (err: any) {
       res.status(500).json({ error: err.message, markets: [], fetchedAt: Date.now(), total: 0 });
     }
