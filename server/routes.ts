@@ -1943,6 +1943,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         elitePool.query(`SELECT wallet FROM elite_traders`).catch(() => ({ rows: [] as any[] })),
       ]);
       const curatedSet = new Set<string>((curatedRows.rows || []).map((r: any) => r.wallet.toLowerCase()));
+      // Authoritative curated names (takes priority over LB names)
+      const curatedNamesSSE = new Map<string, string>(
+        CURATED_ELITES.map(e => [e.addr.toLowerCase(), e.name])
+      );
       const lbMap = new Map<string, { name: string; pnl: number; isSportsLb: boolean }>();
       for (const t of allSportsLb) {
         const w = (t.proxyWallet || "").toLowerCase();
@@ -1953,11 +1957,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const seen = new Set<string>();
       for (const trade of allTrades) {
         const wallet = (trade.proxyWallet || "").toLowerCase();
-        if (MARKET_MAKER_WALLETS.has(wallet)) continue; // exclude spread/arb bots
-        const isTracked = lbMap.has(wallet);
+        if (MARKET_MAKER_WALLETS.has(wallet)) continue;
         const isCurated = curatedSet.has(wallet);
         const size = parseFloat(trade.size || trade.amount || "0");
-        if (!isTracked && !isCurated && size < 5000) continue;
+        // Sharp Moves = curated elite traders only
+        if (!isCurated) continue;
         if (size < 1000) continue; // minimum $1K plays only
         const title = trade.title || trade.market || "";
         if (!isSportsRelated(title) || !title) continue;
@@ -1967,6 +1971,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         if (seen.has(key)) continue;
         seen.add(key);
         const trader = lbMap.get(wallet);
+        const displayNameSSE = curatedNamesSSE.get(wallet) || trader?.name || truncAddr(wallet);
         const side = (trade.outcomeIndex === 0 || trade.outcome === "Yes") ? "YES" : "NO";
         const ts = trade.timestamp ? trade.timestamp * 1000 : (trade.createdAt ? new Date(trade.createdAt).getTime() : now);
         const condId = trade.conditionId || "";
@@ -1977,8 +1982,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const mEndDate = trade.endDate || dbEntry?.endDate;
         alerts.push({
           id: `alert-${trade.id || key}`,
-          trader: trader?.name || truncAddr(wallet),
-          wallet, isTracked, isSportsLb: trader?.isSportsLb ?? false, isCurated,
+          trader: displayNameSSE,
+          wallet, isTracked: true, isSportsLb: trader?.isSportsLb ?? false, isCurated: true,
           market: title.slice(0, 80), slug: trade.slug, conditionId: condId,
           side, size: Math.round(size), price: Math.round(price * 1000) / 1000,
           americanOdds: toAmericanOdds(price),
@@ -2507,6 +2512,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       ]);
       const curatedSetHttp = new Set<string>((curatedRowsHttp.rows || []).map((r: any) => r.wallet.toLowerCase()));
 
+      // Build name map from our authoritative curated list (takes priority over LB names)
+      const curatedNameMap = new Map<string, string>(
+        CURATED_ELITES.map(e => [e.addr.toLowerCase(), e.name])
+      );
+
       const lbMap = new Map<string, { name: string; pnl: number; roi: number; qualityScore: number; isSportsLb: boolean }>();
       for (const t of allSportsLb) {
         const w = (t.proxyWallet || "").toLowerCase();
@@ -2526,13 +2536,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       for (const trade of allTrades) {
         const wallet = (trade.proxyWallet || "").toLowerCase();
-        if (MARKET_MAKER_WALLETS.has(wallet)) continue; // exclude spread/arb bots
-        const isTracked = lbMap.has(wallet);
+        if (MARKET_MAKER_WALLETS.has(wallet)) continue;
         const isCuratedHttp = curatedSetHttp.has(wallet);
         const size = parseFloat(trade.size || trade.amount || "0");
 
-        // Only tracked LB traders, curated elites, OR very large anonymous bets ($5K+)
-        if (!isTracked && !isCuratedHttp && size < 5000) continue;
+        // Sharp Moves = curated elite traders only, no random LB or anonymous big bets
+        if (!isCuratedHttp) continue;
         if (size < 1000) continue; // minimum $1K plays
 
         const title = trade.title || trade.market || "";
@@ -2556,13 +2565,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         if (isPostponedOrCancelled(title, true, false)) continue;
         const alertEndDate = trade.endDate || alertDbEntry?.endDate;
 
+        const displayName = curatedNameMap.get(wallet) || trader?.name || truncAddr(wallet);
         alerts.push({
           id: `alert-${trade.id || key}`,
-          trader: trader?.name || truncAddr(wallet),
+          trader: displayName,
           wallet,
-          isTracked,
+          isTracked: true, // all alerts are now curated elites
           isSportsLb: trader?.isSportsLb ?? false,
-          isCurated: isCuratedHttp,
+          isCurated: true,
           qualityScore: trader?.qualityScore ?? 0,
           roi: trader?.roi ?? 0,
           market: title.slice(0, 80),
