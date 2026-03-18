@@ -2518,3 +2518,119 @@ export function startCanonicalPNLRefresh(): void {
     runCanonicalPNLRefreshForAll();
   }, 24 * 60 * 60 * 1000);
 }
+
+// ─── Daily Incremental Refresh ────────────────────────────────────────────────
+// Runs runAnalysisForTrader() for all curated traders that haven't been
+// refreshed in the last 20 hours. Fetches only NEW trades/activity since last
+// update (incremental cursor), then re-computes all sport/market-type/price-bucket
+// analytics and updates quality scores. Processes 4 traders concurrently.
+
+export interface DailyRefreshState {
+  running:    boolean;
+  startedAt:  number | null;
+  finishedAt: number | null;
+  ranCount:   number;
+  skippedCount: number;
+  totalCount: number;
+  errors:     string[];
+}
+
+const _dailyRefreshState: DailyRefreshState = {
+  running: false, startedAt: null, finishedAt: null,
+  ranCount: 0, skippedCount: 0, totalCount: 0, errors: [],
+};
+
+export function getDailyRefreshState(): Readonly<DailyRefreshState> {
+  return { ..._dailyRefreshState };
+}
+
+async function runWithConcurrencyEA<T>(tasks: (() => Promise<T>)[], concurrency: number): Promise<T[]> {
+  const results: T[] = new Array(tasks.length);
+  let nextIdx = 0;
+  async function worker() {
+    while (nextIdx < tasks.length) {
+      const idx = nextIdx++;
+      results[idx] = await tasks[idx]();
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, tasks.length) }, worker));
+  return results;
+}
+
+export async function runDailyRefreshForCurated(): Promise<DailyRefreshState> {
+  if (_dailyRefreshState.running) {
+    console.log("[DailyRefresh] Already running — skipping duplicate trigger");
+    return getDailyRefreshState();
+  }
+
+  _dailyRefreshState.running    = true;
+  _dailyRefreshState.startedAt  = Date.now();
+  _dailyRefreshState.finishedAt = null;
+  _dailyRefreshState.ranCount   = 0;
+  _dailyRefreshState.skippedCount = 0;
+  _dailyRefreshState.errors     = [];
+
+  try {
+    // All curated wallets (not pending, not market-makers)
+    const { rows } = await pool.query<{ wallet: string; username: string; last_analyzed_at: string | null }>(
+      `SELECT wallet, username, last_analyzed_at
+       FROM elite_traders
+       WHERE wallet NOT LIKE 'pending-%'
+       ORDER BY COALESCE(last_analyzed_at, '2000-01-01') ASC`
+    );
+
+    _dailyRefreshState.totalCount = rows.length;
+
+    const STALE_MS = 20 * 60 * 60 * 1000; // 20 hours
+    const stale = rows.filter(r => {
+      if (!r.last_analyzed_at) return true;
+      return (Date.now() - new Date(r.last_analyzed_at).getTime()) > STALE_MS;
+    });
+    _dailyRefreshState.skippedCount = rows.length - stale.length;
+
+    console.log(`[DailyRefresh] Starting — ${stale.length} traders need refresh, ${_dailyRefreshState.skippedCount} already fresh`);
+
+    const tasks = stale.map(r => async () => {
+      try {
+        await runAnalysisForTrader(r.wallet);
+        _dailyRefreshState.ranCount++;
+        console.log(`[DailyRefresh] ✓ ${r.username} (${_dailyRefreshState.ranCount}/${stale.length})`);
+      } catch (err: any) {
+        const msg = `${r.username}: ${err.message}`;
+        _dailyRefreshState.errors.push(msg);
+        console.error(`[DailyRefresh] ✗ ${msg}`);
+      }
+    });
+
+    await runWithConcurrencyEA(tasks, 4);
+
+    console.log(`[DailyRefresh] Done — refreshed ${_dailyRefreshState.ranCount}/${stale.length}, ${_dailyRefreshState.errors.length} errors`);
+  } catch (err: any) {
+    console.error("[DailyRefresh] Fatal error:", err.message);
+    _dailyRefreshState.errors.push(err.message);
+  } finally {
+    _dailyRefreshState.running    = false;
+    _dailyRefreshState.finishedAt = Date.now();
+  }
+
+  return getDailyRefreshState();
+}
+
+export function scheduleDailyRefresh(): void {
+  // Check every hour — if it's 3 AM UTC, run the daily refresh
+  const checkAndRun = () => {
+    const hour = new Date().getUTCHours();
+    if (hour === 3 && !_dailyRefreshState.running) {
+      const lastRan = _dailyRefreshState.finishedAt ?? 0;
+      const hoursSinceRan = (Date.now() - lastRan) / (60 * 60 * 1000);
+      if (hoursSinceRan > 20) { // Prevent double-run within the same day
+        console.log("[DailyRefresh] Scheduled 3 AM UTC trigger firing...");
+        runDailyRefreshForCurated().catch((e: Error) =>
+          console.error("[DailyRefresh] Scheduled run error:", e.message)
+        );
+      }
+    }
+  };
+  setInterval(checkAndRun, 60 * 60 * 1000); // check every hour
+  console.log("[DailyRefresh] Scheduler armed — will run nightly at 3 AM UTC");
+}

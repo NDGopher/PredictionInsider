@@ -989,6 +989,24 @@ function AdminPanel() {
   const [refetchStatus, setRefetchStatus] = useState<string | null>(null);
   const [pnlStatus, setPnlStatus] = useState<string | null>(null);
 
+  const { data: refreshStatus, refetch: refetchStatus2 } = useQuery<{
+    running: boolean; startedAt: number | null; finishedAt: number | null;
+    ranCount: number; skippedCount: number; totalCount: number; staleCount: number;
+    errors: string[]; traders: Array<{ username: string; lastRefreshed: string | null; isStale: boolean; qualityScore: number | null }>;
+  }>({
+    queryKey: ["/api/elite/refresh-status"],
+    refetchInterval: (q) => (q.state.data?.running ? 5000 : 60_000),
+  });
+
+  const dailyRefreshMutation = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/elite/admin/daily-refresh", {}),
+    onSuccess: (data: any) => {
+      toast({ title: "Daily refresh started", description: `Updating ${data?.staleTraders ?? "?"} stale traders incrementally. Check status below.` });
+      setTimeout(() => refetchStatus2(), 2000);
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
   const settleMutation = useMutation({
     mutationFn: () => apiRequest("POST", "/api/elite/admin/settle-all", {}),
     onSuccess: (data: any) => {
@@ -1023,6 +1041,41 @@ function AdminPanel() {
           <Settings className="w-3.5 h-3.5" />
           Admin Tools
         </div>
+        {/* Daily Refresh Status Bar */}
+        <div className="rounded-md border border-border/40 bg-background/50 p-3 space-y-2">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${refreshStatus?.running ? "bg-yellow-400 animate-pulse" : refreshStatus?.staleCount === 0 ? "bg-green-400" : "bg-orange-400"}`} />
+              <span className="text-xs font-medium">
+                {refreshStatus?.running
+                  ? `Updating traders… ${refreshStatus.ranCount}/${(refreshStatus.totalCount ?? 0) - (refreshStatus.skippedCount ?? 0)} done`
+                  : refreshStatus?.staleCount === 0
+                    ? `All ${refreshStatus?.totalCount ?? 0} traders up to date`
+                    : `${refreshStatus?.staleCount ?? "?"} of ${refreshStatus?.totalCount ?? "?"} traders need refresh`}
+              </span>
+              <span className="text-[10px] text-muted-foreground">· Auto-runs 3 AM UTC</span>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-6 text-[10px] px-2 border-blue-500/40 text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+              onClick={() => dailyRefreshMutation.mutate()}
+              disabled={dailyRefreshMutation.isPending || refreshStatus?.running}
+              data-testid="btn-daily-refresh"
+            >
+              {refreshStatus?.running
+                ? <><RefreshCw className="w-3 h-3 mr-1 animate-spin" />Running…</>
+                : <><RefreshCw className="w-3 h-3 mr-1" />Run Now</>}
+            </Button>
+          </div>
+          {refreshStatus && !refreshStatus.running && refreshStatus.finishedAt && (
+            <p className="text-[10px] text-muted-foreground">
+              Last completed: {new Date(refreshStatus.finishedAt).toLocaleString()} · {refreshStatus.ranCount} updated, {refreshStatus.skippedCount} skipped
+              {refreshStatus.errors.length > 0 && <span className="text-orange-500 ml-1">· {refreshStatus.errors.length} errors</span>}
+            </p>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="space-y-1.5">
             <Button

@@ -7,7 +7,8 @@ import {
   settleUnresolvedTrades, fetchFullTradeHistory, computeTraderProfile,
   settleAllUnresolvedTradesGlobal, fetchAllActivity, computeTraderProfileFromActivity,
   CURATED_TRADERS, KNOWN_ALIASES, MARKET_MAKER_WALLETS, TRADER_CATEGORY_FILTERS, classifySport, classifySportFull, patchProfileWithCanonicalPNL, fetchCanonicalPNL,
-  runCanonicalPNLRefreshForAll, computeMarketOFI, syncTraderPositions
+  runCanonicalPNLRefreshForAll, computeMarketOFI, syncTraderPositions,
+  runDailyRefreshForCurated, scheduleDailyRefresh, getDailyRefreshState
 } from "./eliteAnalysis";
 
 const elitePool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -1535,7 +1536,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
 
     // startPeriodicRefresh() intentionally disabled — CSV analysis is the ONLY source of truth
-    startCanonicalPNLRefresh(); // runs 30s after startup, then every 24h
+    startCanonicalPNLRefresh(); // runs 30s after startup, then every 24h (canonical PNL only)
+    scheduleDailyRefresh();     // armed: runs full incremental analysis at 3 AM UTC daily
 
     // Auto-sync activity for all wallets on every server start (incremental, safe)
     try {
@@ -1818,6 +1820,65 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
+  });
+
+  // ── GET /api/elite/refresh-status ───────────────────────────────────────
+  // Returns the current state of the daily incremental refresh job and each
+  // trader's last_analyzed_at timestamp.
+  app.get("/api/elite/refresh-status", async (_req, res) => {
+    try {
+      const state = getDailyRefreshState();
+      const { rows } = await elitePool.query<{ wallet: string; username: string; last_analyzed_at: string | null; quality_score: number | null }>(
+        `SELECT t.wallet, t.username, t.last_analyzed_at, p.quality_score
+         FROM elite_traders t
+         LEFT JOIN elite_trader_profiles p ON p.wallet = t.wallet
+         WHERE t.wallet NOT LIKE 'pending-%'
+         ORDER BY COALESCE(t.last_analyzed_at, '2000-01-01') ASC`
+      );
+      const now = Date.now();
+      const staleCount = rows.filter(r => {
+        if (!r.last_analyzed_at) return true;
+        return (now - new Date(r.last_analyzed_at).getTime()) > 20 * 60 * 60 * 1000;
+      }).length;
+      res.json({
+        ...state,
+        traderCount:   rows.length,
+        staleCount,
+        nextRunUTC:    "03:00",
+        traders:       rows.map(r => ({
+          wallet: r.wallet, username: r.username,
+          lastRefreshed: r.last_analyzed_at,
+          isStale: !r.last_analyzed_at || (now - new Date(r.last_analyzed_at).getTime()) > 20 * 60 * 60 * 1000,
+          qualityScore: r.quality_score,
+        })),
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── POST /api/elite/admin/daily-refresh ──────────────────────────────────
+  // Manually trigger the daily incremental refresh for all stale traders.
+  // Fetches new trades/activity since last update, re-computes all analytics.
+  // Runs in background — check /api/elite/refresh-status for progress.
+  app.post("/api/elite/admin/daily-refresh", async (_req, res) => {
+    const current = getDailyRefreshState();
+    if (current.running) {
+      return res.json({
+        message: "Daily refresh already in progress",
+        startedAt: current.startedAt,
+        ranCount:  current.ranCount,
+        totalCount: current.totalCount,
+      });
+    }
+    const { rows } = await elitePool.query(
+      `SELECT COUNT(*) as cnt FROM elite_traders WHERE wallet NOT LIKE 'pending-%' AND (last_analyzed_at IS NULL OR last_analyzed_at < NOW() - INTERVAL '20 hours')`
+    );
+    const staleCount = parseInt(rows[0]?.cnt ?? "0");
+    res.json({ message: "Daily refresh started", staleTraders: staleCount, note: "Fetches new trades since last update, re-scores all analytics. Check /api/elite/refresh-status for progress." });
+    setImmediate(() => runDailyRefreshForCurated().catch((e: Error) =>
+      console.error("[DailyRefresh] Manual trigger error:", e.message)
+    ));
   });
 
   // ── GET /api/elite/canonical-pnl/:wallet ────────────────────────────────
