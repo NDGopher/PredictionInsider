@@ -86,7 +86,6 @@ ALL_TRADERS = [
     ("0xee00ba338c59557141789b127927a55f5cc5cea1", "S-Works"),
     ("0xe40172522c7c64afa2d052ddae6c92cd0f417b88", "BoomLaLa"),
     ("0x9f138019d5481fdc5c59b93b0ae4b9b817cce0fd", "Bienville"),
-    ("0x8c0b024c17831a0dde038547b7e791ae6a0d7aa5", "IBOV200K"),
     ("0x6b7c75862e64d6e976d2c08ad9f9b54add6c5f83", "tcp2"),
     ("0xec981ed70ae69c5cbcac08c1ba063e734f6bafcd", "0xheavy888"),
     ("0x68146921df11eab44296dc4e58025ca84741a9e7", "LynxTitan"),

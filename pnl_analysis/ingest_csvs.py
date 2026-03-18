@@ -58,7 +58,7 @@ TRADER_MAP = {
     "xytest":                            "0x3471a897e56a8d3621ca79af87dae4325977f17e",
     "UAEVALORANTFAN":                    "0xc65ca4755436f82d8eb461e65781584b8cadea39",
     "TheMangler":                        "0x9703676286b93c2eca71ca96e8757104519a69c2",
-    "iDropMyHotdog":                     "0xc49fe658479db29e1a2fefebf0735f657dca9e05",
+
     "bloodmaster":                       "0x58f8f1138be2192696378629fc9aa23c7910dc70",
     "9sh8f":                             "0xf9b5f7293b8258be8b0e1f03717c5d2ad94809ee",
     "0x53eCc53E7":                        "0x53ecc53e7a69aad0e6dda60264cc2e363092df91",

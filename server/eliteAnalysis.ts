@@ -64,7 +64,7 @@ export const CURATED_TRADERS: { wallet: string; username: string; url?: string }
   { wallet: "0x3471a897e56a8d3621ca79af87dae4325977f17e", username: "xytest", url: "https://polymarket.com/@xytest" },
   { wallet: "0xc65ca4755436f82d8eb461e65781584b8cadea39", username: "UAEVALORANTFAN", url: "https://polymarket.com/@UAEVALORANTFAN" },
   { wallet: "0x9703676286b93c2eca71ca96e8757104519a69c2", username: "TheMangler", url: "https://polymarket.com/@TheMangler" },
-  { wallet: "0xc49fe658479db29e1a2fefebf0735f657dca9e05", username: "iDropMyHotdog", url: "https://polymarket.com/@iDropMyHotdog" },
+
   { wallet: "0x58f8f1138be2192696378629fc9aa23c7910dc70", username: "bloodmaster", url: "https://polymarket.com/@bloodmaster" },
   { wallet: "0xf9b5f7293b8258be8b0e1f03717c5d2ad94809ee", username: "9sh8f", url: "https://polymarket.com/@9sh8f" },
   { wallet: "0x53ecc53e7a69aad0e6dda60264cc2e363092df91", username: "0x53eCc53E7", url: "https://polymarket.com/@0x53eCc53E7" },
@@ -120,6 +120,17 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
   "0x9c82c60829df081d593055ee5fa288870c051f13": { // Vetch — S-Tier CS2/NBA/NHL specialist
     autoTail:   ["NBA", "NHL", "CS2", "LoL"],
     doNotTail:  ["NFL", "College Sports", "Soccer", "Valorant", "Dota2"],
+  },
+  "0x9ac5c8496bc84f642bac181499bf64405a5c6a3d": { // JuniorB — A-Tier Soccer Fader & Geopolitics Investor (Q=42, ROI=4.35% arb-filtered)
+    // CSV analysis ($630k bond/arb stripped, 5-year history since 2021):
+    // Soccer +$70k combined: EPL 12.9% ROI, UCL 22.4%, LaLiga 39.5% — NO-side fader on favourites
+    // Other (Geopolitics/Macro): +$56k, 5.8% ROI — illiquid futures where retail misprices risk
+    // Futures market type: 18.87% ROI, 72.2% WR — patient long-horizon NO positions
+    // Side filter: NO = +10.38% ROI across 500+ events | YES = -7.1% ROI → ONLY tail NO
+    // NFL: -7.34% ROI (-$10k, Lions Super Bowl loss), US Politics: -10.4% (-$27k Kamala disaster)
+    autoTail:       ["Soccer", "UCL", "Other"],
+    doNotTail:      ["NFL", "Politics", "NBA", "NHL", "Tennis", "eSports", "College Sports", "Finance/Crypto", "UFC/MMA"],
+    doNotTailSides: ["Yes"],   // YES ROI = -7.1%; NO ROI = +10.38%
   },
   "0x9703676286b93c2eca71ca96e8757104519a69c2": { // TheMangler — A-Tier Political/Futures specialist
     autoTail:   ["Politics", "Other"],

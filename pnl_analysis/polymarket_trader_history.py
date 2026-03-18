@@ -54,7 +54,6 @@ DEFAULT_URLS = [
     "https://polymarket.com/@0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563-1759935795465",
     "https://polymarket.com/@ckw",
     "https://polymarket.com/@ShortFlutterStock",
-    "https://polymarket.com/@IBOV200K",
     "https://polymarket.com/@tcp2",
     "https://polymarket.com/@RandomPunter",
     "https://polymarket.com/@0xheavy888",
