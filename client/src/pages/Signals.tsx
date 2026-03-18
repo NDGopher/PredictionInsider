@@ -918,7 +918,7 @@ function SignalCard({ signal, mode, onSnoozed, onBetTracked, ofiData }: {
                   data-testid={`button-expand-${signal.id}`}
                 >
                   {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                  {expanded ? "Hide Traders / Logic" : "Show Traders / Logic"}
+                  {expanded ? "Hide Traders / Logic" : `Show Traders (${signal.traderCount}) / Logic`}
                 </button>
               </div>
               <div className="flex items-center gap-1.5">
