@@ -60,7 +60,6 @@ export const CURATED_TRADERS: { wallet: string; username: string; url?: string }
   { wallet: "0x39932ca2b7a1b8ab6cbf0b8f7419261b950ccded", username: "Andromeda1", url: "https://polymarket.com/@Andromeda1" },
   { wallet: "0x5c3a1a602848565bb16165fcd460b00c3d43020b", username: "CoryLahey", url: "https://polymarket.com/@CoryLahey" },
   { wallet: "0xafd492974cd531aae7786210438ae46b42047e61", username: "TheArena", url: "https://polymarket.com/@TheArena" },
-  { wallet: "0xb2a48372404e6a0bfb6c2f23d715d3acc5a8cf8a", username: "chenpengzao", url: "https://polymarket.com/@chenpengzao" },
   { wallet: "0x3471a897e56a8d3621ca79af87dae4325977f17e", username: "xytest", url: "https://polymarket.com/@xytest" },
   { wallet: "0xc65ca4755436f82d8eb461e65781584b8cadea39", username: "UAEVALORANTFAN", url: "https://polymarket.com/@UAEVALORANTFAN" },
   { wallet: "0x9703676286b93c2eca71ca96e8757104519a69c2", username: "TheMangler", url: "https://polymarket.com/@TheMangler" },
@@ -71,7 +70,6 @@ export const CURATED_TRADERS: { wallet: string; username: string; url?: string }
   { wallet: "0x1b5e20a28d7115f10ce6190a5ae9a91169be83f8", username: "877s8d8g89I9f8d98fd99ww2", url: "https://polymarket.com/@877s8d8g89I9f8d98fd99ww2" },
   { wallet: "0x9c82c60829df081d593055ee5fa288870c051f13", username: "Vetch", url: "https://polymarket.com/@Vetch" },
   { wallet: "0x25867077c891354137bbaf7fde12eec6949cc893", username: "TTdes", url: "https://polymarket.com/@TTdes" },
-  { wallet: "0x4133bcbad1d9c41de776646696f41c34d0a65e70", username: "EF203F2IPFC2ICP20W-CP3", url: "https://polymarket.com/@EF203F2IPFC2ICP20W-CP3" },
   { wallet: "0x57cd939930fd119067ca9dc42b22b3e15708a0fb", username: "Supah9ga", url: "https://polymarket.com/@Supah9ga" },
   { wallet: "0xe72bb501df5306c75c89383d48a1e81073fbb0a0", username: "norrisfan", url: "https://polymarket.com/@norrisfan" },
   { wallet: "0x036c159d5a348058a81066a76b89f35926d4178d", username: "HedgeMaster88", url: "https://polymarket.com/@HedgeMaster88" },
@@ -137,13 +135,12 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
     doNotTailMarketTypes: ["spread"],
     doNotTailSides:       ["No"],
   },
-  "0x2005d16a84ceefa912d4e380cd32e7ff827875ea": { // RN1 — Omniscient algorithmic value sniper
-    // Profitable across EVERY sport and market type on the platform.
-    // True directional ROI ~6.9% after stripping arb legs (hedge filter auto-handles this).
-    // Best alpha: Soccer EPL (9.1%), Other (8.1%), Soccer Other (6.5%) — but positive everywhere.
-    // No doNotTail needed: genuinely edge-positive across all categories.
-    autoTail:  ["Soccer", "UCL", "Tennis", "NFL", "NBA", "NHL", "MLB", "eSports", "CS2", "LoL", "College Sports", "Other"],
-    doNotTail: [],
+  "0x2005d16a84ceefa912d4e380cd32e7ff827875ea": { // RN1 — A-Tier algorithmic value sniper (Q=58, ROI=13.7%)
+    // CSV analysis (hedge-stripped): Soccer Other 21.8%, Tennis 14.1%, Other 14.1%
+    // Best market type: Moneylines only (16.7% ROI across 4,108 events)
+    // DO NOT TAIL NFL — confirmed -5.6% ROI from CSV
+    autoTail:  ["Soccer", "UCL", "Tennis", "NBA", "NHL", "MLB", "eSports", "CS2", "LoL", "College Sports", "Other"],
+    doNotTail: ["NFL"],
   },
 };
 
