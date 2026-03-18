@@ -161,7 +161,7 @@ function ScoreBreakdown({ breakdown, confidence, signal }: {
   confidence: number;
   signal?: any;
 }) {
-  const roiImplied  = Math.round((breakdown.roiPct ?? 0) / 40 * 60);
+  const roiImplied  = Math.round((breakdown.roiPct ?? 0) / 40 * 25);
   const items = [
     {
       label: "Trader ROI (40%)",

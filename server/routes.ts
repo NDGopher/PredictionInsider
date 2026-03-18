@@ -385,14 +385,21 @@ function computeConfidence(
   counterTraderCount: number = 0,
   relBetSize: number = 1,           // how many × normal bet size this play is (conviction multiplier)
 ): { score: number; breakdown: Record<string, number> } {
-  const roiPct = Math.round(Math.min(Math.max(avgROI / 60, 0), 1) * 100 * 0.40);
+  // ROI scale: 25% ROI = full 40 pts. Reflects real sports betting alpha distribution.
+  // (was 60 — made 11% ROI look like ~7/40 despite being elite-tier performance)
+  const roiPct = Math.round(Math.min(Math.max(avgROI / 25, 0), 1) * 100 * 0.40);
 
   // Counter-trader penalty: each tracked trader on opposite side reduces conviction
   const counterPenalty = counterTraderCount > 0 ? Math.min(counterTraderCount * 20, 40) : 0;
   const adjustedConsPct = Math.max(0, consensusPct - counterPenalty);
-  const consPct = Math.round(Math.min(Math.max(adjustedConsPct - 50, 0) / 50, 1) * 100 * 0.30);
+  // Single-trader consensus: only half weight (15 pts max) — one trader ≠ real consensus.
+  // Multi-trader consensus earns full 30 pts.
+  const consWeight = traderCount === 1 ? 0.15 : 0.30;
+  const consPct = Math.round(Math.min(Math.max(adjustedConsPct - 50, 0) / 50, 1) * 100 * consWeight);
 
-  const valuePct = valueDelta > 0 ? Math.round(Math.min(valueDelta * 600, 1) * 100 * 0.20) : 0;
+  // Value edge: continuous gradient from -5c (0 pts) through entry (10 pts) to +5c (20 pts).
+  // Old binary cliff (negative = 0) penalised slightly-stale entries unfairly.
+  const valuePct = Math.round(Math.min(Math.max((valueDelta + 0.05) / 0.10, 0), 1) * 100 * 0.20);
   const sizePct  = Math.round(Math.min(avgNetUsdc / 15_000, 1) * 100 * 0.10);
 
   // Relative bet size bonus (0–15 pts): the core conviction signal.
