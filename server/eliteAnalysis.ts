@@ -217,6 +217,30 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
     doNotTailMarketTypes:    ["total", "spread"],
     doNotTailTitleKeywords:  ["draw"],
   },
+  "0xc65ca4755436f82d8eb461e65781584b8cadea39": { // UAEVALORANTFAN — B-Tier Multi-Esports + NBA/NHL Whale (Q=47, ROI=3.0%, PnL=$229K)
+    // Esports sweep: Valorant 39.2% ROI, CS2 38.0%, LoL 26.7%, Dota2 45.9%, UCL 53.5%
+    // NBA: 71% closed WR, strong volume, real moneyline + spread edge ($84K PnL per Gemini)
+    // NHL: 80% closed WR, consistent positive returns across multiple seasons
+    // Gemini verified: Esports +$169K combined, NBA +$84K, Soccer (UCL+Other) +$150K
+    // NCAAB: -$159,786 / -17.28% ROI (Gemini) — emotional tilt, NEVER tail college hoops
+    // NFL: essentially flat (0.9% ROI) — no repeatable edge; tiny sample
+    // No side filter — bets both sides; all alpha from picking the right team, not YES/NO bias
+    // No market type filter — clean on spreads, totals, moneylines across their good sports
+    autoTail:  ["Valorant", "CS2", "LoL", "Dota2", "NBA", "NHL", "Soccer", "UCL", "UFC/MMA"],
+    doNotTail: ["College Sports", "NFL", "Politics", "Finance/Crypto", "Tennis"],
+  },
+  "0xf9b5f7293b8258be8b0e1f03717c5d2ad94809ee": { // 9sh8f — C-Tier Dota2 Live-Sniper / Esports Syndicate Anchor (Q=20, ROI=6.5%, PnL=$369K)
+    // Dota2 ONLY: +$369K at 8.89% ROI (Gemini), 58% WR across 4M+ wagered on Dota2 exclusively
+    // Live map-sniper strategy: 225 game/map-winner bets vs 102 series bets — watches drafts in-match
+    // Price zone: 186 Dota2 bets in 40-60c flip zone — deploys $50-100K bombs at live uncertainty peaks
+    // $82K Hurricanes loss, $72K Timberwolves loss — impulsive tilt into non-Dota markets
+    // NCAAB: -27.55% ROI, UFC: -8.78% ROI per Gemini — immediate quarantine
+    // Sharpe: -17.07 overall (driven entirely by North American sports variance, not Dota2)
+    // Esports syndicate role: sole Dota2 specialist — completes the quad with TheArena/Vetch/0xheavy888+fkgggg2
+    autoTail:  ["Dota2"],
+    doNotTail: ["NBA", "NHL", "NFL", "UFC/MMA", "College Sports", "Soccer", "UCL", "Tennis",
+                "Valorant", "CS2", "LoL", "Politics", "Finance/Crypto", "Other"],
+  },
 };
 
 // ─── Detailed sport classifier (extends classifySport with esports sub-games) ─
