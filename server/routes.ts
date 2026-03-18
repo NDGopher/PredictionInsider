@@ -700,6 +700,14 @@ const seenEventSlugs = new Set<string>();
 // a base game slug but don't have their own gameStartTime field.
 const gameSlugToGST = new Map<string, string>();
 
+// ── Live position cache ────────────────────────────────────────────────────────
+// Holds ALL open positions for every curated trader, refreshed every 60 seconds
+// via paginated background fetch. Keyed by wallet address (lowercased).
+// Using this avoids blocking signal requests on live position fetches and
+// captures the full position history (>500 positions for heavy traders).
+const livePositionCache = new Map<string, any[]>();
+let livePositionCacheUpdatedAt = 0;
+
 async function refreshESPNLiveGames(): Promise<void> {
   const now = Date.now();
 
@@ -852,6 +860,52 @@ async function fetchTraderPositions(wallet: string): Promise<any[]> {
     setCache(key, positions, 8 * 60_000); // 8 min cache for positions
     return positions;
   } catch { return []; }
+}
+
+/** Fetch ALL open positions for a wallet by paginating the positions endpoint.
+ *  Uses limit=500 per page, stops when fewer than 500 returned or after 10 pages.
+ *  This captures heavy traders (e.g. 0p0jogggg) who have >500 open positions. */
+async function fetchAllPositionsFull(wallet: string): Promise<any[]> {
+  const all: any[] = [];
+  const limit = 500;
+  let offset = 0;
+  for (let page = 0; page < 10; page++) {
+    try {
+      const r = await fetchWithRetry(
+        `${DATA_API}/positions?user=${wallet.toLowerCase()}&limit=${limit}&offset=${offset}&sizeThreshold=0`
+      );
+      if (!r.ok) break;
+      const d = await r.json();
+      const batch: any[] = Array.isArray(d) ? d : (d.data || []);
+      if (batch.length === 0) break;
+      all.push(...batch);
+      if (batch.length < limit) break;
+      offset += limit;
+    } catch { break; }
+  }
+  return all;
+}
+
+/** Refresh open positions for all curated traders in the background every 60s.
+ *  All 49 traders are fetched in parallel (safe: ~50-100 API calls total).
+ *  Results are stored in livePositionCache for use by signal computation. */
+async function refreshLivePositions(): Promise<void> {
+  try {
+    const results = await Promise.all(
+      CURATED_ELITES.map(async e => {
+        const positions = await fetchAllPositionsFull(e.addr);
+        return { wallet: e.addr.toLowerCase(), positions };
+      })
+    );
+    for (const { wallet, positions } of results) {
+      livePositionCache.set(wallet, positions);
+    }
+    livePositionCacheUpdatedAt = Date.now();
+    const total = [...livePositionCache.values()].reduce((s, p) => s + p.length, 0);
+    console.log(`[LivePos] Refreshed ${CURATED_ELITES.length} traders: ${total} total open positions cached`);
+  } catch (err: any) {
+    console.error(`[LivePos] Refresh failed: ${err.message}`);
+  }
 }
 
 /** Detect Polymarket auto-generated pseudonyms ("Adjective-Noun" pattern) */
@@ -2022,6 +2076,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   refreshESPNLiveGames().catch(() => {});
   setInterval(() => { refreshESPNLiveGames().catch(() => {}); }, 90_000);
 
+  // Live position cache — fetches ALL open positions for all 49 curated traders
+  // via paginated API calls. Runs immediately on startup, then every 60 seconds.
+  // This removes position fetching from the signal request hot-path entirely.
+  refreshLivePositions().catch(() => {});
+  setInterval(() => { refreshLivePositions().catch(() => {}); }, 60_000);
+
   // ── GET /api/_debug/espn (temp debug — shows ESPN live cache state) ──────────
   app.get("/api/_debug/espn", (_req, res) => {
     const cache: Record<string, boolean> = {};
@@ -2625,7 +2685,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/signals", async (req, res) => {
     try {
       const sportsOnly = req.query.sports !== "false";
-      const cKey = `signals-elite-v34-${sportsOnly ? "sp" : "all"}`;
+      const cKey = `signals-elite-v35-${sportsOnly ? "sp" : "all"}`;
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -2633,16 +2693,19 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       // ── Phase 1: Build verified trader quality map ───────────────────────────
       // CURATED-ONLY: Use only our 42 hand-picked elite traders as the signal source.
-      // Fetch market database + recent trades + open positions for each curated trader in parallel.
-      const [allSportsLb, [marketDb, canonicalMap, ...curatedTradeBatches], curatedPositionBatches] = await Promise.all([
+      // Positions come from livePositionCache (refreshed every 60s), so no need to
+      // fetch them on each request — this removes ~49 API calls from the hot path.
+      const curatedPositionBatches: any[][] = CURATED_ELITES.map(
+        e => livePositionCache.get(e.addr.toLowerCase()) || []
+      );
+      const [allSportsLb, [marketDb, canonicalMap, ...curatedTradeBatches]] = await Promise.all([
         fetchMultiWindowSportsLB().catch(() => [] as any[]),
         Promise.all([
           buildMarketDatabase(800),
           loadCanonicalMetricsFromDB(),
           ...CURATED_ELITES.map(e => fetchEliteTraderTrades(e.addr, 100)),
         ]),
-        Promise.all(CURATED_ELITES.map(e => fetchTraderPositions(e.addr))),
-      ]) as [any[], [Map<string, any>, Map<string, CanonicalEntry>, ...any[]], any[][]];
+      ]) as [any[], [Map<string, any>, Map<string, CanonicalEntry>, ...any[]]];
 
       // Build position lookup: wallet → asset_token_id → {shares, avgPrice, costBasis, side}
       // Keyed by TOKEN ASSET ID (not conditionId) because the conditionId in the positions API
@@ -3265,11 +3328,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       // ── Phase 4: Positions-based signals from verified sports traders ──────────
       // CURATED-ONLY: Scan only our 42 hand-picked elite traders for open positions.
+      // Uses livePositionCache (full paginated positions, refreshed every 60s).
       const curatedWallets = CURATED_ELITES.map(e => e.addr.toLowerCase());
       const topSportsWallets = [...new Set(curatedWallets)];
-      console.log(`[Positions] Scanning ${topSportsWallets.length} curated traders for open positions`);
+      const positionsAge = livePositionCacheUpdatedAt > 0
+        ? Math.round((Date.now() - livePositionCacheUpdatedAt) / 1000) + "s ago"
+        : "not yet loaded";
+      console.log(`[Positions] Scanning ${topSportsWallets.length} curated traders for open positions (cache: ${positionsAge})`);
       if (topSportsWallets.length > 0) {
-        const positionBatches = await Promise.all(topSportsWallets.map(w => fetchTraderPositions(w)));
+        const positionBatches = topSportsWallets.map(w => livePositionCache.get(w.toLowerCase()) || []);
         // Map: conditionId+outcomeIndex → position aggregation
         type PosGroup = {
           conditionId: string; side: "YES"|"NO";

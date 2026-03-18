@@ -49,13 +49,21 @@ A sports prediction market intelligence dashboard that surfaces consensus signal
 5. Fetch live CLOB midpoint; compute value delta and confidence score
 
 **Phase 4: Positions-based signals**
-1. Fetch top 100 sports leaderboard wallets
-2. Fetch current open positions for each wallet (parallel `Promise.all`)
-3. Group by (conditionId, outcomeIndex=0→YES/1→NO)
-4. Filter: curPrice 0.08–0.95, currentValue > $50 per trader, sports keywords match
-5. Quality gate: 2+ traders with $1K+ total, OR single trader with $50K+
-6. Emit as separate signals with `source: "positions"` — deduped vs trades signals
-7. Populate **gameMarketRegistry** with each market seen in positions (used by /api/markets)
+1. Read from **livePositionCache** (refreshed every 60s in background — see below)
+2. Group by (conditionId, outcomeIndex=0→YES/1→NO)
+3. Filter: curPrice 0.08–0.95, initialValue > $50 per trader, sports keywords match
+4. Quality gate: 2+ traders with $1K+ total, OR single trader with $50K+
+5. Emit as separate signals with `source: "positions"` — deduped vs trades signals
+6. Populate **gameMarketRegistry** with each market seen in positions (used by /api/markets)
+
+### Live Position Cache (`livePositionCache`)
+- **Background refresh every 60 seconds** via `refreshLivePositions()` started at server boot
+- **`fetchAllPositionsFull(wallet)`**: paginates the positions API with limit=500 + offset until exhausted (up to 10 pages = 5,000 positions per trader); captures complete open positions for heavy traders like 0p0jogggg (who has >500 open positions)
+- All 49 curated traders fetched in parallel (~50-100 API calls total)
+- Stores results in `livePositionCache: Map<wallet, any[]>` (35,000+ positions from all traders)
+- Signal computation reads from cache synchronously — no blocking on position API calls
+- Risk values use `pos.initialValue` (USDC cost basis, actual money spent) not `pos.currentValue` (mark-to-market)
+- posLookup for trade-based enrichment: keyed by `pos.asset` (token ID) not conditionId — conditionId differs between trades and positions APIs
 
 ### Live Feed Signals (`/api/signals/fast`)
 1. Fetch recent 5000 trades
