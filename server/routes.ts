@@ -1976,6 +1976,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // Sharp Moves = curated elite traders only
         if (!isCurated) continue;
         if (size < 1000) continue; // minimum $1K plays only
+        if ((trade.side || "").toUpperCase() === "SELL") continue; // exits aren't new signals
         const title = trade.title || trade.market || "";
         if (!isSportsRelated(title) || !title) continue;
         const price = parseFloat(trade.price || "0.5");
@@ -2556,6 +2557,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // Sharp Moves = curated elite traders only, no random LB or anonymous big bets
         if (!isCuratedHttp) continue;
         if (size < 1000) continue; // minimum $1K plays
+        if ((trade.side || "").toUpperCase() === "SELL") continue; // exits aren't new signals
 
         const title = trade.title || trade.market || "";
         if (!isSportsRelated(title)) continue;
@@ -2623,7 +2625,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/signals", async (req, res) => {
     try {
       const sportsOnly = req.query.sports !== "false";
-      const cKey = `signals-elite-v29-${sportsOnly ? "sp" : "all"}`;
+      const cKey = `signals-elite-v30-${sportsOnly ? "sp" : "all"}`;
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -2652,6 +2654,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           allTrades.push(trade);
         }
       }
+      // Sort oldest→newest so sells always come AFTER the buys they offset
+      allTrades.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
       type TraderInfo = { name: string; pnl: number; roi: number; volume: number; qualityScore: number; isLeaderboard: boolean; isSportsLb: boolean; source: SharedTraderEntry["source"] };
       const lbMap = new Map<string, TraderInfo>();
@@ -2842,12 +2846,28 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         }
 
         const tradeTs = trade.timestamp ? trade.timestamp * 1000 : (trade.createdAt ? new Date(trade.createdAt).getTime() : now);
+        // "BUY" adds to net position; "SELL" reduces it (trader exiting)
+        const isSellTrade = (trade.side || "").toUpperCase() === "SELL";
         const ex = mw.wallets.get(wallet);
         if (!ex) {
-          mw.wallets.set(wallet, { side, totalSize: size, prices: [price], name: traderInfo.name, traderInfo, address: wallet, asset, lastTimestamp: tradeTs });
+          if (!isSellTrade) {
+            mw.wallets.set(wallet, { side, totalSize: size, prices: [price], name: traderInfo.name, traderInfo, address: wallet, asset, lastTimestamp: tradeTs });
+          }
         } else {
-          if (ex.side === side) { ex.totalSize += size; ex.prices.push(price); ex.lastTimestamp = Math.max(ex.lastTimestamp, tradeTs); }
-          else if (size > ex.totalSize) { ex.side = side; ex.totalSize = size; ex.prices = [price]; ex.lastTimestamp = tradeTs; }
+          if (ex.side === side) {
+            ex.totalSize += isSellTrade ? -size : size;
+            if (!isSellTrade) { ex.prices.push(price); ex.lastTimestamp = Math.max(ex.lastTimestamp, tradeTs); }
+          } else if (!isSellTrade && size > ex.totalSize) {
+            // Flip side on new dominant buy
+            ex.side = side; ex.totalSize = size; ex.prices = [price]; ex.lastTimestamp = tradeTs;
+          }
+        }
+      }
+
+      // Remove wallets that have fully exited (net position sold to zero or below)
+      for (const mw of marketWallets.values()) {
+        for (const [w, pos] of mw.wallets.entries()) {
+          if (pos.totalSize <= 0) mw.wallets.delete(w);
         }
       }
 
@@ -3906,15 +3926,17 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   // ── GET /api/signals/fast ─── Live feed: stricter quality gates ──────────────
   app.get("/api/signals/fast", async (req, res) => {
     try {
-      const cKey = "signals-fast-v7";
+      const cKey = "signals-fast-v8";
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
       const now = Date.now();
-      const [allTrades, marketDb] = await Promise.all([
+      const [rawFastTrades, marketDb] = await Promise.all([
         fetchRecentTrades(4000),
         buildMarketDatabase(800).catch(() => new Map() as any),
       ]);
+      // Sort oldest→newest so sells always follow their buys in aggregation
+      const allTrades = [...rawFastTrades].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
       type WalletPos = { side: "YES"|"NO"; totalSize: number; prices: number[]; name: string; wallet: string };
       const marketWallets = new Map<string, {
@@ -3957,13 +3979,25 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           marketWallets.set(condId, { info: infoObj, wallets: new Map() });
         }
         const mw = marketWallets.get(condId)!;
+        const isSellTrade = (trade.side || "").toUpperCase() === "SELL";
         const ex = mw.wallets.get(wallet);
         const name = displayName(trade.name || trade.pseudonym || "", wallet);
         if (!ex) {
-          mw.wallets.set(wallet, { side, totalSize: size, prices: [price], name, wallet });
+          if (!isSellTrade) mw.wallets.set(wallet, { side, totalSize: size, prices: [price], name, wallet });
         } else {
-          if (ex.side === side) { ex.totalSize += size; ex.prices.push(price); }
-          else if (size > ex.totalSize) { ex.side = side; ex.totalSize = size; ex.prices = [price]; }
+          if (ex.side === side) {
+            ex.totalSize += isSellTrade ? -size : size;
+            if (!isSellTrade) ex.prices.push(price);
+          } else if (!isSellTrade && size > ex.totalSize) {
+            ex.side = side; ex.totalSize = size; ex.prices = [price];
+          }
+        }
+      }
+
+      // Remove fully-exited wallets (net sold to zero or below)
+      for (const mw of marketWallets.values()) {
+        for (const [w, pos] of mw.wallets.entries()) {
+          if (pos.totalSize <= 0) mw.wallets.delete(w);
         }
       }
 
