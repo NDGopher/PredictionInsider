@@ -75,6 +75,7 @@ export const CURATED_TRADERS: { wallet: string; username: string; url?: string }
   { wallet: "0x57cd939930fd119067ca9dc42b22b3e15708a0fb", username: "Supah9ga", url: "https://polymarket.com/@Supah9ga" },
   { wallet: "0xe72bb501df5306c75c89383d48a1e81073fbb0a0", username: "norrisfan", url: "https://polymarket.com/@norrisfan" },
   { wallet: "0x036c159d5a348058a81066a76b89f35926d4178d", username: "HedgeMaster88", url: "https://polymarket.com/@HedgeMaster88" },
+  { wallet: "0x2005d16a84ceefa912d4e380cd32e7ff827875ea", username: "RN1", url: "https://polymarket.com/@RN1" },
 ];
 
 // ─── In-memory set for fast signal lookup ────────────────────────────────────
@@ -123,6 +124,14 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
     autoTail:            ["NBA", "NFL", "UFC/MMA", "Soccer", "NHL", "MLB"],
     doNotTail:           ["Politics", "eSports", "Finance/Crypto", "College Sports"],
     doNotTailMarketTypes: ["spread", "total"],
+  },
+  "0x2005d16a84ceefa912d4e380cd32e7ff827875ea": { // RN1 — Omniscient algorithmic value sniper
+    // Profitable across EVERY sport and market type on the platform.
+    // True directional ROI ~6.9% after stripping arb legs (hedge filter auto-handles this).
+    // Best alpha: Soccer EPL (9.1%), Other (8.1%), Soccer Other (6.5%) — but positive everywhere.
+    // No doNotTail needed: genuinely edge-positive across all categories.
+    autoTail:  ["Soccer", "UCL", "Tennis", "NFL", "NBA", "NHL", "MLB", "eSports", "CS2", "LoL", "College Sports", "Other"],
+    doNotTail: [],
   },
 };
 

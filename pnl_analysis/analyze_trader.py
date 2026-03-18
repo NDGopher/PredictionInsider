@@ -85,8 +85,38 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
     df["market_type"] = df.apply(get_market_type, axis=1)
     df["bet_side"]    = df.apply(get_bet_side,     axis=1)
 
+    # ── Perfect Hedge Filter ─────────────────────────────────────
+    # Identify conditionIds where the trader simultaneously held BOTH sides
+    # (Yes + No on a binary, or two specific selections on the same market).
+    # These are arb/market-maker positions — not directional bets — and would
+    # inflate volume while diluting ROI.  Strip them before any analysis.
+    if "conditionId" in df.columns and "outcome" in df.columns:
+        cond_outcomes = (
+            df.groupby("conditionId")["outcome"]
+              .apply(lambda s: {str(v).strip().lower() for v in s if pd.notna(v)})
+              .reset_index()
+        )
+        cond_outcomes.columns = ["conditionId", "outcomes_set"]
+        def _is_hedged(s):
+            # Classic binary: Yes + No both present
+            if "yes" in s and "no" in s:
+                return True
+            # Multi-outcome: 2+ distinct specific selections on same conditionId
+            specific = {o for o in s if o not in ("yes", "no")}
+            return len(specific) >= 2
+        cond_outcomes["is_hedge"] = cond_outcomes["outcomes_set"].apply(_is_hedged)
+        hedged_ids = set(cond_outcomes.loc[cond_outcomes["is_hedge"], "conditionId"])
+        hedge_df       = df[df["conditionId"].isin(hedged_ids)].copy()
+        df             = df[~df["conditionId"].isin(hedged_ids)].copy()
+        hedge_risk     = hedge_df["calculated_cost"].sum()
+        hedge_profit   = hedge_df["total_position_pnl"].sum()
+        hedge_count    = len(hedge_df)
+    else:
+        hedge_risk = hedge_profit = hedge_count = 0
+
     # ── Bond Yield Filter ────────────────────────────────────────
-    df["is_bond"] = (df["bet_side"] == "No") & (df["avgPrice"] >= 0.95)
+    # bet_side already classified at line 86 — no need to recompute
+    df["is_bond"]  = (df["bet_side"] == "No") & (df["avgPrice"] >= 0.95)
     bond_df        = df[df["is_bond"]]
     directional_df = df[~df["is_bond"]].copy()
 
@@ -419,6 +449,11 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
         "pseudo_sharpe":    round(float(pseudo_sharpe), 2),
         "profitable_days":  int(profitable_days),
         "total_days":       int(total_days),
+
+        # Perfect hedge (arb) info — stripped before directional analysis
+        "hedge_count":      hedge_count,
+        "hedge_risk":       round(hedge_risk, 2),
+        "hedge_profit":     round(hedge_profit, 2),
 
         # Bond yield info
         "bond_count":       bond_count,

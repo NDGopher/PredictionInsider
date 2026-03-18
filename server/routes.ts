@@ -419,7 +419,7 @@ function computeConfidence(
                   : relBetSize >= 3 ? 76
                   : relBetSize >= 2 ? 72
                   : 68;
-  const score = traderCount === 1 ? Math.min(base + tierBonus, singleCap) : Math.min(base + tierBonus, 95);
+  const score = traderCount === 1 ? Math.min(base + tierBonus, singleCap) : Math.min(base + tierBonus, 100);
 
   return {
     score: Math.max(score, 5),
@@ -2917,7 +2917,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const { score: rawConf, breakdown } = computeConfidence(
           avgROI, consensusPct, valueDelta, avgSize, dominant.length, avgQuality, counterTraderCount, relBetSize
         );
-        const confidence = Math.max(5, Math.min(95, rawConf + priceRangeAdj));
+        const confidence = Math.max(5, Math.min(100, rawConf + priceRangeAdj));
 
         const tier = dominant.length >= 3 && avgQuality >= 45 ? "HIGH"
                    : dominant.length >= 2 ? "MED" : "SINGLE";
@@ -2933,8 +2933,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // Specific game markets (moneyline/spread/total) should be PREGAME, not FUTURES
         const mType = (mTypeRaw2 === "futures" && marketCategory !== "futures") ? "pregame" : mTypeRaw2;
         const priceStatus  = computePriceStatus(currentPrice, avgEntry, side);
-        // Stale signal filter: price moved >5¢ past sharp entry in wrong direction — not actionable
-        if (priceStatus === "moved" && Math.abs(currentPrice - avgEntry) > 0.05) continue;
+        // Stale signal filter: if price is ANY worse for new buyers than where sharps entered, hide it.
+        // Even a small move against entry means the value proposition has shifted — not actionable.
+        if (priceStatus === "moved") continue;
         const isActionable = priceStatus === "actionable" || priceStatus === "dip";
         const bigPlayScore = computeBigPlayScore(totalDominantSize, dominant.length, relBetSize);
         const dominantSorted = [...dominant].sort((a, b) => b.totalSize - a.totalSize);
@@ -3283,7 +3284,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const { score: pgRawConf, breakdown } = computeConfidence(
             avgROI, consensusPct, valueDelta, avgSize, pg.traders.length, avgQualityForScore, counterTraderCount, pgRelBetSize
           );
-          const confidence = Math.max(5, Math.min(95, pgRawConf + pgPriceRangeAdj));
+          const confidence = Math.max(5, Math.min(100, pgRawConf + pgPriceRangeAdj));
 
           const mTypeRaw = categoriseMarket(pg.question, resolvedEndDate, resolvedGameStartTime, pg.slug || pgMarket?.slug);
           // pgMarketCategory already computed above
@@ -3291,8 +3292,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           // even if the game is > 7 days away. FUTURES badge is reserved for season/championship bets.
           const mType = (mTypeRaw === "futures" && pgMarketCategory !== "futures") ? "pregame" : mTypeRaw;
           const priceStatus  = computePriceStatus(avgCurPrice, avgEntry, pg.side);
-          // Stale signal filter: price moved >5¢ past sharp entry in wrong direction
-          if (priceStatus === "moved" && Math.abs(avgCurPrice - avgEntry) > 0.05) continue;
+          // Stale signal filter: any "moved" status means price is worse for new buyers — hide it.
+          if (priceStatus === "moved") continue;
           const isActionable = priceStatus === "actionable" || priceStatus === "dip";
           const bigPlayScore = computeBigPlayScore(pg.totalValue, pg.traders.length, pgRelBetSize);
           const id = `pos-${pg.conditionId}-${pg.side}`;
@@ -3511,8 +3512,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               (sig as any).curatedEliteSplitNote = `⚡ ELITE SPLIT: ${sideElites.map(e => e.username).join(",")} ${sig.side} vs ${oppElites.map(e => e.username).join(",")} ${sig.side === "YES" ? "NO" : "YES"}`;
               sig.confidence = Math.max(sig.confidence - 15, 20);
             } else {
-              // Boost confidence +8pts per curated elite, capped at 95
-              sig.confidence = Math.min(95, sig.confidence + sideElites.length * 8);
+              // Boost confidence +8pts per curated elite, capped at 100
+              sig.confidence = Math.min(100, sig.confidence + sideElites.length * 8);
             }
           }
         }
@@ -3570,7 +3571,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const existingIdx = signals.findIndex(s => s.marketId === condId && s.side === side);
           if (existingIdx >= 0) {
             const boost = Math.min(12, unique.length * 5);
-            signals[existingIdx].confidence = Math.min(95, signals[existingIdx].confidence + boost);
+            signals[existingIdx].confidence = Math.min(100, signals[existingIdx].confidence + boost);
             (signals[existingIdx] as any).clusterBoost = { traders: unique.length, combinedSize: Math.round(totalSize) };
             continue;
           }
