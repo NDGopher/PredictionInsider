@@ -2926,10 +2926,33 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           return count > 0 ? Math.max(-8, Math.min(8, Math.round(pts / count))) : 0;
         })();
 
+        // For futures markets the price-vs-entry delta is misleading: it reflects whether
+        // the bet has moved in/against their favour since they opened months ago, which has
+        // zero relevance for a new entrant today. Zero it out before scoring.
+        const isFuturesMkt = marketCategory === "futures";
+        const effectiveValueDelta = isFuturesMkt ? 0 : valueDelta;
+
         const { score: rawConf, breakdown } = computeConfidence(
-          avgROI, consensusPct, valueDelta, avgSize, dominant.length, avgQuality, counterTraderCount, relBetSize
+          avgROI, consensusPct, effectiveValueDelta, avgSize, dominant.length, avgQuality, counterTraderCount, relBetSize
         );
-        const confidence = Math.max(5, Math.min(100, rawConf + priceRangeAdj));
+
+        // Futures hard cap 75: long-term position ≠ fresh same-day signal. Consensus and ROI
+        // are still meaningful but can't reach the same ceiling as tonight's game trade.
+        // Recency decay: if we know when the trade was made and it's stale, knock points off.
+        let confCap = isFuturesMkt ? 75 : 100;
+        let baseConf = Math.max(5, Math.min(confCap, rawConf + priceRangeAdj));
+        if (isFuturesMkt) {
+          const avgTs = dominant.length > 0
+            ? dominant.reduce((s, e) => s + ((e as any).lastTimestamp || 0), 0) / dominant.length
+            : 0;
+          if (avgTs > 0) {
+            const daysOld = (Date.now() - avgTs) / 86_400_000;
+            // 0-7 days: no penalty | 7-30: -5 | 30-60: -10 | 60+: -15
+            const stalePenalty = daysOld > 60 ? 15 : daysOld > 30 ? 10 : daysOld > 7 ? 5 : 0;
+            baseConf = Math.max(5, baseConf - stalePenalty);
+          }
+        }
+        const confidence = baseConf;
 
         const tier = dominant.length >= 3 && avgQuality >= 45 ? "HIGH"
                    : dominant.length >= 2 ? "MED" : "SINGLE";
@@ -3296,10 +3319,18 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             return count > 0 ? Math.max(-8, Math.min(8, Math.round(pts / count))) : 0;
           })();
 
+          // Futures: zero out value delta (stale price info) and cap at 75
+          const pgIsFutures = pgMarketCategory === "futures";
+          const pgEffectiveValueDelta = pgIsFutures ? 0 : valueDelta;
+
           const { score: pgRawConf, breakdown } = computeConfidence(
-            avgROI, consensusPct, valueDelta, avgSize, pg.traders.length, avgQualityForScore, counterTraderCount, pgRelBetSize
+            avgROI, consensusPct, pgEffectiveValueDelta, avgSize, pg.traders.length, avgQualityForScore, counterTraderCount, pgRelBetSize
           );
-          const confidence = Math.max(5, Math.min(100, pgRawConf + pgPriceRangeAdj));
+          const pgConfCap = pgIsFutures ? 75 : 100;
+          // Positions path has no trade timestamps — apply a flat -5 staleness discount on futures
+          // since position data could be months old and we cannot know the entry date.
+          const pgStalePenalty = pgIsFutures ? 5 : 0;
+          const confidence = Math.max(5, Math.min(pgConfCap, pgRawConf + pgPriceRangeAdj) - pgStalePenalty);
 
           const mTypeRaw = categoriseMarket(pg.question, resolvedEndDate, resolvedGameStartTime, pg.slug || pgMarket?.slug);
           // pgMarketCategory already computed above
@@ -3539,8 +3570,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               (sig as any).curatedEliteSplitNote = `⚡ ELITE SPLIT: ${sideElites.map(e => e.username).join(",")} ${sig.side} vs ${oppElites.map(e => e.username).join(",")} ${sig.side === "YES" ? "NO" : "YES"}`;
               sig.confidence = Math.max(sig.confidence - 15, 20);
             } else {
-              // Boost confidence +8pts per curated elite, capped at 100
-              sig.confidence = Math.min(100, sig.confidence + sideElites.length * 8);
+              // Boost confidence +8pts per curated elite.
+              // Futures signals cap at 75 (not 100) — stale long-term positions can't
+              // earn the same ceiling as a fresh same-day game trade.
+              const eliteBoostCap = sig.marketCategory === "futures" ? 75 : 100;
+              sig.confidence = Math.min(eliteBoostCap, sig.confidence + sideElites.length * 8);
             }
           }
         }
