@@ -93,6 +93,16 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
   doNotTailMarketTypes?: string[];
   doNotTailSides?: string[];
 }> = {
+  "0x53ecc53e7a69aad0e6dda60264cc2e363092df91": { // 0x53eCc53E7 — A-Tier NBA/NFL Futures Oracle (Q=69, ROI=13.8%)
+    // My engine: NBA 30.2% ROI (+$79k), NFL 19% ROI (+$18k), NHL 11.4% ROI
+    // Gemini cross-check: NBA 38% / NFL 7.5% / EPL high WR — both agree on direction
+    // 79% of edge from YES side only. NO bets earn ~1% — noise to filter out.
+    // UCL: confirmed loser in both engines (-24.8% / -19.9%). Politics: -120%.
+    // No spreads ever (0 volume). Stick to Moneylines + Futures.
+    autoTail:             ["NBA", "NFL", "NHL", "Soccer", "MLB"],
+    doNotTail:            ["UCL", "Politics"],
+    doNotTailSides:       ["No"],
+  },
   "0x9c82c60829df081d593055ee5fa288870c051f13": { // Vetch — S-Tier CS2/NBA/NHL specialist
     autoTail:   ["NBA", "NHL", "CS2", "LoL"],
     doNotTail:  ["NFL", "College Sports", "Soccer", "Valorant", "Dota2"],
