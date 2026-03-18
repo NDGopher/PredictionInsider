@@ -45,7 +45,6 @@ KNOWN_ADDRESSES: dict[str, str] = {
 
 # Default list of profile URLs (deduplicated). Overridden by file if present.
 DEFAULT_URLS = [
-    "https://polymarket.com/@EF203F2IPFC2ICP20W-CP3",
     "https://polymarket.com/@S-Works",
     "https://polymarket.com/@0xD9E0AACa471f48F91A26E8669A805f2",
     "https://polymarket.com/@Avarice31",
@@ -75,7 +74,6 @@ DEFAULT_URLS = [
     "https://polymarket.com/@CoryLahey",
     "https://polymarket.com/@TutiFromFactsOfLife",
     "https://polymarket.com/@TheArena",
-    "https://polymarket.com/@chenpengzao",
     "https://polymarket.com/@xytest",
     "https://polymarket.com/@JuniorB",
     "https://polymarket.com/@UAEVALORANTFAN",
