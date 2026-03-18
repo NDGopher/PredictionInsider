@@ -75,6 +75,7 @@ export const CURATED_TRADERS: { wallet: string; username: string; url?: string }
   { wallet: "0xe72bb501df5306c75c89383d48a1e81073fbb0a0", username: "norrisfan", url: "https://polymarket.com/@norrisfan" },
   { wallet: "0x036c159d5a348058a81066a76b89f35926d4178d", username: "HedgeMaster88", url: "https://polymarket.com/@HedgeMaster88" },
   { wallet: "0x2005d16a84ceefa912d4e380cd32e7ff827875ea", username: "RN1", url: "https://polymarket.com/@RN1" },
+  { wallet: "0x7ea571c40408f340c1c8fc8eaacebab53c1bde7b", username: "Cannae", url: "https://polymarket.com/@Cannae" },
 ];
 
 // ─── In-memory set for fast signal lookup ────────────────────────────────────
@@ -88,11 +89,14 @@ export const curatedWalletToUsername = new Map<string, string>();
 // doNotTailMarketTypes: market types to exclude regardless of sport (spread | total | moneyline | futures | other)
 // doNotTailSides:     bet sides to suppress regardless of market ("Yes" | "No") — use when a trader
 //                     has no edge on a specific side (e.g. grinders who only add value buying YES underdogs)
+// doNotTailTitleKeywords: market title substrings (case-insensitive) to block regardless of sport/type
+//                     Use to quarantine specific bet types: e.g. ["draw"] for traders who lose on draw markets
 export const TRADER_CATEGORY_FILTERS: Record<string, {
   autoTail: string[];
   doNotTail: string[];
   doNotTailMarketTypes?: string[];
   doNotTailSides?: string[];
+  doNotTailTitleKeywords?: string[];
 }> = {
   "0xafd492974cd531aae7786210438ae46b42047e61": { // TheArena — S-Tier Esports Marksman (Q=77, ROI=11.6%, Sharpe=10.5)
     // My engine: eSports 13.8% ROI / 253 events / +$162k. Zero hedges, zero bond yields.
@@ -188,6 +192,19 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
     // DO NOT TAIL NFL — confirmed -5.6% ROI from CSV
     autoTail:  ["Soccer", "UCL", "Tennis", "NBA", "NHL", "MLB", "eSports", "CS2", "LoL", "College Sports", "Other"],
     doNotTail: ["NFL"],
+  },
+  "0x7ea571c40408f340c1c8fc8eaacebab53c1bde7b": { // Cannae — C-Tier Domestic Soccer specialist (Q=7, ROI=4.9% overall)
+    // Pipeline: $10.6M arb/bond-yield trades stripped — domestic Euro soccer specialist
+    // EPL: +61.5% ROI (62 events, +$49K) | Soccer Other: +15.1% ROI (969 events, +$90K) | LaLiga: +10.0% (92 events)
+    // UCL: -25.6% ROI (-$60K) — severe structural flaw: over-bets draws + uses EPL O/U model for UCL
+    // NHL: -19.3% ROI (-$28K) | NBA tilt: catastrophic -$54K single-day loss (NFL/NBA impulsive bets)
+    // O/U all leagues: -8.7% ROI — never tail totals
+    // DRAW TRAP: loses heavily on "Will X vs Y end in a draw?" markets — blocked by title keyword
+    // Best in: EPL/LaLiga/Serie A/Ligue 1 MONEYLINES only (domestic leagues, not knockout format)
+    autoTail:                ["Soccer"],
+    doNotTail:               ["UCL", "NBA", "NFL", "NHL", "eSports", "CS2", "Valorant", "LoL", "Dota2", "Tennis", "College Sports", "Other", "UFC/MMA", "Politics", "Finance/Crypto"],
+    doNotTailMarketTypes:    ["total", "spread"],
+    doNotTailTitleKeywords:  ["draw"],
   },
 };
 

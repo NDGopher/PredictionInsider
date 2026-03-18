@@ -3514,6 +3514,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               const normalizedSide = sig.side === "YES" ? "Yes" : "No";
               if (catFilter.doNotTailSides.includes(normalizedSide)) continue;
             }
+            // doNotTailTitleKeywords: block specific market types by title substring (case-insensitive)
+            // e.g. ["draw"] for traders who reliably lose on draw-outcome markets
+            if (catFilter?.doNotTailTitleKeywords?.length) {
+              const q = (sig.marketQuestion || "").toLowerCase();
+              if (catFilter.doNotTailTitleKeywords.some(kw => q.includes(kw.toLowerCase()))) continue;
+            }
             const username = curatedWalletToUsername.get(w) || t.name || w.slice(0, 8);
             (sig.side === "YES" ? bucket.yes : bucket.no).push({ wallet: w, username });
           }
