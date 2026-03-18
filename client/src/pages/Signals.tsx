@@ -536,16 +536,10 @@ function SignalCard({ signal, mode, onSnoozed, onBetTracked, ofiData }: {
   ofiData?: { ofi: number; totalBuyVolume: number; totalSellVolume: number; buyerCount: number; sellerCount: number } | null;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [showBreakdown, setShowBreakdown] = useState(false);
   const [livePrice, setLivePrice] = useState<number | null>(null);
   const [showSnoozeMenu, setShowSnoozeMenu] = useState(false);
   const [showBetModal, setShowBetModal] = useState(false);
   const { toast } = useToast();
-
-  // Auto-show score breakdown when card is expanded
-  useEffect(() => {
-    if (expanded && (signal as any).scoreBreakdown) setShowBreakdown(true);
-  }, [expanded]);
 
   // Subscribe to SSE price stream while expanded
   useEffect(() => {
@@ -924,18 +918,8 @@ function SignalCard({ signal, mode, onSnoozed, onBetTracked, ofiData }: {
                   data-testid={`button-expand-${signal.id}`}
                 >
                   {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                  {expanded ? "Hide" : "Show"} traders ({signal.traderCount})
+                  {expanded ? "Hide Traders / Logic" : "Show Traders / Logic"}
                 </button>
-                {(signal as any).scoreBreakdown && (
-                  <button
-                    onClick={() => setShowBreakdown(!showBreakdown)}
-                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    data-testid={`button-breakdown-${signal.id}`}
-                  >
-                    <BarChart2 className="w-3 h-3" />
-                    {showBreakdown ? "Hide" : "Show"} score
-                  </button>
-                )}
               </div>
               <div className="flex items-center gap-1.5">
                 {/* Track Bet button — opens modal */}
@@ -995,7 +979,7 @@ function SignalCard({ signal, mode, onSnoozed, onBetTracked, ofiData }: {
             </div>
 
             {/* Score breakdown + counter-trader warning */}
-            {showBreakdown && (signal as any).scoreBreakdown && (
+            {expanded && (signal as any).scoreBreakdown && (
               <div className="mt-3">
                 {(signal as any).counterTraderCount > 0 && (
                   <div className="mb-2 flex items-center gap-1.5 text-[11px] px-2 py-1.5 bg-amber-500/10 border border-amber-500/25 rounded text-amber-700 dark:text-amber-400">
