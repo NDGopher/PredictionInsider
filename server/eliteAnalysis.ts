@@ -46,6 +46,7 @@ export const CURATED_TRADERS: { wallet: string; username: string; url?: string }
   { wallet: "0x52ecea7b3159f09db589e4f4ee64872fd0bba6f3", username: "fkgggg2", url: "https://polymarket.com/@fkgggg2" },
   { wallet: "0xd9e0aaca471f489be338fd0f91a26e8669a805f2", username: "0xD9E0AACa471f48F91A26E8669A805f2", url: "https://polymarket.com/@0xD9E0AACa471f48F91A26E8669A805f2" },
   { wallet: "0xf588b19afe63e1aba00f125f91e3e3b0fdc62b81", username: "RandomPunter", url: "https://polymarket.com/@RandomPunter" },
+  { wallet: "0x6ac5bb06a9eb05641fd5e82640268b92f3ab4b6e", username: "0p0jogggg", url: "https://polymarket.com/@0p0jogggg" },
   { wallet: "0x9ac5c8496bc84f642bac181499bf64405a5c6a3d", username: "JuniorB", url: "https://polymarket.com/@JuniorB" },
   { wallet: "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563", username: "0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563", url: "https://polymarket.com/@0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563-1759935795465" },
   { wallet: "0x20d6436849f930584892730c7f96ebb2ac763856", username: "0x20D6436849F930584892730C7F96eBB2Ac763856", url: "https://polymarket.com/@0x20D6436849F930584892730C7F96eBB2Ac763856-1768642056357" },
@@ -153,6 +154,21 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
     doNotTail:            [],
     doNotTailMarketTypes: ["spread"],
     doNotTailSides:       ["No"],
+  },
+  "0x6ac5bb06a9eb05641fd5e82640268b92f3ab4b6e": { // 0p0jogggg — C-Tier "No-Fader" (Soccer/NCAAB fade specialist)
+    // Pipeline: 18,973 arb/hedge trades stripped ($49.4M) — runs massive arb script alongside directional bets
+    // C-Tier Q=10, ROI=6.8%, Sharpe=-4.1 (actively bleeding from NBA/NHL spread tilt)
+    // Structural edge: 95% of alpha from "No" side — algorithm identifies overvalued public hype and fades it
+    // Soccer (EPL) +30.8% / Soccer (Other) +20.8% / Soccer (LaLiga) +8.5% — all net positive at volume
+    // OTHER/NCAAB: +19.1% ROI, 1561 events, +$172K — college markets where fading public pays off
+    // NBA: -4.2% (544 bets, -$58K), NHL: -11.3% (319 bets, -$79K), eSports: -14.1% (923 bets, -$44K)
+    // Totals (O/U): -13.1% ROI — terrible. Moneyline No-bets: the only thing worth copying.
+    // UCL: -6.1% / 40 events (small, borderline — muted per Gemini; our Soccer filter covers EPL/LaLiga)
+    // RULE: ONLY tail "No" contracts. Yes-side ROI is -11.83% — pure noise from failed momentum chasing.
+    autoTail:             ["Soccer", "College Sports", "Other"],
+    doNotTail:            ["NBA", "NHL", "eSports", "Tennis", "UCL", "Politics", "Finance/Crypto"],
+    doNotTailMarketTypes: ["total"],
+    doNotTailSides:       ["Yes"],
   },
   "0xd6966eb1ae7b52320ba7ab1016680198c9e08a49": { // EIf — B-Tier NHL/Soccer/Esports specialist (Q=45, ROI=2.4%, Sharpe=14.3)
     // CSV analysis (hedge-stripped): 404 arb trades / $2.09M stripped
