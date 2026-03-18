@@ -2886,6 +2886,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // ── Insider Stats (OddsJam-style "WHY THIS BET?" metrics) ─────────────
         // relBetSize: weighted avg of (this_bet / trader_median_in_sport+mktType)
         // Priority: sport×mktType median → sport median → sport avg → volume fallback
+        // Individual ratio is capped at 20x to prevent arb/market-maker wallets
+        // (with near-zero median bets in a given sport) from inflating the aggregate.
         const relBetSize = (() => {
           const w = dominant.reduce((s, e) => s + e.totalSize, 0) || 1;
           return Math.round(dominant.reduce((s, e) => {
@@ -2895,8 +2897,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             const medianBet = (smEntry?.medianBet && smEntry.medianBet > 0) ? smEntry.medianBet
               : (sEntry?.medianBet && sEntry.medianBet > 0)                  ? sEntry.medianBet
               : (sEntry?.avgBet    && sEntry.avgBet    > 0)                  ? sEntry.avgBet
-              : Math.max(e.traderInfo.volume / 100, 50);
-            return s + (e.totalSize / medianBet) * (e.totalSize / w);
+              : Math.max(e.traderInfo.volume / 100, 200); // raised fallback floor
+            // Cap at 20x per trader — prevents arb wallets with tiny median bets from skewing
+            const ratio = Math.min(e.totalSize / Math.max(medianBet, 1), 20);
+            return s + ratio * (e.totalSize / w);
           }, 0) * 10) / 10;
         })();
 
@@ -3019,6 +3023,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             return {
               address: e.address,
               name: e.traderInfo.name,
+              side: e.side,
               entryPrice: Math.round(avgEP * 1000) / 1000,
               size: Math.round(e.totalSize),
               netUsdc: Math.round(e.totalSize),
@@ -3264,8 +3269,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               const medianBet = (smEntry?.medianBet && smEntry.medianBet > 0) ? smEntry.medianBet
                 : (sEntry?.medianBet && sEntry.medianBet > 0)                  ? sEntry.medianBet
                 : (sEntry?.avgBet    && sEntry.avgBet    > 0)                  ? sEntry.avgBet
-                : Math.max((lbMap.get(t.wallet)?.volume ?? 1000) / 100, 50);
-              return s + (t.currentValue / medianBet) * (t.currentValue / pgTotalWeight);
+                : Math.max((lbMap.get(t.wallet)?.volume ?? 1000) / 100, 200);
+              // Cap at 20x to prevent arb wallets with near-zero sport medians from skewing
+              const ratio = Math.min(t.currentValue / Math.max(medianBet, 1), 20);
+              return s + ratio * (t.currentValue / pgTotalWeight);
             }, 0) * 10) / 10;
           })();
 

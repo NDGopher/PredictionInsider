@@ -202,9 +202,9 @@ function ScoreBreakdown({ breakdown, confidence, signal }: {
       low: (breakdown.sizePct ?? 0) < 3,
     },
     {
-      label: "Conviction Size (10%)",
+      label: "Conviction Size",
       val: breakdown.relSizePts ?? 0,
-      max: 10,
+      max: 15,
       color: "bg-rose-500",
       note: (signal as any)?.relBetSize > 1
         ? `${((signal as any).relBetSize as number).toFixed(1)}× their normal bet`
@@ -1038,8 +1038,8 @@ function SignalCard({ signal, mode, onSnoozed, onBetTracked, ofiData }: {
                   ) ?? [];
                   return (
                   <div key={i} className="bg-muted/40 rounded-lg border border-border/30 p-2.5">
-                    {/* Row 1: Rank + Name + Badges + Time */}
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                    {/* Row 1: Rank + Name + Badges */}
+                    <div className="flex items-center justify-between gap-2 mb-1">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span className="shrink-0 text-[10px] font-bold text-muted-foreground w-4 text-center">#{i + 1}</span>
                         {(t as any).isSportsLb && <span title="Top sports leaderboard">🏆</span>}
@@ -1062,14 +1062,20 @@ function SignalCard({ signal, mode, onSnoozed, onBetTracked, ofiData }: {
                         )}
                         {(t as any).qualityScore > 0 && <QualityPip score={(t as any).qualityScore} />}
                       </div>
-                      <div className="shrink-0 text-right">
-                        {(t as any).tradeTime > 0 && (
-                          <div className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                            <Clock className="w-2.5 h-2.5" />{timeAgoShort((t as any).tradeTime)}
-                          </div>
-                        )}
-                      </div>
+                      {/* Side badge */}
+                      {(t as any).side && (
+                        <span className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded border ${(t as any).side === "YES" ? "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/25" : "bg-red-500/15 text-red-500 border-red-500/25"}`}>
+                          {(t as any).side}
+                        </span>
+                      )}
                     </div>
+                    {/* Row 1b: entry time (shown whenever available) */}
+                    {(t as any).tradeTime > 0 && (
+                      <div className="flex items-center gap-1 mb-1.5 text-[10px] text-muted-foreground">
+                        <Clock className="w-2.5 h-2.5 shrink-0" />
+                        <span>Entered {timeAgoShort((t as any).tradeTime)}</span>
+                      </div>
+                    )}
 
                     {/* Row 2: Sport tags */}
                     {sportTags.length > 0 && (
