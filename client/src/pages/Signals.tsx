@@ -1091,18 +1091,29 @@ function SignalCard({ signal, mode, onSnoozed, onBetTracked, ofiData }: {
 
                     {/* Row 3: Stats grid */}
                     <div className="grid grid-cols-3 gap-2">
-                      {/* Sport-specific ROI (primary stat) */}
+                      {/* Sport-specific ROI (primary stat), falls back to overall ROI */}
                       <div className="text-center p-1.5 rounded bg-background border border-border/50">
-                        <div className="text-[9px] text-muted-foreground mb-0.5">{(signal as any).sport || "Sport"} ROI</div>
                         {sportRoi !== null ? (
-                          <div className={`text-sm font-bold tabular-nums ${sportRoi >= 30 ? "text-green-600 dark:text-green-400" : sportRoi >= 10 ? "text-yellow-600" : sportRoi < 0 ? "text-red-500" : "text-foreground"}`}>
-                            {sportRoi >= 0 ? "+" : ""}{sportRoi.toFixed(1)}%
-                          </div>
+                          <>
+                            <div className="text-[9px] text-muted-foreground mb-0.5">{(signal as any).sport || "Sport"} ROI</div>
+                            <div className={`text-sm font-bold tabular-nums ${sportRoi >= 30 ? "text-green-600 dark:text-green-400" : sportRoi >= 10 ? "text-yellow-600" : sportRoi < 0 ? "text-red-500" : "text-foreground"}`}>
+                              {sportRoi >= 0 ? "+" : ""}{sportRoi.toFixed(1)}%
+                            </div>
+                            {sportTrades !== null && sportTrades > 0 && (
+                              <div className="text-[9px] text-muted-foreground">{sportTrades} bets</div>
+                            )}
+                          </>
                         ) : (
-                          <div className="text-sm font-bold text-muted-foreground">—</div>
-                        )}
-                        {sportTrades !== null && sportTrades > 0 && (
-                          <div className="text-[9px] text-muted-foreground">{sportTrades} bets</div>
+                          <>
+                            <div className="text-[9px] text-muted-foreground mb-0.5">Overall ROI</div>
+                            {(t.roi ?? 0) !== 0 ? (
+                              <div className={`text-sm font-bold tabular-nums ${(t.roi ?? 0) >= 30 ? "text-green-600 dark:text-green-400" : (t.roi ?? 0) >= 10 ? "text-yellow-600" : (t.roi ?? 0) < 0 ? "text-red-500" : "text-foreground"}`}>
+                                {(t.roi ?? 0) >= 0 ? "+" : ""}{((t.roi ?? 0) as number).toFixed(1)}%
+                              </div>
+                            ) : (
+                              <div className="text-sm font-bold text-muted-foreground">—</div>
+                            )}
+                          </>
                         )}
                       </div>
 
@@ -1718,6 +1729,7 @@ export default function Signals() {
   const highCount    = signals.filter(s => s.confidence >= 70).length;
   const valueCount   = signals.filter(s => s.isValue).length;
   const bestBetsCount = signals.filter(s => s.confidence >= 70 && s.isActionable && s.valueDelta > 0).length;
+  const futuresCount = signals.filter(s => (s as any).marketType === "futures" || (s as any).marketCategory === "futures").length;
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-5">
@@ -1972,6 +1984,11 @@ export default function Signals() {
         >
           <CalendarClock className="w-3 h-3" />
           Futures
+          {futuresCount > 0 && (
+            <span className={`text-[9px] font-bold px-1 py-0.5 rounded-full min-w-[16px] text-center leading-none ${showFutures ? "bg-primary/20 text-primary" : "bg-muted-foreground/20 text-muted-foreground"}`}>
+              {futuresCount}
+            </span>
+          )}
           <span className={`ml-0.5 text-[10px] ${showFutures ? "text-primary" : "text-muted-foreground"}`}>
             {showFutures ? "ON" : "OFF"}
           </span>
@@ -1996,7 +2013,7 @@ export default function Signals() {
       {/* Summary bar */}
       {!isLoading && signals.length > 0 && (
         <div className="flex items-center gap-3 text-xs flex-wrap">
-          <span className="text-muted-foreground">{data?.topTraderCount} elite traders</span>
+          <span className="text-muted-foreground">{data?.topTraderCount} tracked traders</span>
           <span className="text-muted-foreground">{data?.marketsScanned} sports markets scanned</span>
           {valueCount > 0 && (
             <span className="text-green-600 dark:text-green-400 font-medium flex items-center gap-1">

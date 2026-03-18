@@ -3689,7 +3689,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       const response = {
         signals,
-        topTraderCount: CURATED_ELITES.length,
+        topTraderCount: canonicalMap.size || CURATED_ELITES.length,
         marketsScanned: marketDb.size,
         newSignalCount: signals.filter(s => s.isNew).length,
         fetchedAt: now,
@@ -3903,7 +3903,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       const response = {
         signals,
-        topTraderCount: CURATED_ELITES.length,
+        topTraderCount: curatedSetHttp.size || CURATED_ELITES.length,
         marketsScanned: marketDb.size,
         newSignalCount: 0,
         fetchedAt: now,
