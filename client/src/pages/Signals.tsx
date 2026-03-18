@@ -1243,7 +1243,7 @@ function SharpMovesPanel({ signals }: { signals?: any[] }) {
             </span>
           )}
           <div className="flex-1 min-w-0">
-            <div className={`font-bold text-[11px] ${a.side === "YES" ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+            <div className="font-bold text-[11px] text-foreground">
               {alertOutcomeLabel}
             </div>
             <div className="text-[10px] text-muted-foreground truncate">{a.market}</div>
