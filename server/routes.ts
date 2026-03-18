@@ -2841,13 +2841,38 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const avgEntry   = dominant.reduce((s, e) => s + (e.prices.reduce((a, b) => a + b, 0) / e.prices.length) * e.totalSize, 0) / totalDominantWeight;
         const avgSize    = totalDominantSize / dominant.length;
 
-        // avgROI: use canonical OVERALL ROI (not sport-specific) for confidence scoring.
-        // Sport-specific ROI from our DB only counts SETTLED/CLOSED trades and misses
-        // open winning positions — so it can falsely penalize traders with large unrealized gains.
-        // Canonical overall ROI (from closed-positions API) is the ground truth.
+        // ── Market/sport classifiers (needed for sport-specific ROI + relBetSize) ──
+        const marketCategory = classifyMarketType(mw.question);
+        const signalSportDetailed = classifySportFull(signalSport, mw.question || "", mw.slug || "");
+        const sportMktKey = `${signalSportDetailed}|${marketCategory}`;
+        // Parent-sport×mktType fallback key: "eSports|moneyline" for "Dota2|moneyline"
+        const parentSportMktKey = `${signalSport}|${marketCategory}`;
+
+        // ── avgROI: sport- and submarket-specific ROI per trader ──────────────
+        // Priority chain (minimum sample gates prevent tiny samples from inflating scores):
+        //   1. sport×marketType exact   (e.g. "eSports|moneyline", ≥20 trades)
+        //   2. parent sport×marketType  (e.g. "eSports|moneyline" for Dota2, ≥20 trades)
+        //   3. detailed sport level     (e.g. "Dota2" or "eSports",  ≥15 trades)
+        //   4. parent sport level       (e.g. "eSports",             ≥15 trades)
+        //   5. canonical overallROI     (always available)
+        // This correctly weights UAEVALORANTFAN's 9.91% eSports|moneyline ROI instead of
+        // their 3.0% overall (dragged by NCAAB), and 9sh8f's 8.76% Dota2 moneyline vs 6.5%.
+        const MIN_SMT_SAMPLE  = 20;  // sport×markettype minimum
+        const MIN_SPORT_SAMPLE = 15; // sport-level minimum
         const avgROI = dominant.reduce((s, e) => {
           const cm = canonicalMap.get(e.address.toLowerCase());
-          return s + (cm?.overallROI ?? e.traderInfo.roi);
+          const overall = cm?.overallROI ?? e.traderInfo.roi;
+          const smtExact   = cm?.roiBySportMarketType?.[sportMktKey];
+          const smtParent  = cm?.roiBySportMarketType?.[parentSportMktKey];
+          const sSport     = cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport];
+          const sParent    = cm?.roiBySport?.[signalSport];
+          const sportROI =
+            (smtExact  && smtExact.tradeCount  >= MIN_SMT_SAMPLE)  ? smtExact.roi
+          : (smtParent && smtParent.tradeCount >= MIN_SMT_SAMPLE)  ? smtParent.roi
+          : (sSport    && sSport.tradeCount    >= MIN_SPORT_SAMPLE) ? sSport.roi
+          : (sParent   && sParent.tradeCount   >= MIN_SPORT_SAMPLE) ? sParent.roi
+          : overall;
+          return s + sportROI;
         }, 0) / dominant.length;
 
         // ── Live price via CLOB ────────────────────────────────────────────────
@@ -2876,12 +2901,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // for the relevant side (YES token midpoint for YES, NO token midpoint for NO).
         // Positive = sharps got in at a higher price = you can enter cheaper = value edge.
         const valueDelta = avgEntry - currentPrice - SLIPPAGE;
-
-        // Compute market category early — needed for sport×mktType median bet lookup
-        const marketCategory = classifyMarketType(mw.question);
-        // Detailed sport key (resolves UCL/UEL from slug, LoL/CS2 from question title)
-        const signalSportDetailed = classifySportFull(signalSport, mw.question || "", mw.slug || "");
-        const sportMktKey = `${signalSportDetailed}|${marketCategory}`;
 
         // ── Insider Stats (OddsJam-style "WHY THIS BET?" metrics) ─────────────
         // relBetSize: weighted avg of (this_bet / trader_median_in_sport+mktType)
