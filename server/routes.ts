@@ -886,17 +886,33 @@ async function fetchAllPositionsFull(wallet: string): Promise<any[]> {
   return all;
 }
 
-/** Refresh open positions for all curated traders in the background every 60s.
- *  All 49 traders are fetched in parallel (safe: ~50-100 API calls total).
+/** Run an async task list with at most `concurrency` running at the same time. */
+async function runWithConcurrency<T>(
+  tasks: (() => Promise<T>)[],
+  concurrency: number
+): Promise<T[]> {
+  const results: T[] = new Array(tasks.length);
+  let nextIdx = 0;
+  async function worker() {
+    while (nextIdx < tasks.length) {
+      const idx = nextIdx++;
+      results[idx] = await tasks[idx]();
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, tasks.length) }, worker));
+  return results;
+}
+
+/** Refresh open positions for all curated traders in the background every 90s.
+ *  Fetches 8 traders at a time (not all 49 at once) to avoid rate-limit spikes.
  *  Results are stored in livePositionCache for use by signal computation. */
 async function refreshLivePositions(): Promise<void> {
   try {
-    const results = await Promise.all(
-      CURATED_ELITES.map(async e => {
-        const positions = await fetchAllPositionsFull(e.addr);
-        return { wallet: e.addr.toLowerCase(), positions };
-      })
-    );
+    const tasks = CURATED_ELITES.map(e => async () => {
+      const positions = await fetchAllPositionsFull(e.addr);
+      return { wallet: e.addr.toLowerCase(), positions };
+    });
+    const results = await runWithConcurrency(tasks, 8);
     for (const { wallet, positions } of results) {
       livePositionCache.set(wallet, positions);
     }
@@ -2077,10 +2093,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   setInterval(() => { refreshESPNLiveGames().catch(() => {}); }, 90_000);
 
   // Live position cache — fetches ALL open positions for all 49 curated traders
-  // via paginated API calls. Runs immediately on startup, then every 60 seconds.
+  // via paginated API calls, 8 traders at a time. Runs immediately on startup, then every 90 seconds.
   // This removes position fetching from the signal request hot-path entirely.
   refreshLivePositions().catch(() => {});
-  setInterval(() => { refreshLivePositions().catch(() => {}); }, 60_000);
+  setInterval(() => { refreshLivePositions().catch(() => {}); }, 90_000);
 
   // ── GET /api/_debug/espn (temp debug — shows ESPN live cache state) ──────────
   app.get("/api/_debug/espn", (_req, res) => {
