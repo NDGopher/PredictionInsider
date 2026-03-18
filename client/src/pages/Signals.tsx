@@ -1574,7 +1574,7 @@ export default function Signals() {
   const countdownRef = useRef<ReturnType<typeof setInterval>>();
 
   const refreshInterval = mode === "elite" ? ELITE_REFRESH_SEC : FAST_REFRESH_SEC;
-  const eliteUrl  = sportsOnly ? "/api/signals?sports=true" : "/api/signals?sports=false";
+  const eliteUrl  = sportsOnly ? "/api/signals" : "/api/signals?sports=false";
   const queryKey  = mode === "elite" ? [eliteUrl] : ["/api/signals/fast"];
 
   // ── Query ────────────────────────────────────────────────────────────────────
@@ -1676,10 +1676,12 @@ export default function Signals() {
     .filter(s => {
       if (snoozedIds.has(s.id)) return false;
       if (search && !s.marketQuestion.toLowerCase().includes(search.toLowerCase())) return false;
-      // Hide signals where user already has an open bet tracked
       if (hideTracked && trackedConditionIds.has((s as any).marketId)) return false;
-      // Category toggles
-      if (!showFutures && ((s as any).marketType === "futures" || (s as any).gameStatus === "futures" || (s as any).marketCategory === "futures")) return false;
+      // Consistent futures detection: use marketType OR marketCategory
+      const isFuturesSig = (s as any).marketType === "futures" || (s as any).marketCategory === "futures";
+      // User explicitly asked for futures via tab or dropdown — never hide them in that case
+      const userWantsFutures = filter === "futures" || betType === "futures";
+      if (!showFutures && isFuturesSig && !userWantsFutures) return false;
       if (!showEsports && /^(Dota\s*2|LoL|Counter.Strike\s*2?|CS:?(?:GO|2)?|Valorant|Call\s*of\s*Duty|Overwatch|Rocket\s*League|SC2|StarCraft|Hearthstone|PUBG|R6|Rainbow\s*6|League\s*of\s*Legends)\s*:/i.test(s.marketQuestion)) return false;
       if (filter === "best_bets") return s.confidence >= 70 && s.isActionable && s.valueDelta > 0;
       if (filter === "value")   return s.isValue;
@@ -1688,13 +1690,13 @@ export default function Signals() {
       if (filter === "single")  return (s as any).tier === "SINGLE";
       if (filter === "live")    return (s as any).marketType === "live";
       if (filter === "pregame") return (s as any).marketType === "pregame";
-      if (filter === "futures") return (s as any).marketType === "futures";
+      if (filter === "futures") return isFuturesSig;
       if (filter === "yes")     return s.side === "YES";
       if (filter === "no")      return s.side === "NO";
       // Bet-type filter
       if (betType !== "all") {
         const cat = ((s as any).marketCategory || "other").toLowerCase();
-        if (betType === "futures") return cat === "futures";
+        if (betType === "futures") return isFuturesSig;
         return cat === betType;
       }
       return true;
