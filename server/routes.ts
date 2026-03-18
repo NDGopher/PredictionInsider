@@ -2610,7 +2610,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/signals", async (req, res) => {
     try {
       const sportsOnly = req.query.sports !== "false";
-      const cKey = `signals-elite-v26-${sportsOnly ? "sp" : "all"}`;
+      const cKey = `signals-elite-v28-${sportsOnly ? "sp" : "all"}`;
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -2919,13 +2919,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // Priority chain (minimum sample gates prevent tiny samples from inflating scores):
         //   1. sport×marketType exact   (e.g. "eSports|moneyline", ≥20 trades)
         //   2. parent sport×marketType  (e.g. "eSports|moneyline" for Dota2, ≥20 trades)
-        //   3. detailed sport level     (e.g. "Dota2" or "eSports",  ≥15 trades)
-        //   4. parent sport level       (e.g. "eSports",             ≥15 trades)
+        //   3. detailed sport level     (e.g. "Dota2" or "eSports",  ≥20 trades)
+        //   4. parent sport level       (e.g. "eSports",             ≥20 trades)
         //   5. canonical overallROI     (always available)
         // This correctly weights UAEVALORANTFAN's 9.91% eSports|moneyline ROI instead of
         // their 3.0% overall (dragged by NCAAB), and 9sh8f's 8.76% Dota2 moneyline vs 6.5%.
         const MIN_SMT_SAMPLE  = 20;  // sport×markettype minimum
-        const MIN_SPORT_SAMPLE = 15; // sport-level minimum
+        const MIN_SPORT_SAMPLE = 20; // sport-level minimum (consistent with SMT)
         const avgROI = dominant.reduce((s, e) => {
           const cm = canonicalMap.get(e.address.toLowerCase());
           const overall = cm?.overallROI ?? e.traderInfo.roi;
@@ -3063,28 +3063,32 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           ? (currentPrice - avgEntry) * 100
           : (avgEntry - currentPrice) * 100) * 10) / 10;
         // insiderSportsROI: sport-specific canonical ROI — uses detailed sport key (UCL, LoL, etc.)
-        // with fallback to generic sport, then overall ROI.
+        // with fallback to generic sport, then overall ROI. Min 20 trades for sport-specific.
         const insiderSportsROI = Math.round(
           dominant.reduce((s, e) => {
             const cm = canonicalMap.get(e.address.toLowerCase());
             const sportEntry = cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport];
-            const roi = (sportEntry && (sportEntry.tradeCount ?? 0) >= 10)
+            const roiUsed = (sportEntry && (sportEntry.tradeCount ?? 0) >= MIN_SPORT_SAMPLE)
               ? sportEntry.roi
               : (cm?.overallROI ?? e.traderInfo.roi);
-            return s + roi * e.totalSize;
+            return s + roiUsed * e.totalSize;
           }, 0) / (totalDominantWeight || 1) * 10
         ) / 10;
-        // insiderTrades: sport-specific closed position count from canonical API
+        // insiderTrades: sport-specific closed position count from canonical API (min 20 for sport-specific)
         const insiderTrades = dominant.reduce((s, e) => {
           const cm = canonicalMap.get(e.address.toLowerCase());
-          const sportCount = (cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport])?.tradeCount ?? 0;
+          const sportEntry = cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport];
+          const sportCount = (sportEntry && (sportEntry.tradeCount ?? 0) >= MIN_SPORT_SAMPLE) ? sportEntry.tradeCount : 0;
           return s + (sportCount > 0 ? sportCount : ((cm?.totalTrades ?? 0) > 0 ? cm!.totalTrades : Math.max(Math.round(e.traderInfo.volume / 500), 1)));
         }, 0);
-        // insiderWinRate: canonical win rate weighted by bet size
+        // insiderWinRate: canonical win rate weighted by bet size (min 20 trades for sport-specific)
         const insiderWinRate = Math.round(
           dominant.reduce((s, e) => {
             const cm = canonicalMap.get(e.address.toLowerCase());
-            const wr = (cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport])?.winRate ?? cm?.winRate ?? 0;
+            const sportEntry = cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport];
+            const wr = (sportEntry && (sportEntry.tradeCount ?? 0) >= MIN_SPORT_SAMPLE)
+              ? sportEntry.winRate
+              : (cm?.winRate ?? 0);
             return s + wr * e.totalSize;
           }, 0) / (totalDominantWeight || 1) * 10
         ) / 10;
@@ -3444,28 +3448,32 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const pgSlippagePct = Math.round((pg.side === "YES"
             ? (avgCurPrice - avgEntry) * 100
             : (avgEntry - avgCurPrice) * 100) * 10) / 10;
-          // insiderSportsROI: detailed sport key (UCL, LoL, etc.) with fallback to generic sport
+          // insiderSportsROI: detailed sport key (UCL, LoL, etc.) with fallback to generic sport (min 20 trades)
           const pgInsiderSportsROI = Math.round(
             pg.traders.reduce((s, t) => {
               const cm = canonicalMap.get(t.wallet.toLowerCase());
               const sportEntry = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
-              const roi = (sportEntry && sportEntry.tradeCount >= 10)
+              const roi = (sportEntry && sportEntry.tradeCount >= 20)
                 ? sportEntry.roi
                 : (cm?.overallROI ?? lbMap.get(t.wallet)?.roi ?? 0);
               return s + roi * t.currentValue;
             }, 0) / pgTotalWeight * 10
           ) / 10;
-          // insiderTrades: canonical closed position count (actual trades completed)
+          // insiderTrades: canonical closed position count (actual trades completed, min 20 for sport-specific)
           const pgInsiderTrades = pg.traders.reduce((s, t) => {
             const cm = canonicalMap.get(t.wallet.toLowerCase());
-            const sportCount = (cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport])?.tradeCount ?? 0;
+            const sportEntry = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
+            const sportCount = (sportEntry && (sportEntry.tradeCount ?? 0) >= 20) ? sportEntry.tradeCount : 0;
             return s + (sportCount > 0 ? sportCount : ((cm?.totalTrades ?? 0) > 0 ? cm!.totalTrades : Math.max(Math.round((lbMap.get(t.wallet)?.volume ?? 500) / 500), 1)));
           }, 0);
-          // insiderWinRate: canonical win rate weighted by bet size
+          // insiderWinRate: canonical win rate weighted by bet size (min 20 trades for sport-specific)
           const pgInsiderWinRate = Math.round(
             pg.traders.reduce((s, t) => {
               const cm = canonicalMap.get(t.wallet.toLowerCase());
-              const wr = (cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport])?.winRate ?? cm?.winRate ?? 0;
+              const sportEntry = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
+              const wr = (sportEntry && (sportEntry.tradeCount ?? 0) >= 20)
+                ? sportEntry.winRate
+                : (cm?.winRate ?? 0);
               return s + wr * t.currentValue;
             }, 0) / pgTotalWeight * 10
           ) / 10;
