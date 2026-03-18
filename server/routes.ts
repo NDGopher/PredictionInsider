@@ -2762,7 +2762,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/signals", async (req, res) => {
     try {
       const sportsOnly = req.query.sports !== "false";
-      const cKey = `signals-elite-v35-${sportsOnly ? "sp" : "all"}`;
+      const cKey = `signals-elite-v36-${sportsOnly ? "sp" : "all"}`;
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
@@ -3583,13 +3583,26 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
           // Detect sport for sport-specific canonical ROI
           const pgSport = classifySport(pg.slug || pgMarket?.slug || "", pg.question || "");
+          // Compute market category and detailed sport key early — needed for avgROI priority chain
+          const pgMarketCategory = classifyMarketType(pg.question);
+          const pgSportDetailed = classifySportFull(pgSport, pg.question || "", pg.slug || pgMarket?.slug || "");
+          const pgSportMktKey = `${pgSportDetailed}|${pgMarketCategory}`;
 
-          // avgROI: use canonical OVERALL ROI (not sport-specific settled ROI).
-          // Sport-specific ROI misses open winning positions — canonical overall is the ground truth.
+          // avgROI: use sport-specific ROI (same priority chain as Phase 1 trades path).
+          // Priority: sport×marketType (≥20) → detailed sport (≥20) → parent sport (≥20) → overall
+          // Weighted by current position value so large bets from high-ROI traders dominate.
+          const pgMin = 20;
+          const pgAvgROIWeight = pg.traders.reduce((s, t) => s + (t.currentValue || 0), 0) || 1;
           const avgROI = pg.traders.reduce((s, t) => {
             const cm = canonicalMap.get(t.wallet.toLowerCase());
-            return s + (cm?.overallROI ?? lbMap.get(t.wallet)?.roi ?? 0);
-          }, 0) / pg.traders.length;
+            const overall = cm?.overallROI ?? lbMap.get(t.wallet)?.roi ?? 0;
+            const smtExact  = cm?.roiBySportMarketType?.[pgSportMktKey];
+            const sSport    = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
+            const sportROI  = (smtExact && smtExact.tradeCount >= pgMin) ? smtExact.roi
+                            : (sSport   && sSport.tradeCount   >= pgMin) ? sSport.roi
+                            : overall;
+            return s + sportROI * (t.currentValue || 0);
+          }, 0) / pgAvgROIWeight;
 
           // Use canonical DB quality score (consistent with Elite page display)
           const avgQualityForScore = pg.traders.length > 0
@@ -3598,10 +3611,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                 return s + ((cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : (lbMap.get(t.wallet)?.qualityScore ?? 20));
               }, 0) / pg.traders.length)
             : 20;
-          // Compute market category early for sport×mktType lookup
-          const pgMarketCategory = classifyMarketType(pg.question);
-          const pgSportDetailed = classifySportFull(pgSport, pg.question || "", pg.slug || pgMarket?.slug || "");
-          const pgSportMktKey = `${pgSportDetailed}|${pgMarketCategory}`;
 
           // ── Insider Stats (OddsJam-style "WHY THIS BET?" metrics) ───────────
           // pgRelBetSize: sport×mktType specific median bet — the conviction multiplier
