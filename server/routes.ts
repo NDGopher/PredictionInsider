@@ -2865,9 +2865,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // ── Strict price range filter (0.10–0.90) ─────────────────────────────
         if (currentPrice < MIN_LIVE_PRICE || currentPrice > MAX_LIVE_PRICE) continue;
 
-        const valueDelta = side === "YES"
-          ? (avgEntry - currentPrice - SLIPPAGE)
-          : ((1 - avgEntry) - (1 - currentPrice) - SLIPPAGE);
+        // Both YES and NO use identical formula: currentPrice is already the token price
+        // for the relevant side (YES token midpoint for YES, NO token midpoint for NO).
+        // Positive = sharps got in at a higher price = you can enter cheaper = value edge.
+        const valueDelta = avgEntry - currentPrice - SLIPPAGE;
 
         // Compute market category early — needed for sport×mktType median bet lookup
         const marketCategory = classifyMarketType(mw.question);
@@ -3214,9 +3215,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const totalPosWeight = pg.traders.reduce((s, t) => s + t.currentValue, 0) || 1;
           const avgEntry = pg.traders.reduce((s, t) => s + t.entryPrice * t.currentValue, 0) / totalPosWeight;
           const avgSize  = pg.totalValue / pg.traders.length;
-          const valueDelta = pg.side === "YES"
-            ? (avgEntry - avgCurPrice - 0.02)
-            : ((1 - avgEntry) - (1 - avgCurPrice) - 0.02);
+          // Positive = sharps paid more than live = you enter cheaper = value edge.
+          // avgEntry and avgCurPrice are both the same-side token price, so formula is symmetric.
+          const valueDelta = avgEntry - avgCurPrice - 0.02;
 
           const consensusPct = 100; // all are on same side by construction
           // Counter-trader count (computed BEFORE confidence so it can penalize consensus)
@@ -3841,9 +3842,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // Enforce price range 0.10–0.90
         if (currentPrice < 0.10 || currentPrice > 0.90) continue;
 
-        const valueDelta = side === "YES"
-          ? (avgEntry - currentPrice - SLIPPAGE)
-          : ((1 - avgEntry) - (1 - currentPrice) - SLIPPAGE);
+        // Positive = sharps paid more than live = you enter cheaper = value edge.
+        // currentPrice is already the correct-side token midpoint.
+        const valueDelta = avgEntry - currentPrice - SLIPPAGE;
 
         const { score: confidence, breakdown } = computeConfidence(
           15, consensusPct, valueDelta, avgSize, dominant.length, 40
