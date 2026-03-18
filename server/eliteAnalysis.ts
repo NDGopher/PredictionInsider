@@ -154,6 +154,18 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
     doNotTailMarketTypes: ["spread"],
     doNotTailSides:       ["No"],
   },
+  "0xd6966eb1ae7b52320ba7ab1016680198c9e08a49": { // EIf — B-Tier NHL/Soccer/Esports specialist (Q=45, ROI=2.4%, Sharpe=14.3)
+    // CSV analysis (hedge-stripped): 404 arb trades / $2.09M stripped
+    // NHL +9.1% ROI (308 bets, +$115K), ESPORTS +23.9% (51 bets), LaLiga +28.8% (48 bets)
+    // OTHER +14.1% (683 bets, +$181K) — large college sports universe, mostly NCAAB/NCAAF
+    // NBA -3.1% (478 bets, -$128K) and NFL -3.0% (188 bets, -$39K) — confirmed losers at volume
+    // UCL -83.2% ROI (-$64K), Tennis -8.0% (-$14K) — muted
+    // Market type: Moneyline +11.2% ✅ | Spread -3.3% ❌ | O/U -22.4% ❌
+    // Best price zone: Underdog (20-40c) 15.7% ROI — high-conviction low-price picks
+    autoTail:             ["NHL", "eSports", "Soccer", "College Sports", "Other", "MLB"],
+    doNotTail:            ["NBA", "NFL", "UCL", "Tennis", "Politics", "Finance/Crypto"],
+    doNotTailMarketTypes: ["spread", "total"],
+  },
   "0x2005d16a84ceefa912d4e380cd32e7ff827875ea": { // RN1 — A-Tier algorithmic value sniper (Q=58, ROI=13.7%)
     // CSV analysis (hedge-stripped): Soccer Other 21.8%, Tennis 14.1%, Other 14.1%
     // Best market type: Moneylines only (16.7% ROI across 4,108 events)
