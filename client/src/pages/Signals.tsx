@@ -1147,6 +1147,11 @@ function SignalCard({ signal, mode, onSnoozed, onBetTracked, ofiData }: {
                             return formatUsdc(risk);
                           })()}
                         </div>
+                        {(t as any).traderRelSize >= 1.5 && (
+                          <div className={`text-[9px] font-semibold ${(t as any).traderRelSize >= 5 ? "text-orange-500" : (t as any).traderRelSize >= 3 ? "text-yellow-600 dark:text-yellow-400" : "text-muted-foreground"}`}>
+                            {((t as any).traderRelSize as number).toFixed(1)}× norm
+                          </div>
+                        )}
                         <div className="text-[9px] text-muted-foreground">@ {(t.entryPrice * 100).toFixed(1)}¢</div>
                       </div>
                     </div>
