@@ -3493,6 +3493,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               const mktType = classifyMarketType(sig.marketQuestion || "");
               if (catFilter.doNotTailMarketTypes.includes(mktType)) continue;
             }
+            // doNotTailSides: skip this trader's vote when the signal side is one they have no edge on
+            // e.g. grinders who only add value buying YES underdogs — their NO votes are noise
+            if (catFilter?.doNotTailSides?.length) {
+              const normalizedSide = sig.side === "YES" ? "Yes" : "No";
+              if (catFilter.doNotTailSides.includes(normalizedSide)) continue;
+            }
             const username = curatedWalletToUsername.get(w) || t.name || w.slice(0, 8);
             (sig.side === "YES" ? bucket.yes : bucket.no).push({ wallet: w, username });
           }

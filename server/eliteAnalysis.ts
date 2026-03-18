@@ -87,10 +87,13 @@ export const curatedWalletToUsername = new Map<string, string>();
 // autoTail:           sports where this trader has proven edge — count their vote normally
 // doNotTail:          sports where this trader loses money — exclude from signal consensus
 // doNotTailMarketTypes: market types to exclude regardless of sport (spread | total | moneyline | futures | other)
+// doNotTailSides:     bet sides to suppress regardless of market ("Yes" | "No") — use when a trader
+//                     has no edge on a specific side (e.g. grinders who only add value buying YES underdogs)
 export const TRADER_CATEGORY_FILTERS: Record<string, {
   autoTail: string[];
   doNotTail: string[];
   doNotTailMarketTypes?: string[];
+  doNotTailSides?: string[];
 }> = {
   "0x9c82c60829df081d593055ee5fa288870c051f13": { // Vetch — S-Tier CS2/NBA/NHL specialist
     autoTail:   ["NBA", "NHL", "CS2", "LoL"],
@@ -124,6 +127,15 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
     autoTail:            ["NBA", "NFL", "UFC/MMA", "Soccer", "NHL", "MLB"],
     doNotTail:           ["Politics", "eSports", "Finance/Crypto", "College Sports"],
     doNotTailMarketTypes: ["spread", "total"],
+  },
+  "0xf588b19afe63e1aba00f125f91e3e3b0fdc62b81": { // RandomPunter — High-volume Grinder, YES underdog specialist
+    // $5.4M in perfect hedges stripped. Edge is purely from YES longshot/underdog picks (20-50c range).
+    // No edge on the NO side — NO bets are residual liquidity/arb legs, not directional signals.
+    // Also loses on spreads universally — stick to moneylines only.
+    autoTail:             ["NBA", "NHL", "Soccer", "Tennis", "eSports", "LoL", "Dota2", "CS2", "UFC/MMA"],
+    doNotTail:            [],
+    doNotTailMarketTypes: ["spread"],
+    doNotTailSides:       ["No"],
   },
   "0x2005d16a84ceefa912d4e380cd32e7ff827875ea": { // RN1 — Omniscient algorithmic value sniper
     // Profitable across EVERY sport and market type on the platform.
