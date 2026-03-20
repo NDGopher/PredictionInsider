@@ -1,9 +1,10 @@
 {
   "wallet": "0x53ecc53e7a69aad0e6dda60264cc2e363092df91",
   "username": "0x53eCc53E7",
-  "total_profit": 96215.29,
-  "total_risked": 698045.1,
-  "overall_roi": 13.78,
+  "total_profit": 207063.68,
+  "raw_realized_pnl": 207063.68,
+  "total_risked": 1687490.66,
+  "overall_roi": 12.27,
   "win_rate": 54.41,
   "avg_bet_size": 2121.72,
   "total_events": 329,
@@ -443,6 +444,17 @@
     "\u26d4 Fade UCL"
   ],
   "tail_guide": "How to Tail 0x53eCc53E7 [A-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   NBA \u2014 30.2% ROI, 64 events, +$79,251\n   NFL \u2014 19.0% ROI, 59 events, +$18,400\n   NHL \u2014 11.4% ROI, 28 events, +$3,250\n\n\ud83d\udd34 DO NOT TAIL:\n   SOCCER (UCL) \u2014 ROI -24.8%, $-9,083\n   OTHER \u2014 ROI -4.4%, $-4,837\n\n\ud83d\udcc8 Stick to Moneylines (11.6% ROI over 164 events)\n\ud83c\udfaf Best price zone: Flip (40-60c) (23.2% ROI, 69 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 79% of edge from 'Yes' side \u2014 copy that side only\n\u26a1 Normal bet ~$2,122 \u2014 alert at 3x average for high-conviction plays",
+  "do_not_tail_sports": [
+    "OTHER",
+    "SOCCER (UCL)"
+  ],
+  "auto_tail_sports": [
+    "NBA",
+    "NFL",
+    "NHL"
+  ],
+  "do_not_tail_market_types": [],
+  "do_not_tail_sides": [],
   "score_breakdown": {
     "sharpe_score": 17.9,
     "roi_score": 23.0,

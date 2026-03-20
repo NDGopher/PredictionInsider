@@ -3,7 +3,11 @@ import { Pool } from "pg";
 const DATA_API = "https://data-api.polymarket.com";
 const GAMMA_API = "https://gamma-api.polymarket.com";
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  connectionTimeoutMillis: 25000,
+  statement_timeout: 30000,
+});
 
 // ─── Known curated traders (pre-seeded) ──────────────────────────────────────
 
@@ -185,6 +189,12 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
     doNotTailMarketTypes: ["total"],
     doNotTailSides:       ["Yes"],
   },
+  "0x68146921df11eab44296dc4e58025ca84741a9e7": { // LynxTitan — C-Tier (overall -6.9% ROI, 47.7% WR). CSV: only NHL +7.1%, NFL +7.8% are edges.
+    // DO NOT TAIL: UCL -62.5%, Tennis -11.6%, eSports -14.5%; Spread -4.7%. Huge open book (733+) → was over-represented.
+    autoTail:             ["NHL", "NFL"],
+    doNotTail:            ["UCL", "Tennis", "eSports", "Politics", "NBA", "MLB", "Soccer", "College Sports", "Other"],
+    doNotTailMarketTypes: ["spread"],
+  },
   "0xd6966eb1ae7b52320ba7ab1016680198c9e08a49": { // EIf — B-Tier NHL/Soccer/Esports specialist (Q=45, ROI=2.4%, Sharpe=14.3)
     // CSV analysis (hedge-stripped): 404 arb trades / $2.09M stripped
     // NHL +9.1% ROI (308 bets, +$115K), ESPORTS +23.9% (51 bets), LaLiga +28.8% (48 bets)
@@ -242,6 +252,32 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
                 "Valorant", "CS2", "LoL", "Politics", "Finance/Crypto", "Other"],
   },
 };
+
+export type CategoryFilter = {
+  autoTail: string[];
+  doNotTail: string[];
+  doNotTailMarketTypes?: string[];
+  doNotTailSides?: string[];
+  doNotTailTitleKeywords?: string[];
+};
+
+/** Prefer CSV-derived filters from profile metrics when present (re-analyzed each run). */
+export function getEffectiveCategoryFilter(wallet: string, metrics?: Record<string, any> | null): CategoryFilter | undefined {
+  const w = wallet.toLowerCase();
+  const hardcoded = TRADER_CATEGORY_FILTERS[w];
+  const csvDoNot = metrics?.csvDoNotTailSports;
+  const csvAuto = metrics?.csvAutoTailSports;
+  if (Array.isArray(csvDoNot) || Array.isArray(csvAuto)) {
+    return {
+      autoTail:            Array.isArray(csvAuto) ? csvAuto : (hardcoded?.autoTail ?? []),
+      doNotTail:           Array.isArray(csvDoNot) ? csvDoNot : (hardcoded?.doNotTail ?? []),
+      doNotTailMarketTypes: metrics?.csvDoNotTailMarketTypes ?? hardcoded?.doNotTailMarketTypes,
+      doNotTailSides:       metrics?.csvDoNotTailSides ?? hardcoded?.doNotTailSides,
+      doNotTailTitleKeywords: hardcoded?.doNotTailTitleKeywords,
+    };
+  }
+  return hardcoded;
+}
 
 // ─── Detailed sport classifier (extends classifySport with esports sub-games) ─
 // Returns CS2 / Valorant / LoL / Dota2 instead of generic "eSports" so that
@@ -1687,7 +1723,7 @@ export interface CanonicalPNL {
   }>;
 
   // ── Category breakdown ───────────────────────────────────────────────────────
-  closedByCategory: Record<string, { pnl: number; positions: number; wins: number; invested: number; winsGross: number; lossesGross: number }>;
+  closedByCategory: Record<string, { pnl: number; positions: number; wins: number; invested: number; winsGross: number; lossesGross: number; sizes?: number[] }>;
 }
 
 function classifySportFromSlug(slug: string, title?: string): string {
@@ -2038,20 +2074,24 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
     });
 
   // ── Sport/category breakdown (event-level) ────────────────────────────────
-  const closedByCategory: Record<string, { pnl: number; positions: number; wins: number; invested: number; winsGross: number; lossesGross: number }> = {};
+  // Collect per-event invested amounts so we can compute medianBet per category.
+  const closedByCategory: Record<string, { pnl: number; positions: number; wins: number; invested: number; winsGross: number; lossesGross: number; sizes: number[] }> = {};
   for (const ev of allEvents) {
-    if (!closedByCategory[ev.sport]) closedByCategory[ev.sport] = { pnl: 0, positions: 0, wins: 0, invested: 0, winsGross: 0, lossesGross: 0 };
-    closedByCategory[ev.sport].pnl += ev.pnl;
-    closedByCategory[ev.sport].invested += ev.invested;
-    closedByCategory[ev.sport].positions++;
-    if (ev.win) { closedByCategory[ev.sport].wins++; closedByCategory[ev.sport].winsGross += ev.pnl; }
-    else { closedByCategory[ev.sport].lossesGross += Math.abs(ev.pnl); }
+    if (!closedByCategory[ev.sport]) closedByCategory[ev.sport] = { pnl: 0, positions: 0, wins: 0, invested: 0, winsGross: 0, lossesGross: 0, sizes: [] };
+    const cat = closedByCategory[ev.sport];
+    cat.pnl += ev.pnl;
+    cat.invested += ev.invested;
+    cat.positions++;
+    if (ev.invested > 0) cat.sizes.push(ev.invested);
+    if (ev.win) { cat.wins++; cat.winsGross += ev.pnl; }
+    else { cat.lossesGross += Math.abs(ev.pnl); }
   }
   for (const cat of Object.keys(closedByCategory)) {
-    closedByCategory[cat].pnl          = Math.round(closedByCategory[cat].pnl * 100) / 100;
-    closedByCategory[cat].invested     = Math.round(closedByCategory[cat].invested * 100) / 100;
-    closedByCategory[cat].winsGross    = Math.round(closedByCategory[cat].winsGross * 100) / 100;
-    closedByCategory[cat].lossesGross  = Math.round(closedByCategory[cat].lossesGross * 100) / 100;
+    const d = closedByCategory[cat];
+    d.pnl          = Math.round(d.pnl * 100) / 100;
+    d.invested     = Math.round(d.invested * 100) / 100;
+    d.winsGross    = Math.round(d.winsGross * 100) / 100;
+    d.lossesGross  = Math.round(d.lossesGross * 100) / 100;
   }
 
   // ── Open / unrealized ─────────────────────────────────────────────────────
@@ -2231,15 +2271,22 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
     const c = await fetchCanonicalPNL(w);
     const qualityScore = computeCanonicalQualityScore(c);
 
-    // Build roiBySport from canonical closedByCategory (correct data, not per-trade)
-    const roiBySport: Record<string, { roi: number; tradeCount: number; pnl: number; winRate: number; avgBet: number }> = {};
+    // Build roiBySport from canonical closedByCategory (event-level = position-level).
+    // No caps: display actual ROI/win rate from Polymarket position data.
+    // Position size: each "event" is one market/game; invested per event = position size (not per-trade).
+    const roiBySport: Record<string, { roi: number; tradeCount: number; pnl: number; winRate: number; avgBet: number; medianBet: number; avgPositionSize: number; medianPositionSize: number }> = {};
     for (const [cat, d] of Object.entries(c.closedByCategory)) {
       if (d.positions === 0) continue;
       const denom = (d.winsGross || 0) + (d.lossesGross || 0);
       const roi = denom > 0 ? Math.round((d.pnl / denom) * 10000) / 100 : 0;
       const winRate = d.positions > 0 ? Math.round((d.wins / d.positions) * 1000) / 10 : 0;
-      const avgBet = d.positions > 0 ? Math.round(d.invested / d.positions) : 0;
-      roiBySport[cat] = { roi, tradeCount: d.positions, pnl: Math.round(d.pnl * 100) / 100, winRate, avgBet };
+      const avgPositionSize = d.positions > 0 ? Math.round(d.invested / d.positions) : 0;
+      const medianPositionSize = (d.sizes && d.sizes.length > 0) ? Math.round(median(d.sizes)) : avgPositionSize;
+      roiBySport[cat] = {
+        roi, tradeCount: d.positions, pnl: Math.round(d.pnl * 100) / 100, winRate,
+        avgBet: avgPositionSize, medianBet: medianPositionSize,
+        avgPositionSize, medianPositionSize,
+      };
     }
 
     // Compute canonical sport expert tags from roiBySport
@@ -2336,9 +2383,12 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
       winRate: c.pnlWinRate,
     });
 
-    // All canonical metrics — these are authoritative and override activity-based values
-    const canonicalMetrics = {
-      overallPNL:          c.totalPNL,
+    // Canonical metrics: built from Polymarket closed-positions + positions APIs (event-level).
+    // When the pipeline has already written rawRealizedPnl (Polymarket-matching true PNL), do NOT overwrite
+    // overallPNL/overallROI with canonical — our positions sync can be incomplete; pipeline CSV is source of truth for display.
+    const hasPipelinePnl = existingMetrics?.rawRealizedPnl != null && existingMetrics.rawRealizedPnl !== "";
+    const hasCsvAnalysis = existingMetrics?.csvQualityScore != null && String(existingMetrics.csvQualityScore).trim() !== "";
+    const canonicalMetrics: Record<string, any> = {
       realizedPNL:         c.realizedPNL,
       unrealizedPNL:       c.unrealizedPNL,
       activeUnrealizedPNL: c.activeUnrealizedPNL,
@@ -2348,7 +2398,6 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
       redeemableCount:     c.redeemableCount,
       redeemableValue:     c.redeemableValue,
       totalInvested:       c.totalInvested,
-      overallROI:          c.overallROI,
       roiCapital:          c.roiCapital,
       last30dROI:          c.last30dROI,
       last30dPNL:          c.last30dPNL,
@@ -2358,27 +2407,31 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
       last90dPNL:          c.last90dPNL,
       last90dInvested:     c.last90dInvested,
       last90dCount:        c.last90dCount,
-      winRate:             c.pnlWinRate,
-      pnlWinRate:          c.pnlWinRate,
       winRate30:           c.winRate30,
       winRate90:           c.winRate90,
       avgBetSize:          c.avgBetUSDC,
       medianBetSize:       c.medianBetUSDC,
       totalTrades:         c.closedCount,
       monthlyROI:          c.monthlyROI,
-      roiBySport,
       closedByCategory:    c.closedByCategory,
-      // ── New intelligence metrics ──────────────────────────────────────────
       quantScore,
       traderArchetype,
       avgClv:              Math.round((avgClv || 0) * 10000) / 100,
       avgClv30d:           Math.round((clv30d || 0) * 10000) / 100,
       clvSampleSize:       dbSettledCount,
       uniqueMarketsDB:     dbUniqueMarkets,
-      // ── Provenance ───────────────────────────────────────────────────────
       pnlSource:           "closed_positions_api",
       pnlUpdatedAt:        new Date().toISOString(),
     };
+    // Prefer canonical (Polymarket API) PNL for display so UI never shows fabricated numbers.
+    canonicalMetrics.rawRealizedPnl = String(Math.round(c.realizedPNL * 100) / 100);
+    if (!hasPipelinePnl) {
+      canonicalMetrics.overallPNL = c.totalPNL;
+      canonicalMetrics.overallROI = c.overallROI;
+    }
+    canonicalMetrics.winRate = c.pnlWinRate;
+    canonicalMetrics.pnlWinRate = c.pnlWinRate;
+    canonicalMetrics.roiBySport = roiBySport;
 
     await pool.query(`
       UPDATE elite_trader_profiles

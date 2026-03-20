@@ -11,7 +11,7 @@ import {
   Zap, Users, BarChart3, TrendingUp, TrendingDown, ArrowRight,
   Activity, Target, AlertCircle, RefreshCw, ExternalLink, X,
   Radio, Hourglass, CalendarClock, DollarSign, ShieldCheck,
-  ChevronDown, ChevronUp, Bell, Clock, Flame, BarChart2, BookmarkPlus, EyeOff, CheckCircle2
+  ChevronDown, ChevronUp, Bell, Clock, Flame, BarChart2, BookmarkPlus, EyeOff, CheckCircle2, Award
 } from "lucide-react";
 import type { SignalsResponse, LeaderboardResponse, MarketsResponse, Signal } from "@shared/schema";
 import GameScorePanel from "@/components/GameScorePanel";
@@ -594,6 +594,11 @@ function SignalRow({ signal }: { signal: Signal }) {
             )}
             {(s.bigPlayScore ?? 0) >= 2 && (
               <span className="text-[10px] font-semibold px-1 py-0 rounded bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 shrink-0">🔥</span>
+            )}
+            {s.vipPremium === true && (
+              <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1 py-0 rounded bg-violet-600/15 text-violet-700 dark:text-violet-300 border border-violet-500/30 shrink-0" title="Top-tier trader(s) in a strong sport/submarket lane with outsized stake — prioritized">
+                <Award className="w-2.5 h-2.5" />VIP
+              </span>
             )}
           </div>
           <div className="flex items-center gap-3 mt-0.5 flex-wrap">

@@ -6,12 +6,16 @@ import {
   resolveUsernameToWallet, generateTraderCSV, curatedWalletSet, curatedWalletToUsername,
   settleUnresolvedTrades, fetchFullTradeHistory, computeTraderProfile,
   settleAllUnresolvedTradesGlobal, fetchAllActivity, computeTraderProfileFromActivity,
-  CURATED_TRADERS, KNOWN_ALIASES, MARKET_MAKER_WALLETS, TRADER_CATEGORY_FILTERS, classifySport, classifySportFull, patchProfileWithCanonicalPNL, fetchCanonicalPNL,
+  CURATED_TRADERS, KNOWN_ALIASES, MARKET_MAKER_WALLETS, TRADER_CATEGORY_FILTERS, getEffectiveCategoryFilter, classifySport, classifySportFull, patchProfileWithCanonicalPNL, fetchCanonicalPNL,
   runCanonicalPNLRefreshForAll, computeMarketOFI, syncTraderPositions,
   runDailyRefreshForCurated, scheduleDailyRefresh, getDailyRefreshState
 } from "./eliteAnalysis";
 
-const elitePool = new Pool({ connectionString: process.env.DATABASE_URL });
+const elitePool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  connectionTimeoutMillis: 25000,
+  statement_timeout: 30000,
+});
 
 const GAMMA_API   = "https://gamma-api.polymarket.com";
 const DATA_API    = "https://data-api.polymarket.com";
@@ -418,8 +422,10 @@ function computeConfidence(
                   : traderCount >= 2 ? 4
                   : avgQuality >= 75 ? 3
                   : 0;
+  // S-Tier visibility: boost confidence so high-quality (70+) signals rank above the crowd
+  const qualityBoost = avgQuality >= 80 ? 6 : avgQuality >= 70 ? 4 : avgQuality >= 55 ? 2 : 0;
 
-  const base = roiPct + consPct + valuePct + sizePct + relSizePts;
+  const base = roiPct + consPct + valuePct + sizePct + relSizePts + qualityBoost;
   // Single-trader cap: dynamically raised when the trader is betting well above their normal.
   // A curated elite betting 5x their norm at 50¢ with no opposition deserves a high score.
   // After computeConfidence, the curated-elite post-hoc boost adds +8 per elite on top.
@@ -431,7 +437,7 @@ function computeConfidence(
 
   return {
     score: Math.max(score, 5),
-    breakdown: { roiPct, consensusPct: consPct, valuePct, sizePct, relSizePts, tierBonus },
+    breakdown: { roiPct, consensusPct: consPct, valuePct, sizePct, relSizePts, tierBonus, qualityBoost },
   };
 }
 
@@ -445,13 +451,59 @@ type CanonicalEntry = {
   totalTrades: number;
   qualityScore: number;
   tags: string[];
-  roiBySport: Record<string, { roi: number; tradeCount: number; winRate: number; avgBet: number; medianBet?: number }>;
-  roiByMarketType: Record<string, { roi: number; tradeCount: number; winRate: number; avgBet?: number; medianBet?: number }>;
+  roiBySport: Record<string, { roi: number; tradeCount: number; winRate: number; avgBet: number; medianBet?: number; avgPositionSize?: number; medianPositionSize?: number }>;
+  roiByMarketType: Record<string, { roi: number; tradeCount: number; winRate: number; avgBet?: number; medianBet?: number; avgPositionSize?: number; medianPositionSize?: number }>;
   // Per sport×marketType deep table — key: "NBA|moneyline", "Soccer|total", etc.
-  roiBySportMarketType: Record<string, { roi: number; tradeCount: number; winRate: number; avgBet: number; medianBet: number }>;
+  roiBySportMarketType: Record<string, { roi: number; tradeCount: number; winRate: number; avgBet: number; medianBet: number; avgPositionSize?: number; medianPositionSize?: number }>;
   // Per price bucket — key: "Flip (40-60c)", "Underdog (20-40c)", etc.
   priceStats: Record<string, { roi: number; winRate: number; events: number }>;
 };
+
+// ─── VIP premium lane (never miss elite in their specialty + huge stake + near entry) ───
+const VIP_PREMIUM_MIN_Q = 72;
+const VIP_PREMIUM_MIN_USD_TRADES = 350;
+const VIP_PREMIUM_MIN_USD_POS_SOLO = 3500;
+const VIP_SPECIALTY_MIN_SMT = 20;
+const VIP_SPECIALTY_MIN_SPORT = 20;
+const VIP_SPECIALTY_ROI_MIN = 5;
+const VIP_HUGE_STAKE_TRADES = 8000;
+const VIP_ALT_ROI_FOR_HUGE = 3;
+const VIP_HUGE_STAKE_POS = 15000;
+/** If ≥ this fraction of USDC on the signal is from VIP-premium traders, relax noisy cluster gates. */
+const VIP_DOMINATE_RISK_FRAC = 0.45;
+
+/** Sport or sport×marketType ROI with minimum sample — "great at this lane" for VIP detection. */
+function traderSpecialtyLaneROI(
+  cm: CanonicalEntry | undefined,
+  sportMktKey: string,
+  parentSportMktKey: string,
+  sportDetailed: string,
+  sport: string,
+): { roi: number; sampleOk: boolean } {
+  if (!cm) return { roi: 0, sampleOk: false };
+  const overall = cm.overallROI ?? 0;
+  const smtExact = cm.roiBySportMarketType?.[sportMktKey];
+  const smtParent = cm.roiBySportMarketType?.[parentSportMktKey];
+  const sSport = cm.roiBySport?.[sportDetailed] ?? cm.roiBySport?.[sport];
+  const sParent = cm.roiBySport?.[sport];
+  let sportROI =
+    (smtExact && smtExact.tradeCount >= VIP_SPECIALTY_MIN_SMT) ? smtExact.roi
+    : (smtParent && smtParent.tradeCount >= VIP_SPECIALTY_MIN_SMT) ? smtParent.roi
+    : (sSport && sSport.tradeCount >= VIP_SPECIALTY_MIN_SPORT) ? sSport.roi
+    : (sParent && sParent.tradeCount >= VIP_SPECIALTY_MIN_SPORT) ? sParent.roi
+    : overall;
+  const sportWR = (sSport?.tradeCount ?? 0) >= VIP_SPECIALTY_MIN_SPORT ? (sSport?.winRate ?? 0)
+    : (sParent?.tradeCount ?? 0) >= VIP_SPECIALTY_MIN_SPORT ? (sParent?.winRate ?? 0) : 0;
+  const sampleOk = !!(
+    (smtExact && smtExact.tradeCount >= VIP_SPECIALTY_MIN_SMT)
+    || (smtParent && smtParent.tradeCount >= VIP_SPECIALTY_MIN_SMT)
+    || (sSport && sSport.tradeCount >= VIP_SPECIALTY_MIN_SPORT)
+    || (sParent && sParent.tradeCount >= VIP_SPECIALTY_MIN_SPORT)
+  );
+  if (!sampleOk) return { roi: overall, sampleOk: false };
+  if (overall < -5 && (sportROI > 90 || sportWR > 90)) sportROI = overall;
+  return { roi: sportROI, sampleOk: true };
+}
 
 let _canonicalCache: Map<string, CanonicalEntry> | null = null;
 let _canonicalCacheAt = 0; // set to 0 to force reload on first request
@@ -661,6 +713,32 @@ async function fetchMidpoint(tokenId: string): Promise<number | null> {
   return null;
 }
 
+/** Batch fetch CLOB midpoints for many tokens in one or few requests. Rate limit: 500 req/10s for POST /midpoints. */
+const MIDPOINT_BATCH_SIZE = 150;
+async function fetchMidpointsBatch(tokenIds: string[]): Promise<Map<string, number>> {
+  const unique = [...new Set(tokenIds)].filter(Boolean);
+  const out = new Map<string, number>();
+  for (let i = 0; i < unique.length; i += MIDPOINT_BATCH_SIZE) {
+    const chunk = unique.slice(i, i + MIDPOINT_BATCH_SIZE);
+    try {
+      const res = await fetchWithRetry(`${CLOB_API}/midpoints`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(chunk.map(id => ({ token_id: id }))),
+      });
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data && typeof data === "object") {
+        for (const [id, val] of Object.entries(data)) {
+          const mid = typeof val === "string" ? parseFloat(val) : Number(val);
+          if (!isNaN(mid) && mid > 0) out.set(id, mid);
+        }
+      }
+    } catch { /* skip chunk */ }
+  }
+  return out;
+}
+
 // ─── Curated elite sports traders ────────────────────────────────────────────
 // Derived directly from CURATED_TRADERS (the single source of truth for all 42
 // hand-picked elite traders). Used for BOTH the main signals function AND the
@@ -811,22 +889,68 @@ async function refreshESPNLiveGames(): Promise<void> {
   }));
 }
 
+/** Polymarket /trades returns max 1000 per request — paginate with offset to go deeper per wallet. */
+const ELITE_TRADES_PAGE_SIZE = 1000;
+/** Default depth per curated trader: avoids global "last N trades" bias toward hyperactive wallets. */
+const ELITE_TRADES_PER_WALLET = 4000;
+
+function dedupeTradesByTx(trades: any[]): any[] {
+  const seen = new Set<string>();
+  const out: any[] = [];
+  for (const t of trades) {
+    const id = String(t.transactionHash || t.id || `${t.conditionId}|${t.timestamp}|${t.proxyWallet}|${t.side}`);
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(t);
+  }
+  return out;
+}
+
 /**
- * Fetch recent trades for a specific wallet (curated elite trader).
- * Returns trades in the same format as fetchRecentTrades so they can be merged.
+ * Fetch recent trades for one wallet, paginated up to `limit` (default 4k).
+ * Same shape as global fetchRecentTrades — use for signal aggregation (oldest→newest sort applied by caller).
  */
-async function fetchEliteTraderTrades(wallet: string, limit = 100): Promise<any[]> {
-  const key = `elite-trades-${wallet.toLowerCase()}`;
+async function fetchEliteTraderTrades(wallet: string, limit = ELITE_TRADES_PER_WALLET): Promise<any[]> {
+  const w = wallet.toLowerCase();
+  const key = `elite-trades-${w}-${limit}`;
   const hit = getCache<any[]>(key);
   if (hit) return hit;
+  const all: any[] = [];
   try {
-    const r = await fetchWithRetry(`${DATA_API}/trades?user=${wallet.toLowerCase()}&limit=${limit}`);
-    if (!r.ok) return [];
-    const d = await r.json();
-    const trades: any[] = Array.isArray(d) ? d : d.data || [];
-    setCache(key, trades, 3 * 60_000);
-    return trades;
-  } catch { return []; }
+    let offset = 0;
+    while (all.length < limit) {
+      const page = Math.min(ELITE_TRADES_PAGE_SIZE, limit - all.length);
+      const r = await fetchWithRetry(`${DATA_API}/trades?user=${w}&limit=${page}&offset=${offset}`);
+      if (!r.ok) break;
+      const d = await r.json();
+      const chunk: any[] = Array.isArray(d) ? d : d.data || [];
+      if (chunk.length === 0) break;
+      all.push(...chunk);
+      offset += chunk.length;
+      if (chunk.length < page) break;
+    }
+    const deduped = dedupeTradesByTx(all);
+    deduped.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+    setCache(key, deduped, 3 * 60_000);
+    return deduped;
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Merge trades from every curated elite (same per-wallet cap each).
+ * Replaces global fetchRecentTrades(N) for feeds where we care about *each* insider's book, not platform-wide volume ranking.
+ */
+async function fetchMergedCuratedEliteTrades(limitPerWallet = ELITE_TRADES_PER_WALLET): Promise<any[]> {
+  const key = `merged-elite-trades-v1-${limitPerWallet}`;
+  const hit = getCache<any[]>(key);
+  if (hit) return hit;
+  const batches = await Promise.all(CURATED_ELITES.map(e => fetchEliteTraderTrades(e.addr, limitPerWallet)));
+  const flat = dedupeTradesByTx(batches.flat());
+  flat.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+  setCache(key, flat, 2 * 60_000);
+  return flat;
 }
 
 async function fetchRecentTrades(limit = 4000): Promise<any[]> {
@@ -864,13 +988,14 @@ async function fetchTraderPositions(wallet: string): Promise<any[]> {
 }
 
 /** Fetch ALL open positions for a wallet by paginating the positions endpoint.
- *  Uses limit=500 per page, stops when fewer than 500 returned or after 10 pages.
- *  This captures heavy traders (e.g. 0p0jogggg) who have >500 open positions. */
+ *  Uses limit=500 per page, up to 100 pages (50k positions) so whale traders (e.g. 0p0jogggg,
+ *  LynxTitan) are fully covered and graded. Matches eliteAnalysis syncTraderPositions cap. */
+const MAX_POSITION_PAGES = 100; // 100 * 500 = 50,000 positions per wallet
 async function fetchAllPositionsFull(wallet: string): Promise<any[]> {
   const all: any[] = [];
   const limit = 500;
   let offset = 0;
-  for (let page = 0; page < 10; page++) {
+  for (let page = 0; page < MAX_POSITION_PAGES; page++) {
     try {
       const r = await fetchWithRetry(
         `${DATA_API}/positions?user=${wallet.toLowerCase()}&limit=${limit}&offset=${offset}&sizeThreshold=0`
@@ -882,6 +1007,8 @@ async function fetchAllPositionsFull(wallet: string): Promise<any[]> {
       all.push(...batch);
       if (batch.length < limit) break;
       offset += limit;
+      if (offset >= 50_000) break;
+      await new Promise(r => setTimeout(r, 40)); // gentle throttle between pages
     } catch { break; }
   }
   return all;
@@ -1551,9 +1678,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         );
       }
     } catch (e: any) {
-      console.error("[Startup] Failed to start activity sync:", e.message);
+      console.error("[Startup] Failed to start activity sync:", e?.message ?? e);
     }
-  }).catch((e: Error) => console.error("[Elite] Seed error:", e.message));
+  }).catch((e: Error) => console.error("[Elite] Seed error:", e?.message ?? e));
 
   // ── GET /api/elite/traders ─────────────────────────────────────────────────
   app.get("/api/elite/traders", async (_req, res) => {
@@ -1563,7 +1690,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                t.polymarket_url, t.notes,
                p.quality_score, p.tags, p.computed_at,
                p.metrics->>'totalTrades' as total_trades,
-               COALESCE(NULLIF(p.metrics->>'csvDirectionalROI',''), p.metrics->>'overallROI') as overall_roi,
+               CASE
+                 WHEN (p.metrics->>'rawRealizedPnl') IS NOT NULL AND (p.metrics->>'rawRealizedPnl') <> ''
+                   AND (COALESCE((p.metrics->>'csvTotalRisked')::float, (p.metrics->>'roiCapital')::float, (p.metrics->>'totalInvested')::float, 0) > 0)
+                 THEN (((p.metrics->>'rawRealizedPnl')::float) / NULLIF(COALESCE((p.metrics->>'csvTotalRisked')::float, (p.metrics->>'roiCapital')::float, (p.metrics->>'totalInvested')::float), 0) * 100)::text
+                 ELSE COALESCE(NULLIF(p.metrics->>'csvDirectionalROI',''), p.metrics->>'overallROI')
+               END as overall_roi,
                p.metrics->>'roiCapital' as roi_capital,
                p.metrics->>'last90dROI' as last90d_roi,
                COALESCE(NULLIF(p.metrics->>'csvWinRate',''), p.metrics->>'winRate') as win_rate,
@@ -1573,13 +1705,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                COALESCE(NULLIF(p.metrics->>'csvTopSport',''), p.metrics->>'topSport') as top_sport,
                p.metrics->>'topMarketType' as top_market_type,
                p.metrics->>'consistencyRating' as consistency_rating,
-               COALESCE(NULLIF(p.metrics->>'csvDirectionalPNL',''), p.metrics->>'overallPNL') as overall_pnl,
+               COALESCE(NULLIF(p.metrics->>'rawRealizedPnl',''), NULLIF(p.metrics->>'csvDirectionalPNL',''), p.metrics->>'overallPNL') as overall_pnl,
                p.metrics->>'totalUSDC' as total_usdc,
                p.metrics->>'csvTier' as csv_tier,
                p.metrics->>'csvQualityScore' as csv_quality_score,
                p.metrics->>'csvTailGuide' as csv_tail_guide
         FROM elite_traders t
-        LEFT JOIN elite_trader_profiles p ON p.wallet = t.wallet
+        LEFT JOIN elite_trader_profiles p ON LOWER(p.wallet) = LOWER(t.wallet)
         ORDER BY COALESCE(p.quality_score, 0) DESC
       `);
       res.json({ traders: rows, fetchedAt: Date.now() });
@@ -1830,10 +1962,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const state = getDailyRefreshState();
       const { rows } = await elitePool.query<{ wallet: string; username: string; last_analyzed_at: string | null; quality_score: number | null }>(
         `SELECT t.wallet, t.username, t.last_analyzed_at, p.quality_score
-         FROM elite_traders t
-         LEFT JOIN elite_trader_profiles p ON p.wallet = t.wallet
-         WHERE t.wallet NOT LIKE 'pending-%'
-         ORDER BY COALESCE(t.last_analyzed_at, '2000-01-01') ASC`
+        FROM elite_traders t
+        LEFT JOIN elite_trader_profiles p ON LOWER(p.wallet) = LOWER(t.wallet)
+        WHERE t.wallet NOT LIKE 'pending-%'
+        ORDER BY COALESCE(t.last_analyzed_at, '2000-01-01') ASC`
       );
       const now = Date.now();
       const staleCount = rows.filter(r => {
@@ -1953,6 +2085,26 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  // ── POST /api/elite/admin/remove-trader ────────────────────────────────────
+  // Permanently remove a trader from elite roster and profiles (e.g. swisstony).
+  // Body: { "wallet": "0x..." }. Call after removing from pipeline ALL_TRADERS.
+  app.post("/api/elite/admin/remove-trader", async (req, res) => {
+    try {
+      const { wallet } = req.body;
+      if (!wallet) return res.status(400).json({ error: "wallet required" });
+      const w = wallet.toLowerCase();
+      await elitePool.query(`DELETE FROM elite_trader_profiles WHERE wallet = $1`, [w]);
+      const del = await elitePool.query(`DELETE FROM elite_traders WHERE wallet = $1 RETURNING username`, [w]);
+      const username = del.rows[0]?.username;
+      // Clear cached lists so UI/signals stop including this trader
+      delete cache["traders-curated-v2-sports"];
+      delete cache["traders-curated-v2-all"];
+      res.json({ success: true, wallet: w, removed: username ?? w });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // ── POST /api/elite/admin/refetch-all ────────────────────────────────────
   // Clears and re-fetches ALL activity history for every trader (full refresh)
   app.post("/api/elite/admin/refetch-all", async (_req, res) => {
@@ -2033,7 +2185,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     res.write(": connected\n\n");
 
     if (channel === "price") {
-      // Real-time price stream for a specific conditionId — polls every 3s
+      // Real-time price stream for a specific conditionId — polls every 2s
       const conditionId = (req.query.conditionId as string) || "";
       let closed = false;
       const pushPrice = async () => {
@@ -2060,7 +2212,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             res.write(`event: price\ndata: ${payload}\n\n`);
           }
         } catch { /* non-fatal */ }
-        if (!closed) setTimeout(pushPrice, 3000);
+        if (!closed) setTimeout(pushPrice, 2000);
       };
       req.on("close", () => { closed = true; });
       pushPrice();
@@ -2082,7 +2234,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     try {
       const now = Date.now();
       const [allTrades, allSportsLb, curatedRows] = await Promise.all([
-        fetchRecentTrades(3000),
+        fetchMergedCuratedEliteTrades(ELITE_TRADES_PER_WALLET),
         fetchMultiWindowSportsLB(),
         elitePool.query(`SELECT wallet FROM elite_traders`).catch(() => ({ rows: [] as any[] })),
       ]);
@@ -2099,7 +2251,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
       const alerts: any[] = [];
       const seen = new Set<string>();
-      for (const trade of allTrades) {
+      // Newest first so $1K+ curated buys surface before older rows (merged feed is time-ordered asc)
+      const alertScan = [...allTrades].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      for (const trade of alertScan) {
         const wallet = (trade.proxyWallet || "").toLowerCase();
         if (MARKET_MAKER_WALLETS.has(wallet)) continue;
         const isCurated = curatedSet.has(wallet);
@@ -2153,11 +2307,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   refreshESPNLiveGames().catch(() => {});
   setInterval(() => { refreshESPNLiveGames().catch(() => {}); }, 90_000);
 
-  // Live position cache — fetches ALL open positions for all 49 curated traders
-  // via paginated API calls, 8 traders at a time. Runs immediately on startup, then every 90 seconds.
-  // This removes position fetching from the signal request hot-path entirely.
+  // Live position cache — fetches ALL open positions for all curated traders
+  // via paginated API calls, 8 traders at a time. Runs on startup, then every 60s for livelier signals.
   refreshLivePositions().catch(() => {});
-  setInterval(() => { refreshLivePositions().catch(() => {}); }, 90_000);
+  setInterval(() => { refreshLivePositions().catch(() => {}); }, 60_000);
 
   // ── GET /api/_debug/espn (temp debug — shows ESPN live cache state) ──────────
   app.get("/api/_debug/espn", (_req, res) => {
@@ -2197,11 +2350,23 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           continue;
         }
 
+        // Python sport keys -> routes keys (for csvDoNotTail/csvAutoTail and roiBySport)
+        const pythonToRoutesSport: Record<string, string> = {
+          "NBA": "NBA", "NFL": "NFL", "NHL": "NHL", "MLB": "MLB",
+          "TENNIS": "Tennis", "UFC/MMA": "UFC/MMA", "ESPORTS": "eSports",
+          "POLITICS": "Politics", "OTHER": "Other",
+          "SOCCER (EPL)": "Soccer", "SOCCER (LaLiga)": "Soccer",
+          "SOCCER (SerieA)": "Soccer", "SOCCER (Other)": "Soccer",
+          "SOCCER (UCL)": "UCL", "SOCCER (UEL)": "UEL",
+        };
+
         // Build the analysis metrics object to merge into the DB metrics JSONB
         const analysisMeta: Record<string, any> = {
           // Directional (bond-filtered) stats — the true edge
           csvDirectionalROI:    t.overall_roi,
           csvDirectionalPNL:    t.total_profit,
+          rawRealizedPnl:       t.raw_realized_pnl ?? t.total_profit,  // true PNL (matches Polymarket); display only
+          roiCapital:           t.total_risked,  // so display ROI = (rawRealizedPnl / roiCapital) * 100 is sensible
           csvTotalRisked:       t.total_risked,
           csvWinRate:           t.win_rate,
           csvAvgBetSize:        t.avg_bet_size,
@@ -2228,20 +2393,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           csvTopLosses:         t.top_losses,
           csvTailGuide:         t.tail_guide,
           csvAnalyzedAt:        new Date().toISOString(),
+          // CSV-derived do-not-tail / tail-for-sure (re-analyzed each run; used by signals when present)
+          csvDoNotTailSports:       (t.do_not_tail_sports || []).map((s: string) => pythonToRoutesSport[s] ?? s),
+          csvAutoTailSports:       (t.auto_tail_sports || []).map((s: string) => pythonToRoutesSport[s] ?? s),
+          csvDoNotTailMarketTypes:  (t.do_not_tail_market_types || []).map((m: string) => m === "Spread" ? "spread" : m === "Totals (O/U)" ? "total" : m.toLowerCase()),
+          csvDoNotTailSides:        t.do_not_tail_sides || [],
         };
 
         // ── Build roiBySport (normalized keys matching classifySportFull output) ──
         // CRITICAL: this is what loadCanonicalMetricsFromDB queries — must be populated.
-        // Python sport keys: "NBA", "SOCCER (EPL)", "SOCCER (UCL)", "TENNIS", "ESPORTS", etc.
-        // Routes keys:       "NBA",     "Soccer",       "UCL",       "Tennis", "eSports", etc.
-        const pythonToRoutesSport: Record<string, string> = {
-          "NBA": "NBA", "NFL": "NFL", "NHL": "NHL", "MLB": "MLB",
-          "TENNIS": "Tennis", "UFC/MMA": "UFC/MMA", "ESPORTS": "eSports",
-          "POLITICS": "Politics", "OTHER": "Other",
-          "SOCCER (EPL)": "Soccer", "SOCCER (LaLiga)": "Soccer",
-          "SOCCER (SerieA)": "Soccer", "SOCCER (Other)": "Soccer",
-          "SOCCER (UCL)": "UCL", "SOCCER (UEL)": "UEL",
-        };
         const roiBySportAgg: Record<string, { roi: number; tradeCount: number; winRate: number;
           avgBet: number; medianBet: number; netProfit: number; totalCost: number }> = {};
         for (const [pythonSport, stat] of Object.entries(t.sport_stats || {}) as [string, any][]) {
@@ -2265,14 +2425,19 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           }
           agg.roi = agg.totalCost > 0 ? (agg.netProfit / agg.totalCost) * 100 : 0;
         }
+        // No caps: store actual ROI/win rate from CSV analysis. Python aggregates by event (position-level).
         const roiBySport: Record<string, any> = {};
         for (const [sport, agg] of Object.entries(roiBySportAgg)) {
+          const avgPos = Math.round(agg.avgBet);
+          const medPos = Math.round(agg.medianBet || agg.avgBet || 0);
           roiBySport[sport] = {
             roi:        Math.round(agg.roi * 10) / 10,
             tradeCount: agg.tradeCount,
             winRate:    Math.round(agg.winRate * 10) / 10,
-            avgBet:     Math.round(agg.avgBet),
-            medianBet:  Math.round(agg.medianBet),
+            avgBet:     avgPos,
+            medianBet:  medPos,
+            avgPositionSize: avgPos,
+            medianPositionSize: medPos,
           };
         }
         analysisMeta.roiBySport = roiBySport;
@@ -2313,6 +2478,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               winRate:    stat.win_rate ?? 0,
               avgBet:     Math.round(stat.avg_bet ?? 0),
               medianBet:  Math.round(stat.median_bet ?? stat.avg_bet ?? 0),
+              avgPositionSize:  Math.round(stat.avg_bet ?? 0),
+              medianPositionSize: Math.round(stat.median_bet ?? stat.avg_bet ?? 0),
             };
           }
           analysisMeta.roiBySportMarketType = roiBySportMarketType;
@@ -2347,15 +2514,23 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // Tags from Python — store as-is
         const newTags: string[] = t.tags || [];
 
+        // Upsert profile so traders without a row get one (fixes "Analysis pending")
         await elitePool.query(`
-          UPDATE elite_trader_profiles
-          SET
-            quality_score = $2,
-            tags          = $3,
-            metrics       = COALESCE(metrics, '{}'::jsonb) || $4::jsonb,
-            computed_at   = NOW()
-          WHERE wallet = $1
-        `, [wallet, newQuality, newTags, JSON.stringify(analysisMeta)]);
+          INSERT INTO elite_trader_profiles (wallet, username, quality_score, tags, metrics, computed_at)
+          VALUES ($1, $2, $3, $4, $5::jsonb, NOW())
+          ON CONFLICT (wallet) DO UPDATE SET
+            username     = EXCLUDED.username,
+            quality_score = EXCLUDED.quality_score,
+            tags         = EXCLUDED.tags,
+            metrics      = COALESCE(elite_trader_profiles.metrics, '{}'::jsonb) || EXCLUDED.metrics,
+            computed_at  = NOW()
+        `, [wallet, t.username || wallet.slice(0, 10), newQuality, newTags, JSON.stringify(analysisMeta)]);
+
+        // Keep elite_traders.last_analyzed_at in sync so UI and refresh-status show analyzed
+        await elitePool.query(
+          `UPDATE elite_traders SET last_analyzed_at = NOW() WHERE wallet = $1`,
+          [wallet]
+        );
 
         updated++;
         summary.push({
@@ -2368,9 +2543,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         });
       }
 
-      // Clear cached trader lists so next page load reflects new scores
+      // Clear cached trader lists and canonical metrics so signals use new roiBySport/quality
       delete cache["traders-curated-v2-sports"];
       delete cache["traders-curated-v2-all"];
+      _canonicalCache = null;
+      _canonicalCacheAt = 0;
 
       const ranked = summary.sort((a, b) => b.quality_score - a.quality_score);
       console.log(`[IngestAnalysis] Updated ${updated} traders`);
@@ -2657,7 +2834,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       const now = Date.now();
       const [allTrades, allSportsLb, curatedRowsHttp] = await Promise.all([
-        fetchRecentTrades(3000),
+        fetchMergedCuratedEliteTrades(ELITE_TRADES_PER_WALLET),
         fetchMultiWindowSportsLB(),
         elitePool.query(`SELECT wallet FROM elite_traders`).catch(() => ({ rows: [] as any[] })),
       ]);
@@ -2684,8 +2861,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       const alerts: any[] = [];
       const seen = new Set<string>();
+      const alertScanHttp = [...allTrades].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
-      for (const trade of allTrades) {
+      for (const trade of alertScanHttp) {
         const wallet = (trade.proxyWallet || "").toLowerCase();
         if (MARKET_MAKER_WALLETS.has(wallet)) continue;
         const isCuratedHttp = curatedSetHttp.has(wallet);
@@ -2759,11 +2937,16 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   });
 
   // ── GET /api/signals ─── Elite signals v11: verified sports traders only ────
+  // Query: sports (default true), minConfidence (e.g. 70 = best-of-best), minQuality, tier (HIGH|MED|SINGLE)
   app.get("/api/signals", async (req, res) => {
     try {
       const sportsOnly = req.query.sports !== "false";
-      const cKey = `signals-elite-v36-${sportsOnly ? "sp" : "all"}`;
-      const hit  = getCache<unknown>(cKey);
+      const minConfidence = req.query.minConfidence != null ? parseInt(String(req.query.minConfidence), 10) : undefined;
+      const minQuality = req.query.minQuality != null ? parseInt(String(req.query.minQuality), 10) : undefined;
+      const tierFilter = (req.query.tier as string)?.toUpperCase(); // HIGH | MED | SINGLE
+      const hasFilter = minConfidence != null || minQuality != null || (tierFilter && ["HIGH", "MED", "SINGLE"].includes(tierFilter));
+      const cKey = hasFilter ? null : `signals-elite-v44-vip-premium-${sportsOnly ? "sp" : "all"}`;
+      const hit  = cKey ? getCache<unknown>(cKey) : null;
       if (hit) { res.json(hit); return; }
 
       const now = Date.now();
@@ -2780,7 +2963,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         Promise.all([
           buildMarketDatabase(800),
           loadCanonicalMetricsFromDB(),
-          ...CURATED_ELITES.map(e => fetchEliteTraderTrades(e.addr, 100)),
+          ...CURATED_ELITES.map(e => fetchEliteTraderTrades(e.addr)),
         ]),
       ]) as [any[], [Map<string, any>, Map<string, CanonicalEntry>, ...any[]]];
 
@@ -2826,26 +3009,18 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       type TraderInfo = { name: string; pnl: number; roi: number; volume: number; qualityScore: number; isLeaderboard: boolean; isSportsLb: boolean; source: SharedTraderEntry["source"] };
       const lbMap = new Map<string, TraderInfo>();
 
-      // ── Add curated elite traders to lbMap (quality from actual trade data) ──
+      // ── Add curated elite traders to lbMap: quality from DB only (no volume/count scoring) ──
+      // What matters is position value vs median position (relBetSize) and DB quality — not trade count or volume.
       for (let ci = 0; ci < CURATED_ELITES.length; ci++) {
         const elite = CURATED_ELITES[ci];
         const addr = elite.addr.toLowerCase();
-        const eliteTrades: any[] = (curatedTradeBatches[ci] as any[]) || [];
-        // Compute quality purely from their real sports trading activity
-        const sportsTrades = eliteTrades.filter((t: any) => isSportsRelated(t.title || t.slug || ""));
-        const sportsVol = sportsTrades.reduce((s: number, t: any) => s + parseFloat(t.size || "0"), 0);
-        const sportsCount = sportsTrades.length;
-        const avgBet = sportsCount > 0 ? sportsVol / sportsCount : 0;
-        // Three-factor score: volume (how much $), count (how active), avg bet (conviction)
-        const volScore   = Math.min(sportsVol / 80_000, 1) * 45;
-        const countScore = Math.min(sportsCount / 80, 1) * 30;
-        const avgScore   = Math.min(avgBet / 1_500, 1) * 25;
-        const qualityScore = Math.min(Math.round(volScore + countScore + avgScore), 90);
+        const dbQuality = canonicalMap.get(addr)?.qualityScore ?? 0;
+        const qualityScore = dbQuality > 0 ? dbQuality : 50;
         lbMap.set(addr, {
           name: elite.name,
-          pnl: sportsVol * 0.1,
+          pnl: 0,
           roi: 0,
-          volume: sportsVol,
+          volume: 0,
           qualityScore,
           isLeaderboard: true,
           isSportsLb: true,
@@ -3037,7 +3212,80 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         }
       }
 
-      console.log(`[Elite v11] ${marketWallets.size} markets with qualified trades`);
+      // ── Merge current open positions with per-trader cap so one whale doesn't dominate ──
+      // Build asset → conditionId; then for each wallet take only top N positions by size (costBasis)
+      // so we grade all traders fairly and avoid 0p0jogggg/LynxTitan flooding the feed.
+      const MAX_MARKETS_PER_TRADER_FROM_POSITIONS = 200; // top 200 positions by $ per trader
+      const tokenIdToCondId = new Map<string, string>();
+      for (const [condId, mInfo] of marketDb) {
+        if (mInfo?.tokenIds) for (const tid of mInfo.tokenIds) if (tid) tokenIdToCondId.set(tid, condId);
+      }
+      type PosMerge = { asset: string; posData: PosData; condId: string; mInfo: any; costBasis: number };
+      const byWallet = new Map<string, PosMerge[]>();
+      for (const [wallet, wMap] of posLookup) {
+        const traderInfo = lbMap.get(wallet);
+        if (!traderInfo) continue;
+        const list: PosMerge[] = [];
+        for (const [asset, posData] of wMap) {
+          if (posData.shares <= 0) continue;
+          const condId = tokenIdToCondId.get(asset);
+          if (!condId) continue;
+          const mInfo = marketDb.get(condId);
+          if (!mInfo || (mInfo as any).active === false) continue;
+          if (sportsOnly && !isSportsRelated((mInfo as any).question || "")) continue;
+          if (mInfo.endDate && new Date(mInfo.endDate).getTime() < now) continue;
+          const costBasis = posData.costBasis || posData.shares * posData.avgPrice;
+          if (costBasis < MIN_POSITION_SIZE) continue;
+          list.push({ asset, posData, condId, mInfo, costBasis });
+        }
+        if (list.length > 0) {
+          list.sort((a, b) => b.costBasis - a.costBasis);
+          byWallet.set(wallet, list.slice(0, MAX_MARKETS_PER_TRADER_FROM_POSITIONS));
+        }
+      }
+      for (const [wallet, list] of byWallet) {
+        const traderInfo = lbMap.get(wallet)!;
+        for (const { asset, posData, condId, mInfo, costBasis } of list) {
+          if (!marketWallets.has(condId)) {
+            marketWallets.set(condId, {
+              question: (mInfo as any).question || condId,
+              slug: (mInfo as any).slug,
+              condId,
+              endDate: (mInfo as any).endDate,
+              yesTokenId: (mInfo as any).tokenIds?.[0],
+              noTokenId: (mInfo as any).tokenIds?.[1],
+              wallets: new Map(),
+            });
+          }
+          const mw = marketWallets.get(condId)!;
+          const existing = mw.wallets.get(wallet);
+          if (existing) {
+            existing.totalSize = costBasis;
+            existing.prices = [posData.avgPrice];
+            existing.side = posData.side;
+            existing.asset = asset;
+            existing.lastTimestamp = Math.max(existing.lastTimestamp, now);
+          } else {
+            mw.wallets.set(wallet, {
+              side: posData.side,
+              totalSize: costBasis,
+              prices: [posData.avgPrice],
+              name: traderInfo.name,
+              traderInfo,
+              address: wallet,
+              asset,
+              lastTimestamp: now,
+            });
+          }
+        }
+      }
+
+      console.log(`[Elite v11] ${marketWallets.size} markets with qualified trades/positions`);
+
+      // Load profile metrics for CSV-derived doNotTail/autoTail (re-analyzed each run)
+      const profileRows = await elitePool.query<{ wallet: string; metrics: Record<string, any> }>(`SELECT wallet, metrics FROM elite_trader_profiles`);
+      const metricsByWallet = new Map<string, Record<string, any>>();
+      for (const r of profileRows.rows) metricsByWallet.set(r.wallet.toLowerCase(), r.metrics || {});
 
       // ── Phase 3: Generate signals with strict quality gates ──────────────────
       const signals: any[] = [];
@@ -3047,41 +3295,97 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const MIN_RESOLVED    = 0.02;  // below 2¢ or above 98¢ = market resolved / dead
       const MAX_RESOLVED    = 0.98;
 
+      // Batch-fetch all CLOB midpoints (one/few POSTs instead of N GETs) — faster and under rate limit.
+      const allTokenIds = new Set<string>();
+      for (const mw of marketWallets.values()) {
+        if (mw.yesTokenId) allTokenIds.add(mw.yesTokenId);
+        if (mw.noTokenId) allTokenIds.add(mw.noTokenId);
+      }
+      const midpointMap = allTokenIds.size > 0 ? await fetchMidpointsBatch([...allTokenIds]) : new Map<string, number>();
+
       for (const [condId, mw] of marketWallets.entries()) {
         if (!mw.question || mw.question === condId) continue;
 
         const entries = Array.from(mw.wallets.values());
         if (entries.length === 0) continue;
 
-        const yesE = entries.filter(e => e.side === "YES");
-        const noE  = entries.filter(e => e.side === "NO");
-        const dominant = yesE.length >= noE.length ? yesE : noE;
+        // ── Apply category filters (CSV-derived when present, else hardcoded) before forming dominant ──
+        const signalSportEarly = classifySport(mw.slug || "", mw.question || "");
+        const signalSportDetailedEarly = classifySportFull(signalSportEarly, mw.question || "", mw.slug || "");
+        const marketCategoryEarly = classifyMarketType(mw.question || "");
+        const qLower = (mw.question || "").toLowerCase();
+        const filteredEntries = entries.filter(e => {
+          const cat = getEffectiveCategoryFilter(e.address.toLowerCase(), metricsByWallet.get(e.address.toLowerCase()));
+          if (!cat) return true;
+          if (cat.doNotTail?.length && (cat.doNotTail.includes(signalSportDetailedEarly) || cat.doNotTail.includes(signalSportEarly))) return false;
+          if (cat.doNotTailMarketTypes?.length && cat.doNotTailMarketTypes.includes(marketCategoryEarly)) return false;
+          if (cat.doNotTailTitleKeywords?.length && cat.doNotTailTitleKeywords.some(kw => qLower.includes(kw.toLowerCase()))) return false;
+          return true;
+        });
+        if (filteredEntries.length === 0) continue;
+
+        const yesE = filteredEntries.filter(e => e.side === "YES");
+        const noE  = filteredEntries.filter(e => e.side === "NO");
+        let dominant = yesE.length >= noE.length ? yesE : noE;
         const counterEntries = yesE.length >= noE.length ? noE : yesE;
         const side: "YES"|"NO" = yesE.length >= noE.length ? "YES" : "NO";
+        // Exclude traders who have no edge on this side (e.g. 0p0joggg doNotTailSides: Yes)
+        dominant = dominant.filter(e => {
+          const cat = getEffectiveCategoryFilter(e.address.toLowerCase(), metricsByWallet.get(e.address.toLowerCase()));
+          if (!cat?.doNotTailSides?.length) return true;
+          const norm = side === "YES" ? "Yes" : "No";
+          return !cat.doNotTailSides.includes(norm);
+        });
         if (dominant.length === 0) continue;
 
         // ── Enrich each dominant entry with actual open-position data ────────────
-        // The trades path only captures recent trades (last 100) which may miss a
-        // position built up over many weeks. Use the positions API for exact share
-        // count and avg entry price; fall back to trade aggregation when unavailable.
-        type PosEnriched = (typeof dominant[0]) & { actualShares: number; actualAvgPrice: number; actualRisk: number };
+        // The trades path only captures recent trades; positions API has exact current holdings.
+        // We require at least one dominant entry to have a current position (same side, shares > 0)
+        // so we never alert on the wrong side or after the trader has sold.
+        type PosEnriched = (typeof dominant[0]) & { actualShares: number; actualAvgPrice: number; actualRisk: number; positionConfirmed: boolean };
         const dominantEnriched: PosEnriched[] = dominant.map(e => {
           const wPos = posLookup.get(e.address.toLowerCase());
-          // Look up by token asset ID — the conditionId in positions API differs from trades API
           const pos  = wPos?.get(String(e.asset));
-
-          if (pos && pos.side === e.side && pos.shares > 0) {
-            // Use initialValue (costBasis) as the risk — it's the actual USDC spent
-            return { ...e, actualShares: pos.shares, actualAvgPrice: pos.avgPrice, actualRisk: pos.costBasis };
+          const confirmed = !!(pos && pos.side === e.side && pos.shares > 0);
+          if (confirmed) {
+            return { ...e, actualShares: pos!.shares, actualAvgPrice: pos!.avgPrice, actualRisk: pos!.costBasis, positionConfirmed: true };
           }
-          // Fallback to trade-aggregated data (only 100 trades, so may undercount)
           const tradeAvgP = e.prices.reduce((a, b) => a + b, 0) / Math.max(e.prices.length, 1);
-          return { ...e, actualShares: e.totalSize / Math.max(tradeAvgP, 0.01), actualAvgPrice: tradeAvgP, actualRisk: e.totalSize };
+          return { ...e, actualShares: e.totalSize / Math.max(tradeAvgP, 0.01), actualAvgPrice: tradeAvgP, actualRisk: e.totalSize, positionConfirmed: false };
         });
+
+        // Only emit signal if at least one dominant trader still holds this position (correct side, not sold).
+        const positionConfirmedCount = dominantEnriched.filter(e => e.positionConfirmed).length;
+        if (positionConfirmedCount === 0) continue;
 
         const totalDominantSize = dominantEnriched.reduce((s, e) => s + e.actualRisk, 0);
         const lbCount     = dominant.filter(e => e.traderInfo.isLeaderboard).length;
         const sportsLbCount = dominant.filter(e => (e.traderInfo as any).isSportsLb).length;
+
+        // VIP premium: high-Q + confirmed book + strong lane ROI + size — do not drop on noisy cluster stats.
+        const sportMktEarly = `${signalSportDetailedEarly}|${marketCategoryEarly}`;
+        const parentSportMktEarly = `${signalSportEarly}|${marketCategoryEarly}`;
+        let vipPremiumStake = 0;
+        let vipPremiumRaw = false;
+        for (const e of dominantEnriched) {
+          const cm = canonicalMap.get(e.address.toLowerCase());
+          const q = (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : 0;
+          if (q < VIP_PREMIUM_MIN_Q || !e.positionConfirmed || e.actualRisk < VIP_PREMIUM_MIN_USD_TRADES) continue;
+          const catV = getEffectiveCategoryFilter(e.address.toLowerCase(), metricsByWallet.get(e.address.toLowerCase()));
+          if (catV?.doNotTail?.length && (catV.doNotTail.includes(signalSportDetailedEarly) || catV.doNotTail.includes(signalSportEarly))) continue;
+          const { roi: laneRoi, sampleOk } = traderSpecialtyLaneROI(cm, sportMktEarly, parentSportMktEarly, signalSportDetailedEarly, signalSportEarly);
+          if (!sampleOk) continue;
+          const meetsEdge = laneRoi >= VIP_SPECIALTY_ROI_MIN
+            || (laneRoi >= VIP_ALT_ROI_FOR_HUGE && e.actualRisk >= VIP_HUGE_STAKE_TRADES);
+          if (meetsEdge) {
+            vipPremiumRaw = true;
+            vipPremiumStake += e.actualRisk;
+          }
+        }
+        const vipPremiumDominates = totalDominantSize > 0 && (vipPremiumStake / totalDominantSize) >= VIP_DOMINATE_RISK_FRAC;
+        const vipPremiumHuge = vipPremiumRaw && vipPremiumStake >= VIP_HUGE_STAKE_TRADES;
+        const vipBypassCluster = vipPremiumDominates || vipPremiumHuge;
+        const vipPassMinGate = vipPremiumRaw && totalDominantSize >= VIP_PREMIUM_MIN_USD_TRADES;
 
         // ── Stale market filter: skip near-certainty bets ─────────────────────
         // If all dominant trades have avg entry > 0.88, market is near resolution
@@ -3101,32 +3405,43 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const hasStrongConsensus = dominant.length >= 3 && totalDominantSize >= 1500;
         const hasTrackedConsensus = dominant.length >= 2 && lbCount >= 2 && totalDominantSize >= 800;
 
-        if (!hasVerifiedSports && !hasMultiTracked && !isBigWhaleBet && !hasStrongConsensus && !hasTrackedConsensus) continue;
+        if (!hasVerifiedSports && !hasMultiTracked && !isBigWhaleBet && !hasStrongConsensus && !hasTrackedConsensus && !vipPassMinGate) continue;
 
-        const consensusPct = entries.length > 1
-          ? (dominant.length / entries.length) * 100 : 100;
-        if (entries.length > 1 && consensusPct < 55) continue; // < 55% consensus = skip
+        const consensusPct = filteredEntries.length > 1
+          ? (dominant.length / filteredEntries.length) * 100 : 100;
+        if (filteredEntries.length > 1 && consensusPct < 55 && !vipBypassCluster) continue; // allow VIP lane through weak headline consensus
 
         // ── Counter-trader count (computed BEFORE confidence so it can penalize consensus) ──
-        const counterTraderCount = entries.length - dominant.length;
+        const counterTraderCount = filteredEntries.length - dominant.length;
 
         // ── Detect sport for sport-specific canonical ROI ──────────────────────
         const signalSport = classifySport(mw.slug || "", mw.question || "");
+        const marketCategory = classifyMarketType(mw.question);
+        const signalSportDetailed = classifySportFull(signalSport, mw.question || "", mw.slug || "");
 
-        // Use canonical DB quality score for each trader (consistent with Elite page)
-        const avgQuality = dominant.reduce((s, e) => {
-          const cm = canonicalMap.get(e.address.toLowerCase());
-          return s + ((cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : e.traderInfo.qualityScore);
-        }, 0) / dominant.length;
+        // Dollar-weighted avg quality (only traders allowed for this sport).
+        // Simple average let a $500k C-Tier + $5k S-Tier read as "50" and pass gates — the whale
+        // dominated the book but the score looked elite. Weight by USDC at risk (same idea as avgROI).
+        const allowedForQualityGate = dominantEnriched.filter(e => {
+          const cat = getEffectiveCategoryFilter(e.address.toLowerCase(), metricsByWallet.get(e.address.toLowerCase()));
+          if (!cat?.doNotTail?.length) return true;
+          return !cat.doNotTail.includes(signalSportDetailed) && !cat.doNotTail.includes(signalSport);
+        });
+        if (allowedForQualityGate.length === 0) continue;
+        const qualityRiskSum = allowedForQualityGate.reduce((s, e) => s + e.actualRisk, 0) || 1;
+        const avgQuality = Math.round(
+          allowedForQualityGate.reduce((s, e) => {
+            const cm = canonicalMap.get(e.address.toLowerCase());
+            const q = ((cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : e.traderInfo.qualityScore);
+            return s + q * e.actualRisk;
+          }, 0) / qualityRiskSum
+        );
 
         // Weighted avg entry price: weight each trader's actual avg price by their actual risk
         const totalDominantWeight = dominantEnriched.reduce((s, e) => s + e.actualRisk, 0) || 1;
         const avgEntry   = dominantEnriched.reduce((s, e) => s + e.actualAvgPrice * e.actualRisk, 0) / totalDominantWeight;
         const avgSize    = totalDominantSize / dominantEnriched.length;
 
-        // ── Market/sport classifiers (needed for sport-specific ROI + relBetSize) ──
-        const marketCategory = classifyMarketType(mw.question);
-        const signalSportDetailed = classifySportFull(signalSport, mw.question || "", mw.slug || "");
         const sportMktKey = `${signalSportDetailed}|${marketCategory}`;
         // Parent-sport×mktType fallback key: "eSports|moneyline" for "Dota2|moneyline"
         const parentSportMktKey = `${signalSport}|${marketCategory}`;
@@ -3142,32 +3457,55 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // their 3.0% overall (dragged by NCAAB), and 9sh8f's 8.76% Dota2 moneyline vs 6.5%.
         const MIN_SMT_SAMPLE  = 20;  // sport×markettype minimum
         const MIN_SPORT_SAMPLE = 20; // sport-level minimum (consistent with SMT)
+        // Sanity: if trader's overall ROI is negative, don't trust a sport bucket showing 90%+ ROI/WR (stale/bad data).
+        const useSportROI = (overall: number, sportRoi: number, sportWr: number) =>
+          overall >= -5 || (sportRoi <= 90 && sportWr <= 90);
+        // Quality weight: strongest traders (high qualityScore) get heaviest weight so weak traders don't inflate grades.
+        const qualityWeight = (e: PosEnriched) => {
+          const q = canonicalMap.get(e.address.toLowerCase())?.qualityScore ?? e.traderInfo.qualityScore ?? 50;
+          return e.actualRisk * Math.min(2, Math.max(0.25, q / 50));
+        };
+        const totalQualityWeight = dominantEnriched.reduce((s, e) => s + qualityWeight(e), 0) || 1;
         const avgROI = dominantEnriched.reduce((s, e) => {
           const cm = canonicalMap.get(e.address.toLowerCase());
-          const overall = cm?.overallROI ?? e.traderInfo.roi;
+          const overall = cm?.overallROI ?? e.traderInfo.roi ?? 0;
           const smtExact   = cm?.roiBySportMarketType?.[sportMktKey];
           const smtParent  = cm?.roiBySportMarketType?.[parentSportMktKey];
           const sSport     = cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport];
           const sParent    = cm?.roiBySport?.[signalSport];
-          const sportROI =
+          let sportROI =
             (smtExact  && smtExact.tradeCount  >= MIN_SMT_SAMPLE)  ? smtExact.roi
           : (smtParent && smtParent.tradeCount >= MIN_SMT_SAMPLE)  ? smtParent.roi
           : (sSport    && sSport.tradeCount    >= MIN_SPORT_SAMPLE) ? sSport.roi
           : (sParent   && sParent.tradeCount   >= MIN_SPORT_SAMPLE) ? sParent.roi
           : overall;
-          return s + sportROI * e.actualRisk;
-        }, 0) / (totalDominantWeight || 1);
+          const sportWR = (sSport?.tradeCount ?? 0) >= MIN_SPORT_SAMPLE ? (sSport?.winRate ?? 0) : (sParent?.tradeCount ?? 0) >= MIN_SPORT_SAMPLE ? (sParent?.winRate ?? 0) : 0;
+          if (!useSportROI(overall, sportROI, sportWR)) sportROI = overall;
+          return s + sportROI * qualityWeight(e);
+        }, 0) / totalQualityWeight;
 
-        // ── Live price via CLOB ────────────────────────────────────────────────
+        // ── Minimum sport-ROI gate: do not emit when "insiders" are net losers in this sport ──
+        if (avgROI < 0 && !vipBypassCluster) continue;
+        // Require B-Tier+ dollar-weighted quality on capital at risk
+        if (avgQuality < 40 && !vipBypassCluster) continue;
+
+        // Defensive: do not emit if the largest-stake trader is doNotTail for this sport
+        const primaryByRisk = [...dominantEnriched].sort((a, b) => b.actualRisk - a.actualRisk)[0];
+        const primaryAddr = primaryByRisk?.address?.toLowerCase();
+        if (primaryAddr) {
+          const cat = getEffectiveCategoryFilter(primaryAddr, metricsByWallet.get(primaryAddr));
+          if (cat?.doNotTail?.length && (cat.doNotTail.includes(signalSportDetailed) || cat.doNotTail.includes(signalSport))) continue;
+        }
+
+        // ── Live price via CLOB (from batch map; no per-signal request) ─────────
         let currentPrice = avgEntry;
         const liveTokenId = side === "YES" ? mw.yesTokenId : mw.noTokenId;
         if (liveTokenId) {
-          const mid = await fetchMidpoint(liveTokenId);
-          if (mid !== null) {
+          const mid = midpointMap.get(liveTokenId) ?? null;
+          if (mid != null) {
             currentPrice = mid;
           } else {
             // CLOB null = no active orders → market is resolved, cancelled, or fully illiquid.
-            // Skip rather than showing a stale registry price as if it were tradeable.
             continue;
           }
         }
@@ -3185,22 +3523,23 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // Positive = sharps got in at a higher price = you can enter cheaper = value edge.
         const valueDelta = avgEntry - currentPrice - SLIPPAGE;
 
-        // ── Insider Stats (OddsJam-style "WHY THIS BET?" metrics) ─────────────
-        // relBetSize: weighted avg of (this_bet / trader_median_in_sport+mktType)
-        // Priority: sport×mktType median → sport median → sport avg → volume fallback
-        // Individual ratio is capped at 20x to prevent arb/market-maker wallets
-        // (with near-zero median bets in a given sport) from inflating the aggregate.
+        // ── Insider Stats: relBetSize = this position vs "normal" (aggregated median/avg position in sport)
+        // Normal = median/avg POSITION per event from canonical; fallback = this signal's avg position size (not 1).
         const relBetSize = (() => {
           const w = dominantEnriched.reduce((s, e) => s + e.actualRisk, 0) || 1;
+          const fallbackNormal = Math.max(avgSize, 1);
           return Math.round(dominantEnriched.reduce((s, e) => {
             const cm = canonicalMap.get(e.address.toLowerCase());
             const smEntry = cm?.roiBySportMarketType?.[sportMktKey];
             const sEntry  = cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport];
-            const medianBet = (smEntry?.medianBet && smEntry.medianBet > 0) ? smEntry.medianBet
-              : (sEntry?.medianBet && sEntry.medianBet > 0)                  ? sEntry.medianBet
-              : (sEntry?.avgBet    && sEntry.avgBet    > 0)                  ? sEntry.avgBet
-              : Math.max(e.traderInfo.volume / 100, 200);
-            const ratio = Math.min(e.actualRisk / Math.max(medianBet, 1), 20);
+            const medPos = (x: any) => (x?.medianPositionSize ?? x?.medianBet) || 0;
+            const avgPos = (x: any) => (x?.avgPositionSize ?? x?.avgBet) || 0;
+            let normalPosition = (smEntry && medPos(smEntry) > 0) ? medPos(smEntry)
+              : (sEntry && medPos(sEntry) > 0) ? medPos(sEntry)
+              : (sEntry && avgPos(sEntry) > 0) ? avgPos(sEntry)
+              : (cm as any)?.medianBetSize ?? 0;
+            if (normalPosition <= 0) normalPosition = fallbackNormal;
+            const ratio = Math.min(e.actualRisk / Math.max(normalPosition, 1), 20);
             return s + ratio * (e.actualRisk / w);
           }, 0) * 10) / 10;
         })();
@@ -3251,7 +3590,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const d = (Date.now() - avgTs) / 86_400_000; // age in days
           return d < 1 ? 95 : d < 3 ? 88 : d < 7 ? 80 : d < 30 ? 72 : d < 60 ? 62 : 55;
         })();
-        const confidence = Math.max(5, Math.min(futuresCap, rawConf + priceRangeAdj));
+        let confidence = Math.max(5, Math.min(futuresCap, rawConf + priceRangeAdj));
+        if (vipBypassCluster) confidence = Math.min(100, confidence + 7);
 
         const tier = dominant.length >= 3 && avgQuality >= 45 ? "HIGH"
                    : dominant.length >= 2 ? "MED" : "SINGLE";
@@ -3276,39 +3616,47 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const slippagePct = Math.round((side === "YES"
           ? (currentPrice - avgEntry) * 100
           : (avgEntry - currentPrice) * 100) * 10) / 10;
-        // insiderSportsROI: sport-specific canonical ROI — uses detailed sport key (UCL, LoL, etc.)
-        // with fallback to generic sport, then overall ROI. Min 20 trades for sport-specific.
-        const insiderSportsROI = Math.round(
-          dominantEnriched.reduce((s, e) => {
-            const cm = canonicalMap.get(e.address.toLowerCase());
-            const sportEntry = cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport];
-            const roiUsed = (sportEntry && (sportEntry.tradeCount ?? 0) >= MIN_SPORT_SAMPLE)
-              ? sportEntry.roi
-              : (cm?.overallROI ?? e.traderInfo.roi);
-            return s + roiUsed * e.actualRisk;
-          }, 0) / (totalDominantWeight || 1) * 10
-        ) / 10;
+        // insiderSportsROI: quality-weighted so strong traders dominate
+        const rawInsiderROI = dominantEnriched.reduce((s, e) => {
+          const cm = canonicalMap.get(e.address.toLowerCase());
+          const overall = cm?.overallROI ?? e.traderInfo.roi ?? 0;
+          const sportEntry = cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport];
+          let roiUsed = (sportEntry && (sportEntry.tradeCount ?? 0) >= MIN_SPORT_SAMPLE)
+            ? sportEntry.roi
+            : overall;
+          if (!useSportROI(overall, roiUsed, sportEntry?.winRate ?? 0)) roiUsed = overall;
+          return s + roiUsed * qualityWeight(e);
+        }, 0) / totalQualityWeight;
+        const insiderSportsROI = Math.round(rawInsiderROI * 10) / 10;
         // insiderTrades: sport-specific closed position count from canonical API (min 20 for sport-specific)
         const insiderTrades = dominantEnriched.reduce((s, e) => {
           const cm = canonicalMap.get(e.address.toLowerCase());
           const sportEntry = cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport];
           const sportCount = (sportEntry && (sportEntry.tradeCount ?? 0) >= MIN_SPORT_SAMPLE) ? sportEntry.tradeCount : 0;
-          return s + (sportCount > 0 ? sportCount : ((cm?.totalTrades ?? 0) > 0 ? cm!.totalTrades : Math.max(Math.round(e.traderInfo.volume / 500), 1)));
+          return s + (sportCount > 0 ? sportCount : ((cm?.totalTrades ?? 0) > 0 ? cm!.totalTrades : 1));
         }, 0);
-        // insiderWinRate: canonical win rate weighted by actual position risk
-        const insiderWinRate = Math.round(
-          dominantEnriched.reduce((s, e) => {
-            const cm = canonicalMap.get(e.address.toLowerCase());
-            const sportEntry = cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport];
-            const wr = (sportEntry && (sportEntry.tradeCount ?? 0) >= MIN_SPORT_SAMPLE)
-              ? sportEntry.winRate
-              : (cm?.winRate ?? 0);
-            return s + wr * e.actualRisk;
-          }, 0) / (totalDominantWeight || 1) * 10
-        ) / 10;
+        // insiderWinRate: quality-weighted so strong traders dominate
+        const rawInsiderWR = dominantEnriched.reduce((s, e) => {
+          const cm = canonicalMap.get(e.address.toLowerCase());
+          const overall = cm?.overallROI ?? e.traderInfo.roi ?? 0;
+          const sportEntry = cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport];
+          let wr = (sportEntry && (sportEntry.tradeCount ?? 0) >= MIN_SPORT_SAMPLE)
+            ? sportEntry.winRate
+            : (cm?.winRate ?? 0);
+          if (!useSportROI(overall, sportEntry?.roi ?? 0, wr)) wr = (cm?.winRate ?? 0);
+          return s + wr * qualityWeight(e);
+        }, 0) / totalQualityWeight;
+        const insiderWinRate = Math.round(rawInsiderWR * 10) / 10;
 
         // Sort by actual risk (largest position first)
         const dominantEnrichedSorted = [...dominantEnriched].sort((a, b) => b.actualRisk - a.actualRisk);
+        // Display only traders allowed for this sport (doNotTail) so weak/wrong-sport traders don't appear in the list
+        const allowedForDisplay = dominantEnrichedSorted.filter(e => {
+          const cat = getEffectiveCategoryFilter(e.address.toLowerCase(), metricsByWallet.get(e.address.toLowerCase()));
+          if (!cat?.doNotTail?.length) return true;
+          return !cat.doNotTail.includes(signalSportDetailed) && !cat.doNotTail.includes(signalSport);
+        });
+        if (allowedForDisplay.length === 0) continue; // no trader allowed for this sport — skip signal
 
         signals.push({
           id, marketId: condId,
@@ -3319,6 +3667,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           outcome: side, side,
           confidence, tier, marketType: mType, isSports,
           marketCategory,
+          vipPremium: vipBypassCluster,
           isActionable,
           priceStatus,
           priceRangeAdj,
@@ -3331,27 +3680,34 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           totalNetUsdc: Math.round(totalDominantSize),
           avgNetUsdc: Math.round(avgSize),
           totalRiskUsdc: Math.round(totalDominantSize),
-          avgRiskUsdc: Math.round(totalDominantSize / Math.max(dominantEnriched.length, 1)),
-          traderCount: dominantEnriched.length,
+          avgRiskUsdc: Math.round(totalDominantSize / Math.max(allowedForDisplay.length, 1)),
+          traderCount: allowedForDisplay.length,
           lbTraderCount: lbCount,
           sportsLbCount,
           counterTraderCount,
           avgQuality: Math.round(avgQuality),
           scoreBreakdown: breakdown,
           relBetSize, slippagePct, insiderSportsROI, insiderTrades, insiderWinRate,
-          traders: dominantEnrichedSorted.slice(0, 8).map(e => {
+          traders: allowedForDisplay.slice(0, 8).map(e => {
             const cm = canonicalMap.get(e.address.toLowerCase());
             const displayROI = cm?.overallROI ?? e.traderInfo.roi;
             const displayQuality = (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : e.traderInfo.qualityScore;
             const sportEntry = cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport];
             const smEntryT = cm?.roiBySportMarketType?.[sportMktKey];
             const sEntryT  = cm?.roiBySport?.[signalSportDetailed] ?? cm?.roiBySport?.[signalSport];
-            const medianBetT = (smEntryT?.medianBet && smEntryT.medianBet > 0) ? smEntryT.medianBet
-              : (sEntryT?.medianBet && sEntryT.medianBet > 0) ? sEntryT.medianBet
-              : (sEntryT?.avgBet    && sEntryT.avgBet    > 0) ? sEntryT.avgBet
-              : Math.max(e.traderInfo.volume / 100, 200);
-            // relBetSize uses actual risk vs their median bet in this sport/mktType
-            const traderRelSize = Math.round(Math.min(e.actualRisk / Math.max(medianBetT, 1), 20) * 10) / 10;
+            const medPosT = (x: any) => (x?.medianPositionSize ?? x?.medianBet) || 0;
+            const avgPosT = (x: any) => (x?.avgPositionSize ?? x?.avgBet) || 0;
+            let normalBetT = (smEntryT && medPosT(smEntryT) > 0) ? medPosT(smEntryT)
+              : (sEntryT && medPosT(sEntryT) > 0) ? medPosT(sEntryT)
+              : (sEntryT && avgPosT(sEntryT) > 0) ? avgPosT(sEntryT)
+              : (cm as any)?.medianBetSize ?? 0;
+            if (normalBetT <= 0) normalBetT = Math.max(avgSize, 1);
+            const traderRelSize = Math.round(Math.min(e.actualRisk / Math.max(normalBetT, 1), 20) * 10) / 10;
+            const overallT = cm?.overallROI ?? e.traderInfo.roi ?? 0;
+            const sportRoiT = sportEntry?.roi ?? null;
+            const sportWrT = sportEntry?.winRate ?? null;
+            const cappedSportRoi = sportRoiT != null && useSportROI(overallT, sportRoiT, sportWrT ?? 0) ? sportRoiT : (sportRoiT != null ? overallT : null);
+            const cappedSportWr = sportWrT != null && useSportROI(overallT, sportRoiT ?? 0, sportWrT) ? sportWrT : (sportWrT != null ? (cm?.winRate ?? null) : null);
             return {
               address: e.address,
               name: e.traderInfo.name,
@@ -3366,11 +3722,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               isLeaderboard: e.traderInfo.isLeaderboard,
               isSportsLb: (e.traderInfo as any).isSportsLb ?? false,
               tradeTime: (e as any).lastTimestamp || 0,
-              winRate: cm?.winRate ?? 0,
+                winRate: cm?.winRate ?? 0,
               totalTrades: cm?.totalTrades ?? 0,
-              sportRoi: sportEntry?.roi ?? null,
+              sportRoi: cappedSportRoi,
               sportTradeCount: sportEntry?.tradeCount ?? null,
-              sportWinRate: sportEntry?.winRate ?? null,
+              sportWinRate: cappedSportWr,
               sportAvgBet: sportEntry?.avgBet ?? null,
               tags: cm?.tags ?? [],
               traderRelSize,
@@ -3537,10 +3893,40 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
         const existingIds = new Set(signals.map(s => `${s.marketId}-${s.side}`));
         for (const pg of posMap.values()) {
+          const pgMarketPre = marketDb.get(pg.conditionId);
+          const pgSportEarly = classifySport(pg.slug || pgMarketPre?.slug || "", pg.question || "");
+          const pgMarketCategoryEarly = classifyMarketType(pg.question);
+          const pgSportDetailedEarly = classifySportFull(pgSportEarly, pg.question || "", pg.slug || pgMarketPre?.slug || "");
+          const pgSportMktKeyEarly = `${pgSportDetailedEarly}|${pgMarketCategoryEarly}`;
+          const pgParentSportMktKeyEarly = `${pgSportEarly}|${pgMarketCategoryEarly}`;
+          let pgVipStake = 0;
+          let pgVipRaw = false;
+          for (const t of pg.traders) {
+            const cm = canonicalMap.get(t.wallet.toLowerCase());
+            const q = (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : 0;
+            const minUsd = pg.traders.length === 1 ? VIP_PREMIUM_MIN_USD_POS_SOLO : VIP_PREMIUM_MIN_USD_TRADES;
+            if (q < VIP_PREMIUM_MIN_Q || t.costBasis < minUsd) continue;
+            const catV = getEffectiveCategoryFilter(t.wallet.toLowerCase(), metricsByWallet.get(t.wallet.toLowerCase()));
+            if (catV?.doNotTail?.length && (catV.doNotTail.includes(pgSportDetailedEarly) || catV.doNotTail.includes(pgSportEarly))) continue;
+            const { roi: laneRoi, sampleOk } = traderSpecialtyLaneROI(cm, pgSportMktKeyEarly, pgParentSportMktKeyEarly, pgSportDetailedEarly, pgSportEarly);
+            if (!sampleOk) continue;
+            const meetsEdge = laneRoi >= VIP_SPECIALTY_ROI_MIN
+              || (laneRoi >= VIP_ALT_ROI_FOR_HUGE && t.costBasis >= VIP_HUGE_STAKE_POS);
+            if (meetsEdge) {
+              pgVipRaw = true;
+              pgVipStake += t.costBasis;
+            }
+          }
+          const pgTotalCost = pg.traders.reduce((s, t) => s + t.costBasis, 0);
+          const pgVipDominates = pgTotalCost > 0 && (pgVipStake / pgTotalCost) >= VIP_DOMINATE_RISK_FRAC;
+          const pgVipHuge = pgVipRaw && pgVipStake >= VIP_HUGE_STAKE_POS;
+          const pgVipBypass = pgVipDominates || pgVipHuge;
+          const pgVipSoloFloor = pg.traders.length === 1 && pgVipRaw;
+
           // Quality gate: need meaningful capital committed
-          // 2+ traders with $1K+ total, OR single trader with $50K+
+          // 2+ traders with $1K+ total, OR single trader with $50K+, OR VIP solo (high-Q + lane edge + $3.5k+)
           if (pg.traders.length >= 2 && pg.totalValue < 1000) continue;
-          if (pg.traders.length < 2 && pg.totalValue < 50000) continue;
+          if (pg.traders.length < 2 && pg.totalValue < 50000 && !pgVipSoloFloor) continue;
 
           // Avoid duplicating markets already in trades-based signals
           const dedupeKey = `${pg.conditionId}-${pg.side}`;
@@ -3587,45 +3973,73 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const pgMarketCategory = classifyMarketType(pg.question);
           const pgSportDetailed = classifySportFull(pgSport, pg.question || "", pg.slug || pgMarket?.slug || "");
           const pgSportMktKey = `${pgSportDetailed}|${pgMarketCategory}`;
+          // Skip position-group signal if primary trader (by value) is doNotTail for this sport
+          const pgPrimary = pg.traders.length ? pg.traders.reduce((a, b) => a.currentValue >= b.currentValue ? a : b) : null;
+          if (pgPrimary) {
+            const catPg = getEffectiveCategoryFilter(pgPrimary.wallet.toLowerCase(), metricsByWallet.get(pgPrimary.wallet.toLowerCase()));
+            if (catPg?.doNotTail?.length && (catPg.doNotTail.includes(pgSportDetailed) || catPg.doNotTail.includes(pgSport))) continue;
+          }
+          const useSportROIPg = (overall: number, sportRoi: number, sportWr: number) =>
+            overall >= -5 || (sportRoi <= 90 && sportWr <= 90);
 
-          // avgROI: use sport-specific ROI (same priority chain as Phase 1 trades path).
-          // Priority: sport×marketType (≥20) → detailed sport (≥20) → parent sport (≥20) → overall
-          // Weighted by current position value so large bets from high-ROI traders dominate.
+          // Quality weight for position-group: strongest traders get heaviest weight (same as Phase 1).
+          const pgQualityWeight = (t: { wallet: string; currentValue: number }) => {
+            const q = canonicalMap.get(t.wallet.toLowerCase())?.qualityScore ?? lbMap.get(t.wallet)?.qualityScore ?? 50;
+            return (t.currentValue || 0) * Math.min(2, Math.max(0.25, q / 50));
+          };
+          const pgTotalQualityWeight = pg.traders.reduce((s, t) => s + pgQualityWeight(t), 0) || 1;
+
+          // avgROI: quality-weighted so strong traders dominate; reject implausible 90%+ when overall negative.
           const pgMin = 20;
-          const pgAvgROIWeight = pg.traders.reduce((s, t) => s + (t.currentValue || 0), 0) || 1;
           const avgROI = pg.traders.reduce((s, t) => {
             const cm = canonicalMap.get(t.wallet.toLowerCase());
             const overall = cm?.overallROI ?? lbMap.get(t.wallet)?.roi ?? 0;
             const smtExact  = cm?.roiBySportMarketType?.[pgSportMktKey];
             const sSport    = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
-            const sportROI  = (smtExact && smtExact.tradeCount >= pgMin) ? smtExact.roi
-                            : (sSport   && sSport.tradeCount   >= pgMin) ? sSport.roi
-                            : overall;
-            return s + sportROI * (t.currentValue || 0);
-          }, 0) / pgAvgROIWeight;
+            let sportROI  = (smtExact && smtExact.tradeCount >= pgMin) ? smtExact.roi
+                          : (sSport   && sSport.tradeCount   >= pgMin) ? sSport.roi
+                          : overall;
+            const sportWR = (sSport?.tradeCount ?? 0) >= pgMin ? (sSport?.winRate ?? 0) : 0;
+            if (!useSportROIPg(overall, sportROI, sportWR)) sportROI = overall;
+            return s + sportROI * pgQualityWeight(t);
+          }, 0) / pgTotalQualityWeight;
 
-          // Use canonical DB quality score (consistent with Elite page display)
-          const avgQualityForScore = pg.traders.length > 0
-            ? Math.round(pg.traders.reduce((s, t) => {
-                const cm = canonicalMap.get(t.wallet.toLowerCase());
-                return s + ((cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : (lbMap.get(t.wallet)?.qualityScore ?? 20));
-              }, 0) / pg.traders.length)
-            : 20;
+          // Minimum sport-ROI gate: do not emit when insiders are net losers in this sport
+          if (avgROI < 0 && !pgVipBypass) continue;
 
-          // ── Insider Stats (OddsJam-style "WHY THIS BET?" metrics) ───────────
-          // pgRelBetSize: sport×mktType specific median bet — the conviction multiplier
+          // Dollar-weighted quality (current position value) — same fix as trades path: no piggybacking
+          const pgAllowedForQ = pg.traders.filter(t => {
+            const cat = getEffectiveCategoryFilter(t.wallet.toLowerCase(), metricsByWallet.get(t.wallet.toLowerCase()));
+            if (!cat?.doNotTail?.length) return true;
+            return !cat.doNotTail.includes(pgSportDetailed) && !cat.doNotTail.includes(pgSport);
+          });
+          if (pgAllowedForQ.length === 0) continue;
+          const pgQValSum = pgAllowedForQ.reduce((s, t) => s + t.currentValue, 0) || 1;
+          const avgQualityForScore = Math.round(
+            pgAllowedForQ.reduce((s, t) => {
+              const cm = canonicalMap.get(t.wallet.toLowerCase());
+              const q = ((cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : (lbMap.get(t.wallet)?.qualityScore ?? 20));
+              return s + q * t.currentValue;
+            }, 0) / pgQValSum
+          );
+          if (avgQualityForScore < 40 && !pgVipBypass) continue; // require B-Tier+ on weighted capital
+
+          // pgRelBetSize: normal = median/avg from canonical; fallback = this signal's avg position size
           const pgTotalWeight = pg.totalValue || 1;
+          const pgFallbackNormal = Math.max(avgSize, 1);
           const pgRelBetSize = (() => {
             return Math.round(pg.traders.reduce((s, t) => {
               const cm = canonicalMap.get(t.wallet.toLowerCase());
               const smEntry = cm?.roiBySportMarketType?.[pgSportMktKey];
               const sEntry  = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
-              const medianBet = (smEntry?.medianBet && smEntry.medianBet > 0) ? smEntry.medianBet
-                : (sEntry?.medianBet && sEntry.medianBet > 0)                  ? sEntry.medianBet
-                : (sEntry?.avgBet    && sEntry.avgBet    > 0)                  ? sEntry.avgBet
-                : Math.max((lbMap.get(t.wallet)?.volume ?? 1000) / 100, 200);
-              // Cap at 20x to prevent arb wallets with near-zero sport medians from skewing
-              const ratio = Math.min(t.currentValue / Math.max(medianBet, 1), 20);
+              const medPos = (x: any) => (x?.medianPositionSize ?? x?.medianBet) || 0;
+              const avgPos = (x: any) => (x?.avgPositionSize ?? x?.avgBet) || 0;
+              let normalPosition = (smEntry && medPos(smEntry) > 0) ? medPos(smEntry)
+                : (sEntry && medPos(sEntry) > 0) ? medPos(sEntry)
+                : (sEntry && avgPos(sEntry) > 0) ? avgPos(sEntry)
+                : (cm as any)?.medianBetSize ?? 0;
+              if (normalPosition <= 0) normalPosition = pgFallbackNormal;
+              const ratio = Math.min(t.currentValue / Math.max(normalPosition, 1), 20);
               return s + ratio * (t.currentValue / pgTotalWeight);
             }, 0) * 10) / 10;
           })();
@@ -3661,7 +4075,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           );
           // Positions path: no timestamp → cap at 70 (unknown age, could be months old)
           const pgConfCap = pgIsFutures ? 70 : 100;
-          const confidence = Math.max(5, Math.min(pgConfCap, pgRawConf + pgPriceRangeAdj));
+          let confidence = Math.max(5, Math.min(pgConfCap, pgRawConf + pgPriceRangeAdj));
+          if (pgVipBypass) confidence = Math.min(100, confidence + 7);
 
           const mTypeRaw = categoriseMarket(pg.question, resolvedEndDate, resolvedGameStartTime, pg.slug || pgMarket?.slug);
           // pgMarketCategory already computed above
@@ -3678,39 +4093,45 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           seenSignalIds.add(id);
           const pgYesTokenId = pg.yesAsset || pgMarket?.tokenIds?.[0];
           const pgNoTokenId  = pg.noAsset  || pgMarket?.tokenIds?.[1];
-          const tradersSorted = [...pg.traders].sort((a, b) => b.currentValue - a.currentValue);
+          const tradersSorted = [...pg.traders]
+            .filter(t => {
+              const cat = getEffectiveCategoryFilter(t.wallet.toLowerCase(), metricsByWallet.get(t.wallet.toLowerCase()));
+              if (!cat?.doNotTail?.length) return true;
+              return !cat.doNotTail.includes(pgSportDetailed) && !cat.doNotTail.includes(pgSport);
+            })
+            .sort((a, b) => b.currentValue - a.currentValue);
+          if (tradersSorted.length === 0) continue; // all traders doNotTail for this sport — skip signal
           const pgSlippagePct = Math.round((pg.side === "YES"
             ? (avgCurPrice - avgEntry) * 100
             : (avgEntry - avgCurPrice) * 100) * 10) / 10;
-          // insiderSportsROI: detailed sport key (UCL, LoL, etc.) with fallback to generic sport (min 20 trades)
-          const pgInsiderSportsROI = Math.round(
-            pg.traders.reduce((s, t) => {
-              const cm = canonicalMap.get(t.wallet.toLowerCase());
-              const sportEntry = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
-              const roi = (sportEntry && sportEntry.tradeCount >= 20)
-                ? sportEntry.roi
-                : (cm?.overallROI ?? lbMap.get(t.wallet)?.roi ?? 0);
-              return s + roi * t.currentValue;
-            }, 0) / pgTotalWeight * 10
-          ) / 10;
-          // insiderTrades: canonical closed position count (actual trades completed, min 20 for sport-specific)
+          const rawPgROI = pg.traders.reduce((s, t) => {
+            const cm = canonicalMap.get(t.wallet.toLowerCase());
+            const overall = cm?.overallROI ?? lbMap.get(t.wallet)?.roi ?? 0;
+            const sportEntry = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
+            let roi = (sportEntry && sportEntry.tradeCount >= 20)
+              ? sportEntry.roi
+              : overall;
+            if (!useSportROIPg(overall, roi, sportEntry?.winRate ?? 0)) roi = overall;
+            return s + roi * pgQualityWeight(t);
+          }, 0) / pgTotalQualityWeight;
+          const pgInsiderSportsROI = Math.round(rawPgROI * 10) / 10;
           const pgInsiderTrades = pg.traders.reduce((s, t) => {
             const cm = canonicalMap.get(t.wallet.toLowerCase());
             const sportEntry = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
             const sportCount = (sportEntry && (sportEntry.tradeCount ?? 0) >= 20) ? sportEntry.tradeCount : 0;
-            return s + (sportCount > 0 ? sportCount : ((cm?.totalTrades ?? 0) > 0 ? cm!.totalTrades : Math.max(Math.round((lbMap.get(t.wallet)?.volume ?? 500) / 500), 1)));
+            return s + (sportCount > 0 ? sportCount : ((cm?.totalTrades ?? 0) > 0 ? cm!.totalTrades : 1));
           }, 0);
-          // insiderWinRate: canonical win rate weighted by bet size (min 20 trades for sport-specific)
-          const pgInsiderWinRate = Math.round(
-            pg.traders.reduce((s, t) => {
-              const cm = canonicalMap.get(t.wallet.toLowerCase());
-              const sportEntry = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
-              const wr = (sportEntry && (sportEntry.tradeCount ?? 0) >= 20)
-                ? sportEntry.winRate
-                : (cm?.winRate ?? 0);
-              return s + wr * t.currentValue;
-            }, 0) / pgTotalWeight * 10
-          ) / 10;
+          const rawPgWR = pg.traders.reduce((s, t) => {
+            const cm = canonicalMap.get(t.wallet.toLowerCase());
+            const overall = cm?.overallROI ?? lbMap.get(t.wallet)?.roi ?? 0;
+            const sportEntry = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
+            let wr = (sportEntry && (sportEntry.tradeCount ?? 0) >= 20)
+              ? sportEntry.winRate
+              : (cm?.winRate ?? 0);
+            if (!useSportROIPg(overall, sportEntry?.roi ?? 0, wr)) wr = (cm?.winRate ?? 0);
+            return s + wr * pgQualityWeight(t);
+          }, 0) / pgTotalQualityWeight;
+          const pgInsiderWinRate = Math.round(rawPgWR * 10) / 10;
 
           signals.push({
             id, marketId: pg.conditionId,
@@ -3722,6 +4143,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             confidence, tier: pg.traders.length >= 3 ? "HIGH" : "MED",
             marketType: mType, isSports: true,
             marketCategory: pgMarketCategory,
+            vipPremium: pgVipBypass,
             isActionable,
             priceStatus,
             priceRangeAdj: pgPriceRangeAdj,
@@ -3734,31 +4156,35 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             totalNetUsdc: Math.round(pg.totalValue),
             avgNetUsdc: Math.round(avgSize),
             totalRiskUsdc: Math.round(pg.traders.reduce((s, t) => s + t.costBasis, 0)),
-            avgRiskUsdc: Math.round(pg.traders.reduce((s, t) => s + t.costBasis, 0) / Math.max(pg.traders.length, 1)),
-            traderCount: pg.traders.length,
+            avgRiskUsdc: Math.round(pg.traders.reduce((s, t) => s + t.costBasis, 0) / Math.max(tradersSorted.length, 1)),
+            traderCount: tradersSorted.length,
             lbTraderCount: pg.traders.filter(t => lbMap.get(t.wallet)?.isLeaderboard).length,
             sportsLbCount: pg.traders.filter(t => t.isSportsLb).length,
             counterTraderCount,
-            avgQuality: pg.traders.length > 0
-              ? Math.round(pg.traders.reduce((s, t) => s + (lbMap.get(t.wallet)?.qualityScore ?? 20), 0) / pg.traders.length)
-              : 20,
+            avgQuality: avgQualityForScore,
             scoreBreakdown: breakdown,
             relBetSize: pgRelBetSize, slippagePct: pgSlippagePct,
             insiderSportsROI: pgInsiderSportsROI, insiderTrades: pgInsiderTrades, insiderWinRate: pgInsiderWinRate,
             traders: tradersSorted.slice(0, 8).map(t => {
               const tm = lbMap.get(t.wallet);
               const cm = canonicalMap.get(t.wallet.toLowerCase());
-              // Display canonical overall ROI for consistency with Elite page
               const displayROI = cm?.overallROI ?? tm?.roi ?? 0;
               const displayQuality = (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : (tm?.qualityScore ?? 20);
-              const sportEntry = cm?.roiBySport?.[pgSport];
+              const sportEntry = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
               const smEntryPg = cm?.roiBySportMarketType?.[pgSportMktKey];
               const sEntryPg  = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
-              const medianBetPg = (smEntryPg?.medianBet && smEntryPg.medianBet > 0) ? smEntryPg.medianBet
-                : (sEntryPg?.medianBet && sEntryPg.medianBet > 0) ? sEntryPg.medianBet
-                : (sEntryPg?.avgBet    && sEntryPg.avgBet    > 0) ? sEntryPg.avgBet
-                : Math.max((lbMap.get(t.wallet)?.volume ?? 1000) / 100, 200);
-              const traderRelSize = Math.round(Math.min(t.costBasis / Math.max(medianBetPg, 1), 20) * 10) / 10;
+              const medPosPg = (x: any) => (x?.medianPositionSize ?? x?.medianBet) || 0;
+              const avgPosPg = (x: any) => (x?.avgPositionSize ?? x?.avgBet) || 0;
+              let normalBetPg = (smEntryPg && medPosPg(smEntryPg) > 0) ? medPosPg(smEntryPg)
+                : (sEntryPg && medPosPg(sEntryPg) > 0) ? medPosPg(sEntryPg)
+                : (sEntryPg && avgPosPg(sEntryPg) > 0) ? avgPosPg(sEntryPg)
+                : (cm as any)?.medianBetSize ?? 0;
+              if (normalBetPg <= 0) normalBetPg = Math.max(avgSize, 1);
+              const traderRelSize = Math.round(Math.min(t.costBasis / Math.max(normalBetPg, 1), 20) * 10) / 10;
+              const sportRoiPg = sportEntry?.roi ?? null;
+              const sportWrPg = sportEntry?.winRate ?? null;
+              const capRoi = sportRoiPg != null && useSportROIPg(displayROI, sportRoiPg, sportWrPg ?? 0) ? sportRoiPg : (sportRoiPg != null ? displayROI : null);
+              const capWr = sportWrPg != null && useSportROIPg(displayROI, sportRoiPg ?? 0, sportWrPg) ? sportWrPg : (sportWrPg != null ? (cm?.winRate ?? null) : null);
               return {
                 address: t.wallet,
                 name: t.name,
@@ -3773,9 +4199,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                 isSportsLb: t.isSportsLb,
                 winRate: cm?.winRate ?? 0,
                 totalTrades: cm?.totalTrades ?? 0,
-                sportRoi: sportEntry?.roi ?? null,
+                sportRoi: capRoi,
                 sportTradeCount: sportEntry?.tradeCount ?? null,
-                sportWinRate: sportEntry?.winRate ?? null,
+                sportWinRate: capWr,
                 sportAvgBet: sportEntry?.avgBet ?? null,
                 tags: cm?.tags ?? [],
                 tradeTime: 0,
@@ -3876,8 +4302,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           for (const t of (sig.traders || [])) {
             const w = (t.address || "").toLowerCase();
             if (!curatedWalletSet.has(w)) continue;
-            // Skip this trader's vote if the signal's sport or market type is filtered
-            const catFilter = TRADER_CATEGORY_FILTERS[w];
+            // Skip this trader's vote if the signal's sport or market type is filtered (CSV-derived when present)
+            const catFilter = getEffectiveCategoryFilter(w, metricsByWallet.get(w));
             if (catFilter && catFilter.doNotTail.includes(sigSportFull)) continue;
             if (catFilter?.doNotTailMarketTypes?.length) {
               const mktType = classifyMarketType(sig.marketQuestion || "");
@@ -4064,11 +4490,53 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
 
       signals.sort((a, b) => b.confidence - a.confidence);
-      console.log(`[Elite v16] ${signals.length} signals total (trades + positions)`);
+
+      // ── Best-of-best filters (query params); default: favor good traders (minQuality 50) ──
+      let outSignals = signals;
+      const effectiveMinQuality = minQuality != null && !isNaN(minQuality) ? minQuality : 50;
+      outSignals = outSignals.filter(s => (s.avgQuality ?? 0) >= effectiveMinQuality || s.vipPremium === true);
+      if (minConfidence != null && !isNaN(minConfidence)) {
+        outSignals = outSignals.filter(s => s.confidence >= minConfidence);
+      }
+      if (tierFilter === "HIGH" || tierFilter === "MED" || tierFilter === "SINGLE") {
+        outSignals = outSignals.filter(s => s.tier === tierFilter);
+      }
+      // Diversity cap: max N signals per primary trader so one whale doesn't dominate the feed.
+      // Low canonical quality (<40): tighter cap so C-Tier volume traders (e.g. 0p0jogggg) can't flood 20 slots.
+      const MAX_SIGNALS_PER_TRADER_IN_FEED = 20;
+      const MAX_SIGNALS_PER_LOW_Q_PRIMARY = 5;
+      const byPrimaryTrader = new Map<string, typeof outSignals>();
+      for (const s of outSignals) {
+        const primary = (s.traders?.[0] as any)?.address ?? (s.traders?.[0] as any)?.wallet ?? "";
+        if (!primary) { byPrimaryTrader.set("_unknown", [...(byPrimaryTrader.get("_unknown") || []), s]); continue; }
+        const list = byPrimaryTrader.get(primary) || [];
+        list.push(s);
+        byPrimaryTrader.set(primary, list);
+      }
+      outSignals = [];
+      for (const [pwallet, list] of byPrimaryTrader.entries()) {
+        list.sort((a, b) => {
+          const vpa = a.vipPremium === true ? 1 : 0;
+          const vpb = b.vipPremium === true ? 1 : 0;
+          if (vpb !== vpa) return vpb - vpa;
+          return (b.confidence - a.confidence) || ((b.avgQuality ?? 0) - (a.avgQuality ?? 0));
+        });
+        const pq = pwallet === "_unknown" ? 100 : (canonicalMap.get(pwallet.toLowerCase())?.qualityScore ?? 0);
+        const cap = pq > 0 && pq < 40 ? MAX_SIGNALS_PER_LOW_Q_PRIMARY : MAX_SIGNALS_PER_TRADER_IN_FEED;
+        outSignals.push(...list.slice(0, cap));
+      }
+      outSignals.sort((a, b) => {
+        const vpA = a.vipPremium === true ? 1 : 0;
+        const vpB = b.vipPremium === true ? 1 : 0;
+        if (vpB !== vpA) return vpB - vpA;
+        if (b.confidence !== a.confidence) return b.confidence - a.confidence;
+        return (b.avgQuality ?? 0) - (a.avgQuality ?? 0);
+      });
+      console.log(`[Elite v16] ${signals.length} signals total (trades + positions)${hasFilter ? ` → filtered` : ""} → ${outSignals.length} after diversity cap`);
 
       // ── Populate signal-per-market registry for /api/markets sharp overlay ────
       signalsByMarket.clear();
-      for (const s of signals) {
+      for (const s of outSignals) {
         const existing = signalsByMarket.get(s.marketId);
         if (!existing || s.confidence > existing.confidence) {
           signalsByMarket.set(s.marketId, {
@@ -4086,14 +4554,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
 
       const response = {
-        signals,
+        signals: outSignals,
         topTraderCount: canonicalMap.size || CURATED_ELITES.length,
         marketsScanned: marketDb.size,
-        newSignalCount: signals.filter(s => s.isNew).length,
+        newSignalCount: outSignals.filter(s => s.isNew).length,
         fetchedAt: now,
         source: "verified_sports_v11",
       };
-      setCache(cKey, response, 2 * 60 * 1000);
+      if (cKey) setCache(cKey, response, 90 * 1000);
 
       // ── SSE push: broadcast new high-confidence signals to connected clients ──
       {
@@ -4128,14 +4596,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   // ── GET /api/signals/fast ─── Live feed: stricter quality gates ──────────────
   app.get("/api/signals/fast", async (req, res) => {
     try {
-      const cKey = "signals-fast-v8";
+      const cKey = "signals-fast-v10-curated-4k";
       const hit  = getCache<unknown>(cKey);
       if (hit) { res.json(hit); return; }
 
       const now = Date.now();
-      const [rawFastTrades, marketDb] = await Promise.all([
-        fetchRecentTrades(4000),
+      const [rawFastTrades, marketDb, canonicalFast] = await Promise.all([
+        fetchMergedCuratedEliteTrades(ELITE_TRADES_PER_WALLET),
         buildMarketDatabase(800).catch(() => new Map() as any),
+        loadCanonicalMetricsFromDB(),
       ]);
       // Sort oldest→newest so sells always follow their buys in aggregation
       const allTrades = [...rawFastTrades].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
@@ -4257,8 +4726,20 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // currentPrice is already the correct-side token midpoint.
         const valueDelta = avgEntry - currentPrice - SLIPPAGE;
 
+        // Real dollar-weighted quality from curated profiles — was hardcoded 40 so high-volume
+        // traders (e.g. 0p0jogggg) dominated /api/signals/fast with no quality gate.
+        const fastRisk = totalDominantSize || 1;
+        const fastAvgQuality = Math.round(
+          dominant.reduce((s, e) => {
+            const cm = canonicalFast.get(e.wallet.toLowerCase());
+            const q = (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : 0;
+            return s + q * e.totalSize;
+          }, 0) / fastRisk
+        );
+        if (fastAvgQuality < 40) continue;
+
         const { score: confidence, breakdown } = computeConfidence(
-          15, consensusPct, valueDelta, avgSize, dominant.length, 40
+          15, consensusPct, valueDelta, avgSize, dominant.length, fastAvgQuality
         );
 
         const tier = dominant.length >= 3 ? "HIGH" : "MED";
@@ -4286,10 +4767,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           totalRiskUsdc: Math.round(dominant.reduce((s, e) => { const p = e.prices.reduce((a,b)=>a+b,0)/e.prices.length; return s + e.totalSize * p; }, 0)),
           avgRiskUsdc: Math.round(dominant.reduce((s, e) => { const p = e.prices.reduce((a,b)=>a+b,0)/e.prices.length; return s + e.totalSize * p; }, 0) / Math.max(dominant.length, 1)),
           traderCount: dominant.length,
-          avgQuality: 40,
+          avgQuality: fastAvgQuality,
           scoreBreakdown: breakdown,
           traders: dominant.slice(0, 8).map(e => {
             const avgEP2 = e.prices.reduce((a, b) => a + b, 0) / e.prices.length;
+            const cm = canonicalFast.get(e.wallet.toLowerCase());
+            const q = (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : 0;
             return {
               address: e.wallet,
               name: e.name,
@@ -4297,7 +4780,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               size: Math.round(e.totalSize),
               netUsdc: Math.round(e.totalSize),
               riskUsdc: Math.round(e.totalSize * avgEP2),
-              roi: 0, qualityScore: 0,
+              roi: cm?.overallROI ?? 0,
+              qualityScore: q,
             };
           }),
           category: info.category || "sports",
@@ -4461,8 +4945,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                 etp.metrics->>'topSport'     AS top_sport,
                 etp.metrics->'roiBySport'    AS roi_by_sport
          FROM elite_traders et
-         LEFT JOIN elite_trader_profiles etp ON et.wallet = etp.wallet
-         WHERE et.wallet = $1`,
+         LEFT JOIN elite_trader_profiles etp ON LOWER(etp.wallet) = LOWER(et.wallet)
+         WHERE LOWER(et.wallet) = LOWER($1)`,
         [wallet]
       );
       if (eliteRow.rows[0]) {
@@ -4702,7 +5186,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       sport TEXT,
       created_at BIGINT DEFAULT (extract(epoch from now()) * 1000)::BIGINT
     )
-  `).catch(e => console.error("[Bets] Table init error:", e.message));
+  `).catch(e => console.error("[Bets] Table init error:", e?.message ?? e));
 
   app.get("/api/bets", async (_req, res) => {
     try {

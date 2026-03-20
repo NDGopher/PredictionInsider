@@ -1,0 +1,24 @@
+# Local PostgreSQL for PredictionInsider. Run: docker compose up -d
+# Then set DATABASE_URL in .env (see .env.example) and run: npm run db:push
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: predictioninsider-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: predictioninsider
+      POSTGRES_PASSWORD: predictioninsider_local
+      POSTGRES_DB: predictioninsider
+    ports:
+      - "5432:5432"
+    volumes:
+      - predictioninsider_pgdata:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U predictioninsider -d predictioninsider"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  predictioninsider_pgdata:

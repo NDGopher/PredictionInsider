@@ -1,9 +1,10 @@
 {
   "wallet": "0x6ac5bb06a9eb05641fd5e82640268b92f3ab4b6e",
   "username": "0p0jogggg",
-  "total_profit": 390587.77,
-  "total_risked": 5753043.49,
-  "overall_roi": 6.79,
+  "total_profit": 5018247.04,
+  "raw_realized_pnl": 5018247.04,
+  "total_risked": 55144555.54,
+  "overall_roi": 9.1,
   "win_rate": 49.55,
   "avg_bet_size": 1110.41,
   "total_events": 5181,
@@ -596,6 +597,25 @@
     "\u26d4 Fade Esports"
   ],
   "tail_guide": "How to Tail 0p0jogggg [C-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   SOCCER (Other) \u2014 20.8% ROI, 758 events, +$250,307\n   OTHER \u2014 19.1% ROI, 1561 events, +$172,437\n   SOCCER (EPL) \u2014 30.8% ROI, 160 events, +$78,107\n\n\ud83d\udd34 DO NOT TAIL:\n   NHL \u2014 ROI -11.3%, $-79,269\n   NBA \u2014 ROI -4.2%, $-57,805\n   ESPORTS \u2014 ROI -14.1%, $-43,528\n\n\ud83d\udcc8 Stick to Moneylines (13.0% ROI over 2933 events)\n\u26d4 Mute all O/U bets (-13.1% ROI)\n\ud83c\udfaf Best price zone: Flip (40-60c) (8.8% ROI, 2692 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 95% of edge from 'No' side \u2014 copy that side only\n\ud83d\udcb0 Avg bet ~$1,110",
+  "do_not_tail_sports": [
+    "ESPORTS",
+    "NBA",
+    "NHL",
+    "SOCCER (UCL)",
+    "TENNIS"
+  ],
+  "auto_tail_sports": [
+    "MLB",
+    "NFL",
+    "OTHER",
+    "SOCCER (EPL)",
+    "SOCCER (LaLiga)",
+    "SOCCER (Other)"
+  ],
+  "do_not_tail_market_types": [
+    "Totals (O/U)"
+  ],
+  "do_not_tail_sides": [],
   "score_breakdown": {
     "sharpe_score": 0,
     "roi_score": 11.3,

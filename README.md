@@ -54,13 +54,12 @@ uv pip install pandas requests openpyxl python-docx
 
 ### 4. Set up PostgreSQL
 
-Create a database locally:
+Choose one:
 
-```bash
-createdb predictioninsider
-```
+- **Local (Docker)** — Full control, no account. [Install Docker](https://docs.docker.com/get-docker/), then from project root: `npm run db:up` (starts Postgres and creates tables). Your `.env` already has the correct `DATABASE_URL`.
+- **Free online (Neon)** — No Docker. Sign up at [neon.tech](https://neon.tech), create a project, copy the connection string into `.env` as `DATABASE_URL`, then run the SQL in `scripts/init-db.sql` in Neon’s SQL Editor (see [docs/DATABASE-SETUP.md](docs/DATABASE-SETUP.md)).
 
-Or use a hosted provider (see Digital Ocean section below).
+Detailed steps: **[docs/DATABASE-SETUP.md](docs/DATABASE-SETUP.md)**.
 
 ### 5. Configure environment variables
 
@@ -79,9 +78,43 @@ NODE_ENV=development
 # Optional — used by Python analysis scripts to push results to the backend
 # Defaults to http://localhost:5000 if not set
 BACKEND_URL=http://localhost:5000
+
+# Optional — for Firecrawl CLI (web scraping / API docs). See "Firecrawl CLI" below.
+# FIRECRAWL_API_KEY=fc-xxxx
 ```
 
 > The `DATABASE_URL` is the only required secret. Everything else has a default.
+
+### Authorizing Firecrawl CLI (optional)
+
+If you use the Firecrawl CLI in this project (e.g. for Polymarket API docs or research), authorize it once:
+
+**Option A — Browser (recommended)**  
+From the project root, run:
+
+```bash
+npx firecrawl-cli login --browser
+```
+
+Your browser will open to log in; after that, the CLI is authenticated for your user.
+
+**Option B — API key in this project**  
+1. Get an API key from [firecrawl.dev](https://firecrawl.dev).  
+2. Add to your `.env` (do not commit):
+
+   ```env
+   FIRECRAWL_API_KEY=fc-your-key-here
+   ```
+
+3. Use the CLI via npx so it picks up the env:
+
+   ```bash
+   npx firecrawl-cli --status
+   ```
+
+   (Or export `FIRECRAWL_API_KEY` in your shell so a globally installed `firecrawl` uses it.)
+
+For **using Firecrawl in this project** and **where to keep the database on Replit**, see [docs/FIRECRAWL-AND-REPLIT.md](docs/FIRECRAWL-AND-REPLIT.md).
 
 ### 6. Push the database schema
 
@@ -103,7 +136,9 @@ The app runs at **http://localhost:5000** — both the API and the frontend are 
 
 ## Python Analysis Pipeline
 
-The `pnl_analysis/` directory contains the scripts that analyze trader CSV exports and push results into the database. You run these manually (or on a cron job) to refresh trader metrics.
+The **database of all traders** is PostgreSQL: `elite_traders` (roster) and `elite_trader_profiles` (metrics, quality score, tags, ROI by sport/market). Those profiles are filled and updated when you run the pipeline **with `--ingest`** so the backend and Top Signals use your CSV-derived scores. Run the pipeline daily (or on a cron) to keep scores and trader lists up to date.
+
+The `pnl_analysis/` scripts analyze trader CSV exports and push results into the database. You run them manually (or on a cron job) to refresh trader metrics.
 
 ### Running a full refresh on all curated traders
 
@@ -125,13 +160,56 @@ If you have Polymarket trade history CSVs already downloaded:
 
 ```bash
 cd pnl_analysis
-python ingest_csvs.py
+python ingest_csvs.py --ingest
+```
+
+Or run the full pipeline (fetch + analyze + push to DB):
+
+```bash
+python run_full_pipeline.py --ingest
 ```
 
 The pipeline:
-1. Fetches trader history from Polymarket's public API
-2. Computes sport-specific ROI, market-type ROI, price-bucket stats, quality scores, and tier ratings
-3. POSTs results to the Express backend which writes them to PostgreSQL
+1. Fetches trader history from Polymarket's public API (or uses existing CSVs)
+2. Computes sport-specific ROI, market-type ROI, price-bucket stats, **quality scores (agentic score)**, and tier ratings
+3. POSTs results to the backend at `POST /api/elite/traders/ingest-analysis`, which writes to `elite_trader_profiles`
+
+**You must run with `--ingest`** to push analyses into the database. Without it, CSVs and JSON are updated locally but the app will not show new scores or traders.
+
+---
+
+## Troubleshooting
+
+### Traders not loading / "Failing to load traders" / Low or zero signal scores
+
+The traders list and the **agentic quality scores** on Top Signals both depend on:
+
+1. **PostgreSQL and `DATABASE_URL`**  
+   The app reads traders and metrics from `elite_traders` and `elite_trader_profiles`. If `DATABASE_URL` is missing or wrong, `/api/elite/traders` and `/api/traders` return 500 and the UI shows "failing to load" or empty lists.
+
+2. **Profiles must be populated from your CSVs**  
+   Even with a valid DB, **scores and trader data come from the ingest pipeline**. The DB tables are filled when you run the Python pipeline **with `--ingest`**:
+
+   - **From existing CSVs (and JSON analyses):**  
+     ```bash
+     cd pnl_analysis
+     python run_full_pipeline.py --analyze-only --ingest
+     ```
+   - **Full refresh (re-fetch from Polymarket, analyze, then ingest):**  
+     ```bash
+     python run_full_pipeline.py --ingest
+     ```
+   - **Or ingest only from already-generated analysis files:**  
+     ```bash
+     python ingest_csvs.py --ingest
+     ```
+
+   Until ingest has run, `elite_trader_profiles` is empty or stale, so:
+
+   - The Traders / Elite pages show no (or old) traders.
+   - `loadCanonicalMetricsFromDB()` in the backend returns no ROI/win-rate/quality, so signal scoring falls back to zeros and **all scores look "shitty"**.
+
+**Quick check:** Ensure the server is started with `DATABASE_URL` set, then run the pipeline with `--ingest` at least once. Reload the dashboard; traders and scores should appear after the next signals refresh (~90s) or page reload.
 
 ---
 

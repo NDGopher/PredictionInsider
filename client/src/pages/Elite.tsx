@@ -462,7 +462,7 @@ function TraderDeepDive({ wallet, username }: { wallet: string; username: string
             ))}
           </div>
 
-          {/* PNL breakdown — canonical when available, falls back to computed */}
+          {/* PNL breakdown — Polymarket verified when available, else CSV/computed */}
           {(m.realizedPNL != null) ? (
             <div className="rounded-lg border border-border/50 bg-muted/20 p-3 space-y-2">
               <div className="flex items-center justify-between">
@@ -732,8 +732,11 @@ function TraderCard({ trader }: { trader: EliteTrader }) {
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <div className={`w-2 h-2 rounded-full shrink-0 ${statusDot}`} title={statusLabel} />
             <div className="min-w-0">
-              <div className="font-semibold text-sm truncate" data-testid={`trader-name-${trader.wallet}`}>
+              <div className="font-semibold text-sm truncate flex items-center gap-1.5" data-testid={`trader-name-${trader.wallet}`}>
                 {trader.username}
+                {trader.wallet_resolved && !trader.wallet.startsWith("pending-") && !trader.last_analyzed_at && (
+                  <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" title="No CSV / not analyzed yet" />
+                )}
               </div>
               <div className="text-[10px] text-muted-foreground">{statusLabel}</div>
             </div>
@@ -1029,7 +1032,7 @@ function AdminPanel() {
     mutationFn: () => apiRequest("POST", "/api/elite/admin/refresh-canonical-pnl", {}),
     onSuccess: (data: any) => {
       setPnlStatus(`Canonical PNL refresh started for ${data?.wallets ?? "?"} traders. Takes ~5 min. Fetches from Polymarket /closed-positions API (matches official numbers).`);
-      toast({ title: "Canonical PNL refresh started", description: "Fetching from Polymarket closed-positions API for all 42 traders." });
+      toast({ title: "PNL refresh started", description: "Fetching from Polymarket closed-positions API for all traders." });
     },
     onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
@@ -1089,7 +1092,7 @@ function AdminPanel() {
               {canonicalPnlMutation.isPending ? "Refreshing..." : "✓ Refresh PNL (Polymarket API)"}
             </Button>
             <p className="text-[10px] text-muted-foreground leading-tight">
-              Fetches canonical realized PNL from Polymarket's /closed-positions API. Matches official Polymarket numbers. Fast (~5 min).
+              Refreshes realized PNL from Polymarket's /closed-positions API to match official numbers. CSV/analysis remains source of truth. Fast (~5 min).
             </p>
             {pnlStatus && <p className="text-[10px] text-green-600 dark:text-green-400 leading-tight">{pnlStatus}</p>}
           </div>
@@ -1121,7 +1124,7 @@ function AdminPanel() {
               {refetchMutation.isPending ? "Starting..." : "Full Re-fetch All Trades"}
             </Button>
             <p className="text-[10px] text-muted-foreground leading-tight">
-              Clears and re-imports complete trade history for all 42 traders. Use if trades are missing or incorrect.
+              Clears and re-imports complete trade history for all traders. Use if trades are missing or incorrect.
             </p>
             {refetchStatus && <p className="text-[10px] text-yellow-600 dark:text-yellow-400 leading-tight">{refetchStatus}</p>}
           </div>

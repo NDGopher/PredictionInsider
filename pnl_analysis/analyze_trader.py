@@ -69,10 +69,11 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
     if "total_position_pnl" not in df.columns:
         df["total_position_pnl"] = df["realizedPnl"] + df["cashPnl"]
 
-    # Grouping ID (nets out hedges on the same event)
-    df["grouping_id"] = df["eventSlug"].fillna(df.get("slug", "")).where(
-        df["eventSlug"].notna(), df.get("slug", "")
-    )
+    # True PNL: raw sum(realizedPnl) — matches Polymarket display; not used in analysis
+    raw_realized_pnl = float(df["realizedPnl"].sum())
+
+    # Grouping ID (event-level; matches polyhistory ANALYSISCODE / Cannae.py)
+    df["grouping_id"] = df["eventSlug"].fillna(df.get("slug", ""))
 
     # Cost basis
     df["calculated_cost"] = df.apply(
@@ -84,6 +85,18 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
     df["sport_type"]  = df.apply(get_sport,       axis=1)
     df["market_type"] = df.apply(get_market_type, axis=1)
     df["bet_side"]    = df.apply(get_bet_side,     axis=1)
+
+    # ── Dashboard-match metrics (polyhistory / ANALYSISCODE style) ──
+    # Event-level aggregation on ALL rows (no hedge/bond strip). ROI = realized PNL / total risked.
+    # This matches Polymarket dashboard and polyhistory ANALYSISCODE.py so CSV ROIs are accurate.
+    event_agg_all = df.groupby("grouping_id").agg(
+        total_position_pnl=("total_position_pnl", "sum"),
+        calculated_cost=("calculated_cost", "sum"),
+    )
+    total_risked_dashboard = float(event_agg_all["calculated_cost"].sum())
+    roi_dashboard = (
+        (raw_realized_pnl / total_risked_dashboard * 100) if total_risked_dashboard > 0 else 0.0
+    )
 
     # ── Perfect Hedge Filter ─────────────────────────────────────
     # Identify conditionIds where the trader simultaneously held BOTH sides
@@ -140,16 +153,16 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
         title          = ("title",              "first"),
     ).reset_index()
 
-    avg_price_series = directional_df.groupby("grouping_id").apply(w_avg_price).reset_index(name="avg_price")
+    avg_price_series = directional_df.groupby("grouping_id", group_keys=False).apply(w_avg_price, include_groups=False).reset_index(name="avg_price")
     agg = agg.merge(avg_price_series, on="grouping_id", how="left")
     agg["avg_price"] = agg["avg_price"].fillna(0)
     agg["is_win"]    = agg["total_pnl"] > 0
     agg["price_bucket"] = agg["avg_price"].apply(price_bucket)
 
-    # ── Core Metrics ─────────────────────────────────────────────
-    total_profit   = agg["total_pnl"].sum()
-    total_risked   = agg["total_cost"].sum()
-    overall_roi    = (total_profit / total_risked * 100) if total_risked > 0 else 0
+    # ── Core Metrics (directional: for quality score, sport breakdown, tags) ──
+    total_profit_directional   = agg["total_pnl"].sum()
+    total_risked_directional   = agg["total_cost"].sum()
+    directional_overall_roi    = (total_profit_directional / total_risked_directional * 100) if total_risked_directional > 0 else 0
     win_rate       = agg["is_win"].mean() * 100 if len(agg) > 0 else 0
     avg_bet_size   = agg["total_cost"].mean() if len(agg) > 0 else 0
     total_events   = len(agg)
@@ -283,10 +296,10 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
 
     # Base components
     sharpe_score = min(max(pseudo_sharpe / 8  * 30, 0), 30)   # 30 pts, ceil Sharpe=8
-    roi_score    = min(max(overall_roi   / 15 * 25, 0), 25)   # 25 pts, ceil ROI=15%
+    roi_score    = min(max(directional_overall_roi / 15 * 25, 0), 25)   # 25 pts, ceil ROI=15%
     wr_score     = min(max((win_rate - 50) / 15 * 15, 0), 15) # 15 pts
     cons_score   = min(max(profitable_days / max(total_days, 1) * 10, 0), 10)
-    vol_score    = min(max(np.log10(max(total_risked, 1)) / np.log10(5_000_000) * 5, 0), 5)
+    vol_score    = min(max(np.log10(max(total_risked_directional, 1)) / np.log10(5_000_000) * 5, 0), 5)
 
     base_score = sharpe_score + roi_score + wr_score + cons_score + vol_score  # 0–85
 
@@ -310,7 +323,7 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
     leakage_pts = 0
     for sport, stat in sport_stats.items():
         if stat["events"] >= 10 and stat["roi"] < -5 and stat["net_profit"] < -5_000:
-            loss_ratio = abs(stat["net_profit"]) / max(total_profit, 1)
+            loss_ratio = abs(stat["net_profit"]) / max(total_profit_directional, 1)
             if   loss_ratio >= 0.30: leakage_pts += 10
             elif loss_ratio >= 0.10: leakage_pts +=  5
             else:                    leakage_pts +=  2
@@ -378,7 +391,7 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
         tags.append("✅ Yes-Side Specialist")
 
     underdog_profit = price_stats.get("Underdog (20-40c)", {}).get("net_profit", 0)
-    if total_profit > 0 and underdog_profit / max(total_profit, 1) > 0.4:
+    if total_profit_directional > 0 and underdog_profit / max(total_profit_directional, 1) > 0.4:
         tags.append("🎯 Underdog Sniper")
 
     if pseudo_sharpe >= 8:
@@ -434,15 +447,31 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
         side_stats, avg_bet_size, best_price_bucket, best_market, top_sport
     )
 
+    # ── Structured do-not-tail / tail-for-sure (for ingest and signals) ───
+    auto_tail_sports = [k for k, v in sport_stats.items()
+                        if v["events"] >= 20 and v["roi"] > 5 and v["net_profit"] > 0]
+    do_not_tail_sports = [k for k, v in sport_stats.items()
+                          if v["events"] >= 10 and (v["roi"] < -2 or v["win_rate"] < 45) and v["net_profit"] < -2_000]
+    do_not_tail_market_types = []
+    if market_stats.get("Spread", {}).get("events", 0) >= 10 and market_stats.get("Spread", {}).get("roi", 0) < -5:
+        do_not_tail_market_types.append("Spread")
+    if market_stats.get("Totals (O/U)", {}).get("events", 0) >= 10 and market_stats.get("Totals (O/U)", {}).get("roi", 0) < -5:
+        do_not_tail_market_types.append("Totals (O/U)")
+    do_not_tail_sides = []
+    for side_name, stat in side_stats.items():
+        if stat.get("events", 0) >= 30 and stat.get("roi", 0) < -5 and stat.get("net_profit", 0) < -5_000:
+            do_not_tail_sides.append(side_name)  # "Yes", "No", or "Specific Selection"
+
     # ── Final result dict ─────────────────────────────────────────
     return {
         "wallet":   wallet,
         "username": username,
 
         # Summary metrics
-        "total_profit":     round(total_profit, 2),
-        "total_risked":     round(total_risked, 2),
-        "overall_roi":      round(overall_roi, 2),
+        "total_profit":       round(raw_realized_pnl, 2),   # display = Polymarket-matching realized PNL
+        "raw_realized_pnl":   round(raw_realized_pnl, 2),   # Polymarket-matching true PNL (display only)
+        "total_risked":       round(total_risked_dashboard, 2),  # dashboard-match (polyhistory) for ROI denominator
+        "overall_roi":      round(roi_dashboard, 2),        # ROI = raw_realized_pnl / total_risked (accurate CSV ROIs)
         "win_rate":         round(win_rate, 2),
         "avg_bet_size":     round(avg_bet_size, 2),
         "total_events":     total_events,
@@ -486,6 +515,12 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
         "tier":             tier,
         "tags":             tags,
         "tail_guide":       tail_guide,
+
+        # Structured tail filters (for ingest → signals; re-analyzed with each run)
+        "do_not_tail_sports":       do_not_tail_sports,
+        "auto_tail_sports":         auto_tail_sports,
+        "do_not_tail_market_types": do_not_tail_market_types,
+        "do_not_tail_sides":        do_not_tail_sides,
 
         # Score breakdown (for transparency / debugging)
         "score_breakdown": {

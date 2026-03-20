@@ -1,9 +1,10 @@
 {
   "wallet": "0xd6966eb1ae7b52320ba7ab1016680198c9e08a49",
   "username": "EIf",
-  "total_profit": 214681.22,
-  "total_risked": 8925364.45,
-  "overall_roi": 2.41,
+  "total_profit": 3448765.26,
+  "raw_realized_pnl": 3448765.26,
+  "total_risked": 11013794.48,
+  "overall_roi": 31.31,
   "win_rate": 53.94,
   "avg_bet_size": 4537.55,
   "total_events": 1967,
@@ -510,6 +511,23 @@
     "\u26d4 Fade UCL"
   ],
   "tail_guide": "How to Tail EIf [B-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   OTHER \u2014 14.1% ROI, 683 events, +$181,409\n   NHL \u2014 9.1% ROI, 308 events, +$115,227\n   SOCCER (LaLiga) \u2014 28.8% ROI, 48 events, +$78,281\n\n\ud83d\udd34 DO NOT TAIL:\n   NBA \u2014 ROI -3.1%, $-128,204\n   SOCCER (UCL) \u2014 ROI -83.2%, $-64,513\n   NFL \u2014 ROI -3.0%, $-38,567\n\n\ud83d\udcc8 Stick to Moneylines (11.2% ROI over 1098 events)\n\u26d4 Mute all Spread bets (-3.3% ROI)\n\u26d4 Mute all O/U bets (-22.4% ROI)\n\ud83c\udfaf Best price zone: Underdog (20-40c) (15.7% ROI, 208 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 127% of edge from 'Specific' side \u2014 copy that side only\n\u26a1 Normal bet ~$4,538 \u2014 alert at 3x average for high-conviction plays",
+  "do_not_tail_sports": [
+    "NBA",
+    "NFL",
+    "SOCCER (UCL)",
+    "TENNIS"
+  ],
+  "auto_tail_sports": [
+    "ESPORTS",
+    "NHL",
+    "OTHER",
+    "SOCCER (LaLiga)",
+    "SOCCER (Other)"
+  ],
+  "do_not_tail_market_types": [
+    "Totals (O/U)"
+  ],
+  "do_not_tail_sides": [],
   "score_breakdown": {
     "sharpe_score": 30,
     "roi_score": 4.0,

@@ -1,22 +1,26 @@
 {
   "wallet": "0xe24838258b572f1771dffba3bcdde57a78def293",
   "username": "redskinrick",
-  "total_profit": 391368.15,
-  "total_risked": 5630808.76,
-  "overall_roi": 6.95,
-  "win_rate": 56.59,
-  "avg_bet_size": 11421.52,
-  "total_events": 493,
-  "pseudo_sharpe": 3.77,
+  "total_profit": 524631.97,
+  "raw_realized_pnl": 524631.97,
+  "total_risked": 5651034.09,
+  "overall_roi": 9.28,
+  "win_rate": 56.47,
+  "avg_bet_size": 11162.58,
+  "total_events": 487,
+  "pseudo_sharpe": 3.86,
   "profitable_days": 34,
   "total_days": 51,
+  "hedge_count": 26,
+  "hedge_risk": 194629.94,
+  "hedge_profit": 6167.44,
   "bond_count": 2,
   "bond_risk": 20225.32,
   "bond_profit": 1062.02,
   "open_count": 11,
-  "open_risk": 141972.22,
+  "open_risk": 132201.8,
   "open_value": 0.0,
-  "open_pnl": -140137.22,
+  "open_pnl": -132201.8,
   "sport_stats": {
     "NFL": {
       "net_profit": -893.13,
@@ -27,20 +31,20 @@
       "median_bet": 7119.83
     },
     "OTHER": {
-      "net_profit": 541841.27,
-      "roi": 10.16,
-      "win_rate": 57.11,
-      "events": 471,
-      "avg_bet": 11328.42,
-      "median_bet": 8718.61
+      "net_profit": 498120.51,
+      "roi": 9.56,
+      "win_rate": 56.99,
+      "events": 465,
+      "avg_bet": 11203.99,
+      "median_bet": 8515.42
     },
     "POLITICS": {
-      "net_profit": -166806.19,
-      "roi": -63.07,
+      "net_profit": -129252.86,
+      "roi": -66.06,
       "win_rate": 38.89,
       "events": 18,
-      "avg_bet": 14692.12,
-      "median_bet": 7549.31
+      "avg_bet": 10870.02,
+      "median_bet": 7411.97
     },
     "SOCCER (Other)": {
       "net_profit": 17226.21,
@@ -53,35 +57,35 @@
   },
   "market_stats": {
     "Futures": {
-      "net_profit": -100150.03,
-      "roi": -76.07,
+      "net_profit": -18094.39,
+      "roi": -98.54,
       "win_rate": 0.0,
-      "events": 3,
-      "avg_bet": 43887.46,
-      "median_bet": 51240.59
+      "events": 2,
+      "avg_bet": 9181.2,
+      "median_bet": 9181.2
     },
     "Moneyline / Match": {
-      "net_profit": -80846.47,
-      "roi": -21.97,
-      "win_rate": 57.14,
-      "events": 42,
-      "avg_bet": 8761.6,
-      "median_bet": 6052.01
+      "net_profit": -160687.72,
+      "roi": -47.26,
+      "win_rate": 55.0,
+      "events": 40,
+      "avg_bet": 8500.65,
+      "median_bet": 5355.2
     },
     "Spread": {
-      "net_profit": 22035.13,
-      "roi": 7.49,
-      "win_rate": 55.17,
-      "events": 29,
-      "avg_bet": 10145.93,
-      "median_bet": 4405.98
+      "net_profit": 23654.34,
+      "roi": 7.99,
+      "win_rate": 56.67,
+      "events": 30,
+      "avg_bet": 9869.82,
+      "median_bet": 4042.99
     },
     "Totals (O/U)": {
-      "net_profit": 550329.52,
-      "roi": 11.38,
-      "win_rate": 57.04,
-      "events": 419,
-      "avg_bet": 11543.98,
+      "net_profit": 540328.49,
+      "roi": 11.3,
+      "win_rate": 56.87,
+      "events": 415,
+      "avg_bet": 11522.16,
       "median_bet": 8816.14
     }
   },
@@ -111,44 +115,44 @@
       "median_bet": 10182.95
     },
     "Other|Moneyline / Match": {
-      "net_profit": -7982.51,
-      "roi": -3.01,
+      "net_profit": -43321.45,
+      "roi": -22.53,
       "win_rate": 66.67,
-      "events": 27,
-      "avg_bet": 9805.97,
-      "median_bet": 3712.9
+      "events": 24,
+      "avg_bet": 8012.4,
+      "median_bet": 3143.15
     },
     "Other|Spread": {
-      "net_profit": 22035.13,
-      "roi": 7.49,
-      "win_rate": 55.17,
-      "events": 29,
-      "avg_bet": 10145.93,
-      "median_bet": 4405.98
+      "net_profit": 23654.34,
+      "roi": 7.99,
+      "win_rate": 56.67,
+      "events": 30,
+      "avg_bet": 9869.82,
+      "median_bet": 4042.99
     },
     "Other|Totals (O/U)": {
-      "net_profit": 537971.6,
-      "roi": 11.29,
-      "win_rate": 56.76,
-      "events": 414,
-      "avg_bet": 11513.31,
+      "net_profit": 527970.56,
+      "roi": 11.21,
+      "win_rate": 56.59,
+      "events": 410,
+      "avg_bet": 11490.93,
       "median_bet": 8783.07
     },
     "Politics|Futures": {
-      "net_profit": -89967.08,
-      "roi": -74.06,
+      "net_profit": -7911.45,
+      "roi": -96.72,
       "win_rate": 0.0,
-      "events": 2,
-      "avg_bet": 60739.72,
-      "median_bet": 60739.72
+      "events": 1,
+      "avg_bet": 8179.45,
+      "median_bet": 8179.45
     },
     "Politics|Moneyline / Match": {
-      "net_profit": -65297.25,
-      "roi": -68.26,
-      "win_rate": 42.86,
-      "events": 14,
-      "avg_bet": 6832.82,
-      "median_bet": 6052.01
+      "net_profit": -109799.56,
+      "roi": -78.34,
+      "win_rate": 40.0,
+      "events": 15,
+      "avg_bet": 9344.12,
+      "median_bet": 6493.61
     },
     "Politics|Totals (O/U)": {
       "net_profit": -11541.86,
@@ -169,16 +173,16 @@
   },
   "price_stats": {
     "Favorite (60-80c)": {
-      "net_profit": -79272.14,
-      "roi": -61.34,
+      "net_profit": -56432.3,
+      "roi": -54.53,
       "win_rate": 71.43,
       "events": 7
     },
     "Flip (40-60c)": {
-      "net_profit": 506867.95,
-      "roi": 9.44,
-      "win_rate": 56.25,
-      "events": 464
+      "net_profit": 485772.11,
+      "roi": 9.36,
+      "win_rate": 56.24,
+      "events": 457
     },
     "Longshot (0-20c)": {
       "net_profit": -363.41,
@@ -193,37 +197,37 @@
       "events": 12
     },
     "Underdog (20-40c)": {
-      "net_profit": -34648.54,
-      "roi": -61.78,
-      "win_rate": 25.0,
-      "events": 8
+      "net_profit": -42559.99,
+      "roi": -66.23,
+      "win_rate": 22.22,
+      "events": 9
     }
   },
   "side_stats": {
     "No": {
-      "net_profit": -65931.42,
-      "roi": -42.19,
-      "positions": 25
+      "net_profit": -45456.28,
+      "roi": -36.65,
+      "positions": 23
     },
     "Specific Selection": {
-      "net_profit": 540073.58,
-      "roi": 10.18,
-      "positions": 759
+      "net_profit": 496352.82,
+      "roi": 9.58,
+      "positions": 737
     },
     "Yes": {
-      "net_profit": -82774.02,
-      "roi": -49.17,
-      "positions": 20
+      "net_profit": -65695.83,
+      "roi": -49.84,
+      "positions": 18
     }
   },
   "monthly_pnl": {
     "2024-07": 3959.61,
     "2024-08": 23.4,
-    "2024-11": -167519.21,
+    "2024-11": -129965.89,
     "2025-01": 3148.68,
     "2025-09": -7566.71,
-    "2026-01": 528052.06,
-    "2026-02": 80028.26,
+    "2026-01": 485428.79,
+    "2026-02": 83533.62,
     "2026-03": 78841.01
   },
   "top_wins": [
@@ -270,19 +274,19 @@
   ],
   "top_losses": [
     {
-      "title": "Will Donald Trump win the popular vote in the 2024 Presidential Election?",
-      "sport_type": "POLITICS",
-      "total_pnl": -67342.157541,
-      "total_cost": 70238.84115185191,
-      "avg_price": 0.6149627178758243,
-      "status": "closed"
-    },
-    {
       "title": "Weber State Wildcats vs. Idaho Vandals: O/U 155.5",
       "sport_type": "OTHER",
       "total_pnl": -52229.744,
       "total_cost": 52229.744,
       "avg_price": 0.48462155323970185,
+      "status": "closed"
+    },
+    {
+      "title": "Kamala Harris wins the popular vote?",
+      "sport_type": "POLITICS",
+      "total_pnl": -44502.310428,
+      "total_cost": 44502.310428015444,
+      "avg_price": 0.6161789999999999,
       "status": "closed"
     },
     {
@@ -320,14 +324,22 @@
     "\ud83d\udc0b Mega Whale",
     "\ud83d\udcca O/U Specialist"
   ],
-  "tail_guide": "How to Tail redskinrick [B-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   OTHER \u2014 10.2% ROI, 471 events, +$541,841\n\n\ud83d\udd34 DO NOT TAIL:\n   POLITICS \u2014 ROI -63.1%, $-166,806\n\n\ud83c\udfaf Best price zone: Flip (40-60c) (9.4% ROI, 464 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 138% of edge from 'Specific' side \u2014 copy that side only\n\u26a1 Normal bet ~$11,422 \u2014 alert at 3x average for high-conviction plays",
+  "tail_guide": "How to Tail redskinrick [B-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   OTHER \u2014 9.6% ROI, 465 events, +$498,121\n\n\ud83d\udd34 DO NOT TAIL:\n   POLITICS \u2014 ROI -66.1%, $-129,253\n\n\ud83c\udfaf Best price zone: Flip (40-60c) (9.4% ROI, 457 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 129% of edge from 'Specific' side \u2014 copy that side only\n\u26a1 Normal bet ~$11,163 \u2014 alert at 3x average for high-conviction plays",
+  "do_not_tail_sports": [
+    "POLITICS"
+  ],
+  "auto_tail_sports": [
+    "OTHER"
+  ],
+  "do_not_tail_market_types": [],
+  "do_not_tail_sides": [],
   "score_breakdown": {
-    "sharpe_score": 14.1,
-    "roi_score": 11.6,
-    "wr_score": 6.6,
+    "sharpe_score": 14.5,
+    "roi_score": 11.8,
+    "wr_score": 6.5,
     "cons_score": 6.7,
     "vol_score": 5,
-    "base_score": 44.0,
+    "base_score": 44.4,
     "flip_bonus": 5,
     "leakage_penalty": 10,
     "midzone_roi": 9.4

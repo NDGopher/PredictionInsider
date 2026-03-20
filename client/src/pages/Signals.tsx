@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   Zap, Search, ExternalLink, TrendingUp, TrendingDown, AlertCircle,
-  RefreshCw, Users, Target, ChevronDown, ChevronUp, Star, Activity,
+  RefreshCw, Users, Target, ChevronDown, ChevronUp, Star, Award, Activity,
   Bell, BellOff, Clock, DollarSign, ShieldCheck, AlertTriangle, Radio,
   Hourglass, CalendarClock, BarChart2, Flame, ChevronRight, BookmarkPlus, EyeOff, X,
   CheckCircle2, Gamepad2
@@ -24,8 +24,8 @@ import type { SignalsResponse, Signal } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
 // ─── Auto-refresh intervals ────────────────────────────────────────────────────
-const ELITE_REFRESH_SEC = 120;       // 2 minutes (was 5 min)
-const FAST_REFRESH_SEC  = 45;        // 45 seconds (was 90s)
+const ELITE_REFRESH_SEC = 60;       // 1 minute — server caches 2 min so safe for rate limits
+const FAST_REFRESH_SEC  = 45;       // 45 seconds (was 90s)
 
 // ─── Snooze helpers (localStorage) ────────────────────────────────────────────
 const SNOOZE_KEY = "pi_snoozed";
@@ -659,6 +659,12 @@ function SignalCard({ signal, mode, onSnoozed, onBetTracked, ofiData }: {
                   )}
                   {/* Market type */}
                   <MarketTypePill type={(signal as any).marketType} />
+                  {(signal as any).vipPremium === true && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-violet-600/15 text-violet-700 dark:text-violet-300 border border-violet-500/30 flex items-center gap-0.5"
+                      title="High-quality trader(s) with proven edge in this sport/market type and large conviction — surfaced even when cluster averages look weak">
+                      <Award className="w-2.5 h-2.5" /> VIP LANE
+                    </span>
+                  )}
                   {/* Actionability indicator — 3-state */}
                   {(signal as any).priceStatus === "actionable" && (
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 flex items-center gap-0.5" title="Current price is still close to average sharp entry — actionable now">
@@ -1524,7 +1530,8 @@ export default function Signals() {
   const [filter, setFilter]       = useState("all");
   const [sort, setSort]           = useState("confidence");
   const [mode, setMode]           = useState<"elite" | "fast">("elite");
-  const [sportsOnly, setSportsOnly] = useState(true);
+  const [sportsOnly, setSportsOnly] = useState(true); // default Sports Only so feed loads reliably; use All Categories when needed
+  const [showAllGrades, setShowAllGrades] = useState(false); // false = elite only (Q≥50), true = include lower-grade signals
   const [betType, setBetType]     = useState<"all" | "moneyline" | "spread" | "total" | "futures">("all");
   const [showFutures, setShowFutures] = useState(true);
   const [showEsports, setShowEsports] = useState(true);
@@ -1580,13 +1587,17 @@ export default function Signals() {
   const countdownRef = useRef<ReturnType<typeof setInterval>>();
 
   const refreshInterval = mode === "elite" ? ELITE_REFRESH_SEC : FAST_REFRESH_SEC;
-  const eliteUrl  = sportsOnly ? "/api/signals" : "/api/signals?sports=false";
+  const eliteBase = sportsOnly ? "/api/signals" : "/api/signals?sports=false";
+  const eliteUrl  = showAllGrades ? `${eliteBase}${eliteBase.includes("?") ? "&" : "?"}minQuality=0` : eliteBase;
   const queryKey  = mode === "elite" ? [eliteUrl] : ["/api/signals/fast"];
 
   // ── Query ────────────────────────────────────────────────────────────────────
   const { data, isLoading, error } = useQuery<SignalsResponse>({
     queryKey,
+    queryFn: () => fetch(mode === "elite" ? eliteUrl : "/api/signals/fast").then(r => { if (!r.ok) throw new Error(r.statusText || "API error"); return r.json(); }),
     staleTime: (refreshInterval - 5) * 1000,
+    retry: 2,
+    retryDelay: (attempt) => (attempt + 1) * 2000, // 2s, 4s — helps when toggling categories and server is busy
   });
 
   // ── Process new signals for alerts ───────────────────────────────────────────
@@ -1747,14 +1758,14 @@ export default function Signals() {
                 data-testid="badge-best-bets-count"
               >
                 <Star className="w-2.5 h-2.5" />
-                {bestBetsCount} Best Bet{bestBetsCount !== 1 ? "s" : ""}
+                {bestBetsCount} {bestBetsCount === 1 ? "Best Bet" : "Best Bets"}
               </button>
             )}
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
             {mode === "elite"
               ? "Aggregate open positions from official top-50 leaderboard — direct from on-chain subgraph"
-              : "Real-time consensus from recent Polymarket sports trades — refreshes every 90s"}
+              : "Real-time consensus from recent Polymarket sports trades — refreshes every 45s"}
           </p>
         </div>
 
@@ -1869,6 +1880,25 @@ export default function Signals() {
               }`}
             >
               All Categories
+            </button>
+            <span className="w-px h-4 bg-border" />
+            <button
+              onClick={() => setShowAllGrades(false)}
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                !showAllGrades ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Only signals from B-Tier+ traders (avg quality ≥50)"
+            >
+              Elite only (Q≥50)
+            </button>
+            <button
+              onClick={() => setShowAllGrades(true)}
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                showAllGrades ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Include lower-grade traders"
+            >
+              All grades
             </button>
           </div>
         )}
@@ -2020,7 +2050,7 @@ export default function Signals() {
           )}
           {data?.source && (
             <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-muted border border-border">
-              {data.source.includes("elite") ? "On-chain subgraph" : "Live trades"} · {mode === "elite" ? "5m refresh" : "90s refresh"}
+              {data.source.includes("elite") ? "On-chain subgraph" : "Live trades"} · {mode === "elite" ? "1m refresh" : "45s refresh"}
             </span>
           )}
         </div>
@@ -2049,7 +2079,8 @@ export default function Signals() {
             <div>
               <div className="font-medium">Failed to load signals</div>
               <div className="text-sm text-muted-foreground mt-1 max-w-sm">
-                Polymarket APIs may be temporarily unavailable or rate-limited.
+                Polymarket APIs may be temporarily unavailable or rate-limited.{" "}
+                {mode === "elite" && !sportsOnly && "All Categories uses more data — try again in a moment or use Sports Only."}
               </div>
             </div>
             <Button onClick={handleRefresh} variant="outline" className="gap-2">

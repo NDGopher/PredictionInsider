@@ -1,9 +1,10 @@
 {
   "wallet": "0xf588b19afe63e1aba00f125f91e3e3b0fdc62b81",
   "username": "RandomPunter",
-  "total_profit": 42153.2,
-  "total_risked": 584352.02,
-  "overall_roi": 7.21,
+  "total_profit": 471015.48,
+  "raw_realized_pnl": 471015.48,
+  "total_risked": 14761955.77,
+  "overall_roi": 3.19,
   "win_rate": 53.09,
   "avg_bet_size": 245.63,
   "total_events": 2379,
@@ -558,6 +559,17 @@
     "\u26d4 Fade Spreads"
   ],
   "tail_guide": "How to Tail RandomPunter [B-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   OTHER \u2014 7.3% ROI, 1381 events, +$15,437\n   SOCCER (Other) \u2014 17.6% ROI, 349 events, +$13,769\n   ESPORTS \u2014 16.7% ROI, 97 events, +$10,672\n\n\ud83d\udcc8 Stick to Moneylines (8.2% ROI over 1358 events)\n\u26d4 Mute all Spread bets (-15.4% ROI)\n\ud83c\udfaf Best price zone: Favorite (60-80c) (19.9% ROI, 517 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 60% of edge from 'Specific' side \u2014 copy that side only\n\ud83d\udcb0 Avg bet ~$246",
+  "do_not_tail_sports": [],
+  "auto_tail_sports": [
+    "ESPORTS",
+    "OTHER",
+    "SOCCER (Other)",
+    "TENNIS"
+  ],
+  "do_not_tail_market_types": [
+    "Spread"
+  ],
+  "do_not_tail_sides": [],
   "score_breakdown": {
     "sharpe_score": 14.5,
     "roi_score": 12.0,

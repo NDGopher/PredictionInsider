@@ -72,7 +72,6 @@ TRADER_MAP = {
     "0p0jogggg":                         "0x6ac5bb06a9eb05641fd5e82640268b92f3ab4b6e",
     "Cannae":                            "0x7ea571c40408f340c1c8fc8eaacebab53c1bde7b",
     "RN1":                               "0x2005d16a84ceefa912d4e380cd32e7ff827875ea",
-    "swisstony":                         "0x204f72f35326db932158cba6adff0b9a1da95e14",
 }
 
 OUTPUT_DIR  = Path(__file__).resolve().parent / "output"

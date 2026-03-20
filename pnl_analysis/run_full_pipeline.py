@@ -15,6 +15,12 @@ USAGE:
   # Skip fetching — just re-analyze existing CSVs (e.g. after you dropped CSVs in output/)
   python3 pnl_analysis/run_full_pipeline.py --analyze-only --ingest
 
+  # DAILY RUN: only merge NEW trades into existing CSVs, then re-analyze all and ingest (no full re-fetch).
+  python3 pnl_analysis/run_full_pipeline.py --incremental --ingest
+
+  # Skip re-fetch for whales (use existing CSV, still analyze). Use per-trader script for full refresh.
+  python3 pnl_analysis/run_full_pipeline.py --skip-if-rows-over 250000 --ingest
+
   # One specific trader, re-analyze from existing CSV
   python3 pnl_analysis/run_full_pipeline.py --traders geniusMC --analyze-only --ingest
 
@@ -37,6 +43,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+# Windows: avoid UnicodeEncodeError when printing emoji from analyze_trader
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 from analyze_trader import analyze_csv
 
 OUTPUT_DIR  = Path(__file__).resolve().parent / "output"
@@ -55,11 +69,17 @@ parser.add_argument("--traders", type=str, default="",
                     help="Comma-separated usernames to process (default: all)")
 parser.add_argument("--stale-days", type=float, default=0,
                     help="Only re-fetch traders whose CSV is older than N days (0 = always re-fetch)")
+parser.add_argument("--incremental", action="store_true",
+                    help="Fetch only recent activity (2 pages closed + 1 open), merge into existing CSV, then re-analyze all. Use for daily runs.")
+parser.add_argument("--skip-if-rows-over", type=int, default=0,
+                    help="Skip re-fetch for traders whose CSV already has more than N rows (use existing CSV, still analyze). 0 = disabled. Use 250000 to avoid re-fetching whales in batch.")
 args, _ = parser.parse_known_args()
 
 ANALYZE_ONLY  = args.analyze_only
 INGEST        = args.ingest
 STALE_DAYS    = args.stale_days
+INCREMENTAL   = getattr(args, "incremental", False)
+SKIP_IF_ROWS_OVER = getattr(args, "skip_if_rows_over", 0)
 FILTER_NAMES  = set(n.strip() for n in args.traders.split(",") if n.strip())
 
 # ================================================================
@@ -112,7 +132,6 @@ ALL_TRADERS = [
     ("0x6ac5bb06a9eb05641fd5e82640268b92f3ab4b6e", "0p0jogggg"),
     ("0x7ea571c40408f340c1c8fc8eaacebab53c1bde7b", "Cannae"),
     ("0x2005d16a84ceefa912d4e380cd32e7ff827875ea", "RN1"),
-    ("0x204f72f35326db932158cba6adff0b9a1da95e14", "swisstony"),
 ]
 
 def csv_path_for(wallet, username):
@@ -131,6 +150,17 @@ def csv_age_days(wallet, username):
     age_secs = time.time() - p.stat().st_mtime
     return age_secs / 86400
 
+def csv_row_count(wallet, username):
+    """Returns number of rows in existing CSV, or 0 if missing/unreadable."""
+    p = csv_path_for(wallet, username)
+    if not p.exists():
+        return 0
+    try:
+        df = pd.read_csv(p, usecols=[0], low_memory=False)
+        return len(df)
+    except Exception:
+        return 0
+
 def should_skip(wallet, username):
     """Return True if this trader should be skipped based on stale-days logic."""
     if ANALYZE_ONLY:
@@ -146,12 +176,16 @@ def should_skip(wallet, username):
 # DATA FETCH  (exact /closed-positions + /positions approach)
 # ================================================================
 
-def fetch_positions(address, endpoint):
+def fetch_positions(address, endpoint, max_pages=None):
+    """Fetch positions. If max_pages is set (e.g. 2), stop after that many pages (for incremental)."""
     base_url = f"https://data-api.polymarket.com/{endpoint}"
     params   = {"user": address, "limit": 50, "offset": 0}
     all_data = []
+    page     = 0
 
     while True:
+        if max_pages is not None and page >= max_pages:
+            break
         try:
             resp = requests.get(base_url, params=params, timeout=30)
         except requests.exceptions.RequestException as e:
@@ -160,16 +194,69 @@ def fetch_positions(address, endpoint):
         if resp.status_code == 400:
             break
         if resp.status_code != 200:
-            print(f"    ❌ {endpoint} HTTP {resp.status_code}")
+            print(f"    [X] {endpoint} HTTP {resp.status_code}")
             break
         data = resp.json()
         if not data:
             break
         all_data.extend(data)
+        if len(data) < 50:
+            break
         params["offset"] += 50
-        time.sleep(0.5)
+        page += 1
+        time.sleep(0.3)
 
     return pd.DataFrame(all_data)
+
+
+def fetch_recent_and_merge(address, username):
+    """
+    Incremental: fetch only recent closed (2 pages) + recent open (1 page), merge into existing CSV.
+    Returns path to updated CSV or None if no existing CSV.
+    """
+    csv_path = csv_path_for(address, username)
+    if not csv_path.exists():
+        return None
+    try:
+        existing = pd.read_csv(csv_path, low_memory=False)
+    except Exception as e:
+        print(f"    ⚠️  Could not read existing CSV: {e}")
+        return None
+    id_col = "id" if "id" in existing.columns else None
+    if id_col is None:
+        return csv_path  # no id column, skip merge
+
+    existing_ids = set(existing[id_col].astype(str).dropna())
+    # Up to ~2000 closed + ~1000 open (40 + 20 pages) — fast, avoids 50k+ full fetch
+    df_closed = fetch_positions(address, "closed-positions", max_pages=40)
+    time.sleep(0.3)
+    df_open  = fetch_positions(address, "positions", max_pages=20)
+    if df_closed.empty and df_open.empty:
+        return csv_path
+
+    df_closed["status"] = "closed"
+    df_open["status"]   = "open"
+    new_df = pd.concat([df_closed, df_open], ignore_index=True)
+    if new_df.empty:
+        return csv_path
+    # Keep only rows we don't already have
+    if id_col in new_df.columns:
+        new_rows = new_df[~new_df[id_col].astype(str).isin(existing_ids)]
+    else:
+        new_rows = new_df
+    if new_rows.empty:
+        return csv_path
+    combined = pd.concat([existing, new_rows], ignore_index=True)
+    if "id" in combined.columns:
+        combined = combined.drop_duplicates(subset=["id"], keep="first")
+    for col in ["realizedPnl", "cashPnl", "currentValue", "initialValue"]:
+        if col in combined.columns:
+            combined[col] = pd.to_numeric(combined[col], errors="coerce").fillna(0)
+    if "total_position_pnl" not in combined.columns:
+        combined["total_position_pnl"] = combined.get("realizedPnl", 0) + combined.get("cashPnl", 0)
+    combined.to_csv(csv_path, index=False, quoting=csv_module.QUOTE_ALL)
+    print(f"    📄 Merged {len(new_rows):,} new rows -> {csv_path.name} ({len(combined):,} total)")
+    return csv_path
 
 
 def collect_and_save(address, username):
@@ -210,32 +297,43 @@ def process_trader(address, username):
     json_path = json_path_for(address, username)
 
     print(f"\n{'='*70}")
-    print(f"🚀  {username}  ({address})")
+    print(f"[>>] {username}  ({address})")
     print(f"{'='*70}")
 
     # ── Decide whether to fetch or use existing CSV ──────────────
     if not ANALYZE_ONLY:
-        age = csv_age_days(address, username)
-        if STALE_DAYS > 0 and age is not None and age < STALE_DAYS:
-            print(f"    ✅ CSV is {age:.1f}d old (< {STALE_DAYS}d stale threshold) — using existing")
-        else:
-            if age is not None:
-                print(f"    🔄 CSV is {age:.1f}d old — re-fetching")
-            result = collect_and_save(address, username)
-            if result is None:
+        if INCREMENTAL:
+            # Fetch only recent activity and merge into existing CSV; skip if no CSV
+            merged = fetch_recent_and_merge(address, username)
+            if merged is None:
+                print(f"    ⚠️  No existing CSV — skipping fetch (run full pipeline once)")
                 return None
-    else:
+            # Fall through to analyze (csv_path is already updated)
+        else:
+            age = csv_age_days(address, username)
+            rows = csv_row_count(address, username) if SKIP_IF_ROWS_OVER else 0
+            if SKIP_IF_ROWS_OVER and rows > SKIP_IF_ROWS_OVER:
+                print(f"    [skip] CSV has {rows:,} rows (>{SKIP_IF_ROWS_OVER:,}) — using existing (run trader script for full refresh)")
+            elif STALE_DAYS > 0 and age is not None and age < STALE_DAYS:
+                print(f"    [OK] CSV is {age:.1f}d old (< {STALE_DAYS}d stale threshold) — using existing")
+            else:
+                if age is not None:
+                    print(f"    🔄 CSV is {age:.1f}d old — re-fetching")
+                result = collect_and_save(address, username)
+                if result is None:
+                    return None
+    if ANALYZE_ONLY or INCREMENTAL:
         if not csv_path.exists():
             print(f"    ⚠️  CSV not found — skipping (run without --analyze-only to fetch)")
             return None
         age = csv_age_days(address, username)
-        print(f"    📂 Using existing CSV ({age:.1f}d old): {csv_path.name}")
+        print(f"    [csv] Using existing CSV ({age:.1f}d old): {csv_path.name}" if age is not None else f"    [csv] Using {csv_path.name}")
 
     # ── Gemini-style analysis ─────────────────────────────────────
     try:
         result = analyze_csv(csv_path, username, address)
     except Exception as e:
-        print(f"    ❌ Analysis failed: {e}")
+        print(f"    [X] Analysis failed: {e}")
         import traceback; traceback.print_exc()
         return None
 
@@ -248,9 +346,85 @@ def process_trader(address, username):
     print(f"    💰 Net PnL: ${result['total_profit']:,.0f}  |  Win Rate: {result['win_rate']:.1f}%  |  {result['total_events']:,} events")
     print(f"    🏆 Top sport: {result['top_sport']}")
     print(f"    🏷️  Tags: {', '.join(result['tags'][:6])}")
-    print(f"    ✅ JSON saved → {json_path.name}")
+    print(f"    [OK] JSON saved -> {json_path.name}")
     return result
 
+
+# ================================================================
+# GRADE CHANGE DETECTION (previous vs current run)
+# ================================================================
+
+PREVIOUS_INGEST_PATH = OUTPUT_DIR / "_previous_ingest.json"
+
+def load_previous_ingest():
+    """Load last run's analysis snapshot for diffing. Returns dict wallet -> analysis dict, or None."""
+    if not PREVIOUS_INGEST_PATH.exists():
+        return None
+    try:
+        with open(PREVIOUS_INGEST_PATH) as f:
+            data = json.load(f)
+        if not isinstance(data, list):
+            return None
+        return {(r.get("wallet") or "").strip().lower(): r for r in data if (r.get("wallet") or "").strip()}
+    except Exception:
+        return None
+
+def compute_grade_changes(previous_by_wallet, current_list):
+    """Compare previous ingest snapshot to current. Returns list of { username, wallet, changes, previous, new }."""
+    current_by_wallet = {(r.get("wallet") or "").strip().lower(): r for r in current_list if (r.get("wallet") or "").strip()}
+    out = []
+    for wallet, new_r in current_by_wallet.items():
+        prev = previous_by_wallet.get(wallet) if previous_by_wallet else None
+        username = new_r.get("username") or wallet[:10]
+        changes = []
+        prev_tier = prev.get("tier") if prev else None
+        new_tier = new_r.get("tier")
+        if prev_tier != new_tier:
+            changes.append(f"tier: {prev_tier} -> {new_tier}")
+        prev_q = prev.get("quality_score") if prev else None
+        new_q = new_r.get("quality_score")
+        if prev_q is not None and new_q is not None and prev_q != new_q:
+            changes.append(f"quality_score: {prev_q} -> {new_q}")
+        prev_roi = prev.get("overall_roi") if prev else None
+        new_roi = new_r.get("overall_roi")
+        if prev_roi is not None and new_roi is not None and abs((prev_roi or 0) - (new_roi or 0)) > 0.05:
+            changes.append(f"ROI: {prev_roi:.1f}% -> {new_roi:.1f}%")
+        prev_pnl = prev.get("total_profit") if prev else None
+        new_pnl = new_r.get("total_profit")
+        if prev_pnl is not None and new_pnl is not None and abs((prev_pnl or 0) - (new_pnl or 0)) > 1:
+            changes.append(f"total_profit: ${prev_pnl:,.0f} -> ${new_pnl:,.0f}")
+        tail_prev = (prev.get("tail_guide") or "")[:200] if prev else ""
+        tail_new = (new_r.get("tail_guide") or "")[:200]
+        if tail_prev != tail_new and (tail_prev or tail_new):
+            changes.append("tail_guide (do-not-tail / tail logic) updated")
+        if not changes:
+            continue
+        out.append({
+            "username": username,
+            "wallet": wallet,
+            "changes": changes,
+            "previous": {"tier": prev_tier, "quality_score": prev_q, "overall_roi": prev_roi, "total_profit": prev_pnl} if prev else None,
+            "new": {"tier": new_tier, "quality_score": new_q, "overall_roi": new_roi, "total_profit": new_pnl},
+        })
+    return out
+
+def write_grade_changes_report(changes):
+    """Write grade_changes_<timestamp>.json and print summary."""
+    if not changes:
+        return
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    path = OUTPUT_DIR / f"grade_changes_{ts}.json"
+    with open(path, "w") as f:
+        json.dump(changes, f, indent=2, default=str)
+    print(f"\n{'='*70}")
+    print("GRADE CHANGES (why / what / cause)")
+    print(f"{'='*70}")
+    print(f"Report written to {path.name}")
+    for c in changes:
+        print(f"  {c['username']}:")
+        for line in c["changes"]:
+            print(f"    - {line}")
+    print(f"{'='*70}\n")
 
 # ================================================================
 # BACKEND INGEST
@@ -259,19 +433,22 @@ def process_trader(address, username):
 def ingest_to_backend(all_results):
     url = f"{BACKEND_URL}/api/elite/traders/ingest-analysis"
     print(f"\n\n{'='*70}")
-    print(f"📤  Pushing {len(all_results)} trader analyses to backend...")
+    print(f"[PUSH] Pushing {len(all_results)} trader analyses to backend...")
     try:
         resp = requests.post(url, json={"traders": all_results}, timeout=60)
         if resp.status_code == 200:
             data = resp.json()
             updated = data.get("updated", 0)
-            print(f"    ✅ {updated} traders updated in DB")
+            print(f"    [OK] {updated} traders updated in DB")
             for r in data.get("summary", [])[:10]:
                 print(f"       {r['tier']:<8} Q={r['quality_score']:>3}  {r['username']:<30} ROI={r['roi']:.1f}%")
+            return True
         else:
-            print(f"    ❌ Backend error {resp.status_code}: {resp.text[:300]}")
+            print(f"    [X] Backend error {resp.status_code}: {resp.text[:300]}")
+            return False
     except Exception as e:
-        print(f"    ❌ Error: {e}")
+        print(f"    [X] Error: {e}")
+        return False
 
 
 # ================================================================
@@ -279,19 +456,26 @@ def ingest_to_backend(all_results):
 # ================================================================
 
 def rebuild_master_json():
-    """Merge all per-trader JSON files into the master summary."""
-    all_results = []
+    """Merge all per-trader JSON files into the master summary. One entry per wallet (dedupe)."""
+    by_wallet: dict[str, dict] = {}
     for json_file in sorted(OUTPUT_DIR.glob("*.json")):
         if json_file.name.startswith("_"):
             continue
+        if "_trades.json" in json_file.name or json_file.name.endswith("_trades.json"):
+            continue  # skip alternate exports (e.g. RN1_trades.json) so RN1 appears once
         try:
             with open(json_file) as f:
                 data = json.load(f)
-            if "wallet" in data and "username" in data:
-                all_results.append(data)
+            wallet = (data.get("wallet") or "").strip().lower()
+            if not wallet or "username" not in data:
+                continue
+            # Keep first per wallet (sorted filename order); prefer main file over any other
+            if wallet not in by_wallet:
+                by_wallet[wallet] = data
         except Exception:
             pass
 
+    all_results = list(by_wallet.values())
     # Sort by quality score descending
     all_results.sort(key=lambda x: x.get("quality_score", 0), reverse=True)
     summary_path = OUTPUT_DIR / "_all_analysis.json"
@@ -319,7 +503,9 @@ def main():
 
     print(f"{'='*70}")
     print(f"Polymarket Pipeline — {len(traders)} trader(s)")
-    mode = "analyze-only" if ANALYZE_ONLY else f"fetch (stale>{STALE_DAYS:.0f}d)" if STALE_DAYS else "fetch all"
+    mode = "analyze-only" if ANALYZE_ONLY else "incremental (merge recent + re-analyze)" if INCREMENTAL else (f"fetch (stale>{STALE_DAYS:.0f}d)" if STALE_DAYS else "fetch all")
+    if SKIP_IF_ROWS_OVER:
+        mode += f", skip re-fetch if rows>{SKIP_IF_ROWS_OVER:,}"
     print(f"Mode: {mode}{' + ingest' if INGEST else ''}")
     print(f"Output: {OUTPUT_DIR}")
     print(f"{'='*70}")
@@ -335,7 +521,7 @@ def main():
         if not ANALYZE_ONLY and STALE_DAYS > 0:
             age = csv_age_days(address, username)
             if age is not None and age < STALE_DAYS:
-                print(f"\n⏭️  {username} — CSV is {age:.1f}d old, skipping (stale threshold {STALE_DAYS}d)")
+                print(f"\n[skip] {username} — CSV is {age:.1f}d old, skipping (stale threshold {STALE_DAYS}d)")
                 # Still analyze from existing CSV so we can ingest
                 json_path = json_path_for(address, username)
                 if json_path.exists():
@@ -367,7 +553,7 @@ def main():
             else:
                 failed.append(username)
         except Exception as e:
-            print(f"\n    ❌ Unhandled error for {username}: {e}")
+            print(f"\n    [X] Unhandled error for {username}: {e}")
             failed.append(username)
 
     # ── Rebuild master JSON (merges new results with any pre-existing JSONs) ─
@@ -388,13 +574,19 @@ def main():
             f"{r['overall_roi']:>7.1f}%  {r['pseudo_sharpe']:>6.1f}"
         )
 
-    print(f"\n📁 Master JSON has {len(all_results)} traders total → output/_all_analysis.json")
+    print(f"\n[OK] Master JSON has {len(all_results)} traders total -> output/_all_analysis.json")
 
     if INGEST:
-        # Ingest ALL results from master (not just this run's batch)
-        ingest_to_backend(all_results)
+        previous = load_previous_ingest()
+        ok = ingest_to_backend(all_results)
+        if ok:
+            changes = compute_grade_changes(previous, all_results)
+            write_grade_changes_report(changes)
+            with open(PREVIOUS_INGEST_PATH, "w") as f:
+                json.dump(all_results, f, indent=2, default=str)
+            print(f"[OK] Snapshot saved -> output/_previous_ingest.json (for next run's grade-change diff)")
     else:
-        print(f"\n💡 Add --ingest to push results to the backend database.")
+        print(f"\nTip: Add --ingest to push results to the backend database.")
 
     if failed:
         print(f"\n⚠️  Failed: {', '.join(failed)}")

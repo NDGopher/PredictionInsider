@@ -172,6 +172,9 @@ Loaded in **Phase 1** of `/api/signals` alongside `buildMarketDatabase()` — fu
 - `https://gamma-api.polymarket.com/markets` — Market metadata, prices, tokenIds
 - `https://clob.polymarket.com/midpoint` — Live midpoint prices per token
 - `https://clob.polymarket.com/book?token_id=` — Live order book (for /api/orderbook)
+- **Data API** also: `GET /activity?user={wallet}&limit=500&type=TRADE` — used for trader quick stats fallback.
+
+**Polymarket API verification** (per [docs.polymarket.com](https://docs.polymarket.com)): Base URLs match official docs — Gamma `gamma-api.polymarket.com`, Data `data-api.polymarket.com`, CLOB `clob.polymarket.com`. Gamma and Data APIs are public (no auth). Closed-positions pagination uses `limit=50` per request (API cap); our code and Python scripts use 50 consistently.
 
 ## Caching
 

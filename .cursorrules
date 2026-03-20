@@ -1,0 +1,14 @@
+# PredictionInsider AI Master Rules
+
+## Project Context
+- **Architecture**: This is a Node.js/TypeScript backend with a PostgreSQL database. It runs Python scripts (like `run_full_pipeline.py`) via child processes or chron jobs to scrape and calculate sports betting/crypto signals.
+- **The Monolith Warning**: `routes.ts` is ~4,800 lines long. The signal scoring logic starts around line 3100. *DO NOT* attempt to rewrite this entire file at once. Use targeted, surgical edits or create separate modular files when instructed.
+- **State & Data**: The live position cache is a `Map<string, any[]>` called `livePositionCache`, refreshed every 90s. 
+- **The Golden Rule of Data**: All ROI/PnL values MUST come from the PostgreSQL DB (loaded by `loadCanonicalMetricsFromDB()`). NEVER calculate ROI from live API calls.
+- **Cache Invalidation**: Cache keys (like `signals-elite-v36`) MUST be manually bumped whenever scoring logic changes, otherwise users will receive stale signals.
+
+## Coding Standards
+1. **Strict TypeScript**: NEVER use the `any` type for new code. Always create or use existing interfaces (e.g., `PositionEntry`, `CanonicalMetrics`) in `shared/schema.ts`.
+2. **Error Handling**: Always include `try/catch` blocks for external API calls and database queries. Log errors cleanly; do not swallow them.
+3. **Python Telemetry**: Whenever editing Python scripts, ensure success/failure states are logged back to the PostgreSQL database so the frontend can display health indicators.
+4. **Agentic Autonomy**: You have permission to read files, run terminal commands, and use `@browser` to verify visual changes. If a terminal command fails, read the error and attempt to fix it yourself before asking for help.

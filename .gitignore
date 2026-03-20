@@ -4,3 +4,13 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+.firecrawl/
+.env
+.env.local
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Raw CSV exports (often >100MB — GitHub rejects; regenerate via pipeline / ingest)
+pnl_analysis/output/*.csv
+polyhistory/*.csv

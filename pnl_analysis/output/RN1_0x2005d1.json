@@ -1,9 +1,10 @@
 {
   "wallet": "0x2005d16a84ceefa912d4e380cd32e7ff827875ea",
   "username": "RN1",
-  "total_profit": 363636.78,
-  "total_risked": 2657947.04,
-  "overall_roi": 13.68,
+  "total_profit": 5602406.78,
+  "raw_realized_pnl": 5602406.78,
+  "total_risked": 122052842.01,
+  "overall_roi": 4.59,
   "win_rate": 56.88,
   "avg_bet_size": 400.59,
   "total_events": 6635,
@@ -555,6 +556,20 @@
     "\ud83d\udcc8 Moneyline Pro"
   ],
   "tail_guide": "How to Tail RN1 [A-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   SOCCER (Other) \u2014 21.8% ROI, 1908 events, +$142,555\n   TENNIS \u2014 14.1% ROI, 921 events, +$109,487\n   OTHER \u2014 14.1% ROI, 2059 events, +$81,348\n\n\ud83d\udd34 DO NOT TAIL:\n   NFL \u2014 ROI -5.6%, $-3,296\n\n\ud83d\udcc8 Stick to Moneylines (16.7% ROI over 4108 events)\n\ud83c\udfaf Best price zone: Favorite (60-80c) (25.5% ROI, 1486 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 57% of edge from 'Specific' side \u2014 copy that side only\n\ud83d\udcb0 Avg bet ~$401",
+  "do_not_tail_sports": [
+    "NFL"
+  ],
+  "auto_tail_sports": [
+    "MLB",
+    "NBA",
+    "OTHER",
+    "SOCCER (EPL)",
+    "SOCCER (LaLiga)",
+    "SOCCER (Other)",
+    "TENNIS"
+  ],
+  "do_not_tail_market_types": [],
+  "do_not_tail_sides": [],
   "score_breakdown": {
     "sharpe_score": 17.0,
     "roi_score": 22.8,

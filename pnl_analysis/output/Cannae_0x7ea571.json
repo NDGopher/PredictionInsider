@@ -1,9 +1,10 @@
 {
   "wallet": "0x7ea571c40408f340c1c8fc8eaacebab53c1bde7b",
   "username": "Cannae",
-  "total_profit": 89162.93,
-  "total_risked": 1812669.89,
-  "overall_roi": 4.92,
+  "total_profit": 9003167.89,
+  "raw_realized_pnl": 9003167.89,
+  "total_risked": 28288105.42,
+  "overall_roi": 31.83,
   "win_rate": 52.64,
   "avg_bet_size": 887.69,
   "total_events": 2042,
@@ -386,6 +387,19 @@
     "\u26d4 Fade UCL"
   ],
   "tail_guide": "How to Tail Cannae [C-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   SOCCER (Other) \u2014 15.1% ROI, 969 events, +$89,777\n   SOCCER (EPL) \u2014 61.5% ROI, 62 events, +$49,773\n   SOCCER (LaLiga) \u2014 10.0% ROI, 92 events, +$13,470\n\n\ud83d\udd34 DO NOT TAIL:\n   SOCCER (UCL) \u2014 ROI -25.6%, $-59,825\n   NHL \u2014 ROI -19.3%, $-27,778\n\n\ud83d\udcc8 Stick to Moneylines (6.2% ROI over 1199 events)\n\u26d4 Mute all O/U bets (-8.7% ROI)\n\ud83c\udfaf Best price zone: Longshot (0-20c) (281.7% ROI, 90 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 78% of edge from 'No' side \u2014 copy that side only\n\ud83d\udcb0 Avg bet ~$888",
+  "do_not_tail_sports": [
+    "NHL",
+    "SOCCER (UCL)"
+  ],
+  "auto_tail_sports": [
+    "SOCCER (EPL)",
+    "SOCCER (LaLiga)",
+    "SOCCER (Other)"
+  ],
+  "do_not_tail_market_types": [
+    "Totals (O/U)"
+  ],
+  "do_not_tail_sides": [],
   "score_breakdown": {
     "sharpe_score": 0,
     "roi_score": 8.2,

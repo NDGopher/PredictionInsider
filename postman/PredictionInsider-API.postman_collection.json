@@ -1,0 +1,223 @@
+{
+  "info": {
+    "name": "PredictionInsider API",
+    "description": "API tests for PredictionInsider dashboard. Set {{baseUrl}} to http://127.0.0.1:5000 (or your server).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:5000" }
+  ],
+  "item": [
+    {
+      "name": "Health & Dashboard",
+      "item": [
+        {
+          "name": "GET Root (dashboard)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/",
+            "description": "Serves the dashboard HTML; 200 expected."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Signals",
+      "item": [
+        {
+          "name": "GET Signals (sports)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/signals?sports=true",
+            "description": "Elite signals with sports filter."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has signals array', () => { const j = pm.response.json(); pm.expect(j).to.have.property('signals'); pm.expect(j.signals).to.be.an('array'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET Signals Fast (sports)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/signals/fast?sports=true",
+            "description": "Live feed signals."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has signals array', () => { const j = pm.response.json(); pm.expect(j).to.have.property('signals'); pm.expect(j.signals).to.be.an('array'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Markets",
+      "item": [
+        {
+          "name": "GET Markets (upcoming)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/markets?type=upcoming",
+            "description": "Sports markets, upcoming."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has markets array', () => { const j = pm.response.json(); pm.expect(j).to.have.property('markets'); pm.expect(j.markets).to.be.an('array'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET Markets Search",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/markets/search?q=nba",
+            "description": "Full-text market search."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has markets array', () => { const j = pm.response.json(); pm.expect(j).to.have.property('markets'); pm.expect(j.markets).to.be.an('array'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Traders & Leaderboard",
+      "item": [
+        {
+          "name": "GET Traders (sports)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/traders?category=sports",
+            "description": "Sports leaderboard; may return 500 if DB or Polymarket is unavailable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 500', () => { pm.expect([200, 500]).to.include(pm.response.code); });",
+                  "if (pm.response.code === 200) { const j = pm.response.json(); pm.test('Has traders array', () => { pm.expect(j).to.have.property('traders'); pm.expect(j.traders).to.be.an('array'); }); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Elite (requires DB)",
+      "item": [
+        {
+          "name": "GET Elite Traders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/elite/traders",
+            "description": "Curated elite traders; requires DATABASE_URL. May return 500 if DB not configured."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 500 (DB optional)', () => { const code = pm.response.code; pm.expect([200, 500]).to.include(code); });",
+                  "if (pm.response.code === 200) { const j = pm.response.json(); pm.test('Has traders', () => { pm.expect(j).to.have.property('traders'); pm.expect(j.traders).to.be.an('array'); }); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bets (requires DB)",
+      "item": [
+        {
+          "name": "GET Bets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/bets",
+            "description": "Tracked bets; requires DATABASE_URL."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 500', () => { pm.expect([200, 500]).to.include(pm.response.code); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Alerts",
+      "item": [
+        {
+          "name": "GET Alerts Live",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/alerts/live",
+            "description": "Recent large bets."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has alerts array', () => { const j = pm.response.json(); pm.expect(j).to.have.property('alerts'); pm.expect(j.alerts).to.be.an('array'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
