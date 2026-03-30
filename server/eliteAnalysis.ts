@@ -2041,9 +2041,6 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
     (s, r) => s + (Number(r.avg_price) || 0) * (Number(r.total_bought) || 0),
     0,
   );
-  const overallROI = totalInvested > 0
-    ? Math.round((realizedPNL / totalInvested) * 10000) / 100
-    : 0;
 
   // ── Market-level (condition) aggregation — Polymarket Analytics parity ───────
   // Win rate MUST be at **condition** (market) grain. Old code used **eventSlug** buckets,
@@ -2077,6 +2074,15 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
     }
   }
   const closedMarketCount = condMap.size;
+
+  // Overall ROI only when enough capital + markets — else tiny denominators look like +1,000,000%.
+  const minInvestedUsd = 800;
+  const minClosedMarkets = 8;
+  const overallROI =
+    totalInvested >= minInvestedUsd && closedMarketCount >= minClosedMarkets && totalInvested > 0
+      ? Math.round((realizedPNL / totalInvested) * 10000) / 100
+      : 0;
+
   let condWins = 0;
   let condLosses = 0;
   for (const [, v] of condMap) {
@@ -2470,7 +2476,9 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
       redeemableCount:     c.redeemableCount,
       redeemableValue:     c.redeemableValue,
       totalInvested:       c.totalInvested,
-      roiCapital:          c.roiCapital,
+      // Do NOT write `roiCapital` here — ingest uses `roiCapital` = USD total risked; canonical
+      // "capital ROI %" belongs in `capitalRoiPercent` only (see routes.ts overall_roi CASE).
+      capitalRoiPercent:   c.roiCapital,
       last30dROI:          c.last30dROI,
       last30dPNL:          c.last30dPNL,
       last30dInvested:     c.last30dInvested,

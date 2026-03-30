@@ -723,8 +723,16 @@ async function loadCanonicalMetricsFromDB(): Promise<Map<string, CanonicalEntry>
       SELECT wallet,
         quality_score,
         tags,
-        COALESCE(NULLIF(metrics->>'csvDirectionalROI',''), metrics->>'overallROI')::float  AS overall_roi,
-        (metrics->>'roiCapital')::float                                                    AS roi_capital,
+        (CASE
+          WHEN NULLIF(TRIM(metrics->>'csvTier'), '') IS NOT NULL
+            AND NULLIF(TRIM(metrics->>'csvDirectionalROI'), '') IS NOT NULL
+          THEN NULLIF(metrics->>'csvDirectionalROI','')::float
+          WHEN (metrics->>'rawRealizedPnl') IS NOT NULL AND (metrics->>'rawRealizedPnl') <> ''
+            AND COALESCE(NULLIF(metrics->>'csvTotalRisked','')::float, 0) >= 500
+          THEN ((metrics->>'rawRealizedPnl')::float / NULLIF(NULLIF(metrics->>'csvTotalRisked','')::float, 0) * 100)
+          ELSE COALESCE(NULLIF(metrics->>'csvDirectionalROI',''), NULLIF(metrics->>'overallROI',''))::float
+        END) AS overall_roi,
+        COALESCE(NULLIF(metrics->>'capitalRoiPercent',''), NULLIF(metrics->>'overallROI',''))::float AS roi_capital,
         NULLIF(metrics->>'winRate','')::float                                              AS win_rate,
         (metrics->>'totalTrades')::int                  AS total_trades,
         NULLIF(metrics->>'medianBetSize','')::float     AS median_bet_usdc,
@@ -2111,12 +2119,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                p.quality_score, p.tags, p.computed_at,
                p.metrics->>'totalTrades' as total_trades,
                CASE
+                 WHEN NULLIF(TRIM(p.metrics->>'csvTier'), '') IS NOT NULL
+                   AND NULLIF(TRIM(p.metrics->>'csvDirectionalROI'), '') IS NOT NULL
+                 THEN p.metrics->>'csvDirectionalROI'
                  WHEN (p.metrics->>'rawRealizedPnl') IS NOT NULL AND (p.metrics->>'rawRealizedPnl') <> ''
-                   AND (COALESCE((p.metrics->>'csvTotalRisked')::float, (p.metrics->>'roiCapital')::float, (p.metrics->>'totalInvested')::float, 0) > 0)
-                 THEN (((p.metrics->>'rawRealizedPnl')::float) / NULLIF(COALESCE((p.metrics->>'csvTotalRisked')::float, (p.metrics->>'roiCapital')::float, (p.metrics->>'totalInvested')::float), 0) * 100)::text
-                 ELSE COALESCE(NULLIF(p.metrics->>'csvDirectionalROI',''), p.metrics->>'overallROI')
+                   AND COALESCE(NULLIF(p.metrics->>'csvTotalRisked','')::float, 0) >= 500
+                 THEN (((p.metrics->>'rawRealizedPnl')::float) / NULLIF(NULLIF(p.metrics->>'csvTotalRisked','')::float, 0) * 100)::text
+                 ELSE COALESCE(NULLIF(p.metrics->>'csvDirectionalROI',''), NULLIF(p.metrics->>'overallROI',''))
                END as overall_roi,
-               p.metrics->>'roiCapital' as roi_capital,
+               COALESCE(NULLIF(p.metrics->>'capitalRoiPercent',''), NULLIF(p.metrics->>'overallROI','')) as roi_capital,
                p.metrics->>'last90dROI' as last90d_roi,
                NULLIF(p.metrics->>'winRate','') as win_rate,
                COALESCE(NULLIF(p.metrics->>'csvPseudoSharpe',''), p.metrics->>'sharpeScore') as sharpe_score,

@@ -67,6 +67,8 @@ interface TraderMetrics {
   redeemableCount?: number;
   redeemableValue?: number;
   totalInvested?: number;
+  /** Canonical: return on total invested (percent). Prefer over legacy `roiCapital` (USD from CSV ingest). */
+  capitalRoiPercent?: number;
   roiCapital?: number;
   pnlWinRate?: number;
   pnlSource?: string;
@@ -444,7 +446,22 @@ function TraderDeepDive({ wallet, username }: { wallet: string; username: string
               { label: "Total USDC", value: fmtUSDC(m.totalUSDC), icon: DollarSign },
               { label: "Avg Bet", value: fmtUSDC(m.avgBetSize), icon: Target },
               { label: "PA ROI", value: fmtROI(m.overallROI), icon: TrendingUp, color: roiColor(m.overallROI) },
-              { label: "Capital ROI", value: fmtROI(m.roiCapital ?? null), icon: TrendingUp, color: roiColor(m.roiCapital ?? 0) },
+              {
+                label: "Capital ROI",
+                value: fmtROI(
+                  m.capitalRoiPercent ??
+                    (m.totalInvested && m.totalInvested > 0 && m.realizedPNL != null
+                      ? (m.realizedPNL / m.totalInvested) * 100
+                      : null),
+                ),
+                icon: TrendingUp,
+                color: roiColor(
+                  m.capitalRoiPercent ??
+                    (m.totalInvested && m.totalInvested > 0 && m.realizedPNL != null
+                      ? (m.realizedPNL / m.totalInvested) * 100
+                      : 0),
+                ),
+              },
               { label: "Win Rate", value: fmt(m.winRate, "%"), icon: Award },
               {
                 label: "Sharpe",
@@ -777,7 +794,11 @@ function TraderCard({ trader }: { trader: EliteTrader }) {
         {(overallROI != null || winRate != null) && (
           <div className="grid grid-cols-4 gap-1.5 mt-2.5">
             {[
-              { label: trader.csv_tier ? "CSV ROI" : "PA ROI", value: fmtROI(overallROI), color: overallROI != null ? roiColor(overallROI) : "" },
+              {
+                label: trader.csv_tier ? "CSV ROI" : "PA ROI",
+                value: fmtROI(overallROI),
+                color: overallROI != null ? roiColor(overallROI) : "",
+              },
               { label: "Win%", value: fmt(winRate, "%"), color: "" },
               { label: "Trades/d", value: trader.trades_per_day ? parseFloat(trader.trades_per_day).toFixed(1) : "—", color: "" },
               {
