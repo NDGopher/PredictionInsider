@@ -637,6 +637,23 @@ const VIP_DOMINATE_RISK_FRAC = 0.45;
 /** Minimum closed trades in a sport or sport×market bucket before we trust lane ROI (all elite roster). */
 const ELITE_LANE_SAMPLE_MIN = 12;
 
+/**
+ * CSV-derived `roiBySport` can show ROI>100% or ~100% WR (hedge netting, cost quirks).
+ * Never use the old `overall >= -5` guard alone — that let impossible lane stats through.
+ */
+function sportLaneTrustworthy(
+  overall: number,
+  sportRoi: number,
+  sportWr: number,
+  sportTradeCount: number,
+): boolean {
+  if (sportTradeCount < ELITE_LANE_SAMPLE_MIN) return false;
+  if (!Number.isFinite(sportRoi) || !Number.isFinite(sportWr)) return false;
+  if (sportRoi > 100 || sportWr >= 97) return false;
+  if (overall < -5 && (sportRoi > 90 || sportWr > 90)) return false;
+  return true;
+}
+
 /** Sport or sport×marketType ROI with minimum sample — "great at this lane" for VIP detection. */
 function traderSpecialtyLaneROI(
   cm: CanonicalEntry | undefined,
@@ -3934,9 +3951,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         //   5. canonical overallROI     (always available)
         // This correctly weights UAEVALORANTFAN's 9.91% eSports|moneyline ROI instead of
         // their 3.0% overall (dragged by NCAAB), and 9sh8f's 8.76% Dota2 moneyline vs 6.5%.
-        // Sanity: if trader's overall ROI is negative, don't trust a sport bucket showing 90%+ ROI/WR (stale/bad data).
-        const useSportROI = (overall: number, sportRoi: number, sportWr: number) =>
-          overall >= -5 || (sportRoi <= 90 && sportWr <= 90);
         // Quality weight: strongest traders (high qualityScore) get heaviest weight so weak traders don't inflate grades.
         const qualityWeight = (e: PosEnriched) => {
           const cm = canonicalMap.get(e.address.toLowerCase());
@@ -3961,7 +3975,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           : (sParent   && sParent.tradeCount   >= minSp) ? sParent.roi
           : overall;
           const sportWR = (sSport?.tradeCount ?? 0) >= minSp ? (sSport?.winRate ?? 0) : (sParent?.tradeCount ?? 0) >= minSp ? (sParent?.winRate ?? 0) : 0;
-          if (!useSportROI(overall, sportROI, sportWR)) sportROI = overall;
+          const laneForRoi =
+            (smtExact && smtExact.tradeCount >= minSmt) ? smtExact
+            : (smtParent && smtParent.tradeCount >= minSmt) ? smtParent
+            : (sSport && sSport.tradeCount >= minSp) ? sSport
+            : (sParent && sParent.tradeCount >= minSp) ? sParent
+            : null;
+          const laneN = laneForRoi?.tradeCount ?? 0;
+          if (!sportLaneTrustworthy(overall, sportROI, sportWR, laneN)) sportROI = overall;
           return s + sportROI * qualityWeight(e);
         }, 0) / totalQualityWeight;
 
@@ -4120,7 +4141,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           let roiUsed = (sportEntry && (sportEntry.tradeCount ?? 0) >= minSp)
             ? sportEntry.roi
             : overall;
-          if (!useSportROI(overall, roiUsed, sportEntry?.winRate ?? 0)) roiUsed = overall;
+          if (
+            sportEntry && (sportEntry.tradeCount ?? 0) >= minSp
+            && !sportLaneTrustworthy(overall, sportEntry.roi, sportEntry.winRate ?? 0, sportEntry.tradeCount ?? 0)
+          ) roiUsed = overall;
           return s + roiUsed * qualityWeight(e);
         }, 0) / totalQualityWeight;
         const insiderSportsROI = Math.round(rawInsiderROI * 10) / 10;
@@ -4141,7 +4165,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           let wr = (sportEntry && (sportEntry.tradeCount ?? 0) >= minSp)
             ? (sportEntry.winRate ?? 0)
             : (cm?.winRate ?? 0);
-          if (!useSportROI(overall, sportEntry?.roi ?? 0, wr)) wr = (cm?.winRate ?? 0);
+          if (
+            sportEntry && (sportEntry.tradeCount ?? 0) >= minSp
+            && !sportLaneTrustworthy(overall, sportEntry.roi ?? 0, wr, sportEntry.tradeCount ?? 0)
+          ) wr = (cm?.winRate ?? 0);
           return s + wr * qualityWeight(e);
         }, 0) / totalQualityWeight;
         const insiderWinRate = Math.round(rawInsiderWR * 10) / 10;
@@ -4198,8 +4225,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             const overallT = cm?.overallROI ?? e.traderInfo.roi ?? 0;
             const sportRoiT = sportEntry?.roi ?? null;
             const sportWrT = sportEntry?.winRate ?? null;
-            const cappedSportRoi = sportRoiT != null && useSportROI(overallT, sportRoiT, sportWrT ?? 0) ? sportRoiT : (sportRoiT != null ? overallT : null);
-            const cappedSportWr = sportWrT != null && useSportROI(overallT, sportRoiT ?? 0, sportWrT ?? 0) ? sportWrT : (sportWrT != null ? (cm?.winRate ?? null) : null);
+            const sportNT = sportEntry?.tradeCount ?? 0;
+            const laneOk =
+              sportRoiT != null
+              && sportWrT != null
+              && sportLaneTrustworthy(overallT, sportRoiT, sportWrT, sportNT);
+            const cappedSportRoi = laneOk ? sportRoiT : (sportRoiT != null ? overallT : null);
+            const cappedSportWr = laneOk ? sportWrT : (sportWrT != null ? (cm?.winRate ?? null) : null);
             return {
               address: e.address,
               name: e.traderInfo.name,
@@ -4234,7 +4266,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               netUsdc: Math.round(e.totalSize),
               qualityScore: (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : e.traderInfo.qualityScore,
               isSportsLb: (e.traderInfo as any).isSportsLb ?? false,
-              sportRoi: sportEntry?.roi ?? null,
+              sportRoi: (() => {
+                const se = sportEntry;
+                if (!se || !Number.isFinite(se.roi)) return null;
+                return sportLaneTrustworthy(cm?.overallROI ?? 0, se.roi, se.winRate ?? 0, se.tradeCount ?? 0)
+                  ? se.roi
+                  : (cm?.overallROI ?? null);
+              })(),
               tradeTime: (e as any).lastTimestamp || 0,
             };
           }),
@@ -4486,9 +4524,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             const catPg = getEffectiveCategoryFilter(pgPrimary.wallet.toLowerCase(), metricsByWallet.get(pgPrimary.wallet.toLowerCase()));
             if (catPg?.doNotTail?.length && (catPg.doNotTail.includes(pgSportDetailed) || catPg.doNotTail.includes(pgSport))) continue;
           }
-          const useSportROIPg = (overall: number, sportRoi: number, sportWr: number) =>
-            overall >= -5 || (sportRoi <= 90 && sportWr <= 90);
-
           // Quality weight for position-group: strongest traders get heaviest weight (same as Phase 1).
           const pgQualityWeight = (t: { wallet: string; currentValue: number }) => {
             const cm = canonicalMap.get(t.wallet.toLowerCase());
@@ -4515,7 +4550,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                           : overall;
             const sportWR = (sSport?.tradeCount ?? 0) >= minSp ? (sSport?.winRate ?? 0)
               : (sParent?.tradeCount ?? 0) >= minSp ? (sParent?.winRate ?? 0) : 0;
-            if (!useSportROIPg(overall, sportROI, sportWR)) sportROI = overall;
+            const laneForPg =
+              (smtExact && smtExact.tradeCount >= minSmt) ? smtExact
+              : (smtParent && smtParent.tradeCount >= minSmt) ? smtParent
+              : (sSport && sSport.tradeCount >= minSp) ? sSport
+              : (sParent && sParent.tradeCount >= minSp) ? sParent
+              : null;
+            const laneNPg = laneForPg?.tradeCount ?? 0;
+            if (!sportLaneTrustworthy(overall, sportROI, sportWR, laneNPg)) sportROI = overall;
             return s + sportROI * pgQualityWeight(t);
           }, 0) / pgTotalQualityWeight;
 
@@ -4623,7 +4665,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             let roi = (sportEntry && sportEntry.tradeCount >= minSp)
               ? sportEntry.roi
               : overall;
-            if (!useSportROIPg(overall, roi, sportEntry?.winRate ?? 0)) roi = overall;
+            if (
+              sportEntry && (sportEntry.tradeCount ?? 0) >= minSp
+              && !sportLaneTrustworthy(overall, roi, sportEntry.winRate ?? 0, sportEntry.tradeCount ?? 0)
+            ) roi = overall;
             return s + roi * pgQualityWeight(t);
           }, 0) / pgTotalQualityWeight;
           const pgInsiderSportsROI = Math.round(rawPgROI * 10) / 10;
@@ -4642,7 +4687,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             let wr = (sportEntry && (sportEntry.tradeCount ?? 0) >= minSp)
               ? (sportEntry.winRate ?? 0)
               : (cm?.winRate ?? 0);
-            if (!useSportROIPg(overall, sportEntry?.roi ?? 0, wr)) wr = (cm?.winRate ?? 0);
+            if (
+              sportEntry && (sportEntry.tradeCount ?? 0) >= minSp
+              && !sportLaneTrustworthy(overall, sportEntry.roi ?? 0, wr, sportEntry.tradeCount ?? 0)
+            ) wr = (cm?.winRate ?? 0);
             return s + wr * pgQualityWeight(t);
           }, 0) / pgTotalQualityWeight;
           const pgInsiderWinRate = Math.round(rawPgWR * 10) / 10;
@@ -4691,8 +4739,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               const traderRelSize = Math.round(Math.min(t.costBasis / Math.max(normalBetPg, 1), 20) * 10) / 10;
               const sportRoiPg = sportEntry?.roi ?? null;
               const sportWrPg = sportEntry?.winRate ?? null;
-              const capRoi = sportRoiPg != null && useSportROIPg(displayROI, sportRoiPg, sportWrPg ?? 0) ? sportRoiPg : (sportRoiPg != null ? displayROI : null);
-              const capWr = sportWrPg != null && useSportROIPg(displayROI, sportRoiPg ?? 0, sportWrPg ?? 0) ? sportWrPg : (sportWrPg != null ? (cm?.winRate ?? null) : null);
+              const sportNPg = sportEntry?.tradeCount ?? 0;
+              const pgLaneOk =
+                sportRoiPg != null
+                && sportWrPg != null
+                && sportLaneTrustworthy(displayROI, sportRoiPg, sportWrPg, sportNPg);
+              const capRoi = pgLaneOk ? sportRoiPg : (sportRoiPg != null ? displayROI : null);
+              const capWr = pgLaneOk ? sportWrPg : (sportWrPg != null ? (cm?.winRate ?? null) : null);
               return {
                 address: t.wallet,
                 name: t.name,
@@ -4729,7 +4782,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                   netUsdc: Math.round(t.costBasis),
                   qualityScore: (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : (lbMap.get(t.wallet)?.qualityScore ?? 20),
                   isSportsLb: t.isSportsLb,
-                  sportRoi: sportEntry?.roi ?? null,
+                  sportRoi: (() => {
+                    const se = sportEntry;
+                    if (!se || !Number.isFinite(se.roi)) return null;
+                    return sportLaneTrustworthy(cm?.overallROI ?? 0, se.roi, se.winRate ?? 0, se.tradeCount ?? 0)
+                      ? se.roi
+                      : (cm?.overallROI ?? null);
+                  })(),
                   tradeTime: 0,
                 };
               });
@@ -5471,13 +5530,25 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const roiBySport: Record<string, any> = r.roi_by_sport ?? {};
         const topSport: string | null = r.top_sport ?? null;
         const sportEntry = topSport ? roiBySport[topSport] : null;
+        const overallRoiQuick = r.roi !== null && r.roi !== undefined ? parseFloat(r.roi) : 0;
+        const sportRoiQuick =
+          sportEntry && sportEntry.roi != null && Number.isFinite(sportEntry.roi)
+            ? (sportLaneTrustworthy(
+                overallRoiQuick,
+                sportEntry.roi,
+                sportEntry.winRate ?? 0,
+                sportEntry.tradeCount ?? 0,
+              )
+                ? sportEntry.roi
+                : overallRoiQuick)
+            : null;
         return res.json({
           source: "elite",
           wallet,
           username: r.polymarket_url?.split("@")[1] || null,
           qualityScore: r.quality_score ?? null,
           roi: r.roi !== null && r.roi !== undefined ? parseFloat(r.roi) : null,
-          sportRoi: sportEntry?.roi ?? null,
+          sportRoi: sportRoiQuick,
           winRate: r.win_rate !== null && r.win_rate !== undefined ? parseFloat(r.win_rate) : null,
           totalBets: r.total_bets !== null && r.total_bets !== undefined ? parseInt(r.total_bets) : null,
           sport: topSport,
