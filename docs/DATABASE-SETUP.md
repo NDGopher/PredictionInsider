@@ -22,7 +22,7 @@ From the project root:
 docker compose up -d
 ```
 
-This starts Postgres 16 on port **5432** and runs `scripts/init-db.sql` to create all tables (`elite_traders`, `elite_trader_profiles`, etc.).
+This starts Postgres 16 on host port **5433** (mapped from container 5432; **5433** avoids conflicts with a native Windows PostgreSQL on **5432**) and runs `scripts/init-db.sql` to create all tables (`elite_traders`, `elite_trader_profiles`, etc.).
 
 ### 3. Configure the app
 
@@ -35,20 +35,18 @@ cp .env.example .env
 `.env.example` already contains the local URL:
 
 ```env
-DATABASE_URL=postgresql://predictioninsider:predictioninsider_local@localhost:5432/predictioninsider
+DATABASE_URL=postgresql://predictioninsider:predictioninsider_local@127.0.0.1:5433/predictioninsider
 ```
 
 If you already have a `.env`, set `DATABASE_URL` to the line above (or leave it if it’s correct).
 
-### 4. Push schema (if you use Drizzle migrations)
-
-If your app uses extra Drizzle-managed tables:
+### 4. Create tables (required)
 
 ```bash
-npm run db:push
+npm run db:init
 ```
 
-(The init script already creates the elite_* and tracked_bets tables; `db:push` is for any schema in `shared/schema`.)
+This runs `scripts/init-db.sql` (`CREATE TABLE IF NOT EXISTS`). Do **not** run `npm run db:push` for routine setup — `shared/schema.ts` is Zod-only; Drizzle Kit can propose **dropping** `elite_*` tables.
 
 ### 5. Run the app and ingest
 
@@ -116,7 +114,7 @@ In your project, set `DATABASE_URL` to the Neon connection string:
   ```
 - **Replit:** Tools → **Secrets** → add key `DATABASE_URL`, value = the Neon URL.
 
-Then run `npm run db:push` if you use Drizzle, start the app, and run the ingest pipeline with `--ingest`.
+Then run `npm run db:init` if you have not already applied `init-db.sql`, start the app, and run the ingest pipeline with `--ingest`.
 
 ### Neon free tier (as of 2024)
 

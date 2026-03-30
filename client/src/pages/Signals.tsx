@@ -24,7 +24,7 @@ import type { SignalsResponse, Signal } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
 // ─── Auto-refresh intervals ────────────────────────────────────────────────────
-const ELITE_REFRESH_SEC = 60;       // 1 minute — server caches 2 min so safe for rate limits
+const ELITE_REFRESH_SEC = 30;       // Match ~30s server cache + faster in-play tailing
 const FAST_REFRESH_SEC  = 45;       // 45 seconds (was 90s)
 
 // ─── Snooze helpers (localStorage) ────────────────────────────────────────────
@@ -1531,7 +1531,7 @@ export default function Signals() {
   const [sort, setSort]           = useState("confidence");
   const [mode, setMode]           = useState<"elite" | "fast">("elite");
   const [sportsOnly, setSportsOnly] = useState(true); // default Sports Only so feed loads reliably; use All Categories when needed
-  const [showAllGrades, setShowAllGrades] = useState(false); // false = elite only (Q≥50), true = include lower-grade signals
+  const [showAllGrades, setShowAllGrades] = useState(true); // true = minQuality=0 (max volume); false = server default floor (~Q40 weighted)
   const [betType, setBetType]     = useState<"all" | "moneyline" | "spread" | "total" | "futures">("all");
   const [showFutures, setShowFutures] = useState(true);
   const [showEsports, setShowEsports] = useState(true);
@@ -1606,7 +1606,9 @@ export default function Signals() {
     const newAlerts: typeof alertHistory = [];
 
     for (const sig of signals) {
-      if (sig.confidence >= 70 && !seen.has(sig.id)) {
+      const live = (sig as any).marketType === "live";
+      const threshold = live ? 68 : 70;
+      if (sig.confidence >= threshold && !seen.has(sig.id)) {
         saveSeenAlert(sig.id);
         newAlerts.push({ id: sig.id, question: sig.marketQuestion, confidence: sig.confidence, ts: Date.now() });
         if (notifEnabled) {
@@ -1683,7 +1685,7 @@ export default function Signals() {
     toast({
       title: ok ? "Notifications enabled" : "Notifications blocked",
       description: ok
-        ? "You'll be alerted for signals with confidence ≥ 70."
+        ? "You'll be alerted for signals with confidence ≥ 70 (≥ 68 for live/in-play)."
         : "Please allow notifications in your browser settings.",
     });
   };
@@ -1887,16 +1889,16 @@ export default function Signals() {
               className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                 !showAllGrades ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}
-              title="Only signals from B-Tier+ traders (avg quality ≥50)"
+              title="Applies default quality floor (~40 weighted avg) — hides noisier C-tier-heavy clusters"
             >
-              Elite only (Q≥50)
+              Standard filter
             </button>
             <button
               onClick={() => setShowAllGrades(true)}
               className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                 showAllGrades ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}
-              title="Include lower-grade traders"
+              title="minQuality=0 — include every signal the engine emits (maximum rows, more traders)"
             >
               All grades
             </button>

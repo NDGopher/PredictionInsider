@@ -1,8 +1,10 @@
 # Daily CSV and DB Updates
 
-To keep **PNL, trader scores, and signals** accurate, run the pipeline at least once per day. This refreshes CSVs from Polymarket (full trade history), re-runs sport/submarket analysis, and pushes metrics into the DB.
+To keep **PNL, trader scores, and signals** accurate, run the pipeline at least once per day. **Incremental** mode merges **recent** trades into existing CSVs (not a full history re-download every time).
 
-**Automatic on server start:** If the pipeline has not been run in the last 24 hours, the server will start it in the background when you run `npm run dev` (or your production process). The last-run time is stored in `pnl_analysis/output/.last_pipeline_run`. No need to run it manually unless you want an immediate refresh.
+**One-click Windows (`refresh-all.bat`):** Defaults to **smart** mode — it starts Docker, DB, and the dev server, and runs the Python incremental pipeline **only** if the last successful **ingest** was more than **24 hours** ago. The timestamp file is `pnl_analysis/output/.last_pipeline_run` (written after a successful ingest). To **force** a pipeline run the same day: `start-prediction-insider.bat incremental`, or in the same CMD window: `set PI_FORCE_REFRESH=1` then `refresh-all.bat`.
+
+**Automatic on server start:** If the pipeline has not been run in the last 24 hours, the server will start it in the background when you run `npm run dev`. Same `.last_pipeline_run` file as above.
 
 ## Quick run (recommended for daily)
 

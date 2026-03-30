@@ -1,114 +1,146 @@
 {
   "wallet": "0x3471a897e56a8d3621ca79af87dae4325977f17e",
   "username": "xytest",
-  "total_profit": 117346.4,
-  "raw_realized_pnl": 117346.4,
-  "total_risked": 3420789.67,
-  "overall_roi": 3.43,
-  "win_rate": 51.47,
-  "avg_bet_size": 1113.55,
-  "total_events": 136,
-  "pseudo_sharpe": 3.36,
-  "profitable_days": 22,
-  "total_days": 35,
-  "hedge_count": 1660,
-  "hedge_risk": 3269346.49,
-  "hedge_profit": 108699.11,
+  "total_profit": 196689.15,
+  "raw_realized_pnl": 196689.15,
+  "total_risked": 4450125.16,
+  "overall_roi": 4.42,
+  "win_rate": 47.7,
+  "avg_bet_size": 1174.21,
+  "total_events": 174,
+  "pseudo_sharpe": 0.25,
+  "profitable_days": 25,
+  "total_days": 48,
+  "hedge_count": 2058,
+  "hedge_risk": 4245813.38,
+  "hedge_profit": 199942.69,
   "bond_count": 0,
   "bond_risk": 0.0,
   "bond_profit": 0.0,
-  "open_count": 4,
-  "open_risk": 1525.04,
-  "open_value": 0.0,
-  "open_pnl": -1525.04,
+  "open_count": 3,
+  "open_risk": 15004.97,
+  "open_value": 10030.58,
+  "open_pnl": -4974.39,
   "sport_stats": {
     "ESPORTS": {
-      "net_profit": 12138.96,
-      "roi": 8.02,
-      "win_rate": 51.47,
-      "events": 136,
-      "avg_bet": 1113.55,
-      "median_bet": 788.74
+      "net_profit": -2340.13,
+      "roi": -1.24,
+      "win_rate": 47.67,
+      "events": 172,
+      "avg_bet": 1099.35,
+      "median_bet": 748.98
+    },
+    "OTHER": {
+      "net_profit": -1193.27,
+      "roi": -7.84,
+      "win_rate": 50.0,
+      "events": 2,
+      "avg_bet": 7611.93,
+      "median_bet": 7611.93
     }
   },
   "market_stats": {
     "Futures": {
-      "net_profit": -1032.71,
-      "roi": -100.0,
-      "win_rate": 0.0,
-      "events": 2,
-      "avg_bet": 516.36,
-      "median_bet": 516.36
+      "net_profit": -1065.59,
+      "roi": -99.07,
+      "win_rate": 25.0,
+      "events": 4,
+      "avg_bet": 268.9,
+      "median_bet": 274.8
     },
     "Moneyline / Match": {
-      "net_profit": 13171.67,
-      "roi": 8.76,
-      "win_rate": 52.24,
-      "events": 134,
-      "avg_bet": 1122.47,
-      "median_bet": 798.28
+      "net_profit": 1005.46,
+      "roi": 0.53,
+      "win_rate": 48.52,
+      "events": 169,
+      "avg_bet": 1122.68,
+      "median_bet": 801.88
+    },
+    "Spread": {
+      "net_profit": -3473.27,
+      "roi": -25.72,
+      "win_rate": 0.0,
+      "events": 1,
+      "avg_bet": 13503.85,
+      "median_bet": 13503.85
     }
   },
   "sport_market_stats": {
-    "eSports|Futures": {
-      "net_profit": -1032.71,
-      "roi": -100.0,
+    "Other|Moneyline / Match": {
+      "net_profit": 2280.0,
+      "roi": 132.56,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 1720.0,
+      "median_bet": 1720.0
+    },
+    "Other|Spread": {
+      "net_profit": -3473.27,
+      "roi": -25.72,
       "win_rate": 0.0,
-      "events": 2,
-      "avg_bet": 516.36,
-      "median_bet": 516.36
+      "events": 1,
+      "avg_bet": 13503.85,
+      "median_bet": 13503.85
+    },
+    "eSports|Futures": {
+      "net_profit": -1065.59,
+      "roi": -99.07,
+      "win_rate": 25.0,
+      "events": 4,
+      "avg_bet": 268.9,
+      "median_bet": 274.8
     },
     "eSports|Moneyline / Match": {
-      "net_profit": 13171.67,
-      "roi": 8.76,
-      "win_rate": 52.24,
-      "events": 134,
-      "avg_bet": 1122.47,
+      "net_profit": -1274.54,
+      "roi": -0.68,
+      "win_rate": 48.21,
+      "events": 168,
+      "avg_bet": 1119.12,
       "median_bet": 798.28
     }
   },
   "price_stats": {
     "Favorite (60-80c)": {
-      "net_profit": 16834.65,
-      "roi": 29.53,
-      "win_rate": 89.74,
-      "events": 39
+      "net_profit": 17101.84,
+      "roi": 24.14,
+      "win_rate": 87.76,
+      "events": 49
     },
     "Flip (40-60c)": {
-      "net_profit": 7142.24,
-      "roi": 12.86,
-      "win_rate": 58.54,
-      "events": 41
+      "net_profit": 1336.56,
+      "roi": 1.6,
+      "win_rate": 57.14,
+      "events": 49
     },
     "Longshot (0-20c)": {
-      "net_profit": -8654.26,
-      "roi": -100.0,
+      "net_profit": -12980.15,
+      "roi": -99.93,
       "win_rate": 0.0,
-      "events": 27
+      "events": 38
     },
     "Safe (80-100c)": {
-      "net_profit": 2623.8,
-      "roi": 18.18,
+      "net_profit": 2758.0,
+      "roi": 18.02,
       "win_rate": 100.0,
-      "events": 9
+      "events": 10
     },
     "Underdog (20-40c)": {
-      "net_profit": -5807.47,
-      "roi": -36.68,
-      "win_rate": 10.0,
-      "events": 20
+      "net_profit": -11749.66,
+      "roi": -53.96,
+      "win_rate": 7.14,
+      "events": 28
     }
   },
   "side_stats": {
     "Specific Selection": {
-      "net_profit": 12138.96,
-      "roi": 8.02,
-      "positions": 164
+      "net_profit": -3533.41,
+      "roi": -1.73,
+      "positions": 218
     }
   },
   "monthly_pnl": {
     "2026-02": 1252.01,
-    "2026-03": 12411.99
+    "2026-03": 188.97
   },
   "top_wins": [
     {
@@ -154,6 +186,22 @@
   ],
   "top_losses": [
     {
+      "title": "Dota 2: Team Falcons vs PARIVISION (BO3) - ESL One Birmingham Playoffs",
+      "sport_type": "ESPORTS",
+      "total_pnl": -5832.921448,
+      "total_cost": 5832.921448879657,
+      "avg_price": 0.5832802389724238,
+      "status": "closed"
+    },
+    {
+      "title": "Counter-Strike: TheMongolz vs Spirit (BO3) - BLAST Open Rotterdam Group B",
+      "sport_type": "ESPORTS",
+      "total_pnl": -4200.78023,
+      "total_cost": 4200.780230523216,
+      "avg_price": 0.607896,
+      "status": "closed"
+    },
+    {
       "title": "LoL: RED Canids vs FURIA Esports - Game 3 Winner",
       "sport_type": "ESPORTS",
       "total_pnl": -3730.7884059999997,
@@ -162,63 +210,50 @@
       "status": "closed"
     },
     {
+      "title": "Spread: Michigan Wolverines (-8.5)",
+      "sport_type": "OTHER",
+      "total_pnl": -3473.2724,
+      "total_cost": 13503.8524,
+      "avg_price": 0.5306489333369787,
+      "status": "open"
+    },
+    {
       "title": "Counter-Strike: TheMongolz vs paiN - Map 2 Winner",
       "sport_type": "ESPORTS",
       "total_pnl": -3392.1785419999997,
       "total_cost": 3392.178543579102,
       "avg_price": 0.40963680804911623,
       "status": "closed"
-    },
-    {
-      "title": "LoL: Natus Vincere vs Fnatic - Game 1 Winner",
-      "sport_type": "ESPORTS",
-      "total_pnl": -3181.466519,
-      "total_cost": 3181.4665195683774,
-      "avg_price": 0.530149,
-      "status": "closed"
-    },
-    {
-      "title": "Counter-Strike: MOUZ vs FUT Esports - Map 1 Winner",
-      "sport_type": "ESPORTS",
-      "total_pnl": -2938.730333,
-      "total_cost": 2938.73033385508,
-      "avg_price": 0.639052,
-      "status": "closed"
-    },
-    {
-      "title": "Dota 2: Aurora vs MOUZ - Game 2 Winner",
-      "sport_type": "ESPORTS",
-      "total_pnl": -1831.409506,
-      "total_cost": 1831.4095064226078,
-      "avg_price": 0.407032,
-      "status": "closed"
     }
   ],
-  "top_sport": "ESPORTS",
+  "top_sport": "OTHER",
   "best_price_bucket": "Favorite (60-80c)",
   "best_market": "Moneyline / Match",
-  "quality_score": 38,
-  "tier": "B-Tier",
+  "quality_score": 16,
+  "tier": "C-Tier",
   "tags": [
-    "\u2b50 B-Tier",
-    "\ud83c\udfae Esports Analyst"
+    "\u2b50 C-Tier",
+    "\u2696\ufe0f Hedge / MM-heavy \u2014 quality blends dashboard + directional ROI"
   ],
-  "tail_guide": "How to Tail xytest [B-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   ESPORTS \u2014 8.0% ROI, 136 events, +$12,139\n\n\ud83d\udcc8 Stick to Moneylines (8.8% ROI over 134 events)\n\ud83c\udfaf Best price zone: Favorite (60-80c) (29.5% ROI, 39 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 100% of edge from 'Specific' side \u2014 copy that side only\n\ud83d\udcb0 Avg bet ~$1,114",
+  "tail_guide": "How to Tail xytest [C-Tier]\n\n\n\ud83d\udcc8 Stick to Moneylines (0.5% ROI over 169 events)\n\ud83c\udfaf Best price zone: Favorite (60-80c) (24.1% ROI, 49 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udcb0 Avg bet ~$1,174",
   "do_not_tail_sports": [],
-  "auto_tail_sports": [
-    "ESPORTS"
-  ],
+  "auto_tail_sports": [],
   "do_not_tail_market_types": [],
   "do_not_tail_sides": [],
   "score_breakdown": {
-    "sharpe_score": 12.6,
-    "roi_score": 13.4,
-    "wr_score": 1.5,
-    "cons_score": 6.3,
-    "vol_score": 3.9,
-    "base_score": 37.6,
+    "sharpe_score": 0.9,
+    "roi_score": 5.5,
+    "wr_score": 0,
+    "cons_score": 5.2,
+    "vol_score": 4.0,
+    "base_score": 15.6,
     "flip_bonus": 0,
     "leakage_penalty": 0,
-    "midzone_roi": -11.9
+    "midzone_roi": -26.2,
+    "directional_roi": -1.73,
+    "roi_dashboard": 4.42,
+    "roi_for_quality": 3.31,
+    "hedge_risk_frac": 0.954,
+    "hedge_profit_share": 1.017
   }
 }

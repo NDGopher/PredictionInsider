@@ -1,5 +1,5 @@
 # Local PostgreSQL for PredictionInsider. Run: docker compose up -d
-# Then set DATABASE_URL in .env (see .env.example) and run: npm run db:push
+# Then set DATABASE_URL in .env (see .env.example) and run: npm run db:init
 services:
   db:
     image: postgres:16-alpine
@@ -9,8 +9,10 @@ services:
       POSTGRES_USER: predictioninsider
       POSTGRES_PASSWORD: predictioninsider_local
       POSTGRES_DB: predictioninsider
+    # Host 5433 avoids clashing with a native Windows PostgreSQL install on 5432
+    # (wrong server = "password authentication failed for user predictioninsider").
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - predictioninsider_pgdata:/var/lib/postgresql/data
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql:ro

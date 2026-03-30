@@ -56,6 +56,16 @@ from analyze_trader import analyze_csv
 OUTPUT_DIR  = Path(__file__).resolve().parent / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
 BACKEND_URL = os.environ.get("BACKEND_URL", "http://localhost:5000")
+# Same file server/scheduledPipeline.ts uses — enables 24h "smart" skip for refresh-all.bat
+LAST_PIPELINE_RUN_FILE = OUTPUT_DIR / ".last_pipeline_run"
+
+
+def write_last_pipeline_run_timestamp():
+    """Stamp successful ingest so smart refresh + ScheduledPipeline share one 24h clock."""
+    try:
+        LAST_PIPELINE_RUN_FILE.write_text(str(int(time.time() * 1000)), encoding="utf-8")
+    except OSError:
+        pass
 
 # ================================================================
 # CLI
@@ -585,6 +595,10 @@ def main():
             with open(PREVIOUS_INGEST_PATH, "w") as f:
                 json.dump(all_results, f, indent=2, default=str)
             print(f"[OK] Snapshot saved -> output/_previous_ingest.json (for next run's grade-change diff)")
+            write_last_pipeline_run_timestamp()
+        else:
+            print("\n[FAIL] Ingest did not update the database. Fix DATABASE_URL / Postgres, then re-run with --ingest.")
+            sys.exit(1)
     else:
         print(f"\nTip: Add --ingest to push results to the backend database.")
 

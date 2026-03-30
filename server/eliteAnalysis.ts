@@ -82,6 +82,25 @@ export const CURATED_TRADERS: { wallet: string; username: string; url?: string }
   { wallet: "0x7ea571c40408f340c1c8fc8eaacebab53c1bde7b", username: "Cannae", url: "https://polymarket.com/@Cannae" },
 ];
 
+/**
+ * Leaderboard-discovered wallets (sports category) — not in the 42 curated set.
+ * Seeded into `elite_traders` so the pipeline ingests them; Live Signals only **merge**
+ * trades/positions for rows that pass canonical **qualityScore ≥ 50** (see routes.ts).
+ * Remove or add entries after re-scanning Polymarket sports leaderboard + CSV review.
+ */
+export const DISCOVERED_ELITES: { wallet: string; username: string; url?: string; notes?: string }[] = [
+  { wallet: "0xb6d6e99d3bfe055874a04279f659f009fd57be17", username: "JPMorgan101", url: "https://polymarket.com/@JPMorgan101", notes: "Sports LB #1 PnL (API scan)" },
+  { wallet: "0x03e8a544e97eeff5753bc1e90d46e5ef22af1697", username: "weflyhigh", url: "https://polymarket.com/@weflyhigh", notes: "Sports LB #2 PnL" },
+  { wallet: "0xb45a797faa52b0fd8adc56d30382022b7b12192c", username: "bcda", url: "https://polymarket.com/@bcda", notes: "Sports LB #3 PnL" },
+  { wallet: "0xfa41acf573021e64b607b3294bd0c0518884a7a1", username: "hovanpavi", url: "https://polymarket.com/@hovanpavi", notes: "Sports LB #4 PnL" },
+  { wallet: "0xcb6ed9332a8fd1b930893c705dd234f37aa248e6", username: "0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6", url: "https://polymarket.com/@0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6-1774405511911", notes: "Sports LB #5 PnL" },
+  { wallet: "0x93abbc022ce98d6f45d4444b594791cc4b7a9723", username: "gatorr", url: "https://polymarket.com/@gatorr", notes: "Sports LB #6 PnL" },
+  { wallet: "0xfbf3d501e88815464642d0e913f15379c3eeb218", username: "VPenguin", url: "https://polymarket.com/@VPenguin", notes: "Sports LB #7 PnL" },
+  { wallet: "0x8a3ab8120807bd64a3de48695110e390fa2ceb9a", username: "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a", url: "https://polymarket.com/@0x8a3aB8120807bD64a3De48695110e390fa2ceB9a-1771005965025", notes: "Sports LB #8 PnL" },
+  { wallet: "0xa71093cafc0c099b4ccab24c3cb8018d817923c4", username: "Talvez10", url: "https://polymarket.com/@Talvez10", notes: "Sports LB #9 PnL" },
+  { wallet: "0x492442eab586f242b53bda933fd5de859c8a3782", username: "0x492442EaB586F242B53bDa933fD5dE859c8A3782", url: "https://polymarket.com/@0x492442EaB586F242B53bDa933fD5dE859c8A3782-1766317541188", notes: "Sports LB #10 PnL" },
+];
+
 // ─── In-memory set for fast signal lookup ────────────────────────────────────
 
 export const curatedWalletSet = new Set<string>();
@@ -310,6 +329,7 @@ export function classifySport(slug: string, title: string): string {
   const s = (slug || "").toLowerCase();
   const t = (title || "").toLowerCase();
 
+  if (s.startsWith("wnba-") || /\bwnba\b/.test(t)) return "WNBA";
   if (s.startsWith("nba-") || t.includes("nba ") || t.includes(" nba")) return "NBA";
   if (s.startsWith("nfl-") || t.includes("nfl ") || t.includes("super bowl")) return "NFL";
   if (s.startsWith("nhl-") || t.includes("nhl ") || t.includes("stanley cup")) return "NHL";
@@ -1617,6 +1637,25 @@ export async function seedCuratedTraders(): Promise<string[]> {
     } catch (_) { }
   }
 
+  for (const t of DISCOVERED_ELITES) {
+    const hasWallet = t.wallet && t.wallet.length > 0;
+    if (!hasWallet) continue;
+    const effectiveWallet = t.wallet.toLowerCase();
+    try {
+      const { rowCount } = await pool.query(`
+        INSERT INTO elite_traders (wallet, username, wallet_resolved, polymarket_url)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (wallet) DO NOTHING
+      `, [effectiveWallet, t.username, true, t.url || null]);
+
+      curatedWalletSet.add(effectiveWallet);
+      curatedWalletToUsername.set(effectiveWallet, t.username);
+      if ((rowCount ?? 0) > 0) {
+        newlyInserted.push(effectiveWallet);
+      }
+    } catch (_) { }
+  }
+
   // Also load any previously resolved wallets from DB
   try {
     const { rows } = await pool.query(`SELECT wallet, username FROM elite_traders WHERE wallet_resolved = TRUE`);
@@ -1696,19 +1735,22 @@ export interface CanonicalPNL {
 
   // ── Investment & ROI ────────────────────────────────────────────────────────
   totalInvested: number;       // sum(avgPrice * totalBought) USDC for all closed positions
-  overallROI: number;          // PNL / (winsGross + lossesGross) * 100 — matches PolymarketAnalytics
+  overallROI: number;          // realizedPNL / totalInvested on closed events (capital ROI)
   roiCapital: number;          // totalPNL / totalInvested * 100 — bankroll growth rate
   last30dPNL: number;
   last30dInvested: number;
   last30dCount: number;
-  last30dROI: number;          // 0 if no 30d data
+  last30dROI: number;          // last30dPNL / last30dInvested; 0 if no 30d data
   last90dPNL: number;
   last90dInvested: number;
   last90dCount: number;
-  last90dROI: number;
+  last90dROI: number;          // last90dPNL / last90dInvested
 
   // ── Win rates ───────────────────────────────────────────────────────────────
-  pnlWinRate: number;          // overall % positions with realizedPnl > 0
+  /** % of Polymarket *markets* (conditionIds) with net realized PnL > 0 — matches Polymarket Analytics leaderboard */
+  pnlWinRate: number;
+  /** Unique closed markets (conditions) — headline win-rate denominator */
+  closedMarketCount: number;
   winRate30: number;
   winRate90: number;
 
@@ -1723,7 +1765,7 @@ export interface CanonicalPNL {
   }>;
 
   // ── Category breakdown ───────────────────────────────────────────────────────
-  closedByCategory: Record<string, { pnl: number; positions: number; wins: number; invested: number; winsGross: number; lossesGross: number; sizes?: number[] }>;
+  closedByCategory: Record<string, { pnl: number; positions: number; wins: number; losses: number; invested: number; winsGross: number; lossesGross: number; sizes?: number[] }>;
 }
 
 function classifySportFromSlug(slug: string, title?: string): string {
@@ -1745,6 +1787,9 @@ function classifySportFromSlug(slug: string, title?: string): string {
       t.includes("stanley cup") || t.includes("ice hockey") ||
       s.startsWith("mwoh-") || s.startsWith("wwoh-") ||
       (t.includes("hockey") && (t.includes("olympic") || t.includes("winter")))) return "NHL";
+
+  // ── WNBA (before NBA — "wnba-" slugs contain the substring "nba-") ──
+  if (s.startsWith("wnba-") || /\bwnba\b/.test(t)) return "WNBA";
 
   // ── NBA ──
   if (s.startsWith("nba-") || s.includes("-nba-") || s.includes("nba-champion") ||
@@ -1962,10 +2007,11 @@ export async function syncTraderPositions(wallet: string): Promise<number> {
   return posMap.size;
 }
 
-// ─── fetchCanonicalPNL — Python-script-parity event-level aggregation ─────────
-// 1. Syncs all positions for the wallet to DB (fast upsert on subsequent calls)
-// 2. Groups by eventSlug to net out multi-bet games (moneyline + spread + O/U etc.)
-// 3. Win/loss is determined at EVENT level — exactly how Polymarket displays PNL
+// ─── fetchCanonicalPNL — full positions sync + PnL / win-rate (Polymarket Analytics parity) ─────
+// 1. Syncs all positions for the wallet to DB (paginated up to 50k positions).
+// 2. PnL & ROI: sum of closed position rows (authoritative vs Polymarket account totals).
+// 3. Win rate: **per condition** (market) net PnL — matches PA “% of markets with net profit”
+//    (not per eventSlug, which merged many markets and inflated win rates toward ~100%).
 export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
   const addr = wallet.toLowerCase();
   await initPositionsTable();
@@ -1989,102 +2035,120 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
   const activePositions  = openRows.filter(r => !r.redeemable && r.cur_price > 0.001 && r.cur_price < 0.999);
   const redeemablePositions = openRows.filter(r => r.redeemable);
 
-  // ── Event-level aggregation (Python script's key insight) ──────────────────
-  // Group all closed positions by eventSlug. Net out all bets on the same game
-  // (YES + NO, moneyline + spread + totals). This gives the exact PNL Polymarket shows.
-  const eventMap = new Map<string, {
-    pnl: number; invested: number; ts: number; sport: string; positions: number;
-  }>();
+  // ── Position totals (authoritative PnL / capital) ─────────────────────────
+  const realizedPNL = closedRows.reduce((s, r) => s + (Number(r.total_pnl) || 0), 0);
+  const totalInvested = closedRows.reduce(
+    (s, r) => s + (Number(r.avg_price) || 0) * (Number(r.total_bought) || 0),
+    0,
+  );
+  const overallROI = totalInvested > 0
+    ? Math.round((realizedPNL / totalInvested) * 10000) / 100
+    : 0;
+
+  // ── Market-level (condition) aggregation — Polymarket Analytics parity ───────
+  // Win rate MUST be at **condition** (market) grain. Old code used **eventSlug** buckets,
+  // which merged many separate markets into one net PnL → falsely high ~100% win rates vs PA.
+  // PA defines: % of *markets traded* with net profit (one condition = one logical market).
+  // Materiality: ignore dust net PnL (±cents) so "wins" are not 99% from rounding noise.
+  const materialWinLoss = (pnl: number, invested: number): "win" | "loss" | "neutral" => {
+    const t = Math.max(0.5, 0.0001 * Math.max(invested, 1));
+    if (pnl > t) return "win";
+    if (pnl < -t) return "loss";
+    return "neutral";
+  };
+
+  type CondAgg = { pnl: number; invested: number; ts: number; sport: string };
+  const condMap = new Map<string, CondAgg>();
   for (const row of closedRows) {
-    const key = (row.event_slug || row.slug || row.condition_id || row.asset).trim();
-    const inv = (row.avg_price || 0) * (row.total_bought || 0);
-    const existing = eventMap.get(key);
-    if (!existing) {
-      eventMap.set(key, {
-        pnl: row.total_pnl, invested: inv,
-        ts: row.position_ts || 0,
-        sport: row.main_category || "Other", positions: 1,
-      });
+    const cid = String(row.condition_id || "").trim();
+    const key = cid ? `c:${cid}` : (row.asset ? `a:${String(row.asset).trim()}` : "");
+    if (!key) continue;
+    const inv = (Number(row.avg_price) || 0) * (Number(row.total_bought) || 0);
+    const pnl = Number(row.total_pnl) || 0;
+    const ts = Number(row.position_ts) || 0;
+    const sport = row.main_category || "Other";
+    const ex = condMap.get(key);
+    if (!ex) {
+      condMap.set(key, { pnl, invested: inv, ts, sport });
     } else {
-      existing.pnl      += row.total_pnl;
-      existing.invested += inv;
-      if ((row.position_ts || 0) > existing.ts) existing.ts = row.position_ts;
-      existing.positions++;
+      ex.pnl += pnl;
+      ex.invested += inv;
+      if (ts > ex.ts) ex.ts = ts;
     }
   }
-
-  // Build event list — each entry is one EVENT (game/market-group)
-  const allEvents: Array<{ pnl: number; invested: number; ts: number; sport: string; win: boolean }> = [];
-  let totalGains = 0, totalLosses = 0, totalInvested = 0, wins = 0;
-  for (const [, ev] of eventMap) {
-    const win = ev.pnl > 0.001;
-    if (win) { totalGains += ev.pnl; wins++; } else { totalLosses += Math.abs(ev.pnl); }
-    totalInvested += ev.invested;
-    allEvents.push({ pnl: ev.pnl, invested: ev.invested, ts: ev.ts, sport: ev.sport, win });
+  const closedMarketCount = condMap.size;
+  let condWins = 0;
+  let condLosses = 0;
+  for (const [, v] of condMap) {
+    const o = materialWinLoss(v.pnl, v.invested);
+    if (o === "win") condWins++;
+    else if (o === "loss") condLosses++;
   }
+  const materialMarketOutcomes = condWins + condLosses;
+  const pnlWinRate = materialMarketOutcomes > 0
+    ? Math.round((condWins / materialMarketOutcomes) * 1000) / 10
+    : 0;
 
-  const realizedPNL = totalGains - totalLosses;
-  const roiDenom    = totalGains + totalLosses;
-  const overallROI  = roiDenom > 0 ? Math.round((realizedPNL / roiDenom) * 10000) / 100 : 0;
-  const pnlWinRate  = allEvents.length > 0 ? Math.round((wins / allEvents.length) * 1000) / 10 : 0;
-
-  // Bet size distribution at position level (more granular than event level)
+  // Bet size distribution at position level
   const betSizes      = closedRows.map(r => (r.avg_price || 0) * (r.total_bought || 0)).filter(v => v > 0);
   const avgBetUSDC    = betSizes.length > 0 ? Math.round(mean(betSizes) * 100) / 100 : 0;
   const medianBetUSDC = betSizes.length > 0 ? Math.round(median(betSizes) * 100) / 100 : 0;
 
-  // ── Time-windowed metrics (event-level) ───────────────────────────────────
-  const ev30 = allEvents.filter(e => e.ts * 1000 > ms30);
-  const ev90 = allEvents.filter(e => e.ts * 1000 > ms90);
+  const condList = [...condMap.values()];
+
+  // ── Time-windowed metrics (market / condition level) ───────────────────────
+  const ev30 = condList.filter(e => e.ts * 1000 > ms30);
+  const ev90 = condList.filter(e => e.ts * 1000 > ms90);
   const pnl30 = ev30.reduce((s, e) => s + e.pnl, 0);
   const pnl90 = ev90.reduce((s, e) => s + e.pnl, 0);
   const inv30 = ev30.reduce((s, e) => s + e.invested, 0);
   const inv90 = ev90.reduce((s, e) => s + e.invested, 0);
-  const wins30 = ev30.filter(e => e.win).length;
-  const wins90 = ev90.filter(e => e.win).length;
-  const wg30 = ev30.filter(e =>  e.win).reduce((s, e) => s + e.pnl, 0);
-  const lg30 = ev30.filter(e => !e.win).reduce((s, e) => s + Math.abs(e.pnl), 0);
-  const wg90 = ev90.filter(e =>  e.win).reduce((s, e) => s + e.pnl, 0);
-  const lg90 = ev90.filter(e => !e.win).reduce((s, e) => s + Math.abs(e.pnl), 0);
-  const last30dROI = (wg30 + lg30) > 0 ? Math.round((pnl30 / (wg30 + lg30)) * 10000) / 100 : 0;
-  const last90dROI = (wg90 + lg90) > 0 ? Math.round((pnl90 / (wg90 + lg90)) * 10000) / 100 : 0;
-  const winRate30  = ev30.length > 0 ? Math.round((wins30 / ev30.length) * 1000) / 10 : 0;
-  const winRate90  = ev90.length > 0 ? Math.round((wins90 / ev90.length) * 1000) / 10 : 0;
+  const mat30 = ev30.map(e => materialWinLoss(e.pnl, e.invested));
+  const mat90 = ev90.map(e => materialWinLoss(e.pnl, e.invested));
+  const w30 = mat30.filter(x => x === "win").length;
+  const l30 = mat30.filter(x => x === "loss").length;
+  const w90 = mat90.filter(x => x === "win").length;
+  const l90 = mat90.filter(x => x === "loss").length;
+  const last30dROI = inv30 > 0 ? Math.round((pnl30 / inv30) * 10000) / 100 : 0;
+  const last90dROI = inv90 > 0 ? Math.round((pnl90 / inv90) * 10000) / 100 : 0;
+  const winRate30  = (w30 + l30) > 0 ? Math.round((w30 / (w30 + l30)) * 1000) / 10 : 0;
+  const winRate90  = (w90 + l90) > 0 ? Math.round((w90 / (w90 + l90)) * 1000) / 10 : 0;
 
-  // ── Monthly breakdown (event-level) ──────────────────────────────────────
+  // ── Monthly breakdown (market-level) ─────────────────────────────────────
   const byMonth: Record<string, { pnl: number; invested: number; count: number; wins: number; winsGross: number; lossesGross: number }> = {};
-  for (const ev of allEvents) {
+  for (const ev of condList) {
     if (!ev.ts) continue;
     const d   = new Date(ev.ts * 1000);
-    const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
-    if (!byMonth[key]) byMonth[key] = { pnl: 0, invested: 0, count: 0, wins: 0, winsGross: 0, lossesGross: 0 };
-    byMonth[key].pnl += ev.pnl; byMonth[key].invested += ev.invested; byMonth[key].count++;
-    if (ev.win) { byMonth[key].wins++; byMonth[key].winsGross += ev.pnl; }
-    else { byMonth[key].lossesGross += Math.abs(ev.pnl); }
+    const mkey = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+    if (!byMonth[mkey]) byMonth[mkey] = { pnl: 0, invested: 0, count: 0, wins: 0, winsGross: 0, lossesGross: 0 };
+    byMonth[mkey].pnl += ev.pnl; byMonth[mkey].invested += ev.invested; byMonth[mkey].count++;
+    const mo = materialWinLoss(ev.pnl, ev.invested);
+    if (mo === "win") { byMonth[mkey].wins++; byMonth[mkey].winsGross += ev.pnl; }
+    else if (mo === "loss") { byMonth[mkey].lossesGross += Math.abs(ev.pnl); }
   }
   const monthlyROI = Object.entries(byMonth)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([month, d]) => {
-      const denom = d.winsGross + d.lossesGross;
       return {
-        month, roi: denom > 0 ? Math.round((d.pnl / denom) * 10000) / 100 : 0,
+        month, roi: d.invested > 0 ? Math.round((d.pnl / d.invested) * 10000) / 100 : 0,
         pnl: Math.round(d.pnl * 100) / 100, invested: Math.round(d.invested),
         tradeCount: d.count, wins: d.wins,
       };
     });
 
-  // ── Sport/category breakdown (event-level) ────────────────────────────────
-  // Collect per-event invested amounts so we can compute medianBet per category.
-  const closedByCategory: Record<string, { pnl: number; positions: number; wins: number; invested: number; winsGross: number; lossesGross: number; sizes: number[] }> = {};
-  for (const ev of allEvents) {
-    if (!closedByCategory[ev.sport]) closedByCategory[ev.sport] = { pnl: 0, positions: 0, wins: 0, invested: 0, winsGross: 0, lossesGross: 0, sizes: [] };
-    const cat = closedByCategory[ev.sport];
+  // ── Sport/category breakdown (one row per **market** / condition) ─────────
+  const closedByCategory: Record<string, { pnl: number; positions: number; wins: number; losses: number; invested: number; winsGross: number; lossesGross: number; sizes: number[] }> = {};
+  for (const ev of condList) {
+    const sp = ev.sport;
+    if (!closedByCategory[sp]) closedByCategory[sp] = { pnl: 0, positions: 0, wins: 0, losses: 0, invested: 0, winsGross: 0, lossesGross: 0, sizes: [] };
+    const cat = closedByCategory[sp];
     cat.pnl += ev.pnl;
     cat.invested += ev.invested;
     cat.positions++;
     if (ev.invested > 0) cat.sizes.push(ev.invested);
-    if (ev.win) { cat.wins++; cat.winsGross += ev.pnl; }
-    else { cat.lossesGross += Math.abs(ev.pnl); }
+    const mo = materialWinLoss(ev.pnl, ev.invested);
+    if (mo === "win") { cat.wins++; cat.winsGross += ev.pnl; }
+    else if (mo === "loss") { cat.losses++; cat.lossesGross += Math.abs(ev.pnl); }
   }
   for (const cat of Object.keys(closedByCategory)) {
     const d = closedByCategory[cat];
@@ -2123,6 +2187,7 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
     last90dCount:    ev90.length,
     last90dROI,
     pnlWinRate,
+    closedMarketCount,
     winRate30,
     winRate90,
     avgBetUSDC,
@@ -2135,10 +2200,11 @@ export async function fetchCanonicalPNL(wallet: string): Promise<CanonicalPNL> {
 // Compute a quality score from canonical metrics (0-100)
 function computeCanonicalQualityScore(c: CanonicalPNL): number {
   const pnl    = c.totalPNL;
-  const roi    = c.overallROI;   // PA-style: PNL / (wins + losses gross) — primary skill signal
+  const roi    = c.overallROI;   // Net realized PnL ÷ capital deployed on closed events
   const capRoi = c.roiCapital;   // Capital ROI: used as credibility check
   const wr     = c.pnlWinRate;
   const trades = c.closedCount;
+  const markets = c.closedMarketCount;
   const roi30  = c.last30dROI;
   const roi90  = c.last90dROI;
 
@@ -2147,9 +2213,12 @@ function computeCanonicalQualityScore(c: CanonicalPNL): number {
   const roiPts = roi <= 0 ? 0 : Math.min(40, Math.round(roi / 15 * 40));
 
   // ── Sample credibility (0–20 pts): ROI needs volume to be trustworthy ───
-  // 300 trades = 6pts, 1000 = 13pts, 3000+ = 20pts (log curve)
-  const tradePts = trades < 10 ? 0
-    : Math.min(20, Math.round(Math.log(trades) / Math.log(3000) * 20));
+  // Prefer **unique closed markets** (conditions) over raw position rows so churn / micro-fills
+  // do not inflate “experience” vs Polymarket Analytics’ notion of markets traded.
+  // 300 = 6pts, 1000 = 13pts, 3000+ = 20pts (log curve)
+  const sampleN = markets != null && markets > 0 ? markets : trades;
+  const tradePts = sampleN < 10 ? 0
+    : Math.min(20, Math.round(Math.log(sampleN) / Math.log(3000) * 20));
 
   // ── Win rate (0–15 pts): consistency of being right ────────────────────
   // 50% = 0pts, 60% = 6pts, 70% = 12pts, 80%+ = 15pts
@@ -2271,15 +2340,19 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
     const c = await fetchCanonicalPNL(w);
     const qualityScore = computeCanonicalQualityScore(c);
 
-    // Build roiBySport from canonical closedByCategory (event-level = position-level).
-    // No caps: display actual ROI/win rate from Polymarket position data.
-    // Position size: each "event" is one market/game; invested per event = position size (not per-trade).
-    const roiBySport: Record<string, { roi: number; tradeCount: number; pnl: number; winRate: number; avgBet: number; medianBet: number; avgPositionSize: number; medianPositionSize: number }> = {};
+    // Build roiBySport from canonical closedByCategory (one row per closed condition).
+    // Win rate: material wins / (wins + losses) only — not wins/positions (avoids fake 99% on thin lanes).
+    // Omit per-sport winRate until enough resolved outcomes (same idea as PA sample size).
+    const MIN_SPORT_WIN_RATE_MARKETS = 20;
+    const roiBySport: Record<string, { roi: number; tradeCount: number; pnl: number; winRate: number | null; avgBet: number; medianBet: number; avgPositionSize: number; medianPositionSize: number }> = {};
     for (const [cat, d] of Object.entries(c.closedByCategory)) {
       if (d.positions === 0) continue;
-      const denom = (d.winsGross || 0) + (d.lossesGross || 0);
-      const roi = denom > 0 ? Math.round((d.pnl / denom) * 10000) / 100 : 0;
-      const winRate = d.positions > 0 ? Math.round((d.wins / d.positions) * 1000) / 10 : 0;
+      const inv = d.invested || 0;
+      const roi = inv > 0 ? Math.round((d.pnl / inv) * 10000) / 100 : 0;
+      const decided = (d.wins ?? 0) + (d.losses ?? 0);
+      const winRate = decided >= MIN_SPORT_WIN_RATE_MARKETS && decided > 0
+        ? Math.round((d.wins / decided) * 1000) / 10
+        : null;
       const avgPositionSize = d.positions > 0 ? Math.round(d.invested / d.positions) : 0;
       const medianPositionSize = (d.sizes && d.sizes.length > 0) ? Math.round(median(d.sizes)) : avgPositionSize;
       roiBySport[cat] = {
@@ -2387,7 +2460,6 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
     // When the pipeline has already written rawRealizedPnl (Polymarket-matching true PNL), do NOT overwrite
     // overallPNL/overallROI with canonical — our positions sync can be incomplete; pipeline CSV is source of truth for display.
     const hasPipelinePnl = existingMetrics?.rawRealizedPnl != null && existingMetrics.rawRealizedPnl !== "";
-    const hasCsvAnalysis = existingMetrics?.csvQualityScore != null && String(existingMetrics.csvQualityScore).trim() !== "";
     const canonicalMetrics: Record<string, any> = {
       realizedPNL:         c.realizedPNL,
       unrealizedPNL:       c.unrealizedPNL,
@@ -2412,6 +2484,7 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
       avgBetSize:          c.avgBetUSDC,
       medianBetSize:       c.medianBetUSDC,
       totalTrades:         c.closedCount,
+      closedMarketCount:   c.closedMarketCount,
       monthlyROI:          c.monthlyROI,
       closedByCategory:    c.closedByCategory,
       quantScore,
@@ -2422,6 +2495,7 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
       uniqueMarketsDB:     dbUniqueMarkets,
       pnlSource:           "closed_positions_api",
       pnlUpdatedAt:        new Date().toISOString(),
+      canonicalQualityScore: qualityScore,
     };
     // Prefer canonical (Polymarket API) PNL for display so UI never shows fabricated numbers.
     canonicalMetrics.rawRealizedPnl = String(Math.round(c.realizedPNL * 100) / 100);
@@ -2437,20 +2511,15 @@ export async function patchProfileWithCanonicalPNL(wallet: string): Promise<{
       UPDATE elite_trader_profiles
       SET metrics = metrics || $2::jsonb,
           computed_at = NOW(),
-          quality_score = CASE
-            WHEN (metrics->>'csvQualityScore') IS NOT NULL
-              AND (metrics->>'csvQualityScore') <> ''
-            THEN quality_score
-            ELSE $3
-          END,
+          quality_score = $3,
           tags = $4
       WHERE wallet = $1
-    `, [w, JSON.stringify(canonicalMetrics), quantScore, mergedTags]);
+    `, [w, JSON.stringify(canonicalMetrics), qualityScore, mergedTags]);
 
     console.log(
       `[Elite/PNL] ${username}: pnl=$${c.totalPNL.toFixed(0)} ` +
       `roi=${c.overallROI.toFixed(1)}% wr=${c.pnlWinRate.toFixed(1)}% 30d=${c.last30dROI.toFixed(1)}% ` +
-      `qs=${quantScore} archetype="${traderArchetype}" clv=${((avgClv || 0) * 100).toFixed(1)}% ` +
+      `qs=${qualityScore} archetype="${traderArchetype}" clv=${((avgClv || 0) * 100).toFixed(1)}% ` +
       `(${c.closedCount} closed, ${c.activeOpenCount} live open)`
     );
     return { wallet: w, username, totalPNL: c.totalPNL, realizedPNL: c.realizedPNL, unrealizedPNL: c.unrealizedPNL };

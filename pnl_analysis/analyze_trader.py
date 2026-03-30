@@ -22,6 +22,9 @@ def get_sport(row):
     if "serie-a" in comb or "seri-a" in comb:                                   return "SOCCER (SerieA)"
     if any(x in comb for x in ["bundesliga", "bun-", "fl1-", "ligue-1", "ligue1", "eredivisie", "mls-", "sea-", "csa-", "arg-", "bra-", "mex-"]): return "SOCCER (Other)"
     if any(x in comb for x in ["soccer", "football-", " fc ", "united", "athletic", "sporting"]): return "SOCCER (Other)"
+    # WNBA slugs are "wnba-..." — they contain the substring "nba-" (e.g. wnba-phx-min → …nba-…).
+    # Classify WNBA before the generic NBA rule or the whole league is mislabeled as NBA.
+    if "wnba-" in comb:                                                         return "WNBA"
     if any(x in comb for x in ["nba-", "basketball", "nba:"]):                  return "NBA"
     if any(x in comb for x in ["nfl-", "super-bowl", "cfb-"]):                  return "NFL"
     if any(x in comb for x in ["nhl-", "hockey"]):                              return "NHL"
@@ -293,11 +296,27 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
     # Adjustments:
     #   Flip/Underdog Bonus  +15 pts max — ROI > 0 in 20–60c zone proves edge
     #   Leakage Penalty      -15 pts max — large net losses in a sport category
+    #
+    # ROI blend: Many top accounts are hedge/MM-heavy — directional-only ROI can be
+    # negative while dashboard PnL is strongly positive. Using only directional ROI
+    # then labels them Q≈0. Blend in dashboard ROI when hedge profit is material.
+    # Leakage anchor: loss_ratio used max(total_profit_directional, 1) which explodes
+    # when directional PnL ≤ 0 (denominator becomes 1). Anchor to account-scale PnL.
+
+    hedge_share = (hedge_profit / max(raw_realized_pnl, 1e-6)) if raw_realized_pnl > 0 else 0.0
+    hedge_risk_frac = hedge_risk / max(total_risked_dashboard, 1e-6)
+    material_hedge = hedge_risk_frac >= 0.22 or hedge_share >= 0.18
+    if material_hedge and raw_realized_pnl > 0 and roi_dashboard > 0:
+        # Weight dashboard more as hedge share grows (MM / arb is real edge, not "noise")
+        w = min(0.82, 0.35 + 0.65 * max(hedge_risk_frac, hedge_share * 0.9))
+        roi_for_quality = w * roi_dashboard + (1 - w) * directional_overall_roi
+    else:
+        roi_for_quality = directional_overall_roi
 
     # Base components
     sharpe_score = min(max(pseudo_sharpe / 8  * 30, 0), 30)   # 30 pts, ceil Sharpe=8
-    roi_score    = min(max(directional_overall_roi / 15 * 25, 0), 25)   # 25 pts, ceil ROI=15%
-    wr_score     = min(max((win_rate - 50) / 15 * 15, 0), 15) # 15 pts
+    roi_score    = min(max(roi_for_quality / 15 * 25, 0), 25)   # 25 pts, ceil ROI=15%
+    wr_score     = min(max((win_rate - 48) / 15 * 15, 0), 15) # 15 pts; partial credit from 48%
     cons_score   = min(max(profitable_days / max(total_days, 1) * 10, 0), 10)
     vol_score    = min(max(np.log10(max(total_risked_directional, 1)) / np.log10(5_000_000) * 5, 0), 5)
 
@@ -319,11 +338,13 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
 
     # Leakage Penalty (-15 pts max)
     # Penalise sports where a blindly tailing user would lose money.
-    # Measured relative to total profit so large earners are held to account.
+    # Anchor loss size to account-scale profit so MM/hedge-heavy accounts are not
+    # max-penalised when directional subtotal is ≤ 0 (old code used max(dir,1)→1).
+    profit_anchor = max(raw_realized_pnl, abs(total_profit_directional), 1)
     leakage_pts = 0
     for sport, stat in sport_stats.items():
         if stat["events"] >= 10 and stat["roi"] < -5 and stat["net_profit"] < -5_000:
-            loss_ratio = abs(stat["net_profit"]) / max(total_profit_directional, 1)
+            loss_ratio = abs(stat["net_profit"]) / profit_anchor
             if   loss_ratio >= 0.30: leakage_pts += 10
             elif loss_ratio >= 0.10: leakage_pts +=  5
             else:                    leakage_pts +=  2
@@ -346,6 +367,9 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
 
     # Tier tag
     tags.append(f"{'⭐⭐⭐' if tier == 'S-Tier' else '⭐⭐' if tier == 'A-Tier' else '⭐'} {tier}")
+
+    if material_hedge and raw_realized_pnl > 50_000:
+        tags.append("⚖️ Hedge / MM-heavy — quality blends dashboard + directional ROI")
 
     # Sport specialty tags (positive ROI + meaningful volume)
     SPORT_EMOJIS = {
@@ -533,6 +557,11 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
             "flip_bonus":       flip_bonus,
             "leakage_penalty":  leakage_penalty,
             "midzone_roi":      round(midzone_roi, 1),
+            "directional_roi":  round(directional_overall_roi, 2),
+            "roi_dashboard":    round(roi_dashboard, 2),
+            "roi_for_quality":  round(roi_for_quality, 2),
+            "hedge_risk_frac":  round(hedge_risk_frac, 3),
+            "hedge_profit_share": round(hedge_share, 3),
         },
     }
 

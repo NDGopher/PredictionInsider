@@ -1,6 +1,6 @@
 # PredictionInsider
 
-Elite Polymarket trader tracking system. Monitors ~49 curated sharp traders ("insiders"), detects when multiple elites enter the same market, and generates consensus signals scored by sport-specific ROI, conviction size, and position overlap.
+Elite Polymarket trader tracking system. Monitors 42 curated wallets in `CURATED_TRADERS` (`server/eliteAnalysis.ts`); market-maker bots are excluded from consensus. The app detects when multiple elites enter the same market and generates consensus signals scored by sport-specific ROI, conviction size, and position overlap.
 
 ---
 
@@ -67,7 +67,10 @@ Create a `.env` file in the project root:
 
 ```env
 # Required — PostgreSQL connection string
-DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/predictioninsider
+# Local Docker from this repo: use port 5433 (see docker-compose.yml and .env.example)
+DATABASE_URL=postgresql://predictioninsider:predictioninsider_local@127.0.0.1:5433/predictioninsider
+# Generic / self-hosted Postgres example:
+# DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/predictioninsider
 
 # Optional — defaults to 5000 if omitted
 PORT=5000
@@ -116,13 +119,15 @@ Your browser will open to log in; after that, the CLI is authenticated for your 
 
 For **using Firecrawl in this project** and **where to keep the database on Replit**, see [docs/FIRECRAWL-AND-REPLIT.md](docs/FIRECRAWL-AND-REPLIT.md).
 
-### 6. Push the database schema
+### 6. Create database tables
 
-This creates all tables from the Drizzle schema:
+Elite tables are defined in `scripts/init-db.sql` (not Drizzle `pgTable` yet). Run:
 
 ```bash
-npm run db:push
+npm run db:init
 ```
+
+Avoid `npm run db:push` unless you have added real Drizzle table definitions — it can propose dropping `elite_*` tables.
 
 ### 7. Start the development server
 
@@ -218,9 +223,13 @@ The traders list and the **agentic quality scores** on Top Signals both depend o
 | Command | What it does |
 |---|---|
 | `npm run dev` | Runs the full app in development (Express + Vite HMR) |
+| `refresh-all.bat` (Windows) | Same as `start-prediction-insider.bat` — double-click to refresh DB + analysis + ingest |
+| `start-prediction-insider.bat` (Windows) | Kills port 5000, Docker + `db:init`, **new** server window, waits for HTTP, then pipeline + ingest in this window — see `full` / `skip` / `hosted` |
+| `scripts/start-vps.sh` (Linux) | Same idea on a VPS: `db:init` then dev or production `node dist/index.cjs` |
 | `npm run build` | Compiles the frontend and bundles the backend to `dist/` |
 | `npm start` | Runs the compiled production build |
-| `npm run db:push` | Syncs the Drizzle schema to your PostgreSQL database |
+| `npm run db:push` | Runs Drizzle Kit push — **can propose dropping `elite_*` tables** until `shared/schema.ts` defines real Drizzle `pgTable`s; normal refreshes use `db:init` only |
+| `npm run db:init` | Runs `scripts/init-db.sql` (elite tables, etc.) — **safe** idempotent `CREATE IF NOT EXISTS`; the launcher runs this, not `db:push` |
 | `npm run check` | TypeScript type check (no emit) |
 
 ---
@@ -304,10 +313,10 @@ NODE_ENV=production
 BACKEND_URL=http://localhost:3000
 ```
 
-Push the schema:
+Create tables (idempotent):
 
 ```bash
-npm run db:push
+npm run db:init
 ```
 
 Build the production bundle:
