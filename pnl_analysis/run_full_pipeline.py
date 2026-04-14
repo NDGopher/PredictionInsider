@@ -57,7 +57,7 @@ from analyze_trader import analyze_csv
 OUTPUT_DIR  = Path(__file__).resolve().parent / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
 BACKEND_URL = os.environ.get("BACKEND_URL", "http://localhost:5000")
-# Same file server/scheduledPipeline.ts uses — enables 24h "smart" skip for refresh-all.bat
+# Same file server/scheduledPipeline.ts uses — smart skip interval = PI_SMART_REFRESH_HOURS (default 6)
 LAST_PIPELINE_RUN_FILE = OUTPUT_DIR / ".last_pipeline_run"
 
 # Data API: retries + guards so 429/partial fetches do not replace good CSVs or poison ingest.
@@ -72,7 +72,7 @@ ANALYSIS_COLLAPSE_MIN_PREV_QS = 30
 
 
 def write_last_pipeline_run_timestamp():
-    """Stamp successful ingest so smart refresh + ScheduledPipeline share one 24h clock."""
+    """Stamp successful ingest so smart refresh + ScheduledPipeline share one freshness clock."""
     try:
         LAST_PIPELINE_RUN_FILE.write_text(str(int(time.time() * 1000)), encoding="utf-8")
     except OSError:
@@ -280,7 +280,8 @@ def _csv_closed_open_counts(csv_path: Path) -> tuple[int, int]:
 
 def fetch_recent_and_merge(address, username):
     """
-    Incremental: fetch only recent closed (2 pages) + recent open (1 page), merge into existing CSV.
+    Incremental: fetch recent closed (up to 40 pages) + open (up to 20 pages), overlay onto existing CSV.
+    Rows with the same position id keep the newest API copy (accurate PnL when Polymarket updates fields).
     Returns path to updated CSV or None if no existing CSV.
     """
     csv_path = csv_path_for(address, username)
@@ -295,7 +296,6 @@ def fetch_recent_and_merge(address, username):
     if id_col is None:
         return csv_path  # no id column, skip merge
 
-    existing_ids = set(existing[id_col].astype(str).dropna())
     prev_closed, _prev_open = _csv_closed_open_counts(csv_path)
     # Up to ~2000 closed + ~1000 open (40 + 20 pages) — fast, avoids 50k+ full fetch
     df_closed = fetch_positions(address, "closed-positions", max_pages=40)
@@ -314,23 +314,21 @@ def fetch_recent_and_merge(address, username):
     new_df = pd.concat([df_closed, df_open], ignore_index=True)
     if new_df.empty:
         return csv_path
-    # Keep only rows we don't already have
     if id_col in new_df.columns:
-        new_rows = new_df[~new_df[id_col].astype(str).isin(existing_ids)]
-    else:
-        new_rows = new_df
-    if new_rows.empty:
-        return csv_path
-    combined = pd.concat([existing, new_rows], ignore_index=True)
+        new_df = new_df.drop_duplicates(subset=["id"], keep="last")
+    n_before = len(existing)
+    # Overlay recent API pages onto full history: newest row wins per id (PnL/status updates).
+    combined = pd.concat([existing, new_df], ignore_index=True)
     if "id" in combined.columns:
-        combined = combined.drop_duplicates(subset=["id"], keep="first")
+        combined = combined.drop_duplicates(subset=["id"], keep="last")
     for col in ["realizedPnl", "cashPnl", "currentValue", "initialValue"]:
         if col in combined.columns:
             combined[col] = pd.to_numeric(combined[col], errors="coerce").fillna(0)
     if "total_position_pnl" not in combined.columns:
         combined["total_position_pnl"] = combined.get("realizedPnl", 0) + combined.get("cashPnl", 0)
     combined.to_csv(csv_path, index=False, quoting=csv_module.QUOTE_ALL)
-    print(f"    📄 Merged {len(new_rows):,} new rows -> {csv_path.name} ({len(combined):,} total)")
+    n_after = len(combined)
+    print(f"    📄 Incremental merge -> {csv_path.name} ({n_before:,} -> {n_after:,} rows)")
     return csv_path
 
 
@@ -554,7 +552,9 @@ def ingest_to_backend(all_results):
     print(f"\n\n{'='*70}")
     print(f"[PUSH] Pushing {len(all_results)} trader analyses to backend...")
     try:
-        resp = requests.post(url, json={"traders": all_results}, timeout=60)
+        timeout_s = int(os.environ.get("PI_INGEST_TIMEOUT_SEC", "240"))
+        timeout_s = max(60, min(timeout_s, 900))
+        resp = requests.post(url, json={"traders": all_results}, timeout=timeout_s)
         if resp.status_code == 200:
             data = resp.json()
             updated = data.get("updated", 0)
@@ -574,27 +574,31 @@ def ingest_to_backend(all_results):
 # REBUILD MASTER _all_analysis.json FROM EXISTING JSON FILES
 # ================================================================
 
-def rebuild_master_json():
-    """Merge all per-trader JSON files into the master summary. One entry per wallet (dedupe)."""
-    by_wallet: dict[str, dict] = {}
-    for json_file in sorted(OUTPUT_DIR.glob("*.json")):
+def rebuild_master_json(allowed_wallets: set[str]):
+    """Merge per-trader JSON files for this run's roster only (newest file wins per wallet).
+    Stray files under output/ (e.g. old experiments) are ignored so ingest matches ALL_TRADERS."""
+    by_wallet: dict[str, tuple[float, dict]] = {}
+    for json_file in OUTPUT_DIR.glob("*.json"):
         if json_file.name.startswith("_"):
             continue
         if "_trades.json" in json_file.name or json_file.name.endswith("_trades.json"):
             continue  # skip alternate exports (e.g. RN1_trades.json) so RN1 appears once
         try:
+            mtime = json_file.stat().st_mtime
             with open(json_file) as f:
                 data = json.load(f)
             wallet = (data.get("wallet") or "").strip().lower()
             if not wallet or "username" not in data:
                 continue
-            # Keep first per wallet (sorted filename order); prefer main file over any other
-            if wallet not in by_wallet:
-                by_wallet[wallet] = data
+            if wallet not in allowed_wallets:
+                continue
+            prev = by_wallet.get(wallet)
+            if prev is None or mtime >= prev[0]:
+                by_wallet[wallet] = (mtime, data)
         except Exception:
             pass
 
-    all_results = list(by_wallet.values())
+    all_results = [pair[1] for pair in by_wallet.values()]
     # Sort by quality score descending
     all_results.sort(key=lambda x: x.get("quality_score", 0), reverse=True)
     summary_path = OUTPUT_DIR / "_all_analysis.json"
@@ -676,7 +680,8 @@ def main():
             failed.append(username)
 
     # ── Rebuild master JSON (merges new results with any pre-existing JSONs) ─
-    all_results = rebuild_master_json()
+    allowed = {w.lower() for w, _ in traders}
+    all_results = rebuild_master_json(allowed)
 
     # ── Print leaderboard ─────────────────────────────────────────
     print(f"\n\n{'='*70}")

@@ -1,8 +1,9 @@
 @echo off
-REM One-click: Docker + db:init + NEW dev server + SMART pipeline (incremental+ingest only if last ingest ^>24h).
-REM Double-click this file. Force refresh anytime: start-prediction-insider.bat incremental
+REM One-click: Docker + db:init + dev server + ALWAYS incremental pipeline (merge recent CSVs, re-analyze, ingest).
+REM For fast start without pipeline: start-prediction-insider.bat skip
+REM Smart mode (pipeline only if stale): start-prediction-insider.bat
 cd /d "%~dp0"
-call start-prediction-insider.bat
+call start-prediction-insider.bat incremental
 set "RC=%errorlevel%"
 if not "%RC%"=="0" (
   echo.

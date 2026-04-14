@@ -2,13 +2,15 @@
 
 To keep **PNL, trader scores, and signals** accurate, run the pipeline at least once per day. **Incremental** mode merges **recent** trades into existing CSVs (not a full history re-download every time).
 
-**One-click Windows (`refresh-all.bat`):** Defaults to **smart** mode — it starts Docker, DB, and the dev server, and runs the Python incremental pipeline **only** if the last successful **ingest** was more than **24 hours** ago. The timestamp file is `pnl_analysis/output/.last_pipeline_run` (written after a successful ingest). To **force** a pipeline run the same day: `start-prediction-insider.bat incremental`, or in the same CMD window: `set PI_FORCE_REFRESH=1` then `refresh-all.bat`.
+**One-click Windows (`refresh-all.bat`):** Runs **incremental** pipeline every time (merge recent API data into CSVs, re-analyze all traders, ingest) so rankings and ROI stay current when you double-click. For a faster start without Python: `start-prediction-insider.bat skip`.
 
-**Automatic on server start:** If the pipeline has not been run in the last 24 hours, the server will start it in the background when you run `npm run dev`. Same `.last_pipeline_run` file as above.
+**Smart mode (`start-prediction-insider.bat` with no args):** Skips the pipeline if the last successful **ingest** was within **PI_SMART_REFRESH_HOURS** (default **6**; was 24h). Timestamp file: `pnl_analysis/output/.last_pipeline_run`. Force a run: `set PI_FORCE_REFRESH=1` then the same bat, or `start-prediction-insider.bat incremental`.
+
+**Automatic on server start:** If ingest is older than the same threshold, `npm run dev` spawns the incremental pipeline in the background (uses `py -3` / `python` / `python3` on Windows as available).
 
 ## Quick run (recommended for daily)
 
-- **Incremental:** For each trader with an existing CSV, fetches only **recent activity** (2 pages closed + 1 open), merges into the CSV, then **re-analyzes all** traders and **ingests** to the DB. Much faster than a full re-fetch.
+- **Incremental:** For each trader with an existing CSV, fetches **recent closed and open pages** from the API, **overlays** them onto the full CSV (same position `id` keeps the newest row for accurate PnL), then **re-analyzes** and **ingests**. Much faster than a full re-fetch.
 
 ```bash
 npm run daily-pipeline

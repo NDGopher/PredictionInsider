@@ -7,6 +7,17 @@ Set-Location $PSScriptRoot\..
 Write-Host "== Node dependencies ==" -ForegroundColor Cyan
 npm install
 
+Write-Host "== Python pipeline deps (pnl_analysis) ==" -ForegroundColor Cyan
+if (Get-Command py -ErrorAction SilentlyContinue) {
+  py -3 -m pip install -q -r pnl_analysis/requirements.txt
+  if ($LASTEXITCODE -ne 0) { Write-Host "pip install failed (py -3). Install Python 3.11+ or run: py -3 -m pip install -r pnl_analysis/requirements.txt" -ForegroundColor Yellow }
+} elseif (Get-Command python -ErrorAction SilentlyContinue) {
+  python -m pip install -q -r pnl_analysis/requirements.txt
+  if ($LASTEXITCODE -ne 0) { Write-Host "pip install failed (python). Try: py -3 -m pip install -r pnl_analysis/requirements.txt" -ForegroundColor Yellow }
+} else {
+  Write-Host "Python not found in PATH (skipped). Pipeline scripts need Python 3.11+; use py launcher or add python to PATH." -ForegroundColor Yellow
+}
+
 if (-not (Test-Path ".env")) {
   Write-Host "Creating .env from .env.example" -ForegroundColor Yellow
   Copy-Item ".env.example" ".env"
@@ -30,7 +41,7 @@ while ((Get-Date) -lt $deadline) {
 }
 }
 
-Write-Host "== SQL tables (db:init — safe; do not use db:push until schema.ts has Drizzle pgTables) ==" -ForegroundColor Cyan
+Write-Host "== SQL tables (db:init - safe; do not use db:push until schema.ts has Drizzle pgTables) ==" -ForegroundColor Cyan
 npm run db:init
 
 Write-Host "Done. Start the app with: npm run dev" -ForegroundColor Green

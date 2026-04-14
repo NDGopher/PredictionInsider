@@ -1,17 +1,17 @@
 {
   "wallet": "0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c",
   "username": "DLEK",
-  "total_profit": 5081884.04,
-  "raw_realized_pnl": 5081884.04,
+  "total_profit": 5086402.8,
+  "raw_realized_pnl": 5086402.8,
   "total_risked": 17881816.56,
-  "overall_roi": 28.42,
-  "win_rate": 54.88,
+  "overall_roi": 28.44,
+  "win_rate": 55.03,
   "avg_bet_size": 10317.3,
   "median_market_stake": 4716.03,
   "mean_market_stake": 10317.3,
   "markets_traded": 1337,
   "total_events": 908,
-  "pseudo_sharpe": 8.3,
+  "pseudo_sharpe": 8.31,
   "profitable_days": 221,
   "total_days": 317,
   "hedge_count": 232,
@@ -20,10 +20,10 @@
   "bond_count": 2,
   "bond_risk": 31447.47,
   "bond_profit": 157.39,
-  "open_count": 302,
-  "open_risk": 5478118.17,
-  "open_value": 180467.11,
-  "open_pnl": -3174357.88,
+  "open_count": 301,
+  "open_risk": 5468943.72,
+  "open_value": 172949.14,
+  "open_pnl": -3172701.4,
   "sport_stats": {
     "MLB": {
       "net_profit": -43.94,
@@ -34,7 +34,7 @@
       "median_bet": 5.0
     },
     "NBA": {
-      "net_profit": 922918.99,
+      "net_profit": 922904.97,
       "roi": 7.9,
       "win_rate": 56.98,
       "events": 1070,
@@ -58,16 +58,16 @@
       "median_bet": 1048.04
     },
     "OTHER": {
-      "net_profit": 33159.88,
-      "roi": 10.51,
-      "win_rate": 38.46,
+      "net_profit": 43178.46,
+      "roi": 13.68,
+      "win_rate": 43.59,
       "events": 40,
       "avg_bet": 7891.32,
       "median_bet": 1579.25
     },
     "POLITICS": {
-      "net_profit": 7510.98,
-      "roi": 4.39,
+      "net_profit": 3681.66,
+      "roi": 2.15,
       "win_rate": 54.55,
       "events": 11,
       "avg_bet": 15558.11,
@@ -108,17 +108,17 @@
   },
   "market_stats": {
     "Futures": {
-      "net_profit": 60905.72,
-      "roi": 17.22,
+      "net_profit": 57672.51,
+      "roi": 16.31,
       "win_rate": 31.25,
       "events": 49,
       "avg_bet": 7217.62,
       "median_bet": 1292.75
     },
     "Moneyline / Match": {
-      "net_profit": 213929.44,
-      "roi": 2.18,
-      "win_rate": 52.65,
+      "net_profit": 223337.89,
+      "roi": 2.28,
+      "win_rate": 52.92,
       "events": 741,
       "avg_bet": 13217.96,
       "median_bet": 6361.47
@@ -158,8 +158,8 @@
       "median_bet": 3.0
     },
     "NBA|Futures": {
-      "net_profit": 65150.34,
-      "roi": 42.88,
+      "net_profit": 65136.32,
+      "roi": 42.87,
       "win_rate": 46.15,
       "events": 13,
       "avg_bet": 11688.55,
@@ -238,9 +238,9 @@
       "median_bet": 735.61
     },
     "Other|Moneyline / Match": {
-      "net_profit": 26678.38,
-      "roi": 9.41,
-      "win_rate": 52.17,
+      "net_profit": 36696.96,
+      "roi": 12.95,
+      "win_rate": 60.87,
       "events": 24,
       "avg_bet": 11811.62,
       "median_bet": 4969.23
@@ -254,16 +254,16 @@
       "median_bet": 388.84
     },
     "Politics|Futures": {
-      "net_profit": 6951.52,
-      "roi": 5.84,
+      "net_profit": 3732.34,
+      "roi": 3.14,
       "win_rate": 50.0,
       "events": 8,
       "avg_bet": 14867.25,
       "median_bet": 5826.31
     },
     "Politics|Moneyline / Match": {
-      "net_profit": 559.45,
-      "roi": 1.07,
+      "net_profit": -50.67,
+      "roi": -0.1,
       "win_rate": 66.67,
       "events": 3,
       "avg_bet": 17400.41,
@@ -328,26 +328,26 @@
   },
   "price_stats": {
     "Favorite (60-80c)": {
-      "net_profit": 165877.48,
-      "roi": 3.99,
-      "win_rate": 66.4,
+      "net_profit": 173753.08,
+      "roi": 4.18,
+      "win_rate": 66.8,
       "events": 253
     },
     "Flip (40-60c)": {
-      "net_profit": 451463.16,
+      "net_profit": 451449.98,
       "roi": 7.19,
       "win_rate": 58.37,
       "events": 760
     },
     "Longshot (0-20c)": {
-      "net_profit": 5772.33,
-      "roi": 3.48,
-      "win_rate": 18.52,
+      "net_profit": 4694.91,
+      "roi": 2.83,
+      "win_rate": 19.75,
       "events": 84
     },
     "Safe (80-100c)": {
-      "net_profit": 33100.37,
-      "roi": 1.77,
+      "net_profit": 32490.6,
+      "roi": 1.73,
       "win_rate": 83.64,
       "events": 55
     },
@@ -360,8 +360,8 @@
   },
   "side_stats": {
     "No": {
-      "net_profit": 58685.25,
-      "roi": 27.56,
+      "net_profit": 56633.27,
+      "roi": 26.59,
       "positions": 23
     },
     "Specific Selection": {
@@ -370,13 +370,13 @@
       "positions": 1245
     },
     "Yes": {
-      "net_profit": 44516.19,
-      "roi": 9.47,
+      "net_profit": 52743.4,
+      "roi": 11.22,
       "positions": 69
     }
   },
   "monthly_pnl": {
-    "1970-01": 12255.46,
+    "1970-01": 16774.22,
     "2024-07": 14745.21,
     "2024-11": -19412.91,
     "2024-12": 18125.06,
@@ -537,7 +537,7 @@
     "\ud83d\udcca O/U Specialist",
     "\u26d4 Fade LaLiga"
   ],
-  "tail_guide": "How to Tail DLEK [S-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   NBA \u2014 7.9% ROI, 1070 markets, +$922,919\n   OTHER \u2014 10.5% ROI, 40 markets, +$33,160\n   NFL \u2014 10.8% ROI, 28 markets, +$20,829\n\n\ud83d\udd34 DO NOT TAIL:\n   SOCCER (LaLiga) \u2014 ROI -8.0%, $-62,752\n   WNBA \u2014 ROI -11.6%, $-61,052\n   SOCCER (Other) \u2014 ROI -35.7%, $-25,780\n\n\ud83d\udcc8 Stick to Moneylines (2.2% ROI over 741 markets)\n\ud83c\udfaf Best price zone: Underdog (20-40c) (13.0% ROI, 185 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 88% of edge from 'Specific' side \u2014 copy that side only\n\u26a1 Typical market stake ~$4,716 (median per market) \u2014 alert at 3\u00d7 for high conviction\n   (Mean $10,317 \u2014 some very large markets; size to the median unless you match their whale plays)",
+  "tail_guide": "How to Tail DLEK [S-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   NBA \u2014 7.9% ROI, 1070 markets, +$922,905\n   OTHER \u2014 13.7% ROI, 40 markets, +$43,178\n   NFL \u2014 10.8% ROI, 28 markets, +$20,829\n\n\ud83d\udd34 DO NOT TAIL:\n   SOCCER (LaLiga) \u2014 ROI -8.0%, $-62,752\n   WNBA \u2014 ROI -11.6%, $-61,052\n   SOCCER (Other) \u2014 ROI -35.7%, $-25,780\n\n\ud83d\udcc8 Stick to Moneylines (2.3% ROI over 741 markets)\n\ud83c\udfaf Best price zone: Underdog (20-40c) (13.0% ROI, 185 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 87% of edge from 'Specific' side \u2014 copy that side only\n\u26a1 Typical market stake ~$4,716 (median per market) \u2014 alert at 3\u00d7 for high conviction\n   (Mean $10,317 \u2014 some very large markets; size to the median unless you match their whale plays)",
   "do_not_tail_sports": [
     "SOCCER (LaLiga)",
     "SOCCER (Other)",
@@ -553,16 +553,16 @@
   "score_breakdown": {
     "sharpe_score": 30,
     "roi_score": 25,
-    "wr_score": 6.9,
+    "wr_score": 7.0,
     "cons_score": 7.0,
     "vol_score": 5,
-    "base_score": 73.9,
+    "base_score": 74.0,
     "flip_bonus": 10,
     "leakage_penalty": 6,
     "midzone_roi": 10.1,
-    "directional_roi": 6.0,
-    "roi_dashboard": 28.42,
-    "roi_for_quality": 17.15,
+    "directional_roi": 6.05,
+    "roi_dashboard": 28.44,
+    "roi_for_quality": 17.19,
     "hedge_risk_frac": 0.227,
     "hedge_profit_share": 0.025,
     "markets_traded": 1337,

@@ -223,8 +223,8 @@ The traders list and the **agentic quality scores** on Top Signals both depend o
 | Command | What it does |
 |---|---|
 | `npm run dev` | Runs the full app in development (Express + Vite HMR) |
-| `refresh-all.bat` (Windows) | Same as `start-prediction-insider.bat` — double-click to refresh DB + analysis + ingest |
-| `start-prediction-insider.bat` (Windows) | Kills port 5000, Docker + `db:init`, **new** server window, waits for HTTP, then pipeline + ingest in this window — see `full` / `skip` / `hosted` |
+| `refresh-all.bat` (Windows) | Double-click: Docker + `db:init`, dev server in a new window, then **always** incremental pipeline + ingest (keeps CSV ROI and rankings fresh) |
+| `start-prediction-insider.bat` (Windows) | Kills port 5000, Docker + `db:init`, new server window, waits for HTTP. Default **smart** mode runs incremental+ingest only if last ingest is older than `PI_SMART_REFRESH_HOURS` (default 6). Args: `incremental`, `full`, `skip`, `hosted` — see bat header |
 | `scripts/start-vps.sh` (Linux) | Same idea on a VPS: `db:init` then dev or production `node dist/index.cjs` |
 | `npm run build` | Compiles the frontend and bundles the backend to `dist/` |
 | `npm start` | Runs the compiled production build |

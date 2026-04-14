@@ -3,7 +3,7 @@ REM ============================================================================
 REM  PredictionInsider - one-shot local start (Windows)
 REM
 REM  Usage:
-REM    start-prediction-insider.bat              -> Docker + smart: incremental pipeline ONLY if last ingest ^>24h
+REM    start-prediction-insider.bat              -> Docker + smart: incremental pipeline if last ingest ^> PI_SMART_REFRESH_HOURS (default 6h)
 REM    start-prediction-insider.bat incremental  -> always run incremental pipeline + ingest
 REM    start-prediction-insider.bat full         -> Docker + FULL pipeline + dev
 REM    start-prediction-insider.bat skip         -> Docker + dev only (no pipeline window)
@@ -19,7 +19,14 @@ setlocal EnableDelayedExpansion
 
 cd /d "%~dp0"
 
-REM Old Node on port 5000 keeps OLD DATABASE_URL — db:push works but ingest returns 500.
+where npm >nul 2>&1
+if errorlevel 1 (
+  echo [ERROR] npm not found in PATH. Install Node.js 20+ and reopen this window.
+  pause
+  exit /b 1
+)
+
+REM Old Node on port 5000 keeps OLD DATABASE_URL - db:push works but ingest returns 500.
 call "%~dp0scripts\kill-listen-port.cmd" 5000
 
 echo.
@@ -53,7 +60,7 @@ if errorlevel 1 (
 echo Checking Docker Engine ^(daemon^)...
 docker info >nul 2>&1
 if errorlevel 1 (
-  echo Engine not ready — attempting to start Docker Desktop and wait ^(up to 3 min^)...
+  echo Engine not ready - attempting to start Docker Desktop and wait ^(up to 3 min^)...
   powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\ensure-docker-running.ps1"
   if errorlevel 1 (
     echo.
@@ -110,19 +117,19 @@ goto waitpg
 REM Do NOT run npm run db:push here: drizzle.config points at shared/schema.ts which is Zod-only
 REM (no pgTable definitions). db:push will propose DROPPING elite_* tables to "match" schema.
 REM Tables are created/updated safely by db:init (init-db.sql, IF NOT EXISTS).
-echo [3/4] Ensuring SQL tables ^(npm run db:init — elite_traders, profiles, etc.^)...
+echo [3/4] Ensuring SQL tables ^(npm run db:init - elite_traders, profiles, etc.^)...
 call npm run db:init
 if errorlevel 1 (
-  echo [WARN] db:init failed — if the DB is new, fix errors above. Continuing.
+  echo [WARN] db:init failed - if the DB is new, fix errors above. Continuing.
 )
 goto pipeline_and_dev
 
 REM ---------- Hosted DB: no Docker ----------
 :hosted_db
-echo [hosted] Skipping Docker — using DATABASE_URL from .env ^(remote Postgres^).
+echo [hosted] Skipping Docker - using DATABASE_URL from .env ^(remote Postgres^).
 echo Make sure your Neon/other URL is in .env and has ?sslmode=require if required.
 echo.
-echo [hosted] Ensuring SQL tables ^(npm run db:init^) — skipping db:push ^(see comments in start-prediction-insider.bat^).
+echo [hosted] Ensuring SQL tables ^(npm run db:init^) - skipping db:push ^(see comments in start-prediction-insider.bat^).
 call npm run db:init
 if errorlevel 1 (
   echo [WARN] db:init failed. Continuing.
@@ -150,7 +157,7 @@ if errorlevel 1 (
 
 if defined SKIP_PIPELINE (
   echo.
-  echo === Smart refresh: Python pipeline skipped — last ingest was within 24h ===
+  echo === Smart refresh: Python pipeline skipped - last ingest within PI_SMART_REFRESH_HOURS ^(default 6h^) ===
   echo - Open http://127.0.0.1:5000
   echo - Canonical PnL in the server still refreshes on its own 24h timer while it runs.
   echo - To force CSV merge + ingest now: start-prediction-insider.bat incremental
@@ -176,7 +183,7 @@ if /i "%MODE%"=="full" (
 )
 if errorlevel 1 (
   echo.
-  echo [ERROR] Pipeline failed ^(often ingest 500 — old Node on port 5000 or wrong DATABASE_URL^).
+  echo [ERROR] Pipeline failed ^(often ingest 500 - old Node on port 5000 or wrong DATABASE_URL^).
   echo Fix: close stray terminals, run this script again ^(it kills port 5000 first^), or check .env.
   pause
   exit /b 1

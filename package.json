@@ -16,7 +16,9 @@
     "db:logs": "docker compose logs -f db",
     "daily-pipeline": "python pnl_analysis/run_full_pipeline.py --incremental --ingest",
     "pipeline:full": "python pnl_analysis/run_full_pipeline.py --ingest",
-    "pipeline:analyze": "python pnl_analysis/run_full_pipeline.py --analyze-only --ingest"
+    "pipeline:analyze": "python pnl_analysis/run_full_pipeline.py --analyze-only --ingest",
+    "cleanup:pnl": "python scripts/cleanup-pnl-output.py",
+    "verify:traders": "python scripts/verify-curated-trader-data.py"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -55,8 +57,8 @@
     "connect-pg-simple": "^10.0.0",
     "date-fns": "^3.6.0",
     "dotenv": "^17.3.1",
-    "drizzle-orm": "^0.39.3",
-    "drizzle-zod": "^0.7.0",
+    "drizzle-orm": "^0.45.2",
+    "drizzle-zod": "^0.8.3",
     "embla-carousel-react": "^8.6.0",
     "express": "^5.0.1",
     "express-session": "^1.18.1",

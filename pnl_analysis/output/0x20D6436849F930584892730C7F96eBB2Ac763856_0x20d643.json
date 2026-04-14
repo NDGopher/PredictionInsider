@@ -1,14 +1,14 @@
 {
   "wallet": "0x20d6436849f930584892730c7f96ebb2ac763856",
   "username": "0x20D6436849F930584892730C7F96eBB2Ac763856",
-  "total_profit": 567754.02,
-  "raw_realized_pnl": 567754.02,
-  "total_risked": 10359326.96,
+  "total_profit": 567771.23,
+  "raw_realized_pnl": 567771.23,
+  "total_risked": 10359520.11,
   "overall_roi": 5.48,
   "win_rate": 53.4,
-  "avg_bet_size": 8355.07,
+  "avg_bet_size": 8355.32,
   "median_market_stake": 2443.63,
-  "mean_market_stake": 8355.07,
+  "mean_market_stake": 8355.32,
   "markets_traded": 790,
   "total_events": 549,
   "pseudo_sharpe": 5.02,
@@ -16,18 +16,18 @@
   "total_days": 51,
   "hedge_count": 296,
   "hedge_risk": 3755799.6,
-  "hedge_profit": -208972.69,
+  "hedge_profit": -208973.55,
   "bond_count": 5,
   "bond_risk": 3019.52,
   "bond_profit": -1382.13,
-  "open_count": 7,
-  "open_risk": 2821.88,
-  "open_value": 169.84,
-  "open_pnl": -2283.98,
+  "open_count": 6,
+  "open_risk": 2499.84,
+  "open_value": 77.17,
+  "open_pnl": -2348.9,
   "sport_stats": {
     "MLB": {
-      "net_profit": 13192.72,
-      "roi": 42.13,
+      "net_profit": 13190.54,
+      "roi": 42.12,
       "win_rate": 44.44,
       "events": 27,
       "avg_bet": 1159.86,
@@ -58,11 +58,11 @@
       "median_bet": 1849.13
     },
     "OTHER": {
-      "net_profit": 755852.58,
+      "net_profit": 755868.69,
       "roi": 33.6,
       "win_rate": 63.86,
       "events": 250,
-      "avg_bet": 8997.5,
+      "avg_bet": 8998.27,
       "median_bet": 2714.75
     },
     "SOCCER (EPL)": {
@@ -108,15 +108,15 @@
   },
   "market_stats": {
     "Futures": {
-      "net_profit": 22949.1,
-      "roi": 38.25,
+      "net_profit": 22966.15,
+      "roi": 38.15,
       "win_rate": 87.5,
       "events": 17,
-      "avg_bet": 3529.41,
-      "median_bet": 142.22
+      "avg_bet": 3540.77,
+      "median_bet": 196.17
     },
     "Moneyline / Match": {
-      "net_profit": -36512.23,
+      "net_profit": -36515.23,
       "roi": -1.1,
       "win_rate": 49.34,
       "events": 309,
@@ -124,7 +124,7 @@
       "median_bet": 3716.99
     },
     "Spread": {
-      "net_profit": 118537.11,
+      "net_profit": 118536.99,
       "roi": 10.27,
       "win_rate": 56.28,
       "events": 219,
@@ -150,8 +150,8 @@
       "median_bet": 142.22
     },
     "MLB|Moneyline / Match": {
-      "net_profit": 12702.53,
-      "roi": 50.17,
+      "net_profit": 12700.36,
+      "roi": 50.16,
       "win_rate": 47.06,
       "events": 17,
       "avg_bet": 1489.44,
@@ -254,15 +254,15 @@
       "median_bet": 578.26
     },
     "Other|Futures": {
-      "net_profit": 336.01,
-      "roi": 2.4,
+      "net_profit": 353.06,
+      "roi": 2.49,
       "win_rate": 90.0,
       "events": 11,
-      "avg_bet": 1270.67,
-      "median_bet": 89.39
+      "avg_bet": 1288.23,
+      "median_bet": 134.44
     },
     "Other|Moneyline / Match": {
-      "net_profit": 196691.81,
+      "net_profit": 196690.98,
       "roi": 26.16,
       "win_rate": 56.67,
       "events": 90,
@@ -270,7 +270,7 @@
       "median_bet": 1771.37
     },
     "Other|Spread": {
-      "net_profit": -36846.13,
+      "net_profit": -36846.25,
       "roi": -10.65,
       "win_rate": 61.29,
       "events": 62,
@@ -336,19 +336,19 @@
   },
   "price_stats": {
     "Favorite (60-80c)": {
-      "net_profit": 74512.47,
+      "net_profit": 74511.64,
       "roi": 9.67,
       "win_rate": 73.75,
       "events": 80
     },
     "Flip (40-60c)": {
-      "net_profit": 560340.07,
+      "net_profit": 560339.95,
       "roi": 11.3,
       "win_rate": 51.89,
       "events": 535
     },
     "Longshot (0-20c)": {
-      "net_profit": 4797.45,
+      "net_profit": 4814.5,
       "roi": 8.84,
       "win_rate": 26.47,
       "events": 36
@@ -360,7 +360,7 @@
       "events": 29
     },
     "Underdog (20-40c)": {
-      "net_profit": 85824.48,
+      "net_profit": 85822.3,
       "roi": 20.62,
       "win_rate": 43.12,
       "events": 110
@@ -373,13 +373,13 @@
       "positions": 53
     },
     "Specific Selection": {
-      "net_profit": 725423.97,
+      "net_profit": 725421.67,
       "roi": 12.55,
       "positions": 709
     },
     "Yes": {
-      "net_profit": 46760.9,
-      "roi": 18.17,
+      "net_profit": 46777.13,
+      "roi": 18.16,
       "positions": 28
     }
   },
@@ -387,7 +387,7 @@
     "2026-01": 1064018.37,
     "2026-02": 27038.65,
     "2026-03": -294387.03,
-    "2026-04": -18667.86,
+    "2026-04": -18650.81,
     "2026-07": 33.2
   },
   "top_wins": [
@@ -529,7 +529,7 @@
     "\ud83d\udcca O/U Specialist",
     "\u26d4 Fade UCL"
   ],
-  "tail_guide": "How to Tail 0x20D6436849F930584892730C7F96eBB2Ac763856 [A-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   OTHER \u2014 33.6% ROI, 250 markets, +$755,853\n   SOCCER (EPL) \u2014 44.1% ROI, 22 markets, +$102,455\n   MLB \u2014 42.1% ROI, 27 markets, +$13,193\n\n\ud83d\udd34 DO NOT TAIL:\n   SOCCER (UCL) \u2014 ROI -28.1%, $-88,671\n   NBA \u2014 ROI -3.3%, $-55,533\n   NHL \u2014 ROI -3.0%, $-40,016\n\n\ud83c\udfaf Best price zone: Underdog (20-40c) (20.6% ROI, 110 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 94% of edge from 'Specific' side \u2014 copy that side only\n\u26a1 Typical market stake ~$2,444 (median per market) \u2014 alert at 3\u00d7 for high conviction\n   (Mean $8,355 \u2014 some very large markets; size to the median unless you match their whale plays)",
+  "tail_guide": "How to Tail 0x20D6436849F930584892730C7F96eBB2Ac763856 [A-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   OTHER \u2014 33.6% ROI, 250 markets, +$755,869\n   SOCCER (EPL) \u2014 44.1% ROI, 22 markets, +$102,455\n   MLB \u2014 42.1% ROI, 27 markets, +$13,191\n\n\ud83d\udd34 DO NOT TAIL:\n   SOCCER (UCL) \u2014 ROI -28.1%, $-88,671\n   NBA \u2014 ROI -3.3%, $-55,533\n   NHL \u2014 ROI -3.0%, $-40,016\n\n\ud83c\udfaf Best price zone: Underdog (20-40c) (20.6% ROI, 110 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 94% of edge from 'Specific' side \u2014 copy that side only\n\u26a1 Typical market stake ~$2,444 (median per market) \u2014 alert at 3\u00d7 for high conviction\n   (Mean $8,355 \u2014 some very large markets; size to the median unless you match their whale plays)",
   "do_not_tail_sports": [
     "NBA",
     "NHL",
@@ -559,7 +559,7 @@
     "hedge_profit_share": -0.368,
     "markets_traded": 790,
     "median_market_stake": 2443.63,
-    "mean_market_stake": 8355.07,
+    "mean_market_stake": 8355.32,
     "pnl_sum_check_ok": true
   }
 }

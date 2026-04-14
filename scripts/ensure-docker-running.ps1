@@ -27,7 +27,7 @@ if (-not (Test-Path $exe)) {
 
 $running = Get-Process -Name "Docker Desktop" -ErrorAction SilentlyContinue
 if (-not $running) {
-    Write-Host "[ensure-docker] Starting Docker Desktop — wait until the engine is ready (up to $MaxWaitSeconds s)..."
+    Write-Host "[ensure-docker] Starting Docker Desktop - wait until the engine is ready (up to $MaxWaitSeconds s)..."
     Start-Process -FilePath $exe
 } else {
     Write-Host "[ensure-docker] Docker Desktop is open; waiting for engine to respond..."

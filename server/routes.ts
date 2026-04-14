@@ -3081,7 +3081,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       // Query every profile in elite_trader_profiles — these are all curated.
       const profileRows = await elitePool.query<{
         wallet: string; username: string; metrics: any; quality_score: number;
-      }>(`SELECT wallet, username, metrics, quality_score FROM elite_trader_profiles ORDER BY (metrics->>'overallPNL')::numeric DESC NULLS LAST`);
+      }>(`SELECT wallet, username, metrics, quality_score FROM elite_trader_profiles ORDER BY quality_score DESC NULLS LAST, (metrics->>'overallPNL')::numeric DESC NULLS LAST`);
 
       const traders: any[] = [];
       for (let i = 0; i < profileRows.rows.length; i++) {
