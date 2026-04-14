@@ -665,6 +665,14 @@ function SignalCard({ signal, mode, onSnoozed, onBetTracked, ofiData }: {
                       <Award className="w-2.5 h-2.5" /> VIP LANE
                     </span>
                   )}
+                  {(signal as any).futuresExpertLargeStakeUsd >= 5000 && (
+                    <span
+                      className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/25 flex items-center gap-0.5"
+                      title={`0x53eCc53E7 — curated futures specialist with ~$${((signal as any).futuresExpertLargeStakeUsd / 1000).toFixed(1)}K at risk on this market`}
+                    >
+                      🔮 FUTURES WHALE
+                    </span>
+                  )}
                   {/* Actionability indicator — 3-state */}
                   {(signal as any).priceStatus === "actionable" && (
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 flex items-center gap-0.5" title="Current price is still close to average sharp entry — actionable now">
@@ -1193,14 +1201,16 @@ function toAmericanOdds(p: number): string {
   return `+${Math.round((1 - p) / p * 100)}`;
 }
 
-function SharpMovesPanel({ signals }: { signals?: any[] }) {
+function SharpMovesPanel({ signals, pollSec }: { signals?: any[]; pollSec: number }) {
   const [collapsed, setCollapsed] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const pollMs = Math.max(5_000, pollSec * 1000);
   const { data, isLoading, refetch } = useQuery<{ alerts: any[]; fetchedAt: number }>({
     queryKey: ["/api/alerts/live"],
     queryFn: () => fetch("/api/alerts/live").then(r => r.json()),
-    staleTime: 30_000,
-    refetchInterval: 30_000,
+    staleTime: Math.max(0, pollMs - 5_000),
+    refetchInterval: pollMs,
+    refetchOnWindowFocus: true,
   });
   const alerts = data?.alerts || [];
   const multiAlerts = alerts.filter((a: any) => a.sharpAction?.traderCount >= 2);
@@ -1211,10 +1221,12 @@ function SharpMovesPanel({ signals }: { signals?: any[] }) {
     const alertTimeStr = a.timestamp ? timeAgoShort(a.timestamp) : fmtMinsAgo(a.minutesAgo);
     const isExp = expandedId === a.id;
     const sharp = a.sharpAction;
-    // Cross-reference with signals to find matching signal for trader list
+    // Must match THIS trade's side — never use sharp?.side (registry is one-sided per market).
+    const cidNorm = (a.conditionId || "").toLowerCase();
     const matchSignal = signals?.find(s =>
-      s.marketId === a.conditionId && s.side === (sharp?.side ?? a.side)
+      (s.marketId || "").toLowerCase() === cidNorm && s.side === a.side
     );
+    const sharpAligned = sharp && sharp.side === a.side;
 
     return (
       <div key={a.id} data-testid={isMulti ? `sharp-move-multi-${a.id}` : `sharp-move-${a.id}`}>
@@ -1240,7 +1252,7 @@ function SharpMovesPanel({ signals }: { signals?: any[] }) {
               {a.trader}
             </span>
           )}
-          {sharp?.isActionable && (
+          {sharpAligned && sharp?.isActionable && (
             <span
               className="shrink-0 text-[9px] font-bold px-1 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 cursor-help"
               title="ACTIONABLE — current price is within 2¢ of sharp avg entry. You can get in at essentially the same price as these traders."
@@ -1260,8 +1272,8 @@ function SharpMovesPanel({ signals }: { signals?: any[] }) {
                 matchSignal.confidence >= 70 ? "bg-green-500/15 text-green-700 dark:text-green-300"
                 : matchSignal.confidence >= 50 ? "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300"
                 : "bg-muted text-muted-foreground"
-              }`} title={`Signal confidence: ${matchSignal.confidence}/95 — 70+ is strong, 50-69 moderate, below 50 is weak`}>
-                {matchSignal.confidence}<span className="opacity-60">/95</span>
+              }`} title={`Elite signal confidence for this exact side: ${matchSignal.confidence}/100 (70+ strong)`}>
+                {Math.min(100, Math.round(matchSignal.confidence))}<span className="opacity-60">/100</span>
               </span>
             )}
             <div>
@@ -1298,8 +1310,8 @@ function SharpMovesPanel({ signals }: { signals?: any[] }) {
               )}
             </div>
 
-            {/* Sharp consensus context */}
-            {sharp && (
+            {/* Sharp consensus context — only when server attached same-side overlay (see routes live alerts) */}
+            {sharpAligned && sharp && (
               <div className={`p-1.5 rounded border text-[10px] ${
                 sharp.priceStatus === "dip"
                   ? "bg-blue-500/10 border-blue-500/20 text-blue-700 dark:text-blue-300"
@@ -1308,7 +1320,7 @@ function SharpMovesPanel({ signals }: { signals?: any[] }) {
                   : "bg-primary/5 border-primary/15 text-primary"
               }`}>
                 <div className="font-semibold">
-                  {sharp.traderCount} tracked traders → {sharp.side} · Confidence: {sharp.confidence}/100
+                  {sharp.traderCount} tracked traders on {sharp.side} · Overlay score: {sharp.confidence}/95
                 </div>
                 <div className="mt-0.5">
                   Avg entry: {Math.round(sharp.avgEntry * 100)}¢ ({toAmericanOdds(sharp.avgEntry)})
@@ -1413,7 +1425,7 @@ function SharpMovesPanel({ signals }: { signals?: any[] }) {
               <div className="space-y-1">
                 <div className="text-[10px] font-semibold uppercase tracking-wide flex items-center gap-1 text-amber-600 dark:text-amber-400">
                   <AlertTriangle className="w-3 h-3" />
-                  {matchSignal.counterTraders.length} trader{matchSignal.counterTraders.length !== 1 ? "s" : ""} on opposite side ({sharp?.side === "YES" ? "NO" : "YES"})
+                  {matchSignal.counterTraders.length} trader{matchSignal.counterTraders.length !== 1 ? "s" : ""} on opposite side ({a.side === "YES" ? "NO" : "YES"})
                 </div>
                 {matchSignal.counterTraders.map((ct: any, i: number) => (
                   <div key={i} className="rounded bg-amber-500/5 border border-amber-500/20 px-2 py-1.5 text-[10px] flex items-center gap-2">
@@ -1485,7 +1497,7 @@ function SharpMovesPanel({ signals }: { signals?: any[] }) {
             <span className="text-[10px] text-muted-foreground">· tap to expand</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-muted-foreground">30s</span>
+            <span className="text-[10px] text-muted-foreground">{pollSec}s</span>
             <Button
               size="sm"
               variant="ghost"
@@ -1535,6 +1547,8 @@ export default function Signals() {
   const [betType, setBetType]     = useState<"all" | "moneyline" | "spread" | "total" | "futures">("all");
   const [showFutures, setShowFutures] = useState(true);
   const [showEsports, setShowEsports] = useState(true);
+  /** When true (default), include in-play / live game signals; when false, only pregame + futures etc. */
+  const [showInPlay, setShowInPlay] = useState(true);
   const [notifEnabled, setNotifEnabled] = useState(typeof Notification !== "undefined" && Notification.permission === "granted");
   const [countdown, setCountdown] = useState(mode === "elite" ? ELITE_REFRESH_SEC : FAST_REFRESH_SEC);
   const [alertHistory, setAlertHistory] = useState<Array<{ id: string; question: string; confidence: number; ts: number }>>([]);
@@ -1647,6 +1661,7 @@ export default function Signals() {
             duration: 8000,
           });
           queryClient.invalidateQueries({ queryKey });
+          queryClient.invalidateQueries({ queryKey: ["/api/alerts/live"] });
         }
       } catch { /* ignore */ }
     });
@@ -1662,6 +1677,7 @@ export default function Signals() {
       setCountdown(prev => {
         if (prev <= 1) {
           queryClient.invalidateQueries({ queryKey });
+          queryClient.invalidateQueries({ queryKey: ["/api/alerts/live"] });
           return refreshInterval;
         }
         return prev - 1;
@@ -1676,6 +1692,7 @@ export default function Signals() {
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey });
+    queryClient.invalidateQueries({ queryKey: ["/api/alerts/live"] });
     resetCountdown();
   };
 
@@ -1702,6 +1719,7 @@ export default function Signals() {
       const userWantsFutures = filter === "futures" || betType === "futures";
       if (!showFutures && isFuturesSig && !userWantsFutures) return false;
       if (!showEsports && /^(Dota\s*2|LoL|Counter.Strike\s*2?|CS:?(?:GO|2)?|Valorant|Call\s*of\s*Duty|Overwatch|Rocket\s*League|SC2|StarCraft|Hearthstone|PUBG|R6|Rainbow\s*6|League\s*of\s*Legends)\s*:/i.test(s.marketQuestion)) return false;
+      if (!showInPlay && (s as any).marketType === "live") return false;
       if (filter === "best_bets") return s.confidence >= 70 && s.isActionable && s.valueDelta > 0;
       if (filter === "value")   return s.isValue;
       if (filter === "high")    return s.confidence >= 70;
@@ -1738,6 +1756,7 @@ export default function Signals() {
   const valueCount   = signals.filter(s => s.isValue).length;
   const bestBetsCount = signals.filter(s => s.confidence >= 70 && s.isActionable && s.valueDelta > 0).length;
   const futuresCount = signals.filter(s => (s as any).marketType === "futures" || (s as any).marketCategory === "futures").length;
+  const inPlayCount = signals.filter(s => (s as any).marketType === "live").length;
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-5">
@@ -1835,7 +1854,7 @@ export default function Signals() {
       )}
 
       {/* Sharp Moves real-time feed */}
-      <SharpMovesPanel signals={signals} />
+      <SharpMovesPanel signals={signals} pollSec={refreshInterval} />
 
       {/* Mode toggle + category filter */}
       <div className="flex items-center gap-3 flex-wrap">
@@ -2033,6 +2052,28 @@ export default function Signals() {
           Esports
           <span className={`ml-0.5 text-[10px] ${showEsports ? "text-violet-600 dark:text-violet-400" : "text-muted-foreground"}`}>
             {showEsports ? "ON" : "OFF"}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowInPlay(v => !v)}
+          data-testid="toggle-in-play"
+          title="In-play: games underway (LIVE). Turn off to show only pregame and other types."
+          className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-all ${
+            showInPlay
+              ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/25 hover:bg-red-500/15"
+              : "bg-muted text-muted-foreground border-border opacity-60 hover:opacity-80"
+          }`}
+        >
+          <Radio className="w-3 h-3" />
+          In play
+          {inPlayCount > 0 && (
+            <span className={`text-[9px] font-bold px-1 py-0.5 rounded-full min-w-[16px] text-center leading-none ${showInPlay ? "bg-red-500/20 text-red-600 dark:text-red-400" : "bg-muted-foreground/20 text-muted-foreground"}`}>
+              {inPlayCount}
+            </span>
+          )}
+          <span className={`ml-0.5 text-[10px] ${showInPlay ? "text-red-600 dark:text-red-400" : "text-muted-foreground"}`}>
+            {showInPlay ? "ON" : "OFF"}
           </span>
         </button>
       </div>

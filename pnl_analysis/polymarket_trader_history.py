@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import csv
 import io
+import random
 import re
 import time
 from pathlib import Path
@@ -35,6 +36,7 @@ GAMMA_API_BASE = "https://gamma-api.polymarket.com"
 ACTIVITY_PAGE_SIZE = 500
 TRADES_PAGE_SIZE = 10_000
 RATE_LIMIT_SLEEP = 0.5  # seconds between API calls
+DATA_API_MAX_RETRIES = 8
 OUTPUT_DIR = Path(__file__).resolve().parent / "output"
 KNOWN_ADDRESSES: dict[str, str] = {
     "kch123": "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee",
@@ -89,6 +91,50 @@ DEFAULT_URLS = [
 
 def _sleep() -> None:
     time.sleep(RATE_LIMIT_SLEEP)
+
+
+def _data_api_get_page(url: str, params: dict[str, Any], label: str) -> list[dict[str, Any]] | None:
+    """
+    Single paginated Data API GET. Returns rows, [] for empty/400 end, None after unrecoverable error.
+    """
+    for attempt in range(DATA_API_MAX_RETRIES):
+        try:
+            r = requests.get(url, params=params, timeout=45)
+        except requests.exceptions.RequestException as e:
+            if attempt < DATA_API_MAX_RETRIES - 1:
+                wait = min(90.0, (2**attempt) * 1.2 + random.uniform(0.3, 1.2))
+                print(f"  [{label}] {e!s}, sleep {wait:.1f}s ({attempt + 1}/{DATA_API_MAX_RETRIES})")
+                time.sleep(wait)
+                continue
+            print(f"  [{label}] error after retries: {e}")
+            return None
+        if r.status_code == 200:
+            try:
+                return r.json()
+            except Exception as e:
+                print(f"  [{label}] bad JSON: {e}")
+                return None
+        if r.status_code == 400:
+            return []
+        if r.status_code in (429, 502, 503) or (500 <= r.status_code < 600):
+            if attempt < DATA_API_MAX_RETRIES - 1:
+                wait = min(90.0, (2**attempt) * 1.5 + random.uniform(0.3, 1.5))
+                print(f"  [{label}] HTTP {r.status_code}, sleep {wait:.1f}s ({attempt + 1}/{DATA_API_MAX_RETRIES})")
+                time.sleep(wait)
+                continue
+            print(f"  [{label}] HTTP {r.status_code} after retries")
+            return None
+        try:
+            r.raise_for_status()
+        except requests.HTTPError as e:
+            print(f"  [{label}] {e}")
+            return None
+        try:
+            return r.json()
+        except Exception as e:
+            print(f"  [{label}] bad JSON: {e}")
+            return None
+    return None
 
 
 # -----------------------------------------------------------------------------
@@ -311,21 +357,18 @@ def fetch_all_positions(address: str) -> list[dict[str, Any]]:
     offset = 0
     limit = 500
     while True:
-        try:
-            r = requests.get(
-                f"{DATA_API_BASE}/positions",
-                params={"user": address, "limit": limit, "offset": offset},
-                timeout=30,
-            )
-            _sleep()
-            r.raise_for_status()
-            batch = r.json()
-        except Exception as e:
-            print(f"  [positions] error at offset {offset}: {e}")
+        batch = _data_api_get_page(
+            f"{DATA_API_BASE}/positions",
+            {"user": address, "limit": limit, "offset": offset},
+            f"positions@{offset}",
+        )
+        if batch is None:
+            print(f"  [positions] stopped at offset {offset}")
             break
         if not batch:
             break
         combined.extend(batch)
+        _sleep()
         if len(batch) < limit:
             break
         offset += limit
@@ -343,21 +386,18 @@ def fetch_all_closed_positions(address: str) -> list[dict[str, Any]]:
     offset = 0
     limit = 50
     while True:
-        try:
-            r = requests.get(
-                f"{DATA_API_BASE}/closed-positions",
-                params={"user": address, "limit": limit, "offset": offset},
-                timeout=30,
-            )
-            _sleep()
-            r.raise_for_status()
-            batch = r.json()
-        except Exception as e:
-            print(f"  [closed-positions] error at offset {offset}: {e}")
+        batch = _data_api_get_page(
+            f"{DATA_API_BASE}/closed-positions",
+            {"user": address, "limit": limit, "offset": offset},
+            f"closed-positions@{offset}",
+        )
+        if batch is None:
+            print(f"  [closed-positions] stopped at offset {offset}")
             break
         if not batch:
             break
         combined.extend(batch)
+        _sleep()
         if len(batch) < limit:
             break
         offset += limit

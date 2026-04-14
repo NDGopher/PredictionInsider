@@ -110,6 +110,8 @@ export const signalSchema = z.object({
   clusterBoost: z.any().optional(),
   /** High-Q trader(s) in a statistically strong lane + large stake — relaxed cluster gates, sort boost */
   vipPremium: z.boolean().optional(),
+  /** Curated futures specialist (0x53eCc53E7) with ≥$5K at risk on this macro-futures market */
+  futuresExpertLargeStakeUsd: z.number().optional(),
 });
 
 export const marketSchema = z.object({

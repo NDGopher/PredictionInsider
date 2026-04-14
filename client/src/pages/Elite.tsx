@@ -33,6 +33,9 @@ interface EliteTrader {
   win_rate: string | null;
   sharpe_score: string | null;
   avg_bet_size: string | null;
+  /** Median USDC deployed per market (condition) — best “typical size” for tailing */
+  median_market_stake: string | null;
+  markets_traded: string | null;
   trades_per_day: string | null;
   top_sport: string | null;
   top_market_type: string | null;
@@ -799,7 +802,11 @@ function TraderCard({ trader }: { trader: EliteTrader }) {
                 value: fmtROI(overallROI),
                 color: overallROI != null ? roiColor(overallROI) : "",
               },
-              { label: "Win%", value: fmt(winRate, "%"), color: "" },
+              {
+                label: trader.csv_tier ? "Mkt win %" : "Win%",
+                value: fmt(winRate, "%"),
+                color: "",
+              },
               { label: "Trades/d", value: trader.trades_per_day ? parseFloat(trader.trades_per_day).toFixed(1) : "—", color: "" },
               {
                 label: "PNL",
@@ -812,6 +819,19 @@ function TraderCard({ trader }: { trader: EliteTrader }) {
                 <div className={`text-xs font-bold ${color}`}>{value}</div>
               </div>
             ))}
+          </div>
+        )}
+        {trader.csv_tier && (trader.median_market_stake || trader.markets_traded) && (
+          <div className="text-[9px] text-muted-foreground mt-1.5 text-center leading-tight">
+            {trader.median_market_stake
+              ? <>Typical stake {fmtUSDC(parseFloat(trader.median_market_stake))} <span className="opacity-80">(median/market)</span></>
+              : null}
+            {trader.markets_traded
+              ? <> · {(() => {
+                  const n = Number.parseInt(trader.markets_traded!, 10);
+                  return Number.isFinite(n) ? n.toLocaleString() : trader.markets_traded;
+                })()} markets in book</>
+              : null}
           </div>
         )}
 
@@ -947,7 +967,7 @@ export default function Elite() {
               }`}
               data-testid={`sort-${s}`}
             >
-              {s === "quality" ? "Quality Score" : s === "roi" ? "PA ROI %" : "Name"}
+              {s === "quality" ? "Quality Score" : s === "roi" ? "ROI %" : "Name"}
             </button>
           ))}
         </div>

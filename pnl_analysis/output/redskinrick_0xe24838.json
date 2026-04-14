@@ -1,26 +1,29 @@
 {
   "wallet": "0xe24838258b572f1771dffba3bcdde57a78def293",
   "username": "redskinrick",
-  "total_profit": 382650.71,
-  "raw_realized_pnl": 382650.71,
-  "total_risked": 6316197.26,
-  "overall_roi": 6.06,
-  "win_rate": 56.02,
-  "avg_bet_size": 11357.93,
-  "total_events": 498,
-  "pseudo_sharpe": 2.23,
-  "profitable_days": 34,
-  "total_days": 56,
-  "hedge_count": 58,
-  "hedge_risk": 639722.38,
-  "hedge_profit": 32522.69,
+  "total_profit": 372631.46,
+  "raw_realized_pnl": 372631.46,
+  "total_risked": 6334969.67,
+  "overall_roi": 5.88,
+  "win_rate": 55.04,
+  "avg_bet_size": 7056.63,
+  "median_market_stake": 5000.0,
+  "mean_market_stake": 7056.63,
+  "markets_traded": 803,
+  "total_events": 500,
+  "pseudo_sharpe": 1.83,
+  "profitable_days": 35,
+  "total_days": 58,
+  "hedge_count": 60,
+  "hedge_risk": 648274.29,
+  "hedge_profit": 32438.01,
   "bond_count": 2,
   "bond_risk": 20225.32,
   "bond_profit": 1062.02,
-  "open_count": 4,
-  "open_risk": 68802.87,
-  "open_value": 7630.21,
-  "open_pnl": -61172.66,
+  "open_count": 5,
+  "open_risk": 77804.32,
+  "open_value": 8.62,
+  "open_pnl": -72793.74,
   "sport_stats": {
     "NFL": {
       "net_profit": -893.13,
@@ -31,28 +34,28 @@
       "median_bet": 7119.83
     },
     "OTHER": {
-      "net_profit": 366937.92,
-      "roi": 6.76,
-      "win_rate": 56.51,
-      "events": 476,
-      "avg_bet": 11407.41,
-      "median_bet": 8718.66
+      "net_profit": 356747.91,
+      "roi": 6.56,
+      "win_rate": 55.67,
+      "events": 767,
+      "avg_bet": 7092.76,
+      "median_bet": 4975.22
     },
     "POLITICS": {
       "net_profit": -129252.86,
       "roi": -66.06,
-      "win_rate": 38.89,
-      "events": 18,
-      "avg_bet": 10870.02,
-      "median_bet": 7411.97
+      "win_rate": 35.48,
+      "events": 31,
+      "avg_bet": 6311.63,
+      "median_bet": 4250.0
     },
     "SOCCER (Other)": {
       "net_profit": 17226.21,
       "roi": 110.46,
       "win_rate": 100.0,
-      "events": 1,
-      "avg_bet": 15594.99,
-      "median_bet": 15594.99
+      "events": 2,
+      "avg_bet": 7797.5,
+      "median_bet": 7797.5
     }
   },
   "market_stats": {
@@ -60,33 +63,33 @@
       "net_profit": -18094.39,
       "roi": -98.54,
       "win_rate": 0.0,
-      "events": 2,
-      "avg_bet": 9181.2,
-      "median_bet": 9181.2
+      "events": 3,
+      "avg_bet": 6120.8,
+      "median_bet": 8072.71
     },
     "Moneyline / Match": {
-      "net_profit": -160687.72,
-      "roi": -47.26,
-      "win_rate": 55.0,
-      "events": 40,
-      "avg_bet": 8500.65,
-      "median_bet": 5355.2
+      "net_profit": -118592.19,
+      "roi": -37.73,
+      "win_rate": 53.45,
+      "events": 58,
+      "avg_bet": 5419.25,
+      "median_bet": 2709.69
     },
     "Spread": {
-      "net_profit": -80661.42,
-      "roi": -19.9,
-      "win_rate": 51.52,
-      "events": 33,
-      "avg_bet": 12284.56,
-      "median_bet": 4405.98
+      "net_profit": -66003.24,
+      "roi": -19.18,
+      "win_rate": 50.0,
+      "events": 58,
+      "avg_bet": 5931.84,
+      "median_bet": 2058.68
     },
     "Totals (O/U)": {
-      "net_profit": 513461.66,
-      "roi": 10.49,
-      "win_rate": 56.74,
-      "events": 423,
-      "avg_bet": 11566.12,
-      "median_bet": 9098.23
+      "net_profit": 446517.94,
+      "roi": 8.95,
+      "win_rate": 55.85,
+      "events": 684,
+      "avg_bet": 7294.95,
+      "median_bet": 5760.0
     }
   },
   "sport_market_stats": {
@@ -110,33 +113,33 @@
       "net_profit": -10182.95,
       "roi": -100.0,
       "win_rate": 0.0,
-      "events": 1,
-      "avg_bet": 10182.95,
-      "median_bet": 10182.95
+      "events": 2,
+      "avg_bet": 5091.47,
+      "median_bet": 5091.47
     },
     "Other|Moneyline / Match": {
-      "net_profit": -43321.45,
-      "roi": -22.53,
-      "win_rate": 66.67,
-      "events": 24,
-      "avg_bet": 8012.4,
-      "median_bet": 3143.15
+      "net_profit": -1225.92,
+      "roi": -0.74,
+      "win_rate": 65.71,
+      "events": 35,
+      "avg_bet": 4759.66,
+      "median_bet": 1349.72
     },
     "Other|Spread": {
-      "net_profit": -80661.42,
-      "roi": -19.9,
-      "win_rate": 51.52,
-      "events": 33,
-      "avg_bet": 12284.56,
-      "median_bet": 4405.98
+      "net_profit": -66003.24,
+      "roi": -19.18,
+      "win_rate": 50.0,
+      "events": 58,
+      "avg_bet": 5931.84,
+      "median_bet": 2058.68
     },
     "Other|Totals (O/U)": {
-      "net_profit": 501103.74,
-      "roi": 10.39,
-      "win_rate": 56.46,
-      "events": 418,
-      "avg_bet": 11536.02,
-      "median_bet": 9034.51
+      "net_profit": 434160.02,
+      "roi": 8.83,
+      "win_rate": 55.8,
+      "events": 672,
+      "avg_bet": 7320.43,
+      "median_bet": 5760.0
     },
     "Politics|Futures": {
       "net_profit": -7911.45,
@@ -149,58 +152,58 @@
     "Politics|Moneyline / Match": {
       "net_profit": -109799.56,
       "roi": -78.34,
-      "win_rate": 40.0,
-      "events": 15,
-      "avg_bet": 9344.12,
-      "median_bet": 6493.61
+      "win_rate": 36.36,
+      "events": 22,
+      "avg_bet": 6370.99,
+      "median_bet": 4674.99
     },
     "Politics|Totals (O/U)": {
       "net_profit": -11541.86,
       "roi": -24.39,
-      "win_rate": 50.0,
-      "events": 2,
-      "avg_bet": 23659.6,
-      "median_bet": 23659.6
+      "win_rate": 37.5,
+      "events": 8,
+      "avg_bet": 5914.9,
+      "median_bet": 2711.38
     },
     "Soccer|Totals (O/U)": {
       "net_profit": 17226.21,
       "roi": 110.46,
       "win_rate": 100.0,
-      "events": 1,
-      "avg_bet": 15594.99,
-      "median_bet": 15594.99
+      "events": 2,
+      "avg_bet": 7797.5,
+      "median_bet": 7797.5
     }
   },
   "price_stats": {
     "Favorite (60-80c)": {
-      "net_profit": -56432.3,
-      "roi": -54.53,
-      "win_rate": 71.43,
-      "events": 7
+      "net_profit": -65280.78,
+      "roi": -63.34,
+      "win_rate": 66.67,
+      "events": 9
     },
     "Flip (40-60c)": {
-      "net_profit": 354589.52,
-      "roi": 6.55,
-      "win_rate": 55.77,
-      "events": 468
+      "net_profit": 351515.62,
+      "roi": 6.49,
+      "win_rate": 55.01,
+      "events": 758
     },
     "Longshot (0-20c)": {
-      "net_profit": -363.41,
-      "roi": -100.0,
-      "win_rate": 0.0,
-      "events": 2
+      "net_profit": 46.4,
+      "roi": 4.28,
+      "win_rate": 14.29,
+      "events": 7
     },
     "Safe (80-100c)": {
-      "net_profit": -1215.7,
-      "roi": -1.55,
-      "win_rate": 91.67,
-      "events": 12
+      "net_profit": 106.86,
+      "roi": 0.12,
+      "win_rate": 94.12,
+      "events": 17
     },
     "Underdog (20-40c)": {
       "net_profit": -42559.99,
       "roi": -66.23,
-      "win_rate": 22.22,
-      "events": 9
+      "win_rate": 16.67,
+      "events": 12
     }
   },
   "side_stats": {
@@ -210,9 +213,9 @@
       "positions": 23
     },
     "Specific Selection": {
-      "net_profit": 365170.23,
-      "roi": 6.76,
-      "positions": 760
+      "net_profit": 354980.22,
+      "roi": 6.56,
+      "positions": 762
     },
     "Yes": {
       "net_profit": -65695.83,
@@ -228,104 +231,143 @@
     "2025-09": -7566.71,
     "2026-01": 485428.79,
     "2026-02": 25994.53,
-    "2026-03": -65831.62
+    "2026-03": -114618.52
   },
   "top_wins": [
     {
-      "title": "Spread: Marshall Thundering Herd (-17.5)",
-      "sport_type": "OTHER",
-      "total_pnl": 80972.164688,
-      "total_cost": 94742.79443427562,
-      "avg_price": 0.5393687382326947,
-      "status": "closed"
-    },
-    {
       "title": "Southeastern Louisiana Lions vs. East Texas A&M Lions: O/U 136.5",
+      "slug": "cbb-selou-txamc-2026-02-16-total-136pt5",
+      "eventSlug": "cbb-selou-txamc-2026-02-16",
       "sport_type": "OTHER",
-      "total_pnl": 58761.58200000001,
-      "total_cost": 54238.418000000005,
-      "avg_price": 0.479986,
+      "outcome": "Under",
+      "conditionId": "0x9aa3147ad446821e46eb4e34d647c0dab70937006bf6b313ec188bb49d6e5d70",
+      "total_pnl": 58761.58,
+      "total_cost": 54238.42,
+      "avg_price": 0.48,
       "status": "closed"
     },
     {
       "title": "Kennesaw State Owls vs. Louisiana Tech Bulldogs: O/U 143.5",
+      "slug": "cbb-kenest-loutch-2026-01-23-total-143pt5",
+      "eventSlug": "cbb-kenest-loutch-2026-01-23",
       "sport_type": "OTHER",
+      "outcome": "Over",
+      "conditionId": "0xf08eeb3d3c127dae2a0ec7c9f3effc6f8ce9c27c82daa8771ecb87d1ca893e2c",
       "total_pnl": 51840.0,
       "total_cost": 56160.0,
       "avg_price": 0.52,
       "status": "closed"
     },
     {
-      "title": "UC Irvine Anteaters vs. Cal Poly Mustangs: O/U 156.5",
+      "title": "Spread: Marshall Thundering Herd (-17.5)",
+      "slug": "cbb-lamon-marsh-2026-01-22-spread-home-17pt5",
+      "eventSlug": "cbb-lamon-marsh-2026-01-22",
       "sport_type": "OTHER",
-      "total_pnl": 44720.45,
-      "total_cost": 38279.55,
-      "avg_price": 0.46302451319568805,
+      "outcome": "Marshall Thundering Herd",
+      "conditionId": "0xf682a4588dd0550bd44378da50308dd8a528a83d7e7e5c6585050549b9936bb5",
+      "total_pnl": 48180.46,
+      "total_cost": 56450.71,
+      "avg_price": 0.5395,
       "status": "closed"
     },
     {
-      "title": "Sacred Heart Pioneers vs. Fairfield Stags: O/U 159.5",
+      "title": "Oklahoma State Cowboys vs. Arizona State Sun Devils: O/U 161.5",
+      "slug": "cbb-okst-arzst-2026-02-10-total-161pt5",
+      "eventSlug": "cbb-okst-arzst-2026-02-10",
       "sport_type": "OTHER",
-      "total_pnl": 39465.471076,
-      "total_cost": 43105.15975139418,
-      "avg_price": 0.5221416981555036,
+      "outcome": "Under",
+      "conditionId": "0x0307e4ac86ae577a78b06231ba625e43abcce92171eb5a3157d6c7afb5777e6d",
+      "total_pnl": 30144.12,
+      "total_cost": 29855.88,
+      "avg_price": 0.4976,
+      "status": "closed"
+    },
+    {
+      "title": "Milwaukee Panthers vs. IU Indy Jaguars: O/U 160.5",
+      "slug": "cbb-wbd-iupui-2026-02-10-total-160pt5",
+      "eventSlug": "cbb-wbd-iupui-2026-02-10",
+      "sport_type": "OTHER",
+      "outcome": "Over",
+      "conditionId": "0x28262ef0d3c82955e83d5b91de0f4d0a430395d0aa506b04be541dd2ebe310dd",
+      "total_pnl": 29194.22,
+      "total_cost": 25805.78,
+      "avg_price": 0.4692,
       "status": "closed"
     }
   ],
   "top_losses": [
     {
-      "title": "Spread: Auburn Tigers (-9.5)",
-      "sport_type": "OTHER",
-      "total_pnl": -53962.009343,
-      "total_cost": 53962.00934381115,
-      "avg_price": 0.49792831168062146,
-      "status": "closed"
-    },
-    {
-      "title": "Weber State Wildcats vs. Idaho Vandals: O/U 155.5",
-      "sport_type": "OTHER",
-      "total_pnl": -52229.744,
-      "total_cost": 52229.744,
-      "avg_price": 0.48462155323970185,
-      "status": "closed"
-    },
-    {
       "title": "Spread: Arizona Wildcats (-6.5)",
+      "slug": "cbb-pur-arz-2026-03-28-spread-home-6pt5",
+      "eventSlug": "cbb-pur-arz-2026-03-28",
       "sport_type": "OTHER",
-      "total_pnl": -50229.111533070005,
-      "total_cost": 55209.206076070004,
-      "avg_price": 0.5282320004220256,
+      "outcome": "Purdue Boilermakers",
+      "conditionId": "0xd9c361b8e9d0d6c2bc5974e01e3ec384d50435ffc0261fa9a815e9b55619cc84",
+      "total_pnl": -52768.96,
+      "total_cost": 52768.96,
+      "avg_price": 0.53,
       "status": "open"
     },
     {
       "title": "Kamala Harris wins the popular vote?",
+      "slug": "will-kamala-harris-win-the-popular-vote-in-the-2024-presidential-election",
+      "eventSlug": "presidential-election-popular-vote-winner-2024",
       "sport_type": "POLITICS",
-      "total_pnl": -44502.310428,
-      "total_cost": 44502.310428015444,
-      "avg_price": 0.6161789999999999,
+      "outcome": "Yes",
+      "conditionId": "0x265366ede72d73e137b2b9095a6cdc9be6149290caa295738a95e3d881ad0865",
+      "total_pnl": -44502.31,
+      "total_cost": 44502.31,
+      "avg_price": 0.6162,
       "status": "closed"
     },
     {
-      "title": "California Baptist Lancers vs. Southern Utah Thunderbirds: O/U 146.5",
+      "title": "Spread: Auburn Tigers (-8.5)",
+      "slug": "cbb-nevada-aubrn-2026-03-25-spread-home-8pt5",
+      "eventSlug": "cbb-nevada-aubrn-2026-03-25",
       "sport_type": "OTHER",
-      "total_pnl": -39779.95,
-      "total_cost": 39779.95,
-      "avg_price": 0.5110461855248184,
+      "outcome": "Auburn Tigers",
+      "conditionId": "0x7946fd76cca9267f5fa109e8bee02848916dcf7028dfa86c80eb20d964d6dcce",
+      "total_pnl": -35697.44,
+      "total_cost": 35697.44,
+      "avg_price": 0.51,
+      "status": "closed"
+    },
+    {
+      "title": "Rice Owls vs. UAB Blazers: O/U 152.5",
+      "slug": "cbb-rice-uab-2026-02-08-total-152pt5",
+      "eventSlug": "cbb-rice-uab-2026-02-08",
+      "sport_type": "OTHER",
+      "outcome": "Over",
+      "conditionId": "0x6a8e5b86a05989adbeb2881a4a367be2cb9155b115da0f0698711b8042e78c42",
+      "total_pnl": -34738.07,
+      "total_cost": 34738.07,
+      "avg_price": 0.5146,
+      "status": "closed"
+    },
+    {
+      "title": "Troy Trojans vs. Old Dominion Monarchs: O/U 152.5",
+      "slug": "cbb-troy-old-2026-01-21-total-152pt5",
+      "eventSlug": "cbb-troy-old-2026-01-21",
+      "sport_type": "OTHER",
+      "outcome": "Under",
+      "conditionId": "0xb5a3a215abe179f06296f5aa46d36d49e235809690893b7508a2eeff9caf462e",
+      "total_pnl": -33579.66,
+      "total_cost": 33579.66,
+      "avg_price": 0.5148,
       "status": "closed"
     }
   ],
   "top_sport": "OTHER",
   "best_price_bucket": "Flip (40-60c)",
   "best_market": "Totals (O/U)",
-  "quality_score": 27,
+  "quality_score": 19,
   "tier": "C-Tier",
   "tags": [
     "\u2b50 C-Tier",
-    "\ud83d\udc0b Mega Whale",
-    "\ud83d\udcca O/U Specialist",
+    "\ud83d\udc0b Big Bettor",
     "\u26d4 Fade Spreads"
   ],
-  "tail_guide": "How to Tail redskinrick [C-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   OTHER \u2014 6.8% ROI, 476 events, +$366,938\n\n\ud83d\udd34 DO NOT TAIL:\n   POLITICS \u2014 ROI -66.1%, $-129,253\n\n\u26d4 Mute all Spread bets (-19.9% ROI)\n\ud83c\udfaf Best price zone: Flip (40-60c) (6.5% ROI, 468 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 144% of edge from 'Specific' side \u2014 copy that side only\n\u26a1 Normal bet ~$11,358 \u2014 alert at 3x average for high-conviction plays",
+  "tail_guide": "How to Tail redskinrick [C-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   OTHER \u2014 6.6% ROI, 767 markets, +$356,748\n\n\ud83d\udd34 DO NOT TAIL:\n   POLITICS \u2014 ROI -66.1%, $-129,253\n\n\u26d4 Mute all Spread bets (-19.2% ROI)\n\ud83c\udfaf Best price zone: Flip (40-60c) (6.5% ROI, 758 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 146% of edge from 'Specific' side \u2014 copy that side only\n\u26a1 Typical market stake ~$5,000 (median per market) \u2014 alert at 3\u00d7 for high conviction\n   (Mean $7,057 \u2014 some very large markets; size to the median unless you match their whale plays)",
   "do_not_tail_sports": [
     "POLITICS"
   ],
@@ -337,19 +379,23 @@
   ],
   "do_not_tail_sides": [],
   "score_breakdown": {
-    "sharpe_score": 8.4,
-    "roi_score": 7.5,
-    "wr_score": 8.0,
-    "cons_score": 6.1,
+    "sharpe_score": 6.9,
+    "roi_score": 7.2,
+    "wr_score": 7.0,
+    "cons_score": 6.0,
     "vol_score": 5,
-    "base_score": 35.0,
-    "flip_bonus": 5,
+    "base_score": 32.1,
+    "flip_bonus": 0,
     "leakage_penalty": 13,
-    "midzone_roi": 6.6,
-    "directional_roi": 4.49,
-    "roi_dashboard": 6.06,
-    "roi_for_quality": 4.49,
-    "hedge_risk_frac": 0.101,
-    "hedge_profit_share": 0.085
+    "midzone_roi": -29.9,
+    "directional_roi": 4.3,
+    "roi_dashboard": 5.88,
+    "roi_for_quality": 4.3,
+    "hedge_risk_frac": 0.102,
+    "hedge_profit_share": 0.087,
+    "markets_traded": 803,
+    "median_market_stake": 5000.0,
+    "mean_market_stake": 7056.63,
+    "pnl_sum_check_ok": true
   }
 }

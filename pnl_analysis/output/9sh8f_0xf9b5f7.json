@@ -1,42 +1,45 @@
 {
   "wallet": "0xf9b5f7293b8258be8b0e1f03717c5d2ad94809ee",
   "username": "9sh8f",
-  "total_profit": 3328800.24,
-  "raw_realized_pnl": 3328800.24,
-  "total_risked": 7557731.39,
-  "overall_roi": 44.04,
-  "win_rate": 57.82,
-  "avg_bet_size": 17243.05,
-  "total_events": 422,
-  "pseudo_sharpe": -20.69,
-  "profitable_days": 1,
-  "total_days": 57,
+  "total_profit": 3356013.2,
+  "raw_realized_pnl": 3356013.2,
+  "total_risked": 7579353.6,
+  "overall_roi": 44.28,
+  "win_rate": 57.7,
+  "avg_bet_size": 10892.82,
+  "median_market_stake": 7238.33,
+  "mean_market_stake": 10892.82,
+  "markets_traded": 670,
+  "total_events": 428,
+  "pseudo_sharpe": -20.13,
+  "profitable_days": 0,
+  "total_days": 59,
   "hedge_count": 60,
   "hedge_risk": 281163.31,
   "hedge_profit": -13318.1,
   "bond_count": 0,
   "bond_risk": 0.0,
   "bond_profit": 0.0,
-  "open_count": 224,
-  "open_risk": 4692221.27,
-  "open_value": 32652.5,
-  "open_pnl": -1699113.34,
+  "open_count": 227,
+  "open_risk": 4700073.89,
+  "open_value": 0.0,
+  "open_pnl": -1707818.49,
   "sport_stats": {
     "ESPORTS": {
-      "net_profit": 328843.01,
-      "roi": 5.66,
-      "win_rate": 57.49,
-      "events": 334,
-      "avg_bet": 17394.17,
-      "median_bet": 8571.04
+      "net_profit": 323477.22,
+      "roi": 5.56,
+      "win_rate": 57.79,
+      "events": 571,
+      "avg_bet": 10183.92,
+      "median_bet": 6830.98
     },
     "NBA": {
-      "net_profit": 7476.64,
-      "roi": 1.27,
-      "win_rate": 50.0,
-      "events": 28,
-      "avg_bet": 21100.54,
-      "median_bet": 10560.45
+      "net_profit": 17358.62,
+      "roi": 2.86,
+      "win_rate": 48.65,
+      "events": 37,
+      "avg_bet": 16407.33,
+      "median_bet": 9751.2
     },
     "NFL": {
       "net_profit": -4500.0,
@@ -55,12 +58,12 @@
       "median_bet": 18763.94
     },
     "OTHER": {
-      "net_profit": -75851.3,
+      "net_profit": -75851.67,
       "roi": -16.28,
-      "win_rate": 65.12,
-      "events": 43,
-      "avg_bet": 10835.51,
-      "median_bet": 5500.37
+      "win_rate": 63.64,
+      "events": 45,
+      "avg_bet": 10353.94,
+      "median_bet": 4860.1
     },
     "SOCCER (LaLiga)": {
       "net_profit": -6865.07,
@@ -84,59 +87,59 @@
       "net_profit": -5666.63,
       "roi": -100.0,
       "win_rate": 0.0,
-      "events": 1,
-      "avg_bet": 5666.63,
-      "median_bet": 5666.63
+      "events": 2,
+      "avg_bet": 2833.32,
+      "median_bet": 2833.32
     },
     "Moneyline / Match": {
-      "net_profit": 200991.12,
-      "roi": 2.98,
-      "win_rate": 58.31,
-      "events": 391,
-      "avg_bet": 17249.3,
-      "median_bet": 8907.61
+      "net_profit": 187877.66,
+      "roi": 2.79,
+      "win_rate": 58.47,
+      "events": 627,
+      "avg_bet": 10741.69,
+      "median_bet": 7218.06
     },
     "Spread": {
-      "net_profit": -5003.2,
-      "roi": -1.62,
-      "win_rate": 42.86,
-      "events": 14,
-      "avg_bet": 22074.7,
-      "median_bet": 20163.74
+      "net_profit": -7726.68,
+      "roi": -2.48,
+      "win_rate": 36.84,
+      "events": 19,
+      "avg_bet": 16430.63,
+      "median_bet": 8502.77
     },
     "Totals (O/U)": {
-      "net_profit": 89364.65,
-      "roi": 41.11,
-      "win_rate": 62.5,
-      "events": 16,
-      "avg_bet": 13586.17,
+      "net_profit": 109717.42,
+      "roi": 44.73,
+      "win_rate": 59.09,
+      "events": 22,
+      "avg_bet": 11150.02,
       "median_bet": 7409.63
     }
   },
   "sport_market_stats": {
     "NBA|Moneyline / Match": {
-      "net_profit": -49163.69,
-      "roi": -39.3,
+      "net_profit": -60663.68,
+      "roi": -53.19,
       "win_rate": 25.0,
       "events": 4,
-      "avg_bet": 31275.55,
-      "median_bet": 25551.1
+      "avg_bet": 28513.3,
+      "median_bet": 20026.6
     },
     "NBA|Spread": {
-      "net_profit": -20141.35,
-      "roi": -7.05,
-      "win_rate": 41.67,
-      "events": 12,
-      "avg_bet": 23806.48,
-      "median_bet": 25037.71
+      "net_profit": -22864.82,
+      "roi": -7.92,
+      "win_rate": 35.29,
+      "events": 17,
+      "avg_bet": 16989.05,
+      "median_bet": 8502.77
     },
     "NBA|Totals (O/U)": {
-      "net_profit": 76781.68,
-      "roi": 42.65,
-      "win_rate": 66.67,
-      "events": 12,
-      "avg_bet": 15002.93,
-      "median_bet": 8852.7
+      "net_profit": 100887.13,
+      "roi": 49.41,
+      "win_rate": 68.75,
+      "events": 16,
+      "avg_bet": 12762.76,
+      "median_bet": 10400.1
     },
     "NFL|Spread": {
       "net_profit": -4500.0,
@@ -155,12 +158,12 @@
       "median_bet": 18763.94
     },
     "Other|Moneyline / Match": {
-      "net_profit": -93437.77,
+      "net_profit": -93438.14,
       "roi": -21.29,
-      "win_rate": 65.0,
-      "events": 40,
-      "avg_bet": 10973.94,
-      "median_bet": 5254.18
+      "win_rate": 63.41,
+      "events": 42,
+      "avg_bet": 10451.38,
+      "median_bet": 4344.61
     },
     "Other|Spread": {
       "net_profit": 19638.15,
@@ -190,49 +193,57 @@
       "net_profit": -5666.63,
       "roi": -100.0,
       "win_rate": 0.0,
-      "events": 1,
-      "avg_bet": 5666.63,
-      "median_bet": 5666.63
+      "events": 2,
+      "avg_bet": 2833.32,
+      "median_bet": 2833.32
     },
     "eSports|Moneyline / Match": {
-      "net_profit": 334509.65,
-      "roi": 5.76,
-      "win_rate": 57.66,
-      "events": 333,
-      "avg_bet": 17429.39,
-      "median_bet": 8670.14
+      "net_profit": 332896.54,
+      "roi": 5.73,
+      "win_rate": 58.2,
+      "events": 567,
+      "avg_bet": 10239.15,
+      "median_bet": 7088.1
+    },
+    "eSports|Totals (O/U)": {
+      "net_profit": -3752.68,
+      "roi": -100.0,
+      "win_rate": 0.0,
+      "events": 2,
+      "avg_bet": 1876.34,
+      "median_bet": 1876.34
     }
   },
   "price_stats": {
     "Favorite (60-80c)": {
-      "net_profit": 163089.09,
-      "roi": 9.13,
-      "win_rate": 70.34,
-      "events": 118
+      "net_profit": 225420.34,
+      "roi": 10.51,
+      "win_rate": 73.4,
+      "events": 188
     },
     "Flip (40-60c)": {
-      "net_profit": 191056.16,
-      "roi": 3.62,
-      "win_rate": 55.34,
-      "events": 262
+      "net_profit": -23139.66,
+      "roi": -0.49,
+      "win_rate": 53.12,
+      "events": 401
     },
     "Longshot (0-20c)": {
-      "net_profit": -647.67,
+      "net_profit": -2433.79,
       "roi": -100.0,
       "win_rate": 0.0,
-      "events": 2
+      "events": 6
     },
     "Safe (80-100c)": {
-      "net_profit": 3033.65,
-      "roi": 13.98,
+      "net_profit": 3308.31,
+      "roi": 14.39,
       "win_rate": 100.0,
-      "events": 5
+      "events": 8
     },
     "Underdog (20-40c)": {
-      "net_profit": -76845.29,
-      "roi": -40.25,
-      "win_rate": 31.43,
-      "events": 35
+      "net_profit": 81046.57,
+      "roi": 19.3,
+      "win_rate": 40.91,
+      "events": 67
     }
   },
   "side_stats": {
@@ -242,9 +253,9 @@
       "positions": 1
     },
     "Specific Selection": {
-      "net_profit": 302713.44,
-      "roi": 4.17,
-      "positions": 660
+      "net_profit": 307229.27,
+      "roi": 4.22,
+      "positions": 666
     },
     "Yes": {
       "net_profit": -17410.93,
@@ -255,96 +266,137 @@
   "monthly_pnl": {
     "2026-01": -291466.54,
     "2026-02": -760097.46,
-    "2026-03": -840776.92
+    "2026-03": -843186.65,
+    "2026-04": -6295.43
   },
   "top_wins": [
     {
-      "title": "Dota 2: MOUZ vs Team Liquid - Game 1 Winner",
-      "sport_type": "ESPORTS",
-      "total_pnl": 60603.798625,
-      "total_cost": 75772.82057225164,
-      "avg_price": 0.6154613239420169,
-      "status": "closed"
-    },
-    {
-      "title": "Dota 2: Heroic vs Team Liquid - Game 2 Winner",
-      "sport_type": "ESPORTS",
-      "total_pnl": 60213.162492,
-      "total_cost": 98802.78527502375,
-      "avg_price": 0.6217303131894237,
-      "status": "closed"
-    },
-    {
       "title": "Spread: Spurs (-8.5)",
+      "slug": "nba-sas-lac-2026-03-16-spread-away-8pt5",
+      "eventSlug": "nba-sas-lac-2026-03-16",
       "sport_type": "NBA",
-      "total_pnl": 57827.523626,
-      "total_cost": 64665.05962403541,
-      "avg_price": 0.52791,
+      "outcome": "Clippers",
+      "conditionId": "0x0f7368c0c4b1315b31670d95d08e094ba64ebec683114348f92929f1a663127b",
+      "total_pnl": 57827.52,
+      "total_cost": 64665.06,
+      "avg_price": 0.5279,
       "status": "closed"
     },
     {
-      "title": "Dota 2: BetBoom Team vs Team Spirit (BO3) - PGL Wallachia Playoffs",
+      "title": "Dota 2: Team Spirit vs Xtreme Gaming - Game 1 Winner",
+      "slug": "dota2-ts8-xtreme-2026-03-27-game1",
+      "eventSlug": "dota2-ts8-xtreme-2026-03-27",
       "sport_type": "ESPORTS",
-      "total_pnl": 49376.095402,
-      "total_cost": 50522.76591852754,
-      "avg_price": 0.518342975020929,
+      "outcome": "Team Spirit",
+      "conditionId": "0x7f1f2a98813fbfd35aedc5e27114d563bd3aec3ddd42c9ede9697d6c550846b2",
+      "total_pnl": 38430.91,
+      "total_cost": 63443.53,
+      "avg_price": 0.6228,
       "status": "closed"
     },
     {
-      "title": "Dota 2: Aurora vs Tundra Esports - Game 1 Winner",
-      "sport_type": "ESPORTS",
-      "total_pnl": 46845.955321999994,
-      "total_cost": 47286.45787421612,
-      "avg_price": 0.5220682104885745,
+      "title": "Canadiens vs. Kings",
+      "slug": "nhl-mon-lak-2026-03-07",
+      "eventSlug": "nhl-mon-lak-2026-03-07",
+      "sport_type": "NHL",
+      "outcome": "Canadiens",
+      "conditionId": "0x6800cf46652b3b108fcdec141cfc78804cc74d6889054fa3f5f5eef9e1213a5a",
+      "total_pnl": 37311.93,
+      "total_cost": 33087.94,
+      "avg_price": 0.47,
+      "status": "closed"
+    },
+    {
+      "title": "Warriors vs. Jazz: O/U 223.5",
+      "slug": "nba-gsw-uta-2026-03-09-total-223pt5",
+      "eventSlug": "nba-gsw-uta-2026-03-09",
+      "sport_type": "NBA",
+      "outcome": "Over",
+      "conditionId": "0xc01f4928c65d104378070931963f173a8c3b2331e9ca97b330a8cca2bbe11b8b",
+      "total_pnl": 37150.13,
+      "total_cost": 40245.98,
+      "avg_price": 0.52,
+      "status": "closed"
+    },
+    {
+      "title": "Panthers vs. Red Wings",
+      "slug": "nhl-fla-det-2026-03-06",
+      "eventSlug": "nhl-fla-det-2026-03-06",
+      "sport_type": "NHL",
+      "outcome": "Panthers",
+      "conditionId": "0xf9b234b39eb93542527dfdb2eb97876fe8ba923e922c1b8d7a60cff679c03cc2",
+      "total_pnl": 37056.17,
+      "total_cost": 26833.78,
+      "avg_price": 0.42,
       "status": "closed"
     }
   ],
   "top_losses": [
     {
       "title": "Hurricanes vs. Red Wings",
+      "slug": "nhl-car-det-2026-01-12",
+      "eventSlug": "nhl-car-det-2026-01-12",
       "sport_type": "NHL",
-      "total_pnl": -82634.71909566851,
-      "total_cost": 82634.7190956685,
-      "avg_price": 0.575369,
-      "status": "open"
-    },
-    {
-      "title": "Dota 2: Aurora vs PARIVISION - Game 1 Winner",
-      "sport_type": "ESPORTS",
-      "total_pnl": -79705.08774603318,
-      "total_cost": 79705.08774603318,
-      "avg_price": 0.5076375433495177,
+      "outcome": "Hurricanes",
+      "conditionId": "0x2bf76c662a8738ea88ff43a3979f7a6557568dcd5461218668b3636c378e70be",
+      "total_pnl": -82634.72,
+      "total_cost": 82634.72,
+      "avg_price": 0.5753,
       "status": "open"
     },
     {
       "title": "Timberwolves vs. Grizzlies",
+      "slug": "nba-min-mem-2026-02-02",
+      "eventSlug": "nba-min-mem-2026-02-02",
       "sport_type": "NBA",
+      "outcome": "Timberwolves",
+      "conditionId": "0x9ffdefcd44efed585350b6b0d6edb2433dd1e47358984baf2c7dbc11d9796a8a",
       "total_pnl": -72000.0,
       "total_cost": 72000.0,
       "avg_price": 0.72,
       "status": "open"
     },
     {
-      "title": "Dota 2: Team Falcons vs MOUZ - Game 2 Winner",
+      "title": "Dota 2: Team Yandex vs Team Liquid (BO5) - PGL Wallachia Playoffs",
+      "slug": "dota2-ty-liquid-2026-03-15",
+      "eventSlug": "dota2-ty-liquid-2026-03-15",
       "sport_type": "ESPORTS",
-      "total_pnl": -65953.34540734462,
-      "total_cost": 65953.34540734462,
-      "avg_price": 0.48884859551648024,
+      "outcome": "Team Liquid",
+      "conditionId": "0xb189090027cdc60621728814f77663bbdddc4c08772ec950c4c75e4b99733005",
+      "total_pnl": -65126.87,
+      "total_cost": 65126.87,
+      "avg_price": 0.4916,
       "status": "open"
     },
     {
       "title": "Wild vs. Golden Knights",
+      "slug": "nhl-min-las-2026-03-06",
+      "eventSlug": "nhl-min-las-2026-03-06",
       "sport_type": "NHL",
-      "total_pnl": -63778.341897,
-      "total_cost": 63778.341897,
+      "outcome": "Golden Knights",
+      "conditionId": "0x136119a189911c5b6d503da8b0f1f1fe5f6f162b38d141f416056ef8635c1a82",
+      "total_pnl": -63778.34,
+      "total_cost": 63778.34,
       "avg_price": 0.5,
+      "status": "open"
+    },
+    {
+      "title": "UFC Fight Night: Sean Strickland vs. Anthony Hernandez (Middleweight, Main Card)",
+      "slug": "ufc-sea2-ant-2026-02-21",
+      "eventSlug": "ufc-sea2-ant-2026-02-21",
+      "sport_type": "OTHER",
+      "outcome": "Hernandez",
+      "conditionId": "0x706cb2f12c08d1f0ab58343000216f7bd70989a66945f1921415a921a49305d5",
+      "total_pnl": -45783.01,
+      "total_cost": 45783.01,
+      "avg_price": 0.6987,
       "status": "open"
     }
   ],
   "top_sport": "ESPORTS",
-  "best_price_bucket": "Favorite (60-80c)",
+  "best_price_bucket": "Underdog (20-40c)",
   "best_market": "Moneyline / Match",
-  "quality_score": 19,
+  "quality_score": 24,
   "tier": "C-Tier",
   "tags": [
     "\u2b50 C-Tier",
@@ -352,7 +404,7 @@
     "\ud83d\udc0b Mega Whale",
     "\ud83d\udcca O/U Specialist"
   ],
-  "tail_guide": "How to Tail 9sh8f [C-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   ESPORTS \u2014 5.7% ROI, 334 events, +$328,843\n\n\ud83d\udd34 DO NOT TAIL:\n   OTHER \u2014 ROI -16.3%, $-75,851\n\n\ud83d\udcc8 Stick to Moneylines (3.0% ROI over 391 events)\n\ud83c\udfaf Best price zone: Favorite (60-80c) (9.1% ROI, 118 events)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 108% of edge from 'Specific' side \u2014 copy that side only\n\u26a1 Normal bet ~$17,243 \u2014 alert at 3x average for high-conviction plays",
+  "tail_guide": "How to Tail 9sh8f [C-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   ESPORTS \u2014 5.6% ROI, 571 markets, +$323,477\n\n\ud83d\udd34 DO NOT TAIL:\n   OTHER \u2014 ROI -16.3%, $-75,852\n\n\ud83d\udcc8 Stick to Moneylines (2.8% ROI over 627 markets)\n\ud83c\udfaf Best price zone: Underdog (20-40c) (19.3% ROI, 67 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 108% of edge from 'Specific' side \u2014 copy that side only\n\u26a1 Typical market stake ~$7,238 (median per market) \u2014 alert at 3\u00d7 for high conviction\n   (Mean $10,893 \u2014 some very large markets; size to the median unless you match their whale plays)",
   "do_not_tail_sports": [
     "OTHER"
   ],
@@ -363,18 +415,22 @@
   "do_not_tail_sides": [],
   "score_breakdown": {
     "sharpe_score": 0,
-    "roi_score": 6.4,
-    "wr_score": 9.8,
-    "cons_score": 0.2,
+    "roi_score": 6.5,
+    "wr_score": 9.7,
+    "cons_score": 0.0,
     "vol_score": 5,
-    "base_score": 21.4,
-    "flip_bonus": 0,
+    "base_score": 21.2,
+    "flip_bonus": 5,
     "leakage_penalty": 2,
-    "midzone_roi": -18.3,
-    "directional_roi": 3.84,
-    "roi_dashboard": 44.04,
-    "roi_for_quality": 3.84,
+    "midzone_roi": 9.4,
+    "directional_roi": 3.89,
+    "roi_dashboard": 44.28,
+    "roi_for_quality": 3.89,
     "hedge_risk_frac": 0.037,
-    "hedge_profit_share": -0.004
+    "hedge_profit_share": -0.004,
+    "markets_traded": 670,
+    "median_market_stake": 7238.33,
+    "mean_market_stake": 10892.82,
+    "pnl_sum_check_ok": true
   }
 }

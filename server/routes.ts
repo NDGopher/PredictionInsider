@@ -971,6 +971,18 @@ async function fetchMidpoint(tokenId: string): Promise<number | null> {
   return null;
 }
 
+/** Uncached GET midpoint for signal gates — batch/snapshot + pos.curPrice can lag the book by 10¢+ on futures. */
+async function fetchMidpointUncached(tokenId: string): Promise<number | null> {
+  try {
+    const res = await fetchWithRetry(`${CLOB_API}/midpoint?token_id=${tokenId}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const mid = parseFloat(data.mid ?? data.midpoint ?? "0");
+    if (!isNaN(mid) && mid > 0) return mid;
+  } catch {}
+  return null;
+}
+
 /** Batch fetch CLOB midpoints for many tokens in one or few requests. Rate limit: 500 req/10s for POST /midpoints. */
 const MIDPOINT_BATCH_SIZE = 150;
 async function fetchMidpointsBatch(tokenIds: string[]): Promise<Map<string, number>> {
@@ -1219,6 +1231,33 @@ async function refreshESPNLiveGames(): Promise<void> {
     } catch { /* ESPN unavailable, skip this group */ }
   }));
 }
+
+/**
+ * Polymarket /trades: `timestamp` is unix seconds (sometimes float). Rarely already ms.
+ * Never fall back to `Date.now()` — missing timestamps are not "now" (causes "just now" on cards and
+ * identical fake times for multiple traders in the same request).
+ */
+function tradeTimestampMs(trade: { timestamp?: number | string; createdAt?: string }): number {
+  const raw = trade.timestamp != null && trade.timestamp !== "" ? Number(trade.timestamp) : NaN;
+  if (Number.isFinite(raw) && raw !== 0) {
+    if (raw > 1e12) return Math.round(raw);
+    return Math.round(raw * 1000);
+  }
+  if (trade.createdAt) {
+    const t = new Date(trade.createdAt).getTime();
+    if (!isNaN(t)) return t;
+  }
+  return 0;
+}
+
+/** Max |avg entry − live midpoint| (0.05 = 5¢). Applied on trades, positions, cluster, and /signals/fast emitters. */
+const ENTRY_VS_LIVE_MAX = 0.05;
+/** In-play books move fast; one request can drift past 5¢. Stricter band when categoriseMarket === "live". */
+const ENTRY_VS_LIVE_MAX_INPLAY = 0.03;
+
+/** Known futures-heavy curated wallet(s) — large stake on macro futures gets a UI highlight (see signals.push). */
+const FUTURES_EXPERT_LARGE_STAKE_WALLET = "0x53ecc53e7a69aad0e6dda60264cc2e363092df91";
+const FUTURES_EXPERT_LARGE_STAKE_MIN_USD = 5000;
 
 /** Polymarket /trades returns max 1000 per request — paginate with offset to go deeper per wallet. */
 const ELITE_TRADES_PAGE_SIZE = 1000;
@@ -2146,10 +2185,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                END as overall_roi,
                COALESCE(NULLIF(p.metrics->>'capitalRoiPercent',''), NULLIF(p.metrics->>'overallROI','')) as roi_capital,
                p.metrics->>'last90dROI' as last90d_roi,
-               NULLIF(p.metrics->>'winRate','') as win_rate,
+               COALESCE(NULLIF(p.metrics->>'csvWinRate',''), NULLIF(p.metrics->>'winRate','')) as win_rate,
                COALESCE(NULLIF(p.metrics->>'csvPseudoSharpe',''), p.metrics->>'sharpeScore') as sharpe_score,
                COALESCE(NULLIF(p.metrics->>'csvAvgBetSize',''), p.metrics->>'avgBetSize') as avg_bet_size,
-               p.metrics->>'tradesPerDay' as trades_per_day,
+               NULLIF(TRIM(p.metrics->>'csvMedianMarketStake'), '') as median_market_stake,
+               NULLIF(TRIM(p.metrics->>'csvMarketsTraded'), '') as markets_traded,
+               COALESCE(NULLIF(p.metrics->>'csvTradesPerDay',''), p.metrics->>'tradesPerDay') as trades_per_day,
                COALESCE(NULLIF(p.metrics->>'csvTopSport',''), p.metrics->>'topSport') as top_sport,
                p.metrics->>'topMarketType' as top_market_type,
                p.metrics->>'consistencyRating' as consistency_rating,
@@ -2710,7 +2751,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // Sharp Moves = curated elite traders only
         if (!isCurated) continue;
         if (size < 1000) continue; // minimum $1K plays only
-        if ((trade.side || "").toUpperCase() === "SELL") continue; // exits aren't new signals
+        {
+          const tSide = (trade.side || "").toUpperCase();
+          if (tSide === "SELL") continue;
+          if (tSide !== "BUY") continue;
+        }
         const title = trade.title || trade.market || "";
         if (!isSportsRelated(title) || !title) continue;
         const price = parseFloat(trade.price || "0.5");
@@ -2721,7 +2766,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const trader = lbMap.get(wallet);
         const displayNameSSE = curatedNamesSSE.get(wallet) || trader?.name || truncAddr(wallet);
         const side = resolveSide(trade.outcome, trade.outcomeIndex);
-        const ts = trade.timestamp ? trade.timestamp * 1000 : (trade.createdAt ? new Date(trade.createdAt).getTime() : now);
+        const ts = tradeTimestampMs(trade);
+        if (ts <= 0) continue;
         const condId = trade.conditionId || "";
         const dbEntry = sharedMarketDb.get(condId);
         // Skip postponed/inactive markets
@@ -2823,7 +2869,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           roiCapital:           t.total_risked,  // so display ROI = (rawRealizedPnl / roiCapital) * 100 is sensible
           csvTotalRisked:       t.total_risked,
           csvWinRate:           t.win_rate,
+          csvTradesPerDay: (() => {
+            const td = Number(t.total_days) || 0;
+            const te = Number(t.total_events) || 0;
+            return td > 0 ? Math.round((100 * te) / td) / 100 : 0;
+          })(),
           csvAvgBetSize:        t.avg_bet_size,
+          csvMedianMarketStake: t.median_market_stake ?? t.avg_bet_size,
+          csvMeanMarketStake:   t.mean_market_stake ?? t.avg_bet_size,
+          csvMarketsTraded:     t.markets_traded ?? 0,
           csvPseudoSharpe:      t.pseudo_sharpe,
           csvTotalEvents:       t.total_events,
           csvProfitableDays:    t.profitable_days,
@@ -3341,7 +3395,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // Must be in elite_traders (curated + discovered seeds); no random anonymous whales
         if (!isCuratedHttp) continue;
         if (size < 1000) continue; // minimum $1K plays
-        if ((trade.side || "").toUpperCase() === "SELL") continue; // exits aren't new signals
+        const tradeSide = (trade.side || "").toUpperCase();
+        if (tradeSide === "SELL") continue; // exits / closing — not new conviction
+        // Only explicit BUY adds to a position. Missing/unknown side can be merges or odd API rows.
+        if (tradeSide !== "BUY") continue;
 
         const title = trade.title || trade.market || "";
         if (!isSportsRelated(title)) continue;
@@ -3356,7 +3413,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
         const trader = lbMap.get(wallet);
         const side = resolveSide(trade.outcome, trade.outcomeIndex);
-        const ts    = trade.timestamp ? trade.timestamp * 1000 : (trade.createdAt ? new Date(trade.createdAt).getTime() : now);
+        const ts    = tradeTimestampMs(trade);
+        if (ts <= 0) continue;
         const alertCondId = trade.conditionId || "";
         const alertDbEntry = sharedMarketDb.get(alertCondId);
         // Skip postponed/inactive markets
@@ -3387,7 +3445,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           timestamp: ts,
           minutesAgo: Math.round((now - ts) / 60_000),
           outcomeLabel: computeOutcomeLabel(title, side),
-          sharpAction: signalsByMarket.get(alertCondId) ?? null,
+          // One registry entry per marketId = ONE side's consensus. Do not attach to trades on the opposite side.
+          sharpAction: (() => {
+            const sa = signalsByMarket.get(alertCondId) ?? null;
+            if (!sa) return null;
+            return sa.side === side ? sa : null;
+          })(),
         });
 
         if (alerts.length >= 40) break;
@@ -3670,7 +3733,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           if (!mw.noTokenId)  mw.noTokenId  = mInfo.tokenIds[1];
         }
 
-        const tradeTs = trade.timestamp ? trade.timestamp * 1000 : (trade.createdAt ? new Date(trade.createdAt).getTime() : now);
+        const tradeTs = tradeTimestampMs(trade);
         // "BUY" adds to net position; "SELL" reduces it (trader exiting)
         const isSellTrade = (trade.side || "").toUpperCase() === "SELL";
         const ex = mw.wallets.get(wallet);
@@ -3747,7 +3810,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             existing.prices = [posData.avgPrice];
             existing.side = posData.side;
             existing.asset = asset;
-            existing.lastTimestamp = Math.max(existing.lastTimestamp, now);
+            // Keep lastTimestamp from the trades ingest pass — it reflects real fill time.
+            // (Using `now` here made every trader show "entered ~1m ago" on each /api/signals refresh.)
           } else {
             mw.wallets.set(wallet, {
               side: posData.side,
@@ -3757,7 +3821,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
               traderInfo,
               address: wallet,
               asset,
-              lastTimestamp: now,
+              // No trade row for this market in the recent batch — we don't have a true entry time from the API here.
+              lastTimestamp: 0,
             });
           }
         }
@@ -3794,6 +3859,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       for (const [condId, mw] of marketWallets.entries()) {
         if (!mw.question || mw.question === condId) continue;
+
+        const mInfoBand = marketDb.get(condId);
+        const mTypeBand = categoriseMarket(mw.question, mw.endDate || mInfoBand?.endDate, mInfoBand?.gameStartTime, mw.slug || mInfoBand?.slug);
+        const entryVsLiveBand = mTypeBand === "live" ? ENTRY_VS_LIVE_MAX_INPLAY : ENTRY_VS_LIVE_MAX;
 
         const entries = Array.from(mw.wallets.values());
         if (entries.length === 0) continue;
@@ -3832,7 +3901,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // We require at least one dominant entry to have a current position (same side, shares > 0)
         // so we never alert on the wrong side or after the trader has sold.
         type PosEnriched = (typeof dominant[0]) & { actualShares: number; actualAvgPrice: number; actualRisk: number; positionConfirmed: boolean };
-        const dominantEnriched: PosEnriched[] = dominant.map(e => {
+        let dominantEnriched: PosEnriched[] = dominant.map(e => {
           const wPos = posLookup.get(e.address.toLowerCase());
           const pos  = wPos?.get(String(e.asset));
           const confirmed = !!(pos && pos.side === e.side && pos.shares > 0);
@@ -3846,6 +3915,23 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         // Only emit signal if at least one dominant trader still holds this position (correct side, not sold).
         const positionConfirmedCount = dominantEnriched.filter(e => e.positionConfirmed).length;
         if (positionConfirmedCount === 0) continue;
+
+        // Live midpoint: drop any trader whose avg entry is >5¢ from the CURRENT book (legacy stacks at 7¢/29¢ when the token is 40¢+).
+        const liveTokenId = side === "YES" ? mw.yesTokenId : mw.noTokenId;
+        if (!liveTokenId) continue;
+        const midFresh = await fetchMidpointUncached(liveTokenId);
+        const midRaw = midFresh !== null && Number.isFinite(midFresh) ? midFresh : midpointMap.get(liveTokenId);
+        if (midRaw === undefined) continue;
+        let currentPrice = midRaw;
+        if (currentPrice < MIN_RESOLVED || currentPrice > MAX_RESOLVED) continue;
+        currentPrice = Math.min(0.99, Math.max(0.01, currentPrice));
+        if (currentPrice < MIN_LIVE_PRICE || currentPrice > MAX_LIVE_PRICE) continue;
+
+        dominantEnriched = dominantEnriched.filter(e => Math.abs(e.actualAvgPrice - currentPrice) <= entryVsLiveBand);
+        if (dominantEnriched.length === 0) continue;
+        const keepVsLive = new Set(dominantEnriched.map(e => e.address.toLowerCase()));
+        dominant = dominant.filter(e => keepVsLive.has(e.address.toLowerCase()));
+        if (dominantEnriched.filter(e => e.positionConfirmed).length === 0) continue;
 
         const totalDominantSize = dominantEnriched.reduce((s, e) => s + e.actualRisk, 0);
         const lbCount     = dominant.filter(e => e.traderInfo.isLeaderboard).length;
@@ -3999,27 +4085,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           if (cat?.doNotTail?.length && (cat.doNotTail.includes(signalSportDetailed) || cat.doNotTail.includes(signalSport))) continue;
         }
 
-        // ── Live price via CLOB (from batch map; no per-signal request) ─────────
-        const liveTokenId = side === "YES" ? mw.yesTokenId : mw.noTokenId;
-        if (!liveTokenId) {
-          // Never substitute avgEntry as "current" — that looks actionable when we have no book.
-          continue;
-        }
-        const midRaw = midpointMap.get(liveTokenId);
-        if (midRaw === undefined) {
-          // No midpoint row (should be rare now that we store 0). Skip — can't price the trade.
-          continue;
-        }
-        let currentPrice = midRaw;
-
-        // ── Pre-clamp: reject near-resolved markets (<2¢ or >98¢) ────────────
-        if (currentPrice < MIN_RESOLVED || currentPrice > MAX_RESOLVED) continue;
-
-        currentPrice = Math.min(0.99, Math.max(0.01, currentPrice));
-
-        // ── Strict price range filter (0.10–0.90) ─────────────────────────────
-        if (currentPrice < MIN_LIVE_PRICE || currentPrice > MAX_LIVE_PRICE) continue;
-
+        // currentPrice resolved earlier (entry-vs-live gate). Midpoint = token for this side.
         // Both YES and NO use identical formula: currentPrice is already the token price
         // for the relevant side (YES token midpoint for YES, NO token midpoint for NO).
         // Positive = sharps got in at a higher price = you can enter cheaper = value edge.
@@ -4183,6 +4249,29 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         });
         if (allowedForDisplay.length === 0) continue; // no trader allowed for this sport — skip signal
 
+        const futuresExpertStakeUsd = isFuturesMkt
+          ? allowedForDisplay.reduce((s, e) => {
+              if (e.address.toLowerCase() !== FUTURES_EXPERT_LARGE_STAKE_WALLET) return s;
+              return s + e.actualRisk;
+            }, 0)
+          : 0;
+        const futuresExpertLargeStakeUsd =
+          isFuturesMkt && futuresExpertStakeUsd >= FUTURES_EXPERT_LARGE_STAKE_MIN_USD
+            ? Math.round(futuresExpertStakeUsd)
+            : undefined;
+
+        // Macro futures: entry-vs-live drift over weeks/months is not a tailing signal; we already use
+        // effectiveValueDelta=0 for confidence — omit raw valueDelta in the payload so the UI doesn't
+        // show a huge "¢ below live" line that contradicts the ±5¢ tailing rule.
+        const valueDeltaOut = isFuturesMkt ? 0 : Math.round(valueDelta * 1000) / 1000;
+
+        // Final guard: long /api/signals loops can let mid drift vs entry; drop if no longer within band (stricter for live).
+        const pxLastTrades = await fetchMidpointUncached(liveTokenId);
+        if (mType === "live" && (pxLastTrades === null || !Number.isFinite(pxLastTrades))) continue;
+        const pxUseTrades = pxLastTrades !== null && Number.isFinite(pxLastTrades) ? pxLastTrades : currentPrice;
+        const bandLastTrades = mType === "live" ? ENTRY_VS_LIVE_MAX_INPLAY : ENTRY_VS_LIVE_MAX;
+        if (allowedForDisplay.some(e => Math.abs(e.actualAvgPrice - pxUseTrades) > bandLastTrades)) continue;
+
         signals.push({
           id, marketId: condId,
           marketQuestion: mw.question,
@@ -4199,7 +4288,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           priceBucket,
           bigPlayScore,
           consensusPct: Math.round(consensusPct),
-          valueDelta: Math.round(valueDelta * 1000) / 1000,
+          valueDelta: valueDeltaOut,
           currentPrice: Math.round(currentPrice * 1000) / 1000,
           avgEntryPrice: Math.round(avgEntry * 1000) / 1000,
           totalNetUsdc: Math.round(totalDominantSize),
@@ -4280,8 +4369,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           sport: signalSport,
           volume: 0,
           generatedAt: now,
-          isValue: valueDelta > 0, isNew,
+          isValue: !isFuturesMkt && valueDelta > 0, isNew,
           futuresCap: isFuturesMkt ? futuresCap : undefined,
+          futuresExpertLargeStakeUsd,
           source: "trades",
           outcomeLabel: computeOutcomeLabel(mw.question, side),
           yesTokenId: mw.yesTokenId,
@@ -4433,6 +4523,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             for (const [tid, px] of extraMid) midpointMap.set(tid, px);
           }
         }
+        const positionLiveMidCache = new Map<string, number | null>();
+        async function liveMidForPositions(tokenId: string): Promise<number | null> {
+          if (positionLiveMidCache.has(tokenId)) return positionLiveMidCache.get(tokenId)!;
+          const m = await fetchMidpointUncached(tokenId);
+          positionLiveMidCache.set(tokenId, m);
+          return m;
+        }
         for (const pg of posMap.values()) {
           const pgMarketPre = marketDb.get(pg.conditionId);
           const pgSportEarly = classifySport(pg.slug || pgMarketPre?.slug || "", pg.question || "");
@@ -4440,34 +4537,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const pgSportDetailedEarly = classifySportFull(pgSportEarly, pg.question || "", pg.slug || pgMarketPre?.slug || "");
           const pgSportMktKeyEarly = `${pgSportDetailedEarly}|${pgMarketCategoryEarly}`;
           const pgParentSportMktKeyEarly = `${pgSportEarly}|${pgMarketCategoryEarly}`;
-          let pgVipStake = 0;
-          let pgVipRaw = false;
-          for (const t of pg.traders) {
-            const cm = canonicalMap.get(t.wallet.toLowerCase());
-            const q = (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : 0;
-            const minUsd = pg.traders.length === 1 ? VIP_PREMIUM_MIN_USD_POS_SOLO : VIP_PREMIUM_MIN_USD_TRADES;
-            if (q < VIP_PREMIUM_MIN_Q || t.costBasis < minUsd) continue;
-            const catV = getEffectiveCategoryFilter(t.wallet.toLowerCase(), metricsByWallet.get(t.wallet.toLowerCase()));
-            if (catV?.doNotTail?.length && (catV.doNotTail.includes(pgSportDetailedEarly) || catV.doNotTail.includes(pgSportEarly))) continue;
-            const { roi: laneRoi, sampleOk } = traderSpecialtyLaneROI(cm, pgSportMktKeyEarly, pgParentSportMktKeyEarly, pgSportDetailedEarly, pgSportEarly);
-            if (!sampleOk) continue;
-            const meetsEdge = laneRoi >= VIP_SPECIALTY_ROI_MIN
-              || (laneRoi >= VIP_ALT_ROI_FOR_HUGE && t.costBasis >= VIP_HUGE_STAKE_POS);
-            if (meetsEdge) {
-              pgVipRaw = true;
-              pgVipStake += t.costBasis;
-            }
-          }
-          const pgTotalCost = pg.traders.reduce((s, t) => s + t.costBasis, 0);
-          const pgVipDominates = pgTotalCost > 0 && (pgVipStake / pgTotalCost) >= VIP_DOMINATE_RISK_FRAC;
-          const pgVipHuge = pgVipRaw && pgVipStake >= VIP_HUGE_STAKE_POS;
-          const pgVipBypass = pgVipDominates || pgVipHuge;
-          const pgVipSoloFloor = pg.traders.length === 1 && pgVipRaw;
-
-          // Quality gate: need meaningful capital committed
-          // 2+ traders with $1K+ total, OR single trader with $50K+, OR VIP solo (high-Q + lane edge + $3.5k+)
-          if (pg.traders.length >= 2 && pg.totalValue < 1000) continue;
-          if (pg.traders.length < 2 && pg.totalValue < 50000 && !pgVipSoloFloor) continue;
 
           // Avoid duplicating markets already in trades-based signals
           const dedupeKey = `${pg.conditionId}-${pg.side}`;
@@ -4488,21 +4557,59 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const endMs = resolvedEndDate ? new Date(resolvedEndDate).getTime() : Infinity;
           if (resolvedEndDate && endMs < now) continue;
 
-          // Check price range strictly for game-day markets, loosely for futures.
-          // Prefer CLOB midpoint over avg(pos.curPrice) — API mark can lag badly in-play.
+          // Live reference MUST be CLOB mid for the ±5¢ gate — never avg(pos.curPrice): Polymarket position
+          // marks can sit at 4–5¢ while the real book is 15¢+ on long-dated / thin futures.
           const tokenForSide = pg.side === "YES" ? pg.yesAsset : pg.noAsset;
-          const clobMid = tokenForSide ? midpointMap.get(tokenForSide) : undefined;
-          let avgCurPrice = pg.traders.reduce((s, t) => s + t.curPrice, 0) / pg.traders.length;
-          if (clobMid !== undefined && Number.isFinite(clobMid)) avgCurPrice = clobMid;
+          if (!tokenForSide) continue;
+          const clobMid = midpointMap.get(tokenForSide);
+          const freshMid = await liveMidForPositions(tokenForSide);
+          let avgCurPrice: number;
+          if (freshMid !== null && Number.isFinite(freshMid)) avgCurPrice = freshMid;
+          else if (clobMid !== undefined && Number.isFinite(clobMid)) avgCurPrice = clobMid;
+          else continue;
           const isFutures = endMs - now > 14 * 24 * 3600_000; // more than 14 days out
           const minPrice = isFutures ? 0.05 : 0.10;
           if (avgCurPrice < minPrice || avgCurPrice > 0.95) continue;
 
+          const mTypeBandPos = categoriseMarket(pg.question, resolvedEndDate, resolvedGameStartTime, pg.slug || pgMarket?.slug);
+          const entryVsLiveBandPos = mTypeBandPos === "live" ? ENTRY_VS_LIVE_MAX_INPLAY : ENTRY_VS_LIVE_MAX;
+          // Same as trades path: only include traders whose avg entry is within band of live midpoint
+          const posTraders = pg.traders.filter(t => Math.abs(t.entryPrice - avgCurPrice) <= entryVsLiveBandPos);
+          if (posTraders.length === 0) continue;
+          const posTotalValue = posTraders.reduce((s, t) => s + t.currentValue, 0);
+
+          let pgVipStake = 0;
+          let pgVipRaw = false;
+          for (const t of posTraders) {
+            const cm = canonicalMap.get(t.wallet.toLowerCase());
+            const q = (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : 0;
+            const minUsd = posTraders.length === 1 ? VIP_PREMIUM_MIN_USD_POS_SOLO : VIP_PREMIUM_MIN_USD_TRADES;
+            if (q < VIP_PREMIUM_MIN_Q || t.costBasis < minUsd) continue;
+            const catV = getEffectiveCategoryFilter(t.wallet.toLowerCase(), metricsByWallet.get(t.wallet.toLowerCase()));
+            if (catV?.doNotTail?.length && (catV.doNotTail.includes(pgSportDetailedEarly) || catV.doNotTail.includes(pgSportEarly))) continue;
+            const { roi: laneRoi, sampleOk } = traderSpecialtyLaneROI(cm, pgSportMktKeyEarly, pgParentSportMktKeyEarly, pgSportDetailedEarly, pgSportEarly);
+            if (!sampleOk) continue;
+            const meetsEdge = laneRoi >= VIP_SPECIALTY_ROI_MIN
+              || (laneRoi >= VIP_ALT_ROI_FOR_HUGE && t.costBasis >= VIP_HUGE_STAKE_POS);
+            if (meetsEdge) {
+              pgVipRaw = true;
+              pgVipStake += t.costBasis;
+            }
+          }
+          const pgTotalCost = posTraders.reduce((s, t) => s + t.costBasis, 0);
+          const pgVipDominates = pgTotalCost > 0 && (pgVipStake / pgTotalCost) >= VIP_DOMINATE_RISK_FRAC;
+          const pgVipHuge = pgVipRaw && pgVipStake >= VIP_HUGE_STAKE_POS;
+          const pgVipBypass = pgVipDominates || pgVipHuge;
+          const pgVipSoloFloor = posTraders.length === 1 && pgVipRaw;
+
+          // Quality gate: meaningful capital after entry-vs-live filter
+          if (posTraders.length >= 2 && posTotalValue < 1000) continue;
+          if (posTraders.length < 2 && posTotalValue < 50000 && !pgVipSoloFloor) continue;
+
           // Weighted avg entry price: weight each trader's entry by their cost basis (USDC spent)
-          const totalCostBasis = pg.traders.reduce((s, t) => s + t.costBasis, 0) || 1;
-          const totalPosWeight = pg.traders.reduce((s, t) => s + t.currentValue, 0) || 1;
-          const avgEntry = pg.traders.reduce((s, t) => s + t.entryPrice * t.costBasis, 0) / totalCostBasis;
-          const avgSize  = totalCostBasis / pg.traders.length;
+          const totalCostBasis = posTraders.reduce((s, t) => s + t.costBasis, 0) || 1;
+          const avgEntry = posTraders.reduce((s, t) => s + t.entryPrice * t.costBasis, 0) / totalCostBasis;
+          const avgSize  = totalCostBasis / posTraders.length;
           // Positive = sharps paid more than live = you enter cheaper = value edge.
           // avgEntry and avgCurPrice are both the same-side token price, so formula is symmetric.
           const valueDelta = avgEntry - avgCurPrice - 0.02;
@@ -4519,7 +4626,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const pgSportDetailed = classifySportFull(pgSport, pg.question || "", pg.slug || pgMarket?.slug || "");
           const pgSportMktKey = `${pgSportDetailed}|${pgMarketCategory}`;
           // Skip position-group signal if primary trader (by value) is doNotTail for this sport
-          const pgPrimary = pg.traders.length ? pg.traders.reduce((a, b) => a.currentValue >= b.currentValue ? a : b) : null;
+          const pgPrimary = posTraders.length ? posTraders.reduce((a, b) => a.currentValue >= b.currentValue ? a : b) : null;
           if (pgPrimary) {
             const catPg = getEffectiveCategoryFilter(pgPrimary.wallet.toLowerCase(), metricsByWallet.get(pgPrimary.wallet.toLowerCase()));
             if (catPg?.doNotTail?.length && (catPg.doNotTail.includes(pgSportDetailed) || catPg.doNotTail.includes(pgSport))) continue;
@@ -4531,10 +4638,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             const laneMul = laneQualityWeightMultiplier(cm, pgSportMktKey, `${pgSport}|${pgMarketCategory}`, pgSportDetailed, pgSport);
             return (t.currentValue || 0) * Math.min(2.5, Math.max(0.2, (q / 50) * laneMul));
           };
-          const pgTotalQualityWeight = pg.traders.reduce((s, t) => s + pgQualityWeight(t), 0) || 1;
+          const pgTotalQualityWeight = posTraders.reduce((s, t) => s + pgQualityWeight(t), 0) || 1;
 
           // avgROI: quality-weighted so strong traders dominate; reject implausible 90%+ when overall negative.
-          const avgROI = pg.traders.reduce((s, t) => {
+          const avgROI = posTraders.reduce((s, t) => {
             const cm = canonicalMap.get(t.wallet.toLowerCase());
             const overall = cm?.overallROI ?? lbMap.get(t.wallet)?.roi ?? 0;
             const smtExact  = cm?.roiBySportMarketType?.[pgSportMktKey];
@@ -4565,7 +4672,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           if (avgROI < 0 && !pgVipBypass) continue;
 
           // Dollar-weighted quality (current position value) — same fix as trades path: no piggybacking
-          const pgAllowedForQ = pg.traders.filter(t => {
+          const pgAllowedForQ = posTraders.filter(t => {
             const cat = getEffectiveCategoryFilter(t.wallet.toLowerCase(), metricsByWallet.get(t.wallet.toLowerCase()));
             if (!cat?.doNotTail?.length) return true;
             return !cat.doNotTail.includes(pgSportDetailed) && !cat.doNotTail.includes(pgSport);
@@ -4583,10 +4690,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           if (avgQualityForScore < 40 && !pgVipBypass) continue; // require B-Tier+ on weighted capital
 
           // pgRelBetSize: normal = median/avg from canonical; fallback = this signal's avg position size
-          const pgTotalWeight = pg.totalValue || 1;
+          const pgTotalWeight = posTotalValue || 1;
           const pgFallbackNormal = Math.max(avgSize, 1);
           const pgRelBetSize = (() => {
-            return Math.round(pg.traders.reduce((s, t) => {
+            return Math.round(posTraders.reduce((s, t) => {
               const cm = canonicalMap.get(t.wallet.toLowerCase());
               const smEntry = cm?.roiBySportMarketType?.[pgSportMktKey];
               const sEntry  = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
@@ -4604,7 +4711,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             : "Safe (80-100c)";
           const pgPriceRangeAdj = (() => {
             let pts = 0, count = 0;
-            for (const t of pg.traders) {
+            for (const t of posTraders) {
               const cm = canonicalMap.get(t.wallet.toLowerCase());
               const stat = (cm?.priceStats as any)?.[pgPriceBucket] as { roi?: number; events?: number } | undefined;
               if (!stat || !stat.events || stat.events < 8) continue;
@@ -4623,7 +4730,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const pgEffectiveValueDelta = pgIsFutures ? 0 : valueDelta;
 
           const { score: pgRawConf, breakdown } = computeConfidence(
-            avgROI, consensusPct, pgEffectiveValueDelta, avgSize, pg.traders.length, avgQualityForScore, counterTraderCount, pgRelBetSize
+            avgROI, consensusPct, pgEffectiveValueDelta, avgSize, posTraders.length, avgQualityForScore, counterTraderCount, pgRelBetSize
           );
           // Positions path: no timestamp → cap at 70 (unknown age, could be months old)
           const pgConfCap = pgIsFutures ? 70 : 100;
@@ -4640,13 +4747,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           // Stale signal filter: any "moved" status means price is worse for new buyers — hide it.
           if (priceStatus === "moved") continue;
           const isActionable = priceStatus === "actionable" || priceStatus === "dip";
-          const bigPlayScore = computeBigPlayScore(pg.totalValue, pg.traders.length, pgRelBetSize);
+          const bigPlayScore = computeBigPlayScore(posTotalValue, posTraders.length, pgRelBetSize);
           const id = `pos-${pg.conditionId}-${pg.side}`;
           const isNew = !seenSignalIds.has(id);
           seenSignalIds.add(id);
           const pgYesTokenId = pg.yesAsset || pgMarket?.tokenIds?.[0];
           const pgNoTokenId  = pg.noAsset  || pgMarket?.tokenIds?.[1];
-          const tradersSorted = [...pg.traders]
+          const tradersSorted = [...posTraders]
             .filter(t => {
               const cat = getEffectiveCategoryFilter(t.wallet.toLowerCase(), metricsByWallet.get(t.wallet.toLowerCase()));
               if (!cat?.doNotTail?.length) return true;
@@ -4657,7 +4764,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const pgSlippagePct = Math.round((pg.side === "YES"
             ? (avgCurPrice - avgEntry) * 100
             : (avgEntry - avgCurPrice) * 100) * 10) / 10;
-          const rawPgROI = pg.traders.reduce((s, t) => {
+          const rawPgROI = posTraders.reduce((s, t) => {
             const cm = canonicalMap.get(t.wallet.toLowerCase());
             const overall = cm?.overallROI ?? lbMap.get(t.wallet)?.roi ?? 0;
             const sportEntry = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
@@ -4672,14 +4779,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             return s + roi * pgQualityWeight(t);
           }, 0) / pgTotalQualityWeight;
           const pgInsiderSportsROI = Math.round(rawPgROI * 10) / 10;
-          const pgInsiderTrades = pg.traders.reduce((s, t) => {
+          const pgInsiderTrades = posTraders.reduce((s, t) => {
             const cm = canonicalMap.get(t.wallet.toLowerCase());
             const sportEntry = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
             const minSp = ELITE_LANE_SAMPLE_MIN;
             const sportCount = (sportEntry && (sportEntry.tradeCount ?? 0) >= minSp) ? sportEntry.tradeCount : 0;
             return s + (sportCount > 0 ? sportCount : ((cm?.totalTrades ?? 0) > 0 ? cm!.totalTrades : 1));
           }, 0);
-          const rawPgWR = pg.traders.reduce((s, t) => {
+          const rawPgWR = posTraders.reduce((s, t) => {
             const cm = canonicalMap.get(t.wallet.toLowerCase());
             const overall = cm?.overallROI ?? lbMap.get(t.wallet)?.roi ?? 0;
             const sportEntry = cm?.roiBySport?.[pgSportDetailed] ?? cm?.roiBySport?.[pgSport];
@@ -4695,6 +4802,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           }, 0) / pgTotalQualityWeight;
           const pgInsiderWinRate = Math.round(rawPgWR * 10) / 10;
 
+          const tokenForFinalPos = pg.side === "YES" ? pg.yesAsset : pg.noAsset;
+          if (tokenForFinalPos) {
+            const pxLastPos = mType === "live" ? await fetchMidpointUncached(tokenForFinalPos) : null;
+            if (mType === "live" && (pxLastPos === null || !Number.isFinite(pxLastPos))) continue;
+            const pxUsePos = pxLastPos !== null && Number.isFinite(pxLastPos) ? pxLastPos : avgCurPrice;
+            const bandLastPos = mType === "live" ? ENTRY_VS_LIVE_MAX_INPLAY : ENTRY_VS_LIVE_MAX;
+            if (tradersSorted.some(t => Math.abs(t.entryPrice - pxUsePos) > bandLastPos)) continue;
+          }
+
           signals.push({
             id, marketId: pg.conditionId,
             marketQuestion: pg.question,
@@ -4702,7 +4818,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             endDate: resolvedEndDate,
             gameStartTime: resolvedGameStartTime,
             outcome: pg.side, side: pg.side,
-            confidence, tier: pg.traders.length >= 3 ? "HIGH" : "MED",
+            confidence, tier: posTraders.length >= 3 ? "HIGH" : "MED",
             marketType: mType, isSports: true,
             marketCategory: pgMarketCategory,
             vipPremium: pgVipBypass,
@@ -4712,16 +4828,16 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             priceBucket: pgPriceBucket,
             bigPlayScore,
             consensusPct: 100,
-            valueDelta: Math.round(valueDelta * 1000) / 1000,
+            valueDelta: pgIsFutures ? 0 : Math.round(valueDelta * 1000) / 1000,
             currentPrice: Math.round(avgCurPrice * 1000) / 1000,
             avgEntryPrice: Math.round(avgEntry * 1000) / 1000,
-            totalNetUsdc: Math.round(pg.totalValue),
+            totalNetUsdc: Math.round(posTotalValue),
             avgNetUsdc: Math.round(avgSize),
-            totalRiskUsdc: Math.round(pg.traders.reduce((s, t) => s + t.costBasis, 0)),
-            avgRiskUsdc: Math.round(pg.traders.reduce((s, t) => s + t.costBasis, 0) / Math.max(tradersSorted.length, 1)),
+            totalRiskUsdc: Math.round(posTraders.reduce((s, t) => s + t.costBasis, 0)),
+            avgRiskUsdc: Math.round(posTraders.reduce((s, t) => s + t.costBasis, 0) / Math.max(tradersSorted.length, 1)),
             traderCount: tradersSorted.length,
-            lbTraderCount: pg.traders.filter(t => lbMap.get(t.wallet)?.isLeaderboard).length,
-            sportsLbCount: pg.traders.filter(t => t.isSportsLb).length,
+            lbTraderCount: posTraders.filter(t => lbMap.get(t.wallet)?.isLeaderboard).length,
+            sportsLbCount: posTraders.filter(t => t.isSportsLb).length,
             counterTraderCount,
             avgQuality: avgQualityForScore,
             scoreBreakdown: breakdown,
@@ -4797,7 +4913,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             sport: pgSport,
             volume: 0,
             generatedAt: now,
-            isValue: valueDelta > 0,
+            isValue: !pgIsFutures && valueDelta > 0,
             isNew,
             futuresCap: pgIsFutures ? pgConfCap : undefined,
             source: "positions",
@@ -4929,7 +5045,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const wallet = (trade.proxyWallet || "").toLowerCase();
           if (!lbMap.has(wallet)) continue;
           if (signalRosterSet.has(wallet)) continue;
-          const ts = (trade.timestamp || 0) * 1000;
+          const ts = tradeTimestampMs(trade);
           if (ts < sixtyMinAgo) continue;
           const size = parseFloat(trade.size || trade.amount || "0");
           if (size < 500) continue;
@@ -4960,33 +5076,66 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           }
           const unique = [...byWallet.values()];
           if (unique.length < 2) continue;
-          const totalSize = unique.reduce((s, t) => s + t.size, 0);
+
+          const dbEntry = sharedMarketDb.get(condId);
+          if (dbEntry && !dbEntry.active) continue;
+
+          const tokenIds = dbEntry?.tokenIds as string[] | undefined;
+          const tokenId = tokenIds && tokenIds.length >= 2
+            ? (side === "YES" ? tokenIds[0] : tokenIds[1])
+            : (tokenIds?.[0] ?? "");
+          const repForCat = clusterTrades[0];
+          const mTypeBandCluster = categoriseMarket(repForCat.title, dbEntry?.endDate, dbEntry?.gameStartTime, repForCat.slug);
+          const entryVsLiveBandCluster = mTypeBandCluster === "live" ? ENTRY_VS_LIVE_MAX_INPLAY : ENTRY_VS_LIVE_MAX;
+          let liveMid: number | null = null;
+          if (tokenId) {
+            if (mTypeBandCluster === "live") {
+              const mid = await fetchMidpointUncached(tokenId);
+              if (mid !== null && Number.isFinite(mid)) {
+                liveMid = mid;
+                midpointMap.set(tokenId, mid);
+              }
+            } else {
+              const cached = midpointMap.get(tokenId);
+              if (cached !== undefined && Number.isFinite(cached)) liveMid = cached;
+              else {
+                const mid = await fetchMidpoint(tokenId);
+                if (mid !== null) {
+                  liveMid = mid;
+                  midpointMap.set(tokenId, mid);
+                }
+              }
+            }
+          }
+          if (liveMid === null) continue;
+
+          const uniqueFiltered = unique.filter(t => Math.abs(t.price - liveMid) <= entryVsLiveBandCluster);
+          if (uniqueFiltered.length < 2) continue;
+          const totalSize = uniqueFiltered.reduce((s, t) => s + t.size, 0);
           if (totalSize < 5000) continue;
 
           // Check for an existing curated signal for this conditionId + side
           const existingIdx = signals.findIndex(s => s.marketId === condId && s.side === side);
           if (existingIdx >= 0) {
-            const boost = Math.min(12, unique.length * 5);
+            const boost = Math.min(12, uniqueFiltered.length * 5);
             signals[existingIdx].confidence = Math.min(100, signals[existingIdx].confidence + boost);
-            (signals[existingIdx] as any).clusterBoost = { traders: unique.length, combinedSize: Math.round(totalSize) };
+            (signals[existingIdx] as any).clusterBoost = { traders: uniqueFiltered.length, combinedSize: Math.round(totalSize) };
             continue;
           }
 
           // No curated signal exists → create a standalone cluster signal
-          const rep = unique.sort((a, b) => b.ts - a.ts)[0];
-          const dbEntry = sharedMarketDb.get(condId);
-          if (dbEntry && !dbEntry.active) continue;
+          const rep = uniqueFiltered.sort((a, b) => b.ts - a.ts)[0];
           if (isPostponedOrCancelled(rep.title, true, false)) continue;
 
-          const avgPrice = unique.reduce((s, t) => s + t.price * t.size, 0) / totalSize;
-          const avgRoi = unique.reduce((s, t) => s + t.roi, 0) / unique.length;
+          const avgPrice = uniqueFiltered.reduce((s, t) => s + t.price * t.size, 0) / totalSize;
+          const avgRoi = uniqueFiltered.reduce((s, t) => s + t.roi, 0) / uniqueFiltered.length;
           const mType = categoriseMarket(rep.title, dbEntry?.endDate, dbEntry?.gameStartTime, rep.slug);
           const sport = classifySport(rep.slug, rep.title);
           const mCategory = classifyMarketType(rep.title);
 
           const roiPct = Math.min(20, Math.floor(avgRoi / 5));
           const sizePct = Math.min(15, Math.floor(totalSize / 2000));
-          const countBonus = Math.min(10, (unique.length - 1) * 5);
+          const countBonus = Math.min(10, (uniqueFiltered.length - 1) * 5);
           const clusterConf = Math.min(82, 40 + roiPct + sizePct + countBonus);
 
           const cSignalId = `cluster-${condId}-${side}`;
@@ -5002,24 +5151,24 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             outcome: side,
             side,
             confidence: clusterConf,
-            tier: unique.length >= 3 ? "HIGH" : "MED",
+            tier: uniqueFiltered.length >= 3 ? "HIGH" : "MED",
             marketType: mType,
             isSports: true,
             marketCategory: mCategory,
             isActionable: true,
             priceStatus: "cluster",
-            bigPlayScore: computeBigPlayScore(totalSize, unique.length),
+            bigPlayScore: computeBigPlayScore(totalSize, uniqueFiltered.length),
             consensusPct: 100,
             valueDelta: 0,
-            currentPrice: avgPrice,
-            avgEntryPrice: avgPrice,
+            currentPrice: Math.round(liveMid * 1000) / 1000,
+            avgEntryPrice: Math.round(avgPrice * 1000) / 1000,
             totalNetUsdc: Math.round(totalSize),
-            avgNetUsdc: Math.round(totalSize / unique.length),
+            avgNetUsdc: Math.round(totalSize / uniqueFiltered.length),
             totalRiskUsdc: Math.round(totalSize * avgPrice),
-            avgRiskUsdc: Math.round(totalSize * avgPrice / unique.length),
-            traderCount: unique.length,
-            lbTraderCount: unique.length,
-            sportsLbCount: unique.filter(t => t.isSportsLb).length,
+            avgRiskUsdc: Math.round(totalSize * avgPrice / uniqueFiltered.length),
+            traderCount: uniqueFiltered.length,
+            lbTraderCount: uniqueFiltered.length,
+            sportsLbCount: uniqueFiltered.filter(t => t.isSportsLb).length,
             counterTraderCount: 0,
             avgQuality: Math.min(90, 50 + avgRoi * 2),
             scoreBreakdown: { roiPct, consensusPct: countBonus, valuePct: 0, sizePct, tierBonus: 0 },
@@ -5028,7 +5177,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             insiderSportsROI: avgRoi,
             insiderTrades: 0,
             insiderWinRate: 0,
-            traders: unique.map(t => ({
+            traders: uniqueFiltered.map(t => ({
               address: t.wallet, name: t.name,
               entryPrice: t.price, size: t.size, netUsdc: t.size,
               riskUsdc: Math.round(t.size * t.price),
@@ -5261,52 +5410,60 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const side: "YES"|"NO" = yesE.length >= noE.length ? "YES" : "NO";
         if (dominant.length < 2) continue; // 2+ on dominant side
 
-        const totalDominantSize = dominant.reduce((s, e) => s + e.totalSize, 0);
-        if (totalDominantSize < 500) continue; // minimum $500 aggregate position
-
-        // Skip near-resolution bets (avg entry > 0.88 = betting on near-certainties)
-        const avgEntryCheck2 = dominant.reduce((s, e) =>
-          s + (e.prices.reduce((a, b) => a + b, 0) / e.prices.length), 0) / dominant.length;
-        if (avgEntryCheck2 > 0.88) continue;
-
-        const consensusPct = (dominant.length / entries.length) * 100;
-        if (consensusPct < 50) continue;
-
-        const avgEntry = dominant.reduce((s, e) => s + (e.prices.reduce((a, b) => a + b, 0) / e.prices.length), 0) / dominant.length;
-        const avgSize  = totalDominantSize / dominant.length;
-
-        // Fetch live price
         const info = mw.info;
-        let currentPrice = avgEntry;
+        const mTypeBandFast = categoriseMarket(info.question || condId, info.endDate, info.gameStartTime, info.slug);
+        const entryVsLiveBandFast = mTypeBandFast === "live" ? ENTRY_VS_LIVE_MAX_INPLAY : ENTRY_VS_LIVE_MAX;
+        const avgEntryPre = dominant.reduce((s, e) => s + (e.prices.reduce((a, b) => a + b, 0) / e.prices.length), 0) / dominant.length;
+        let currentPrice = avgEntryPre;
+        let tokenIdFast: string | undefined;
         if (info.tokenIds?.length > 0) {
-          const tokenId = info.tokenIds[side === "YES" ? 0 : 1] || info.tokenIds[0];
-          const mid = await fetchMidpoint(tokenId);
-          if (mid !== null) {
+          const tid = info.tokenIds[side === "YES" ? 0 : 1] ?? info.tokenIds[0];
+          if (!tid) continue;
+          tokenIdFast = tid;
+          const mid = mTypeBandFast === "live" ? await fetchMidpointUncached(tid) : await fetchMidpoint(tid);
+          if (mid !== null && Number.isFinite(mid)) {
             currentPrice = mid;
           } else {
-            // CLOB null = no active orders → resolved, cancelled, or fully illiquid.
-            // Skip rather than using a stale registry price.
             continue;
           }
         }
 
-        // Reject near-resolved markets (<2¢ or >98¢)
         if (currentPrice < 0.02 || currentPrice > 0.98) continue;
 
         currentPrice = Math.min(0.99, Math.max(0.01, currentPrice));
 
-        // Enforce price range 0.10–0.90
         if (currentPrice < 0.10 || currentPrice > 0.90) continue;
 
+        // Same entry-vs-live gate as main /api/signals (3¢ in-play, 5¢ pregame when we have a CLOB midpoint)
+        const dominantNear = info.tokenIds?.length
+          ? dominant.filter(e => {
+              const avgE = e.prices.reduce((a, b) => a + b, 0) / Math.max(e.prices.length, 1);
+              return Math.abs(avgE - currentPrice) <= entryVsLiveBandFast;
+            })
+          : dominant;
+        if (dominantNear.length < 2) continue;
+
+        const totalDominantSize = dominantNear.reduce((s, e) => s + e.totalSize, 0);
+        if (totalDominantSize < 500) continue; // minimum $500 aggregate position
+
+        const avgEntryCheck2 = dominantNear.reduce((s, e) =>
+          s + (e.prices.reduce((a, b) => a + b, 0) / e.prices.length), 0) / dominantNear.length;
+        if (avgEntryCheck2 > 0.88) continue;
+
+        const consensusPct = (dominantNear.length / entries.length) * 100;
+        if (consensusPct < 50) continue;
+
+        const avgEntry = dominantNear.reduce((s, e) => s + (e.prices.reduce((a, b) => a + b, 0) / e.prices.length), 0) / dominantNear.length;
+        const avgSize  = totalDominantSize / dominantNear.length;
+
         // Positive = sharps paid more than live = you enter cheaper = value edge.
-        // currentPrice is already the correct-side token midpoint.
         const valueDelta = avgEntry - currentPrice - SLIPPAGE;
 
         // Real dollar-weighted quality from curated profiles — was hardcoded 40 so high-volume
         // traders (e.g. 0p0jogggg) dominated /api/signals/fast with no quality gate.
         const fastRisk = totalDominantSize || 1;
         const fastAvgQuality = Math.round(
-          dominant.reduce((s, e) => {
+          dominantNear.reduce((s, e) => {
             const cm = canonicalFast.get(e.wallet.toLowerCase());
             const q = (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : 0;
             return s + q * e.totalSize;
@@ -5315,16 +5472,27 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         if (fastAvgQuality < 40) continue;
 
         const { score: confidence, breakdown } = computeConfidence(
-          15, consensusPct, valueDelta, avgSize, dominant.length, fastAvgQuality
+          15, consensusPct, valueDelta, avgSize, dominantNear.length, fastAvgQuality
         );
 
-        const tier = dominant.length >= 3 ? "HIGH" : "MED";
+        const tier = dominantNear.length >= 3 ? "HIGH" : "MED";
         const marketTypeRaw = categoriseMarket(info.question || condId, info.endDate, info.gameStartTime, info.slug);
         const marketCategory = classifyMarketType(info.question || condId);
         // Specific game markets should be PREGAME, not FUTURES regardless of time horizon
         const marketType = (marketTypeRaw === "futures" && marketCategory !== "futures") ? "pregame" : marketTypeRaw;
         const isActionable = computeIsActionable(currentPrice, avgEntry, side, marketType === "live" ? "live" : "pregame");
-        const bigPlayScore = computeBigPlayScore(totalDominantSize, dominant.length);
+        const bigPlayScore = computeBigPlayScore(totalDominantSize, dominantNear.length);
+
+        if (tokenIdFast) {
+          const pxLastFast = await fetchMidpointUncached(tokenIdFast);
+          if (marketType === "live" && (pxLastFast === null || !Number.isFinite(pxLastFast))) continue;
+          const pxUseFast = pxLastFast !== null && Number.isFinite(pxLastFast) ? pxLastFast : currentPrice;
+          const bandLastFast = marketType === "live" ? ENTRY_VS_LIVE_MAX_INPLAY : ENTRY_VS_LIVE_MAX;
+          if (dominantNear.some(e => {
+            const avgE = e.prices.reduce((a, b) => a + b, 0) / Math.max(e.prices.length, 1);
+            return Math.abs(avgE - pxUseFast) > bandLastFast;
+          })) continue;
+        }
 
         signals.push({
           id: `fast-${condId}-${side}`,
@@ -5340,12 +5508,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           avgEntryPrice: Math.round(avgEntry * 1000) / 1000,
           totalNetUsdc: Math.round(totalDominantSize),
           avgNetUsdc: Math.round(avgSize),
-          totalRiskUsdc: Math.round(dominant.reduce((s, e) => { const p = e.prices.reduce((a,b)=>a+b,0)/e.prices.length; return s + e.totalSize * p; }, 0)),
-          avgRiskUsdc: Math.round(dominant.reduce((s, e) => { const p = e.prices.reduce((a,b)=>a+b,0)/e.prices.length; return s + e.totalSize * p; }, 0) / Math.max(dominant.length, 1)),
-          traderCount: dominant.length,
+          totalRiskUsdc: Math.round(dominantNear.reduce((s, e) => { const p = e.prices.reduce((a,b)=>a+b,0)/e.prices.length; return s + e.totalSize * p; }, 0)),
+          avgRiskUsdc: Math.round(dominantNear.reduce((s, e) => { const p = e.prices.reduce((a,b)=>a+b,0)/e.prices.length; return s + e.totalSize * p; }, 0) / Math.max(dominantNear.length, 1)),
+          traderCount: dominantNear.length,
           avgQuality: fastAvgQuality,
           scoreBreakdown: breakdown,
-          traders: dominant.slice(0, 8).map(e => {
+          traders: dominantNear.slice(0, 8).map(e => {
             const avgEP2 = e.prices.reduce((a, b) => a + b, 0) / e.prices.length;
             const cm = canonicalFast.get(e.wallet.toLowerCase());
             const q = (cm?.qualityScore ?? 0) > 0 ? cm!.qualityScore : 0;
@@ -5725,7 +5893,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       // Sort ascending by time and build price series
       const sorted = mTrades
         .map(t => ({
-          t: t.timestamp ? t.timestamp * 1000 : new Date(t.createdAt || 0).getTime(),
+          t: tradeTimestampMs(t),
           p: parseFloat(t.price || "0.5"),
           side: resolveSide(t.outcome, t.outcomeIndex),
         }))

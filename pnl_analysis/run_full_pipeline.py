@@ -36,6 +36,7 @@ import numpy as np
 import json
 import csv as csv_module
 import time
+import random
 import sys
 import os
 import argparse
@@ -58,6 +59,16 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 BACKEND_URL = os.environ.get("BACKEND_URL", "http://localhost:5000")
 # Same file server/scheduledPipeline.ts uses — enables 24h "smart" skip for refresh-all.bat
 LAST_PIPELINE_RUN_FILE = OUTPUT_DIR / ".last_pipeline_run"
+
+# Data API: retries + guards so 429/partial fetches do not replace good CSVs or poison ingest.
+RATE_LIMIT_HTTP = (429, 502, 503)
+MAX_RETRIES_PER_PAGE = 8
+PAGE_SLEEP_SEC = 0.35
+MIN_PREV_CLOSED_TO_GUARD = 80
+ANALYSIS_COLLAPSE_MIN_PREV_EVENTS = 120
+ANALYSIS_COLLAPSE_MAX_NEW_EVENTS_RATIO = 0.2
+ANALYSIS_COLLAPSE_MAX_NEW_QS = 20
+ANALYSIS_COLLAPSE_MIN_PREV_QS = 30
 
 
 def write_last_pipeline_run_timestamp():
@@ -186,6 +197,43 @@ def should_skip(wallet, username):
 # DATA FETCH  (exact /closed-positions + /positions approach)
 # ================================================================
 
+def _get_json_list_with_retry(url: str, params: dict, label: str):
+    """
+    One Data API page. Returns a list on success or empty end; None = give up (caller stops pagination).
+    Retries 429/5xx and transient network errors with exponential backoff + jitter.
+    """
+    for attempt in range(MAX_RETRIES_PER_PAGE):
+        try:
+            resp = requests.get(url, params=params, timeout=45)
+        except requests.exceptions.RequestException as e:
+            if attempt < MAX_RETRIES_PER_PAGE - 1:
+                wait = min(90.0, (2**attempt) * 1.2 + random.uniform(0, 1))
+                print(f"    ⏳ {label} network error, retry in {wait:.1f}s ({attempt + 1}/{MAX_RETRIES_PER_PAGE}): {e}")
+                time.sleep(wait)
+                continue
+            print(f"    ⚠️  {label} network error after retries: {e}")
+            return None
+        if resp.status_code == 200:
+            try:
+                return resp.json()
+            except Exception as e:
+                print(f"    [X] {label} invalid JSON: {e}")
+                return None
+        if resp.status_code == 400:
+            return []
+        if resp.status_code in RATE_LIMIT_HTTP or (500 <= resp.status_code < 600):
+            if attempt < MAX_RETRIES_PER_PAGE - 1:
+                wait = min(90.0, (2**attempt) * 1.5 + random.uniform(0.5, 2))
+                print(f"    ⏳ {label} HTTP {resp.status_code}, backoff {wait:.1f}s ({attempt + 1}/{MAX_RETRIES_PER_PAGE})")
+                time.sleep(wait)
+                continue
+            print(f"    [X] {label} HTTP {resp.status_code} after {MAX_RETRIES_PER_PAGE} retries")
+            return None
+        print(f"    [X] {label} HTTP {resp.status_code}")
+        return None
+    return None
+
+
 def fetch_positions(address, endpoint, max_pages=None):
     """Fetch positions. If max_pages is set (e.g. 2), stop after that many pages (for incremental)."""
     base_url = f"https://data-api.polymarket.com/{endpoint}"
@@ -196,17 +244,10 @@ def fetch_positions(address, endpoint, max_pages=None):
     while True:
         if max_pages is not None and page >= max_pages:
             break
-        try:
-            resp = requests.get(base_url, params=params, timeout=30)
-        except requests.exceptions.RequestException as e:
-            print(f"    ⚠️  {endpoint} network error: {e}")
+        label = f"{endpoint} offset={params['offset']}"
+        data = _get_json_list_with_retry(base_url, params, label)
+        if data is None:
             break
-        if resp.status_code == 400:
-            break
-        if resp.status_code != 200:
-            print(f"    [X] {endpoint} HTTP {resp.status_code}")
-            break
-        data = resp.json()
         if not data:
             break
         all_data.extend(data)
@@ -214,9 +255,27 @@ def fetch_positions(address, endpoint, max_pages=None):
             break
         params["offset"] += 50
         page += 1
-        time.sleep(0.3)
+        time.sleep(PAGE_SLEEP_SEC)
 
     return pd.DataFrame(all_data)
+
+
+def _csv_closed_open_counts(csv_path: Path) -> tuple[int, int]:
+    if not csv_path.exists():
+        return (0, 0)
+    try:
+        df = pd.read_csv(csv_path, usecols=["status"], low_memory=False)
+        s = df["status"].astype(str).str.lower()
+        return int((s == "closed").sum()), int((s == "open").sum())
+    except Exception:
+        try:
+            df = pd.read_csv(csv_path, low_memory=False)
+            if "status" not in df.columns:
+                return (0, 0)
+            s = df["status"].astype(str).str.lower()
+            return int((s == "closed").sum()), int((s == "open").sum())
+        except Exception:
+            return (0, 0)
 
 
 def fetch_recent_and_merge(address, username):
@@ -237,12 +296,18 @@ def fetch_recent_and_merge(address, username):
         return csv_path  # no id column, skip merge
 
     existing_ids = set(existing[id_col].astype(str).dropna())
+    prev_closed, _prev_open = _csv_closed_open_counts(csv_path)
     # Up to ~2000 closed + ~1000 open (40 + 20 pages) — fast, avoids 50k+ full fetch
     df_closed = fetch_positions(address, "closed-positions", max_pages=40)
-    time.sleep(0.3)
+    time.sleep(PAGE_SLEEP_SEC)
     df_open  = fetch_positions(address, "positions", max_pages=20)
     if df_closed.empty and df_open.empty:
         return csv_path
+    if df_closed.empty and prev_closed >= MIN_PREV_CLOSED_TO_GUARD:
+        print(
+            f"    ⚠️  Incremental: closed API returned 0 rows but CSV has {prev_closed:,} closed — "
+            "merge may miss new closed rows this run (rate limit?)."
+        )
 
     df_closed["status"] = "closed"
     df_open["status"]   = "open"
@@ -271,9 +336,24 @@ def fetch_recent_and_merge(address, username):
 
 def collect_and_save(address, username):
     csv_path = csv_path_for(address, username)
+    prev_closed, prev_open = _csv_closed_open_counts(csv_path)
 
     df_closed = fetch_positions(address, "closed-positions")
+    time.sleep(PAGE_SLEEP_SEC)
     df_open   = fetch_positions(address, "positions")
+
+    # Do not replace a deep closed history with open-only data (typical after 429 on page 0).
+    if df_closed.empty and not df_open.empty and prev_closed >= MIN_PREV_CLOSED_TO_GUARD:
+        print(
+            f"    [GUARD] Keeping existing CSV: API returned 0 closed rows but file had {prev_closed:,} closed "
+            f"({len(df_open):,} open only — likely rate limit / partial fetch)."
+        )
+        return csv_path
+    if df_closed.empty and df_open.empty and (prev_closed + prev_open) >= 50:
+        print(
+            f"    [GUARD] Keeping existing CSV: API returned no rows; file had {prev_closed + prev_open:,} rows."
+        )
+        return csv_path
 
     df_closed["status"] = "closed"
     df_open["status"]   = "open"
@@ -339,6 +419,14 @@ def process_trader(address, username):
         age = csv_age_days(address, username)
         print(f"    [csv] Using existing CSV ({age:.1f}d old): {csv_path.name}" if age is not None else f"    [csv] Using {csv_path.name}")
 
+    prev_result = None
+    if json_path.exists():
+        try:
+            with open(json_path, encoding="utf-8") as f:
+                prev_result = json.load(f)
+        except Exception:
+            pass
+
     # ── Gemini-style analysis ─────────────────────────────────────
     try:
         result = analyze_csv(csv_path, username, address)
@@ -346,6 +434,27 @@ def process_trader(address, username):
         print(f"    [X] Analysis failed: {e}")
         import traceback; traceback.print_exc()
         return None
+
+    if prev_result:
+        pe = int(prev_result.get("total_events") or 0)
+        ne = int(result.get("total_events") or 0)
+        pq = float(prev_result.get("quality_score") or 0)
+        nq = float(result.get("quality_score") or 0)
+        threshold = max(
+            ANALYSIS_COLLAPSE_MIN_PREV_EVENTS // 4,
+            int(pe * ANALYSIS_COLLAPSE_MAX_NEW_EVENTS_RATIO),
+        )
+        if (
+            pe >= ANALYSIS_COLLAPSE_MIN_PREV_EVENTS
+            and ne < threshold
+            and pq >= ANALYSIS_COLLAPSE_MIN_PREV_QS
+            and nq <= ANALYSIS_COLLAPSE_MAX_NEW_QS
+        ):
+            print(
+                f"    [GUARD] Analysis collapsed vs prior JSON (events {ne:,} vs {pe:,}, "
+                f"Q {nq:.0f} vs {pq:.0f}) — keeping prior profile for this run."
+            )
+            result = prev_result
 
     with open(json_path, "w") as f:
         json.dump(result, f, indent=2, default=str)

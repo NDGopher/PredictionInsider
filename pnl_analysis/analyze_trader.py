@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 import json
 import csv as csv_module
+import sys
 from pathlib import Path
 
 # ================================================================
@@ -59,7 +60,7 @@ def price_bucket(price):
 # ================================================================
 
 def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(csv_path, low_memory=False)
 
     # ── Pre-process ──────────────────────────────────────────────
     money_cols = ["realizedPnl", "cashPnl", "currentValue", "initialValue", "totalBought", "avgPrice"]
@@ -162,13 +163,79 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
     agg["is_win"]    = agg["total_pnl"] > 0
     agg["price_bucket"] = agg["avg_price"].apply(price_bucket)
 
+    # ── Polymarket Analytics–aligned win rate (per conditionId / market, not eventSlug bucket) ──
+    # Merging many markets under one eventSlug inflated win% toward ~90% vs PA’s “% of markets won”.
+    def _norm_sport(raw: str) -> str:
+        if "UCL" in raw:
+            return "UCL"
+        if "SOCCER" in raw:
+            return "Soccer"
+        if raw == "TENNIS":
+            return "Tennis"
+        if raw == "ESPORTS":
+            return "eSports"
+        if raw == "POLITICS":
+            return "Politics"
+        if raw == "OTHER":
+            return "Other"
+        return raw
+
+    def _material_outcome(pnl: float, cost: float) -> str:
+        t = max(0.5, 0.0001 * max(float(cost), 1.0))
+        if pnl > t:
+            return "win"
+        if pnl < -t:
+            return "loss"
+        return "neutral"
+
+    def _pa_win_rate_from_markets(cg: pd.DataFrame) -> float:
+        if cg.empty:
+            return 0.0
+        w = l = 0
+        for _, r in cg.iterrows():
+            o = _material_outcome(float(r["total_pnl"]), float(r["total_cost"]))
+            if o == "win":
+                w += 1
+            elif o == "loss":
+                l += 1
+        return (w / (w + l) * 100) if (w + l) > 0 else 0.0
+
+    cond_key = "conditionId" if "conditionId" in directional_df.columns else "grouping_id"
+    cond_agg = (
+        directional_df.groupby(cond_key, dropna=False)
+        .agg(
+            total_pnl=("total_position_pnl", "sum"),
+            total_cost=("calculated_cost", "sum"),
+        )
+        .reset_index()
+    )
+    win_rate = round(_pa_win_rate_from_markets(cond_agg[["total_pnl", "total_cost"]]), 2)
+
+    directional_df = directional_df.copy()
+    directional_df["sport_norm"] = directional_df["sport_type"].apply(_norm_sport)
+
+    # Per-market (condition) stakes — actionable for tailing vs event-slug averages
+    markets_traded = int(len(cond_agg))
+    mean_market_stake = float(cond_agg["total_cost"].mean()) if markets_traded else 0.0
+    median_market_stake = float(np.median(cond_agg["total_cost"])) if markets_traded else 0.0
+
     # ── Core Metrics (directional: for quality score, sport breakdown, tags) ──
     total_profit_directional   = agg["total_pnl"].sum()
     total_risked_directional   = agg["total_cost"].sum()
     directional_overall_roi    = (total_profit_directional / total_risked_directional * 100) if total_risked_directional > 0 else 0
-    win_rate       = agg["is_win"].mean() * 100 if len(agg) > 0 else 0
-    avg_bet_size   = agg["total_cost"].mean() if len(agg) > 0 else 0
+    # Account-level "avg bet" = mean USDC deployed per **market** (condition), not per eventSlug bucket
+    avg_bet_size   = round(mean_market_stake, 2)
     total_events   = len(agg)
+
+    # Internal consistency: market PnL sums must match directional position totals
+    sum_market_pnl = float(cond_agg["total_pnl"].sum())
+    sum_pos_pnl = float(directional_df["total_position_pnl"].sum())
+    pnl_drift = abs(sum_market_pnl - sum_pos_pnl)
+    if sum_pos_pnl and pnl_drift / max(abs(sum_pos_pnl), 1.0) > 0.02:
+        print(
+            f"[analyze_csv] {username}: WARN market vs position PnL drift ${pnl_drift:,.2f}",
+            file=sys.stderr,
+        )
 
     # Pseudo-Sharpe (daily PnL consistency)
     agg["date"] = pd.to_datetime(agg["end_date"], errors="coerce").dt.date
@@ -182,75 +249,105 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
 
     # ── Sport Breakdown ──────────────────────────────────────────
     sport_stats = {}
-    for sport, grp in agg.groupby("sport_type"):
-        s_profit = grp["total_pnl"].sum()
-        s_cost   = grp["total_cost"].sum()
+    for sport, dgrp in directional_df.groupby("sport_type"):
+        s_profit = dgrp["total_position_pnl"].sum()
+        s_cost   = dgrp["calculated_cost"].sum()
         s_roi    = (s_profit / s_cost * 100) if s_cost > 0 else 0
-        s_wr     = grp["is_win"].mean() * 100 if len(grp) > 0 else 0
+        cg = (
+            dgrp.groupby(cond_key, dropna=False)
+            .agg(
+                total_pnl=("total_position_pnl", "sum"),
+                total_cost=("calculated_cost", "sum"),
+            )
+            .reset_index()
+        )
+        s_wr = round(_pa_win_rate_from_markets(cg[["total_pnl", "total_cost"]]), 2)
         sport_stats[sport] = {
-            "net_profit": round(s_profit, 2),
-            "roi":        round(s_roi, 2),
-            "win_rate":   round(s_wr, 2),
-            "events":     len(grp),
-            "avg_bet":    round(grp["total_cost"].mean(), 2),
-            "median_bet": round(float(grp["total_cost"].median()), 2),
+            "net_profit": round(float(s_profit), 2),
+            "roi":        round(float(s_roi), 2),
+            "win_rate":   s_wr,
+            "events":     int(len(cg)),
+            "avg_bet":    round(float(dgrp["calculated_cost"].mean()), 2),
+            "median_bet": round(float(dgrp["calculated_cost"].median()), 2),
         }
 
     # ── Market Type Breakdown ────────────────────────────────────
     market_stats = {}
-    for mtype, grp in agg.groupby("market_type"):
-        m_profit = grp["total_pnl"].sum()
-        m_cost   = grp["total_cost"].sum()
+    for mtype, dgrp in directional_df.groupby("market_type"):
+        m_profit = dgrp["total_position_pnl"].sum()
+        m_cost   = dgrp["calculated_cost"].sum()
         m_roi    = (m_profit / m_cost * 100) if m_cost > 0 else 0
+        cg = (
+            dgrp.groupby(cond_key, dropna=False)
+            .agg(
+                total_pnl=("total_position_pnl", "sum"),
+                total_cost=("calculated_cost", "sum"),
+            )
+            .reset_index()
+        )
+        m_wr = round(_pa_win_rate_from_markets(cg[["total_pnl", "total_cost"]]), 2)
         market_stats[mtype] = {
-            "net_profit": round(m_profit, 2),
-            "roi":        round(m_roi, 2),
-            "win_rate":   round(grp["is_win"].mean() * 100, 2),
-            "events":     len(grp),
-            "avg_bet":    round(grp["total_cost"].mean(), 2),
-            "median_bet": round(float(grp["total_cost"].median()), 2),
+            "net_profit": round(float(m_profit), 2),
+            "roi":        round(float(m_roi), 2),
+            "win_rate":   m_wr,
+            "events":     int(len(cg)),
+            "avg_bet":    round(float(dgrp["calculated_cost"].mean()), 2),
+            "median_bet": round(float(dgrp["calculated_cost"].median()), 2),
         }
 
     # ── Sport × Market Type Breakdown (deep conviction analysis) ─
     # Keys use normalized sport names matching routes.ts classifySportFull output.
-    # e.g. "NBA|Moneyline / Match", "Soccer|Totals (O/U)", "UCL|Moneyline / Match"
-    def _norm_sport(raw: str) -> str:
-        if "UCL" in raw:           return "UCL"
-        if "SOCCER" in raw:        return "Soccer"
-        if raw == "TENNIS":        return "Tennis"
-        if raw == "ESPORTS":       return "eSports"
-        if raw == "POLITICS":      return "Politics"
-        if raw == "OTHER":         return "Other"
-        return raw  # NBA, NHL, NFL, MLB, MLB unchanged
-
     agg["sport_norm"] = agg["sport_type"].apply(_norm_sport)
     sport_market_stats = {}
-    for (s_norm, mtype), grp in agg.groupby(["sport_norm", "market_type"]):
-        sm_profit = grp["total_pnl"].sum()
-        sm_cost   = grp["total_cost"].sum()
+    for (s_norm, mtype), dgrp in directional_df.groupby(["sport_norm", "market_type"]):
+        sm_profit = dgrp["total_position_pnl"].sum()
+        sm_cost   = dgrp["calculated_cost"].sum()
         sm_roi    = (sm_profit / sm_cost * 100) if sm_cost > 0 else 0
+        cg = (
+            dgrp.groupby(cond_key, dropna=False)
+            .agg(
+                total_pnl=("total_position_pnl", "sum"),
+                total_cost=("calculated_cost", "sum"),
+            )
+            .reset_index()
+        )
+        sm_wr = round(_pa_win_rate_from_markets(cg[["total_pnl", "total_cost"]]), 2)
         key = f"{s_norm}|{mtype}"
         sport_market_stats[key] = {
-            "net_profit": round(sm_profit, 2),
-            "roi":        round(sm_roi, 2),
-            "win_rate":   round(grp["is_win"].mean() * 100, 2),
-            "events":     len(grp),
-            "avg_bet":    round(grp["total_cost"].mean(), 2),
-            "median_bet": round(float(grp["total_cost"].median()), 2),
+            "net_profit": round(float(sm_profit), 2),
+            "roi":        round(float(sm_roi), 2),
+            "win_rate":   sm_wr,
+            "events":     int(len(cg)),
+            "avg_bet":    round(float(dgrp["calculated_cost"].mean()), 2),
+            "median_bet": round(float(dgrp["calculated_cost"].median()), 2),
         }
 
-    # ── Price Bucket Breakdown ───────────────────────────────────
+    # ── Price Bucket Breakdown (per-market bucket = cost-weighted avg price on condition) ─
+    bucket_rows: list[dict] = []
+    for _, g in directional_df.groupby(cond_key, dropna=False):
+        w = g["calculated_cost"].replace(0, 1e-9)
+        ap = float(np.average(g["avgPrice"], weights=w))
+        bucket_rows.append(
+            {
+                "bucket": str(price_bucket(ap)),
+                "total_pnl": float(g["total_position_pnl"].sum()),
+                "total_cost": float(g["calculated_cost"].sum()),
+            }
+        )
+    bdf = pd.DataFrame(bucket_rows)
     price_stats = {}
-    for bucket, grp in agg.groupby("price_bucket"):
-        p_profit = grp["total_pnl"].sum()
-        p_cost   = grp["total_cost"].sum()
-        p_roi    = (p_profit / p_cost * 100) if p_cost > 0 else 0
-        price_stats[str(bucket)] = {
-            "net_profit": round(p_profit, 2),
-            "roi":        round(p_roi, 2),
-            "win_rate":   round(grp["is_win"].mean() * 100, 2),
-            "events":     len(grp),
-        }
+    if not bdf.empty:
+        for bucket, sub in bdf.groupby("bucket"):
+            p_profit = sub["total_pnl"].sum()
+            p_cost = sub["total_cost"].sum()
+            p_roi = (p_profit / p_cost * 100) if p_cost > 0 else 0
+            p_wr = round(_pa_win_rate_from_markets(sub[["total_pnl", "total_cost"]]), 2)
+            price_stats[str(bucket)] = {
+                "net_profit": round(float(p_profit), 2),
+                "roi":        round(float(p_roi), 2),
+                "win_rate":   p_wr,
+                "events":     int(len(sub)),
+            }
 
     # ── Bet Side (Yes / No / Specific) ───────────────────────────
     side_stats = {}
@@ -264,9 +361,31 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
             "positions":  len(grp),
         }
 
-    # ── Top Wins & Losses (event-level) ──────────────────────────
-    top_wins   = agg.sort_values("total_pnl", ascending=False).head(5)[["title","sport_type","total_pnl","total_cost","avg_price","status"]].to_dict("records")
-    top_losses = agg.sort_values("total_pnl").head(5)[["title","sport_type","total_pnl","total_cost","avg_price","status"]].to_dict("records")
+    # ── Top wins / losses: single **markets** (conditionId), not merged eventSlug buckets
+    market_rows: list[dict] = []
+    for ck, g in directional_df.groupby(cond_key, dropna=False):
+        pnl_m = float(g["total_position_pnl"].sum())
+        cost_m = float(g["calculated_cost"].sum())
+        idx = g["calculated_cost"].idxmax()
+        r = g.loc[idx]
+        ap_m = float(np.average(g["avgPrice"], weights=g["calculated_cost"].replace(0, 1e-9)))
+        market_rows.append(
+            {
+                "title": str(r.get("title") or ""),
+                "slug": str(r.get("slug") or ""),
+                "eventSlug": str(r.get("eventSlug") or ""),
+                "sport_type": str(r.get("sport_type") or ""),
+                "outcome": str(r.get("outcome") or ""),
+                "conditionId": str(ck) if cond_key == "conditionId" else str(r.get("conditionId") or ""),
+                "total_pnl": round(pnl_m, 2),
+                "total_cost": round(cost_m, 2),
+                "avg_price": round(ap_m, 4),
+                "status": str(r.get("status") or "closed"),
+            }
+        )
+    market_rows.sort(key=lambda x: x["total_pnl"], reverse=True)
+    top_wins = market_rows[:5]
+    top_losses = sorted(market_rows, key=lambda x: x["total_pnl"])[:5]
 
     # ── Open Positions ────────────────────────────────────────────
     open_agg   = agg[agg["status"] == "open"]
@@ -276,9 +395,10 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
     open_pnl    = open_agg["total_pnl"].sum()
 
     # ── Monthly PnL ───────────────────────────────────────────────
-    agg["month"] = pd.to_datetime(agg["end_date"], errors="coerce").dt.to_period("M")
-    monthly_pnl  = agg.groupby("month")["total_pnl"].sum()
-    monthly_data = {str(k): round(v, 2) for k, v in monthly_pnl.items()}
+    _ed = pd.to_datetime(agg["end_date"], errors="coerce", utc=True)
+    agg["month"] = _ed.dt.tz_convert(None).dt.to_period("M")
+    monthly_pnl = agg.groupby("month", observed=True)["total_pnl"].sum()
+    monthly_data = {str(k): round(float(v), 2) for k, v in monthly_pnl.items() if pd.notna(k)}
 
     # ── Quality Score & Tier (Gemini Copy-Trade Metric v2) ───────
     #
@@ -423,9 +543,9 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
     elif pseudo_sharpe >= 4:
         tags.append("📈 Steady Performer")
 
-    if avg_bet_size >= 10_000:
+    if mean_market_stake >= 10_000:
         tags.append("🐋 Mega Whale")
-    elif avg_bet_size >= 2_000:
+    elif mean_market_stake >= 2_000:
         tags.append("🐋 Big Bettor")
 
     ml_stat = market_stats.get("Moneyline / Match", {})
@@ -467,8 +587,17 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
 
     # ── Summary / Tailing guide ───────────────────────────────────
     tail_guide = _build_tail_guide(
-        username, tier, sport_stats, market_stats, price_stats,
-        side_stats, avg_bet_size, best_price_bucket, best_market, top_sport
+        username,
+        tier,
+        sport_stats,
+        market_stats,
+        price_stats,
+        side_stats,
+        median_market_stake,
+        mean_market_stake,
+        best_price_bucket,
+        best_market,
+        top_sport,
     )
 
     # ── Structured do-not-tail / tail-for-sure (for ingest and signals) ───
@@ -497,7 +626,10 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
         "total_risked":       round(total_risked_dashboard, 2),  # dashboard-match (polyhistory) for ROI denominator
         "overall_roi":      round(roi_dashboard, 2),        # ROI = raw_realized_pnl / total_risked (accurate CSV ROIs)
         "win_rate":         round(win_rate, 2),
-        "avg_bet_size":     round(avg_bet_size, 2),
+        "avg_bet_size":     avg_bet_size,
+        "median_market_stake": round(median_market_stake, 2),
+        "mean_market_stake": round(mean_market_stake, 2),
+        "markets_traded":   markets_traded,
         "total_events":     total_events,
         "pseudo_sharpe":    round(float(pseudo_sharpe), 2),
         "profitable_days":  int(profitable_days),
@@ -562,6 +694,10 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
             "roi_for_quality":  round(roi_for_quality, 2),
             "hedge_risk_frac":  round(hedge_risk_frac, 3),
             "hedge_profit_share": round(hedge_share, 3),
+            "markets_traded": markets_traded,
+            "median_market_stake": round(median_market_stake, 2),
+            "mean_market_stake": round(mean_market_stake, 2),
+            "pnl_sum_check_ok": pnl_drift < max(abs(sum_pos_pnl) * 0.02, 1.0),
         },
     }
 
@@ -570,8 +706,19 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
 # TAIL GUIDE BUILDER
 # ================================================================
 
-def _build_tail_guide(username, tier, sport_stats, market_stats, price_stats,
-                       side_stats, avg_bet, best_price_bucket, best_market, top_sport):
+def _build_tail_guide(
+    username,
+    tier,
+    sport_stats,
+    market_stats,
+    price_stats,
+    side_stats,
+    median_market_stake: float,
+    mean_market_stake: float,
+    best_price_bucket,
+    best_market,
+    top_sport,
+):
     lines = [f"How to Tail {username} [{tier}]"]
     lines.append("")
 
@@ -582,14 +729,14 @@ def _build_tail_guide(username, tier, sport_stats, market_stats, price_stats,
     if auto_tail:
         lines.append("🟢 AUTO-TAIL:")
         for sport, stat in auto_tail[:3]:
-            lines.append(f"   {sport} — {stat['roi']:.1f}% ROI, {stat['events']} events, +${stat['net_profit']:,.0f}")
+            lines.append(f"   {sport} — {stat['roi']:.1f}% ROI, {stat['events']} markets, +${stat['net_profit']:,.0f}")
     elif any(v["events"] >= 10 and v["net_profit"] > 0 for v in sport_stats.values()):
         # Fall back to profitable sports with fewer events
         valid = [(k, v) for k, v in sport_stats.items() if v["events"] >= 10 and v["net_profit"] > 0]
         valid.sort(key=lambda x: x[1]["net_profit"], reverse=True)
         lines.append("✅ FOLLOW on:")
         for sport, stat in valid[:3]:
-            lines.append(f"   {sport} — {stat['roi']:.1f}% ROI, +${stat['net_profit']:,.0f}")
+            lines.append(f"   {sport} — {stat['roi']:.1f}% ROI, {stat['events']} mkts, +${stat['net_profit']:,.0f}")
 
     lines.append("")
 
@@ -609,7 +756,7 @@ def _build_tail_guide(username, tier, sport_stats, market_stats, price_stats,
     sp = market_stats.get("Spread", {})
     ou = market_stats.get("Totals (O/U)", {})
     if ml.get("roi", 0) > 0:
-        lines.append(f"📈 Stick to Moneylines ({ml.get('roi',0):.1f}% ROI over {ml.get('events',0)} events)")
+        lines.append(f"📈 Stick to Moneylines ({ml.get('roi',0):.1f}% ROI over {ml.get('events',0)} markets)")
     if sp.get("events", 0) >= 10 and sp.get("roi", 0) < -3:
         lines.append(f"⛔ Mute all Spread bets ({sp['roi']:.1f}% ROI)")
     if ou.get("events", 0) >= 10 and ou.get("roi", 0) < -3:
@@ -618,7 +765,7 @@ def _build_tail_guide(username, tier, sport_stats, market_stats, price_stats,
     # Price sweet spot
     if best_price_bucket:
         bucket = price_stats.get(best_price_bucket, {})
-        lines.append(f"🎯 Best price zone: {best_price_bucket} ({bucket.get('roi',0):.1f}% ROI, {bucket.get('events',0)} events)")
+        lines.append(f"🎯 Best price zone: {best_price_bucket} ({bucket.get('roi',0):.1f}% ROI, {bucket.get('events',0)} markets)")
 
     # Bond filter reminder if applicable
     lines.append("⚠️  Strip any bet at avgPrice ≥ 0.95 — those are bond-yield trades, not signals")
@@ -635,11 +782,17 @@ def _build_tail_guide(username, tier, sport_stats, market_stats, price_stats,
         if pcts[0][2] > 55:
             lines.append(f"💡 {pcts[0][2]}% of edge from '{pcts[0][0]}' side — copy that side only")
 
-    # Average bet sizing
-    if avg_bet >= 2_000:
-        lines.append(f"⚡ Normal bet ~${avg_bet:,.0f} — alert at 3x average for high-conviction plays")
+    # Typical stake: **median** per market (robust); mean shown when skew differs
+    med = median_market_stake
+    mean = mean_market_stake
+    if med >= 2_000:
+        lines.append(
+            f"⚡ Typical market stake ~${med:,.0f} (median per market) — alert at 3× for high conviction"
+        )
     else:
-        lines.append(f"💰 Avg bet ~${avg_bet:,.0f}")
+        lines.append(f"💰 Typical market stake ~${med:,.0f} (median)")
+    if mean > med * 1.35 and mean > 1_000:
+        lines.append(f"   (Mean ${mean:,.0f} — some very large markets; size to the median unless you match their whale plays)")
 
     return "\n".join(lines)
 
@@ -667,9 +820,10 @@ if __name__ == "__main__":
     print(f"  Net Profit:    ${result['total_profit']:>14,.2f}")
     print(f"  Total Risked:  ${result['total_risked']:>14,.2f}")
     print(f"  Overall ROI:   {result['overall_roi']:>14.2f}%")
-    print(f"  Win Rate:      {result['win_rate']:>14.2f}%")
-    print(f"  Avg Bet Size:  ${result['avg_bet_size']:>14,.2f}")
-    print(f"  Events:        {result['total_events']:>14,}")
+    print(f"  Win Rate:      {result['win_rate']:>14.2f}%  (markets won / lost, PA-style)")
+    print(f"  Mean $/market: ${result['avg_bet_size']:>14,.2f}")
+    print(f"  Median $/mkt:  ${result['median_market_stake']:>14,.2f}")
+    print(f"  Markets:       {result['markets_traded']:>14,}  |  event buckets: {result['total_events']:>6,}")
     print(f"  Pseudo-Sharpe: {result['pseudo_sharpe']:>14.2f}")
     print(f"  Quality Score: {result['quality_score']:>14}")
     print()
@@ -682,7 +836,7 @@ if __name__ == "__main__":
         roi = stat["roi"]
         ev  = stat["events"]
         bar = "✅" if pnl > 0 else "❌"
-        print(f"  {bar} {sport:<22} ${pnl:>12,.0f}  ROI: {roi:>6.1f}%  ({ev} events)")
+        print(f"  {bar} {sport:<22} ${pnl:>12,.0f}  ROI: {roi:>6.1f}%  ({ev} mkts)")
 
     print()
     print("── Price Bucket ──")
@@ -693,7 +847,7 @@ if __name__ == "__main__":
             roi = stat["roi"]
             ev  = stat["events"]
             bar = "✅" if pnl > 0 else "❌"
-            print(f"  {bar} {bucket:<22} ${pnl:>12,.0f}  ROI: {roi:>6.1f}%  ({ev} events)")
+            print(f"  {bar} {bucket:<22} ${pnl:>12,.0f}  ROI: {roi:>6.1f}%  ({ev} mkts)")
 
     print()
     print("── Bet Side ──")

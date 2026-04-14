@@ -136,7 +136,8 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
     // 79% of edge from YES side only. NO bets earn ~1% — noise to filter out.
     // UCL: confirmed loser in both engines (-24.8% / -19.9%). Politics: -120%.
     // No spreads ever (0 volume). Stick to Moneylines + Futures.
-    autoTail:             ["NBA", "NFL", "NHL", "Soccer", "MLB"],
+    // "Other" = long-horizon / macro title futures (championships, awards) that classify as Other sport.
+    autoTail:             ["NBA", "NFL", "NHL", "Soccer", "MLB", "Other"],
     doNotTail:            ["UCL", "Politics"],
     doNotTailSides:       ["No"],
   },
