@@ -47,8 +47,11 @@ interface StrategyCard {
   id: string;
   name?: string;
   recommended?: boolean;
+  priority?: number;
+  rule?: string;
   description?: string;
   join_max_plus_2c?: StratStats;
+  vwap?: StratStats;
   years?: Record<string, StratStats>;
   by_submarket?: Record<string, StratStats>;
   sport_x_submarket?: Array<StratStats & { sport?: string; submarket?: string }>;
@@ -61,6 +64,7 @@ interface StrategyCard {
     priceLo: number;
     priceHi: number;
     excludeUsernames: string[];
+    requireUsernames?: string[];
     skipSports: string[];
     marketTypes?: string[];
     sportIncludes?: string[];
@@ -241,7 +245,16 @@ function clientMatch(signal: Signal, filters: StrategyCard["filters"]): boolean 
     return ![...exclude].some((ex) => name.includes(ex) || (t.address || "").toLowerCase().includes(ex));
   });
   if (traders.length < (filters.minTraders || 1)) return false;
+  const required = (filters.requireUsernames || []).map((n) => n.toLowerCase());
+  if (required.length > 0) {
+    const names = new Set(
+      traders.map((t) => (t.name || "").toLowerCase()).filter((n) => n.length > 0),
+    );
+    if (!required.every((name) => names.has(name))) return false;
+  }
   if ((filters.minGrade || 0) > 0 && signal.confidence < (filters.minGrade || 0)) return false;
+  const q = signal.avgQuality ?? 0;
+  if ((filters.minQ || 0) > 0 && q < (filters.minQ || 0)) return false;
   const px = signal.currentPrice || signal.avgEntryPrice;
   if (px < filters.priceLo || px > filters.priceHi) return false;
   const sport = (signal.sport || signal.category || "").toLowerCase();
@@ -275,7 +288,7 @@ function Stat({ label, value, className }: { label: string; value: string; class
 }
 
 export default function Strategies() {
-  const [id, setId] = useState<string>("favorites_60_80");
+  const [id, setId] = useState<string>("ghost_2plus_ml");
   const [tab, setTab] = useState<"plays" | "history" | "roster" | "research">("plays");
 
   const { data, isLoading } = useQuery<TailStrategiesResponse>({
@@ -308,8 +321,20 @@ export default function Strategies() {
   }, [data, signals, selected]);
 
   const stats = selected?.join_max_plus_2c;
+  const theirFill = selected?.vwap;
   const healthRows = data?.health?.traders || [];
   const research = data?.research;
+  const takeBooks = useMemo(
+    () =>
+      (data?.strategies || [])
+        .filter((s) => s.recommended)
+        .sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99)),
+    [data],
+  );
+  const skipBooks = useMemo(
+    () => (data?.strategies || []).filter((s) => !s.recommended),
+    [data],
+  );
 
   if (isLoading && !data) {
     return (
@@ -325,12 +350,12 @@ export default function Strategies() {
     <div className="p-4 md:p-6 space-y-4 max-w-[1400px] mx-auto">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
         <div>
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Walk-forward · hold-to-resolution · dual fill · CLV</div>
-          <h1 className="text-xl font-semibold tracking-tight">Tail Strategies</h1>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Recommended plays · $100/play · hold to resolution</div>
+          <h1 className="text-xl font-semibold tracking-tight">Take these</h1>
           <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-            Historical returns from the honest backtest. Their entry = trader VWAP; live fill = later entry (join_max) + 2¢.
+            Copy-all is {data?.copyAll?.roi ?? "—"}% ROI. Only take the ranked books below.
+            Fill at the later voter’s price + 2¢ — you will not get their VWAP.
             Last resolved game: {data?.research?.freshness?.consensus_last_play || data?.universe?.max_resolved_date || "—"}.
-            Research as of {data?.research?.as_of || data?.asOf || "—"}.
           </p>
         </div>
         <Select value={selected?.id || id} onValueChange={setId}>
@@ -340,42 +365,12 @@ export default function Strategies() {
           <SelectContent>
             {(data?.strategies || []).map((s) => (
               <SelectItem key={s.id} value={s.id}>
-                {s.recommended ? "★ " : ""}{s.name || s.id}
+                {s.recommended ? "TAKE · " : "SKIP · "}{s.name || s.id}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
-
-      {selected && (
-        <Card>
-          <CardContent className="p-4 md:p-5 space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="font-semibold">{selected.name}</h2>
-              {selected.recommended && <Badge>Recommended</Badge>}
-              <Badge variant="outline">{data?.fill}</Badge>
-            </div>
-            <p className="text-sm text-muted-foreground">{selected.description}</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 pt-1">
-              <Stat label="ROI" value={`${stats?.roi ?? 0}%`} className={roiClass(stats?.roi)} />
-              <Stat label="Win rate" value={`${stats?.win_rate ?? 0}%`} />
-              <Stat label="Edge vs implied" value={`${stats?.edge ?? 0}`} className={roiClass(stats?.edge)} />
-              <Stat label="Plays" value={String(stats?.n ?? 0)} />
-              <Stat label="Trades / day" value={String(stats?.trades_per_day ?? 0)} />
-              <Stat label="Date span" value={`${stats?.first || "—"} → ${stats?.last || "—"}`} className="text-sm" />
-            </div>
-            {selected.years && (
-              <div className="flex flex-wrap gap-2 text-xs">
-                {Object.entries(selected.years).map(([year, y]) => (
-                  <Badge key={year} variant="outline" className="font-normal">
-                    {year}: {y.n} plays · {y.roi}% ROI · {y.win_rate}% WR
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
       <div className="flex gap-2">
         {(["plays", "history", "roster", "research"] as const).map((t) => (
@@ -386,16 +381,101 @@ export default function Strategies() {
             className={`text-sm px-3 py-1.5 rounded-md border ${tab === t ? "bg-primary text-primary-foreground" : "bg-card"}`}
             data-testid={`tab-${t}`}
           >
-            {t === "plays" ? "Plays worth taking" : t === "history" ? "Historical tape" : t === "roster" ? "Roster re-grade" : "Research"}
+            {t === "plays" ? "Take list" : t === "history" ? "Tape" : t === "roster" ? "Roster" : "Research"}
           </button>
         ))}
       </div>
 
       {tab === "plays" && (
-        <div className="space-y-2">
+        <div className="space-y-4">
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {takeBooks.map((book, idx) => {
+              const st = book.join_max_plus_2c;
+              const active = selected?.id === book.id;
+              return (
+                <button
+                  key={book.id}
+                  type="button"
+                  onClick={() => setId(book.id)}
+                  className={`text-left rounded-lg border p-4 space-y-2 transition-colors ${
+                    active ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/50"
+                  }`}
+                  data-testid={`take-card-${book.id}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Badge>{idx + 1}</Badge>
+                    <span className="font-semibold text-sm">{book.name}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{book.rule || book.description}</p>
+                  <div className="grid grid-cols-3 gap-2 pt-1">
+                    <Stat label="Your fill" value={`${st?.roi ?? 0}%`} className={`text-base ${roiClass(st?.roi)}`} />
+                    <Stat label="Win rate" value={`${st?.win_rate ?? 0}%`} className="text-base" />
+                    <Stat label="Plays" value={String(st?.n ?? 0)} className="text-base" />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {skipBooks.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Do not take</div>
+              <div className="grid md:grid-cols-2 gap-2">
+                {skipBooks.map((book) => {
+                  const st = book.join_max_plus_2c;
+                  const active = selected?.id === book.id;
+                  return (
+                    <button
+                      key={book.id}
+                      type="button"
+                      onClick={() => setId(book.id)}
+                      className={`text-left rounded-md border px-3 py-2 text-xs ${
+                        active ? "border-red-500/50 bg-red-500/10" : "border-border/60 bg-card"
+                      }`}
+                    >
+                      <span className="font-medium">{book.name}</span>
+                      <span className={`ml-2 tabular-nums ${roiClass(st?.roi)}`}>{st?.roi}% ROI · {st?.win_rate}% WR · n={st?.n}</span>
+                      <div className="text-muted-foreground mt-1">{book.rule || book.description}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {selected && (
+            <Card>
+              <CardContent className="p-4 md:p-5 space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="font-semibold">{selected.name}</h2>
+                  {selected.recommended ? <Badge>Take</Badge> : <Badge className="bg-red-500/15 text-red-400 border-red-500/30">Skip</Badge>}
+                  <Badge variant="outline">{data?.fill}</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">{selected.description}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 pt-1">
+                  <Stat label="Your fill (+2¢)" value={`${stats?.roi ?? 0}%`} className={roiClass(stats?.roi)} />
+                  <Stat label="Their VWAP" value={`${theirFill?.roi ?? 0}%`} className={roiClass(theirFill?.roi)} />
+                  <Stat label="Win rate" value={`${stats?.win_rate ?? 0}%`} />
+                  <Stat label="Plays" value={String(stats?.n ?? 0)} />
+                  <Stat label="Trades / day" value={String(stats?.trades_per_day ?? 0)} />
+                  <Stat label="Date span" value={`${stats?.first || "—"} → ${stats?.last || "—"}`} className="text-sm" />
+                </div>
+                {selected.years && (
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    {Object.entries(selected.years).map(([year, y]) => (
+                      <Badge key={year} variant="outline" className="font-normal">
+                        {year}: {y.n} plays · {y.roi}% ROI · {y.win_rate}% WR
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Flame className="w-3.5 h-3.5" />
-            {livePlays.length} live matches for this strategy · polls every 30s
+            {livePlays.length} live matches for {selected?.name || "this book"} · polls every 30s
           </div>
           {livePlays.length === 0 && (
             <Card>

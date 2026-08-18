@@ -9,6 +9,7 @@ export interface TailStrategyFilters {
   priceLo: number;
   priceHi: number;
   excludeUsernames: string[];
+  requireUsernames?: string[];
   skipSports: string[];
   marketTypes?: string[];
   sportIncludes?: string[];
@@ -19,6 +20,8 @@ export interface TailStrategyCard {
   name?: string;
   backtest_key?: string;
   recommended?: boolean;
+  priority?: number;
+  rule?: string;
   description?: string;
   filters?: TailStrategyFilters;
   join_max_plus_2c?: Record<string, number | string | null>;
@@ -254,6 +257,13 @@ export function signalMatchesStrategy(signal: Signal, filters: TailStrategyFilte
     return true;
   });
   if (traders.length < (filters.minTraders || 1)) return false;
+  const required = (filters.requireUsernames || []).map((n) => n.toLowerCase());
+  if (required.length > 0) {
+    const names = new Set(
+      traders.map((t) => (t.name || "").toLowerCase()).filter((n) => n.length > 0),
+    );
+    if (!required.every((name) => names.has(name))) return false;
+  }
   if ((filters.minGrade || 0) > 0 && signal.confidence < (filters.minGrade || 0)) return false;
   const q = signal.avgQuality ?? 0;
   if ((filters.minQ || 0) > 0 && q < (filters.minQ || 0)) return false;

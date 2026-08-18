@@ -25,6 +25,7 @@ from __future__ import annotations
 import json
 import math
 import re
+import subprocess
 import sys
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -1381,6 +1382,10 @@ def main() -> int:
     }
     tail_path = OUTPUT_DIR / "tail_strategies.json"
     tail_path.write_text(json.dumps(tail_payload, indent=2, default=str), encoding="utf-8")
+    rec_script = Path(__file__).resolve().parent / "write_recommended_plays.py"
+    rec_rc = subprocess.run([sys.executable, str(rec_script)], check=False)
+    if rec_rc.returncode != 0:
+        print(f"recommended plays rewrite failed rc={rec_rc.returncode}")
 
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),

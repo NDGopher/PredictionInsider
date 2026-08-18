@@ -24,7 +24,8 @@
     "backtest:walkforward": "python pnl_analysis/walkforward_tail_backtest.py",
     "backtest:consensus": "python pnl_analysis/walkforward_consensus_backtest.py",
     "backtest:health": "python pnl_analysis/trader_health_review.py",
-    "backtest:research": "python pnl_analysis/robust_tail_research.py --clv --discover"
+    "backtest:research": "python pnl_analysis/robust_tail_research.py --clv --discover",
+    "backtest:recommended": "python pnl_analysis/write_recommended_plays.py"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
