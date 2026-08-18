@@ -60,6 +60,14 @@ export function runScheduledPipelineIfNeeded(): void {
           setLastRunTime().then(() =>
             console.log(`[ScheduledPipeline] Finished successfully; next run after ${intervalHours}h without ingest.`)
           );
+          const health = spawn(command, [...prefixArgs, join(process.cwd(), "pnl_analysis", "take_book_daily.py")], {
+            cwd: process.cwd(),
+            stdio: ["ignore", "pipe", "pipe"],
+          });
+          health.on("close", (hc) => {
+            if (hc === 0) console.log("[ScheduledPipeline] take_book_daily finished");
+            else console.warn(`[ScheduledPipeline] take_book_daily exited ${hc}`);
+          });
         } else {
           console.warn(
             `[ScheduledPipeline] Exited with code ${code}. ${stderr.slice(-500) || ""}`

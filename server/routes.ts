@@ -19,6 +19,8 @@ import {
   signalMatchesStrategy,
   type TailStrategyFilters,
 } from "./tailStrategies";
+import { collectTakePlays, loadTakeHealthFile, takeStrategyCard } from "./takePlays";
+import { notifyTakePlays } from "./telegramTakeAlerts";
 import type { Signal, SignalsResponse } from "@shared/schema";
 
 const elitePool = new Pool({
@@ -5297,6 +5299,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       };
       // Shorter TTL so live/in-play rows refresh before prices move multiple cents off entry.
       if (cKey) setCache(cKey, response, 30 * 1000);
+      {
+        const take = collectTakePlays(outSignals);
+        void notifyTakePlays(take.live, { paused: take.paused }).catch((err: unknown) =>
+          console.warn("[telegram] take alert:", err),
+        );
+      }
 
       // ── SSE push: broadcast new high-confidence signals to connected clients ──
       {
@@ -6123,6 +6131,52 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     } catch (err: unknown) {
       console.error("tail-strategies error:", err);
       res.status(500).json({ error: formatApiError(err), strategies: [], livePlays: [] });
+    }
+  });
+
+  app.get("/api/take-plays", async (_req, res) => {
+    try {
+      const file = loadTailStrategiesFile();
+      const card = takeStrategyCard();
+      const health = loadTakeHealthFile();
+      const cached = getCache<SignalsResponse>("signals-elite-v59-vip-premium-sp");
+      const bundle = collectTakePlays(cached?.signals || []);
+      const stats = card?.join_max_plus_2c || {};
+      res.json({
+        generatedAt: file?.generated_at || null,
+        asOf: file?.as_of || health?.as_of || null,
+        method: file?.method || null,
+        fill: file?.fill || "vwap+2c",
+        stake: file?.stake || 100,
+        strategyId: card?.id || null,
+        strategyName: card?.name || null,
+        rule: card?.rule || null,
+        backtest: stats,
+        health: health
+          ? {
+              status: health.status,
+              pauseReason: health.pause_reason,
+              windows: health.windows,
+              proposeDrop: health.propose_drop || [],
+              proposeAdd: health.propose_add || [],
+              generatedAt: health.generated_at,
+            }
+          : null,
+        paused: bundle.paused,
+        pauseReason: bundle.pauseReason,
+        live: bundle.paused ? [] : bundle.live,
+        paperLive: bundle.paused ? bundle.live : [],
+        near: bundle.near,
+        csvOpen: {
+          live: health?.live_open || [],
+          near: health?.near_open || [],
+        },
+        signalsFetchedAt: cached?.fetchedAt || null,
+        telegramConfigured: Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID),
+      });
+    } catch (err: unknown) {
+      console.error("take-plays error:", err);
+      res.status(500).json({ error: formatApiError(err), live: [], near: [] });
     }
   });
 

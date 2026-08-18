@@ -404,6 +404,76 @@ export function signalMatchesStrategy(signal: Signal, filters: TailStrategyFilte
   return true;
 }
 
+export interface TakeGateReport {
+  take: boolean;
+  close: boolean;
+  misses: string[];
+  q: number;
+  rel: number;
+  sportRoi: number | null;
+  price: number;
+  fillPlus2c: number;
+  allowTraders: string[];
+}
+
+export function diagnoseTakeGates(signal: Signal, filters: TailStrategyFilters): TakeGateReport {
+  const misses: string[] = [];
+  const exclude = new Set((filters.excludeUsernames || []).map((n) => n.toLowerCase()));
+  const allow = (filters.allowUsernames || []).map((n) => n.toLowerCase()).filter((n) => n.length > 0);
+  const allowSet = new Set(allow);
+  const allowTraders = (signal.traders || []).filter((t) => {
+    const name = (t.name || "").toLowerCase();
+    const addr = (t.address || "").toLowerCase();
+    if (exclude.has(name)) return false;
+    if (allowSet.size === 0) return true;
+    return allowSet.has(name) || allow.some((a) => addr.includes(a) || name.includes(a));
+  });
+  if (allowTraders.length < (filters.minTraders || 1)) {
+    misses.push("not a matched-book wallet");
+  }
+  const q = Math.max(
+    signal.avgQuality ?? 0,
+    ...allowTraders.map((t) => t.qualityScore ?? 0),
+    ...((signal.traders || []).map((t) => t.qualityScore ?? 0)),
+  );
+  if ((filters.minQ || 0) > 0 && q < (filters.minQ || 0)) {
+    misses.push(`Q ${Math.round(q)} < ${filters.minQ}`);
+  }
+  const px = signal.currentPrice || signal.avgEntryPrice;
+  if (px < filters.priceLo || px > filters.priceHi) {
+    misses.push(`price ${(px * 100).toFixed(0)}¢ outside ${(filters.priceLo * 100).toFixed(0)}–${(filters.priceHi * 100).toFixed(0)}¢`);
+  }
+  const rel = signal.relBetSize ?? 0;
+  if ((filters.minRelBetSize || 0) > 0 && rel < (filters.minRelBetSize || 0)) {
+    misses.push(`size ${rel.toFixed(1)}× < ${filters.minRelBetSize}×`);
+  }
+  const sportRoi = Math.max(
+    signal.insiderSportsROI ?? Number.NEGATIVE_INFINITY,
+    ...allowTraders.map((t) => t.sportRoi ?? Number.NEGATIVE_INFINITY),
+    ...((signal.traders || []).map((t) => t.sportRoi ?? Number.NEGATIVE_INFINITY)),
+  );
+  const sportRoiOut = Number.isFinite(sportRoi) ? sportRoi : null;
+  if ((filters.minSportRoi || 0) > 0 && (sportRoiOut == null || sportRoiOut < (filters.minSportRoi || 0))) {
+    misses.push(`sport ROI ${sportRoiOut == null ? "n/a" : sportRoiOut.toFixed(0) + "%"} < ${filters.minSportRoi}%`);
+  }
+  if (sportSkipped(signal.sport || signal.category, filters.skipSports || [])) {
+    misses.push("NFL skipped");
+  }
+  const take = misses.length === 0 && signalMatchesStrategy(signal, filters);
+  const close = !take && allowTraders.length > 0 && misses.length <= 2;
+  return {
+    take,
+    close,
+    misses,
+    q,
+    rel,
+    sportRoi: sportRoiOut,
+    price: px,
+    fillPlus2c: Math.min(Math.max(px + 0.02, 0.02), 0.98),
+    allowTraders: allowTraders.map((t) => t.name || t.address.slice(0, 10)).filter(Boolean),
+  };
+}
+
 export function annotateSignal(signal: Signal): Signal & { submarket: string; playLabel: string } {
   const submarket = inferSubmarket(signal);
   const side = signal.side;

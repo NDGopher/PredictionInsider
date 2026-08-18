@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import type { SignalsResponse, LeaderboardResponse, MarketsResponse, Signal } from "@shared/schema";
 import GameScorePanel from "@/components/GameScorePanel";
-import { useToast } from "@/hooks/use-toast";
+import TakeBookFeed from "@/components/TakeBookFeed";
 
 const BET_KEY = "pi_bets";
 
@@ -777,9 +777,9 @@ export default function Dashboard() {
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div>
-          <h1 className="text-xl font-bold tracking-tight">Dashboard</h1>
+          <h1 className="text-xl font-bold tracking-tight">Take these</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Sports betting intelligence — live signals from top Polymarket traders
+            Q60 + sport expert + 2× size, no NFL. Fill VWAP + 2¢. Hold to resolution. Everything else is research.
           </p>
         </div>
         <Button
@@ -793,6 +793,8 @@ export default function Dashboard() {
           Refresh
         </Button>
       </div>
+
+      <TakeBookFeed />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

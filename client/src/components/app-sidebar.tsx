@@ -15,7 +15,7 @@ import { Link, useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
 
 const navItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard, badge: null },
+  { title: "Take these", url: "/", icon: LayoutDashboard, badge: "LIVE" },
   { title: "Live Signals", url: "/signals", icon: Zap, badge: "LIVE" },
   { title: "Markets", url: "/markets", icon: BarChart3, badge: null },
   { title: "My Bets", url: "/bets", icon: BookOpen, badge: null },
