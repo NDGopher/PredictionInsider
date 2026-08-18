@@ -1,22 +1,52 @@
 {
-  "generated_at": "2026-08-18T16:30:00Z",
-  "rule": "asof_live_q60_sport_rel2 (Q>=60, sport ROI>=5%, rel>=2, 10-88c, no NFL, fill VWAP+2c)",
-  "all": { "n": 578, "win_rate": 67.1, "roi_2c": 10.78 },
-  "sports": { "n": 507, "win_rate": 67.1, "roi_2c": 10.99 },
-  "other": { "n": 71, "win_rate": 67.6, "roi_2c": 9.23 },
+  "generated_at": "2026-08-18T17:14:08.480300+00:00",
+  "rule": "asof_live_q60_sport_rel2 (Q>=60, sport ROI>=5%, rel>=2, 10-88c, no NFL, fill VWAP+2c). Futures excluded from product.",
+  "all": {
+    "n": 282,
+    "win_rate": 58.51,
+    "roi_2c": 12.21
+  },
+  "sports": {
+    "n": 282,
+    "win_rate": 58.51,
+    "roi_2c": 12.21
+  },
+  "other": {
+    "n": 0,
+    "win_rate": 0.0,
+    "roi_2c": 0.0
+  },
+  "futures_excluded": {
+    "n": 8,
+    "win_rate": 50.0,
+    "roi_2c": -29.69
+  },
   "by_submarket": {
-    "Moneyline": { "n": 480, "win_rate": 67.5, "roi_2c": 11.65 },
-    "Total": { "n": 55, "win_rate": 67.3, "roi_2c": 8.37 },
-    "Spread": { "n": 35, "win_rate": 62.9, "roi_2c": 4.82 },
-    "Futures": { "n": 5, "win_rate": 40.0, "roi_2c": -36.96 }
+    "Draw": {
+      "n": 3,
+      "win_rate": 100.0,
+      "roi_2c": 61.79
+    },
+    "Map / Game": {
+      "n": 2,
+      "win_rate": 50.0,
+      "roi_2c": 15.63
+    },
+    "Moneyline": {
+      "n": 197,
+      "win_rate": 56.85,
+      "roi_2c": 9.4
+    },
+    "Spread": {
+      "n": 30,
+      "win_rate": 46.67,
+      "roi_2c": -13.82
+    },
+    "Total": {
+      "n": 50,
+      "win_rate": 70.0,
+      "roi_2c": 35.76
+    }
   },
-  "by_sport": {
-    "NBA": { "n": 218, "win_rate": 67.9, "roi_2c": 8.25 },
-    "Soccer": { "n": 110, "win_rate": 58.2, "roi_2c": 5.82 },
-    "Esports": { "n": 65, "win_rate": 72.3, "roi_2c": 24.53 },
-    "NHL": { "n": 56, "win_rate": 76.8, "roi_2c": 20.87 },
-    "Tennis": { "n": 50, "win_rate": 62.0, "roi_2c": -0.46 },
-    "MLB": { "n": 8, "win_rate": 87.5, "roi_2c": 49.25 }
-  },
-  "note": "Sports tab = game ML/spread/total. Other tab = politics + season futures. College/UFC tagged OTHER in CSV still sit on Sports if they are game moneylines. Futures n=5 is too small to copy. Live Signals 2+ is a different, weaker tape — do not mix it with this rule."
+  "note": "Sports = game ML/spread/total. Other = politics / non-game (no futures). Futures n is too small and \u2212ROI \u2014 not shown and not copied. Live copy list is joinable HOT/WARM books only (see copy_universe.json)."
 }

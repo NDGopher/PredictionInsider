@@ -39,7 +39,7 @@ export interface AnnotatedTakePlay {
   submarket: string;
   playLabel: string;
   pick: string;
-  lane: "sports" | "other";
+  lane: "sports" | "other" | "futures";
   outcomeLabel?: string;
   currentPrice: number;
   avgEntryPrice: number;
@@ -91,6 +91,13 @@ export function loadTakeHealthFile(): TakeHealthFile | null {
 }
 
 export function loadTrustedCopyBooks(): Array<{ username: string; wallet: string }> {
+  const uni = loadJson<{ live?: Array<{ username?: string; wallet?: string }> }>(
+    "pnl_analysis/output/copy_universe.json",
+  );
+  const live = (uni?.live || [])
+    .map((t) => ({ username: String(t.username || ""), wallet: String(t.wallet || "") }))
+    .filter((t) => t.username || t.wallet);
+  if (live.length > 0) return live;
   const data = loadJson<{ trusted?: Array<{ username?: string; wallet?: string }> }>(
     "pnl_analysis/output/trusted_full_books.json",
   );
@@ -231,6 +238,7 @@ export function collectTakePlays(signals: Signal[]): TakePlayBundle {
   for (const raw of signals) {
     const report: TakeGateReport = diagnoseTakeGates(raw, filters);
     const row = playFromSignal(raw, report);
+    if (row.lane === "futures" || row.submarket === "Futures") continue;
     if (row.take) live.push(row);
     else if (row.close) near.push(row);
   }
@@ -362,5 +370,6 @@ export function mapCsvOpenRow(row: Record<string, unknown>): AnnotatedTakePlay {
 export function mapCsvOpenRows(rows: Array<Record<string, unknown>>): AnnotatedTakePlay[] {
   return rows
     .map(mapCsvOpenRow)
+    .filter((p) => p.lane !== "futures" && p.submarket !== "Futures")
     .filter((p) => !titleLooksStale(p.marketQuestion) && !titleLooksStale(p.slug || ""));
 }

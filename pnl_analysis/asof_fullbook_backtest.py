@@ -268,10 +268,20 @@ def robust_ok(sub: pd.DataFrame) -> tuple[bool, str]:
     return True, "n≥200, +ROI after 2¢, leave-one-out and quarters hold"
 
 
-def collect_plays(trusted: list[dict]) -> pd.DataFrame:
-    allow = {t["wallet"].lower() for t in trusted}
+def collect_plays(trusted: list[dict], extra_books: list[dict] | None = None) -> pd.DataFrame:
+    allow: dict[str, str] = {}
+    for t in trusted:
+        w = str(t.get("wallet") or "").lower()
+        u = str(t.get("username") or "")
+        if w:
+            allow[w] = u
+    for t in extra_books or []:
+        w = str(t.get("wallet") or "").lower()
+        u = str(t.get("username") or "")
+        if w:
+            allow[w] = u or allow.get(w, w[:10])
     rows: list[dict] = []
-    print(f"Hold-to-res as-of copy  trusted={len(allow)}  stake=${STAKE:.0f}")
+    print(f"Hold-to-res as-of copy  wallets={len(allow)}  stake=${STAKE:.0f}")
     for wallet, username in roster_traders():
         w = wallet.lower()
         if w not in allow:
@@ -383,6 +393,7 @@ PRODUCT_SPECS = [
             "minSportRoi": 5,
             "excludeUsernames": UNTILABLE,
             "skipSports": ["NFL"],
+            "skipMarketTypes": ["Futures"],
             "marketTypes": [],
         },
     },
@@ -405,6 +416,7 @@ PRODUCT_SPECS = [
             "minSportRoi": 5,
             "excludeUsernames": UNTILABLE,
             "skipSports": ["NFL"],
+            "skipMarketTypes": ["Futures"],
             "marketTypes": [],
         },
     },
@@ -427,6 +439,7 @@ PRODUCT_SPECS = [
             "minSportRoi": 5,
             "excludeUsernames": UNTILABLE,
             "skipSports": ["NFL"],
+            "skipMarketTypes": ["Futures"],
             "marketTypes": [],
         },
     },

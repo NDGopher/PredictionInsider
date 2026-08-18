@@ -121,6 +121,14 @@ def send_health_telegram(payload: dict) -> None:
 
 
 def load_trusted() -> list[dict]:
+    uni_path = OUTPUT_DIR / "copy_universe.json"
+    if uni_path.exists():
+        try:
+            live = list((json.loads(uni_path.read_text(encoding="utf-8")).get("live") or []))
+            if live:
+                return live
+        except Exception:
+            pass
     return list(json.loads(TRUSTED.read_text(encoding="utf-8")).get("trusted") or [])
 
 
@@ -206,6 +214,8 @@ def scan_open(trusted: list[dict]) -> tuple[list[dict], list[dict]]:
             sport = str(grp["sport_type"].iloc[0])
             fam = sport_family(sport)
             subm = str(grp["submarket"].iloc[0])
+            if str(subm).lower().startswith("future"):
+                continue
             title = str(grp["title"].iloc[0] or "")
             slug = str(grp["slug"].iloc[0] or grp["eventSlug"].iloc[0] or "")
             if title_is_stale(title, now) or title_is_stale(slug, now):

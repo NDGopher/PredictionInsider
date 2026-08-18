@@ -6,7 +6,7 @@ import type { Signal } from "@shared/schema";
 
 const OTHER_SPORTS = /politic|crypto|finance|culture|weather/i;
 
-export type PlayLane = "sports" | "other";
+export type PlayLane = "sports" | "other" | "futures";
 
 export function inferSubmarket(signal: {
   marketQuestion?: string;
@@ -84,8 +84,8 @@ export function resolvePick(signal: {
 
 export function playLane(sport: string | undefined, submarket: string): PlayLane {
   const s = sport || "";
+  if (submarket === "Futures") return "futures";
   if (OTHER_SPORTS.test(s) || s.toUpperCase() === "POLITICS") return "other";
-  if (submarket === "Futures") return "other";
   return "sports";
 }
 

@@ -803,6 +803,16 @@ def main():
     if extra_n:
         print(f"[roster] {len(ALL_TRADERS)} curated + {extra_n} extra from extra_traders.json")
 
+    try:
+        from copy_roster import refresh_usernames, should_skip_pipeline, write_universe
+        write_universe()
+        copy_focus = refresh_usernames()
+    except Exception as exc:
+        print(f"[warn] copy_roster: {exc}")
+        copy_focus = set()
+        def should_skip_pipeline(username, wallet, csv_rows=0):
+            return None
+
     # Apply username filter
     if FILTER_NAMES:
         traders = [(w, u) for w, u in roster if u in FILTER_NAMES]
@@ -813,7 +823,10 @@ def main():
             print("No matching traders found. Check spelling (case-sensitive).")
             sys.exit(1)
     else:
-        traders = roster
+        focus = [(w, u) for w, u in roster if u in copy_focus]
+        rest = [(w, u) for w, u in roster if u not in copy_focus]
+        traders = focus + rest
+        print(f"[copy] refresh first: {len(focus)} live/bench, skip mega/kicked on the rest")
 
     print(f"{'='*70}")
     print(f"Polymarket Pipeline — {len(traders)} trader(s)")
@@ -830,6 +843,16 @@ def main():
 
     for i, (address, username) in enumerate(traders, 1):
         print(f"\n[{i}/{len(traders)}]", end="")
+        if not FILTER_NAMES:
+            try:
+                rows_now = csv_row_count(address, username)
+            except Exception:
+                rows_now = 0
+            skip_why = should_skip_pipeline(username, address, rows_now)
+            if skip_why:
+                print(f"\n[skip] {username} — {skip_why} (not copy-focus)")
+                skipped.append(username)
+                continue
 
         # Stale-days skip (for non-analyze-only runs)
         if not ANALYZE_ONLY and STALE_DAYS > 0:

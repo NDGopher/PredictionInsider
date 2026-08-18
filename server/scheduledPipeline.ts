@@ -77,6 +77,14 @@ export function runScheduledPipelineIfNeeded(): void {
             ranks.on("close", (rc) => {
               if (rc === 0) console.log("[ScheduledPipeline] insider ranks rebuilt");
               else console.warn(`[ScheduledPipeline] insider ranks exited ${rc}`);
+              const roster = spawn(command, [...prefixArgs, join(process.cwd(), "pnl_analysis", "copy_roster.py")], {
+                cwd: process.cwd(),
+                stdio: ["ignore", "pipe", "pipe"],
+              });
+              roster.on("close", (uc) => {
+                if (uc === 0) console.log("[ScheduledPipeline] copy universe rebuilt");
+                else console.warn(`[ScheduledPipeline] copy universe exited ${uc}`);
+              });
             });
           });
         } else {

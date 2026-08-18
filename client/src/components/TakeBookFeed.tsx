@@ -27,7 +27,7 @@ interface TakePlay {
   submarket: string;
   playLabel?: string;
   pick?: string;
-  lane?: "sports" | "other";
+  lane?: "sports" | "other" | "futures";
   outcomeLabel?: string;
   currentPrice: number;
   avgEntryPrice: number;
@@ -215,7 +215,7 @@ export default function TakeBookFeed() {
   const liveAll = (data?.live || []).filter((p) => p.valid !== false);
   const nearAll = [...(data?.near || []), ...(data?.csvOpen?.near || [])];
   const [laneTab, setLaneTab] = useState<"sports" | "other">("sports");
-  const inLane = (p: TakePlay) => (p.lane || "sports") === laneTab;
+  const inLane = (p: TakePlay) => p.lane !== "futures" && p.submarket !== "Futures" && (p.lane || "sports") === laneTab;
   const live = liveAll.filter(inLane);
   const near = nearAll.filter(inLane).slice(0, 8);
   const w30 = data?.health?.windows?.last_30d;
@@ -251,7 +251,7 @@ export default function TakeBookFeed() {
                     laneTab === tab ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"
                   }`}
                 >
-                  {tab === "sports" ? "Sports (ML / spread / total)" : "Politics & futures"}
+                  {tab === "sports" ? "Sports (ML / spread / total)" : "Politics"}
                   {st?.n ? ` · n=${st.n} ${st.roi_2c}% ROI` : ""}
                 </button>
               );
@@ -259,8 +259,7 @@ export default function TakeBookFeed() {
           </div>
           {laneTab === "other" && (
             <p className="text-[11px] text-muted-foreground mt-1 max-w-2xl">
-              Same Q/size gates, not the live copy list. Futures in the historical tape: n=5, −37% after 2¢ — too small to follow.
-              Other (mostly non-game / politics-tagged): n={data?.lanes?.other?.n ?? 71}, {data?.lanes?.other?.roi_2c ?? 9.23}% ROI after 2¢ vs sports {data?.lanes?.sports?.roi_2c ?? 10.99}%.
+              Same Q/size gates, separate from the sports copy tape. Futures are not shown (historical n=5, −37% after 2¢).
             </p>
           )}
         </div>

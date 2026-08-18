@@ -14,6 +14,7 @@ export interface TailStrategyFilters {
   /** If set, only these wallets/usernames count toward minTraders (single-name as-of copy). */
   allowUsernames?: string[];
   skipSports: string[];
+  skipMarketTypes?: string[];
   marketTypes?: string[];
   sportIncludes?: string[];
   minRelBetSize?: number;
@@ -352,6 +353,12 @@ function sportIncluded(sport: string | undefined, includes: string[] | undefined
   return includes.some((k) => s.includes(k.toLowerCase()));
 }
 
+function marketSkipped(signal: Signal, types: string[] | undefined): boolean {
+  if (!types || types.length === 0) return false;
+  const sub = inferSubmarket(signal);
+  return types.some((t) => t.toLowerCase() === sub.toLowerCase());
+}
+
 function marketAllowed(signal: Signal, types: string[] | undefined): boolean {
   if (!types || types.length === 0) return true;
   const sub = inferSubmarket(signal);
@@ -419,6 +426,7 @@ export function signalMatchesStrategy(signal: Signal, filters: TailStrategyFilte
     if (!Number.isFinite(sportRoi) || sportRoi < (filters.minSportRoi || 0)) return false;
   }
   if (sportSkipped(signal.sport || signal.category, filters.skipSports || [])) return false;
+  if (marketSkipped(signal, filters.skipMarketTypes)) return false;
   if (!sportIncluded(signal.sport || signal.category, filters.sportIncludes)) return false;
   if (!marketAllowed(signal, filters.marketTypes)) return false;
   return true;
@@ -478,6 +486,9 @@ export function diagnoseTakeGates(signal: Signal, filters: TailStrategyFilters):
   }
   if (sportSkipped(signal.sport || signal.category, filters.skipSports || [])) {
     misses.push("NFL skipped");
+  }
+  if (marketSkipped(signal, filters.skipMarketTypes)) {
+    misses.push("futures skipped");
   }
   const take = misses.length === 0 && signalMatchesStrategy(signal, filters);
   const close = !take && allowTraders.length > 0 && misses.length <= 2;
