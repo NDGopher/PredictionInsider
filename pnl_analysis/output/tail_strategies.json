@@ -3,7 +3,7 @@
   "as_of": "2026-08-18",
   "fill": "join_max+2c",
   "stake": 100.0,
-  "method": "Hold-to-resolution walk-forward. Fill = later voter (join_max) + 2\u00a2. Dates from endDate or slug/title. Recommended books require GoalLineGhost on moneylines, or 60\u201380\u00a2 favorites, or soccer ML without Cannae.",
+  "method": "CLOSED-SORT BUG: Ghost/ferrari 2+ ROIs on this file used winner-sorted closed-positions. After loser fetch Ghost dashboard PnL is \u2212$1.16M / ~52% WR (matches PolyPnL). Do not take 98% Ghost books. Rebuild consensus after dual-sort closed fetch.",
   "copy_all": {
     "n": 214024,
     "win_rate": 53.24,
@@ -771,10 +771,10 @@
         "trades_per_day": 4.99
       },
       "id": "ghost_2plus_ml",
-      "name": "GoalLineGhost moneyline (2+)",
-      "recommended": true,
+      "name": "GoalLineGhost moneyline (2+) \u2014 DO NOT TAKE (winner-sorted tape)",
+      "recommended": false,
       "priority": 1,
-      "rule": "Moneyline, Ghost is on the ticket with at least one other tailable wallet. Skip NFL and Cannae.",
+      "rule": "Invalid. Public Ghost is ~52% WR / \u2212$1.14M. 98% was missing losers.",
       "description": "This is the book to take. Ghost\u2019s soccer/other moneylines with a second voter. Without Ghost, 2+ Q50 moneyline is \u221252%. You are tailing Ghost, not a 12-name consensus. Pay join_max+2\u00a2 and hold to the game.",
       "filters": {
         "minTraders": 2,
@@ -1556,10 +1556,10 @@
         "trades_per_day": 3.31
       },
       "id": "ghost_ferrari_ml",
-      "name": "Ghost + ferrari moneyline",
-      "recommended": true,
+      "name": "Ghost + ferrari moneyline \u2014 DO NOT TAKE (winner-sorted tape)",
+      "recommended": false,
       "priority": 2,
-      "rule": "Same as #1, and ferrariChampions2026 is also on the ticket.",
+      "rule": "Invalid. Public Ghost is ~52% WR / \u2212$1.14M. 98% was missing losers.",
       "description": "Tightest pair. Highest win rate. Size down if you only want Ghost+ferrari, not every Ghost 2+.",
       "filters": {
         "minTraders": 2,
@@ -2342,10 +2342,10 @@
         "trades_per_day": 2.17
       },
       "id": "ghost_rn1_ml",
-      "name": "Ghost + RN1 moneyline",
-      "recommended": true,
+      "name": "Ghost + RN1 moneyline \u2014 DO NOT TAKE (winner-sorted tape)",
+      "recommended": false,
       "priority": 3,
-      "rule": "Same as #1, and RN1 is also on the ticket.",
+      "rule": "Invalid. Public Ghost is ~52% WR / \u2212$1.14M. 98% was missing losers.",
       "description": "Second-best pair. Still Ghost\u2019s moneyline with RN1 confirming.",
       "filters": {
         "minTraders": 2,
@@ -3447,7 +3447,7 @@
       },
       "id": "favorites_60_80",
       "name": "Favorites 60\u201380\u00a2 (low vol)",
-      "recommended": true,
+      "recommended": false,
       "priority": 4,
       "rule": "2+ wallets, price 60\u201380\u00a2, no Cannae, no NFL. Use when you do not want Ghost-sized variance.",
       "description": "Slower book. Less concentrated than Ghost moneylines. Still positive after 2\u00a2 slip.",
@@ -4249,7 +4249,7 @@
       },
       "id": "soccer_ml_no_cannae",
       "name": "Soccer moneyline, no Cannae",
-      "recommended": true,
+      "recommended": false,
       "priority": 5,
       "rule": "Soccer match-winner, 2+ wallets, Cannae does not vote. Optional if Ghost is not on the play.",
       "description": "Soccer 2+ is worse with Cannae in the cluster (+7% vs +14%). Cannae soccer ML NO is an overlay, never a 2+ voter.",

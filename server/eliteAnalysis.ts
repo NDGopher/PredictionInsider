@@ -133,8 +133,8 @@ export const DISCOVERED_ELITES: { wallet: string; username: string; url?: string
   { wallet: "0x8a3ab8120807bd64a3de48695110e390fa2ceb9a", username: "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a", url: "https://polymarket.com/@0x8a3aB8120807bD64a3De48695110e390fa2ceB9a-1771005965025", notes: "KEEP 2026-08-18: hold-to-res 14.3% (435 mkts), still active" },
   { wallet: "0x04d5524a0a5af2eca6e39e03defc261d42fe66d8", username: "WTSA", url: "https://polymarket.com/@WTSA", notes: "KEEP 2026-08-18: 20% hold-to-res, last 60d +20%, active" },
   { wallet: "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87", username: "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87", url: "https://polymarket.com/@0xE30E74595517de48f1FB19f4553dd3d9F1E96B87-1772612985000", notes: "KEEP 2026-08-18: tennis, last 60d +13%" },
-  { wallet: "0xfe787d2da716d60e8acff57fb87eb13cd4d10319", username: "ferrariChampions2026", url: "https://polymarket.com/@ferrariChampions2026", notes: "KEEP 2026-08-18 full-open grade: 14.2% hold-to-res / last 60d +27%. Hedge-heavy, median ~$4k." },
-  { wallet: "0x0346afae2603313d2bbee96b628536c8cbe352a5", username: "GoalLineGhost", url: "https://polymarket.com/@GoalLineGhost", notes: "KEEP 2026-08-18: 49.8% hold-to-res (11.8k mkts), last 60d +48%, median ~$1.3k" },
+  { wallet: "0xfe787d2da716d60e8acff57fb87eb13cd4d10319", username: "ferrariChampions2026", url: "https://polymarket.com/@ferrariChampions2026", notes: "Sports LB rank 8 ~+$68k. After loser-side closed fetch, dashboard PnL −$6.5M / 38% WR — previous +$56M was 10k winner cap. Do not copy as 14% ROI." },
+  { wallet: "0x0346afae2603313d2bbee96b628536c8cbe352a5", username: "GoalLineGhost", url: "https://polymarket.com/@GoalLineGhost", notes: "PUBLIC 2026-08-18: PolyPnL −$1.14M / 52.8% WR; sports LB ~+$34k rank 15. Our +$52M/73% WR was winner-sorted closed-positions (10k cap). Do not treat as 50% ROI copy. Median ~$1.3k, still HOT on sports LB." },
 ];
 
 // ─── In-memory set for fast signal lookup ────────────────────────────────────
@@ -304,7 +304,7 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
     doNotTail: ["NBA", "NHL", "NFL", "UFC/MMA", "College Sports", "Soccer", "UCL", "Tennis",
                 "Valorant", "CS2", "LoL", "Politics", "Finance/Crypto", "Other"],
   },
-  "0x0346afae2603313d2bbee96b628536c8cbe352a5": { // GoalLineGhost — KEEP soccer/other sharp (50% hold-to-res, 84% WR, median ~$1.3k)
+  "0x0346afae2603313d2bbee96b628536c8cbe352a5": { // GoalLineGhost — sports LB HOT (~+$34k rank 15). Public lifetime ~−$1M / 53% WR. Our 50% ROI was winner-sorted closed book.
     // 2026-08-18 full-open: Soccer ML +60%, Soccer Total +55%, Soccer Spread +67%. Almost no NBA/NFL.
     // Concentrates the 2+ Q50 moneyline book (~34%). Count the vote on soccer/other; mute everything else.
     autoTail:  ["Soccer", "Other"],

@@ -1,0 +1,4098 @@
+{
+  "generated_at": "2026-08-18T12:43:39.115033+00:00",
+  "as_of": "2026-08-18",
+  "bug": "closed-positions default sort is REALIZEDPNL DESC; 10k page cap stored winners only",
+  "known": [
+    [
+      "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee",
+      "kch123"
+    ],
+    [
+      "0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c",
+      "DLEK"
+    ],
+    [
+      "0x44c58184f89a5c2f699dc8943009cb3d75a08d45",
+      "JhonAlexanderHinestroza"
+    ],
+    [
+      "0x13414a77a4be48988851c73dfd824d0168e70853",
+      "ShortFlutterStock"
+    ],
+    [
+      "0x781caf04d98a281712caf1677877c442789fdb68",
+      "Avarice31"
+    ],
+    [
+      "0xc5b5bbd42624a8f0c8dfa90221913007d8c77e80",
+      "Capman"
+    ],
+    [
+      "0x84dbb7103982e3617704a2ed7d5b39691952aeeb",
+      "ShucksIt69"
+    ],
+    [
+      "0xc660ae71765d0d9eaf5fa8328c1c959841d2bd28",
+      "TutiFromFactsOfLife"
+    ],
+    [
+      "0xd6966eb1ae7b52320ba7ab1016680198c9e08a49",
+      "EIf"
+    ],
+    [
+      "0x92672c80d36dcd08172aa1e51dface0f20b70f9a",
+      "ckw"
+    ],
+    [
+      "0xdbb9b3616f733e19278d1ca6f3207a8344b5ed8d",
+      "bigmoneyloser00"
+    ],
+    [
+      "0x52ecea7b3159f09db589e4f4ee64872fd0bba6f3",
+      "fkgggg2"
+    ],
+    [
+      "0xd9e0aaca471f489be338fd0f91a26e8669a805f2",
+      "0xD9E0AACa471f48F91A26E8669A805f2"
+    ],
+    [
+      "0xf588b19afe63e1aba00f125f91e3e3b0fdc62b81",
+      "RandomPunter"
+    ],
+    [
+      "0x9ac5c8496bc84f642bac181499bf64405a5c6a3d",
+      "JuniorB"
+    ],
+    [
+      "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+      "0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563"
+    ],
+    [
+      "0x20d6436849f930584892730c7f96ebb2ac763856",
+      "0x20D6436849F930584892730C7F96eBB2Ac763856"
+    ],
+    [
+      "0xee00ba338c59557141789b127927a55f5cc5cea1",
+      "S-Works"
+    ],
+    [
+      "0xe40172522c7c64afa2d052ddae6c92cd0f417b88",
+      "BoomLaLa"
+    ],
+    [
+      "0x9f138019d5481fdc5c59b93b0ae4b9b817cce0fd",
+      "Bienville"
+    ],
+    [
+      "0x6b7c75862e64d6e976d2c08ad9f9b54add6c5f83",
+      "tcp2"
+    ],
+    [
+      "0xec981ed70ae69c5cbcac08c1ba063e734f6bafcd",
+      "0xheavy888"
+    ],
+    [
+      "0x68146921df11eab44296dc4e58025ca84741a9e7",
+      "LynxTitan"
+    ],
+    [
+      "0x0b9cae2b0dfe7a71c413e0604eaac1c352f87e44",
+      "geniusMC"
+    ],
+    [
+      "0xe24838258b572f1771dffba3bcdde57a78def293",
+      "redskinrick"
+    ],
+    [
+      "0x6c743aafd813475986dcd930f380a1f50901bd4e",
+      "middleoftheocean"
+    ],
+    [
+      "0x39932ca2b7a1b8ab6cbf0b8f7419261b950ccded",
+      "Andromeda1"
+    ],
+    [
+      "0x5c3a1a602848565bb16165fcd460b00c3d43020b",
+      "CoryLahey"
+    ],
+    [
+      "0xafd492974cd531aae7786210438ae46b42047e61",
+      "TheArena"
+    ],
+    [
+      "0x3471a897e56a8d3621ca79af87dae4325977f17e",
+      "xytest"
+    ],
+    [
+      "0xc65ca4755436f82d8eb461e65781584b8cadea39",
+      "UAEVALORANTFAN"
+    ],
+    [
+      "0x9703676286b93c2eca71ca96e8757104519a69c2",
+      "TheMangler"
+    ],
+    [
+      "0xc49fe658479db29e1a2fefebf0735f657dca9e05",
+      "iDropMyHotdog"
+    ],
+    [
+      "0x58f8f1138be2192696378629fc9aa23c7910dc70",
+      "bloodmaster"
+    ],
+    [
+      "0xf9b5f7293b8258be8b0e1f03717c5d2ad94809ee",
+      "9sh8f"
+    ],
+    [
+      "0x53ecc53e7a69aad0e6dda60264cc2e363092df91",
+      "0x53eCc53E7"
+    ],
+    [
+      "0x1b5e20a28d7115f10ce6190a5ae9a91169be83f8",
+      "877s8d8g89I9f8d98fd99ww2"
+    ],
+    [
+      "0x9c82c60829df081d593055ee5fa288870c051f13",
+      "Vetch"
+    ],
+    [
+      "0x25867077c891354137bbaf7fde12eec6949cc893",
+      "TTdes"
+    ],
+    [
+      "0x57cd939930fd119067ca9dc42b22b3e15708a0fb",
+      "Supah9ga"
+    ],
+    [
+      "0xe72bb501df5306c75c89383d48a1e81073fbb0a0",
+      "norrisfan"
+    ],
+    [
+      "0x036c159d5a348058a81066a76b89f35926d4178d",
+      "HedgeMaster88"
+    ],
+    [
+      "0x37c1874a60d348903594a96703e0507c518fc53a",
+      "CemeterySun"
+    ],
+    [
+      "0x6ac5bb06a9eb05641fd5e82640268b92f3ab4b6e",
+      "0p0jogggg"
+    ],
+    [
+      "0x7ea571c40408f340c1c8fc8eaacebab53c1bde7b",
+      "Cannae"
+    ],
+    [
+      "0x2005d16a84ceefa912d4e380cd32e7ff827875ea",
+      "RN1"
+    ],
+    [
+      "0xb6d6e99d3bfe055874a04279f659f009fd57be17",
+      "JPMorgan101"
+    ],
+    [
+      "0xcb6ed9332a8fd1b930893c705dd234f37aa248e6",
+      "0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6"
+    ],
+    [
+      "0x8a3ab8120807bd64a3de48695110e390fa2ceb9a",
+      "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a"
+    ],
+    [
+      "0x04d5524a0a5af2eca6e39e03defc261d42fe66d8",
+      "WTSA"
+    ],
+    [
+      "0x9ee8bbc36d378af72e5f6b8e2ea2eb67c05a89de",
+      "Qpkwks"
+    ],
+    [
+      "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87",
+      "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87"
+    ],
+    [
+      "0x5268527977f700f9bf9b6d5cd843859e4e70135d",
+      "HomeRunHazard"
+    ],
+    [
+      "0xfe787d2da716d60e8acff57fb87eb13cd4d10319",
+      "ferrariChampions2026"
+    ],
+    [
+      "0x224a89dbe0db0d6124b335edabd15b3f877da3d5",
+      "wr0ngw4yb3tt0r"
+    ],
+    [
+      "0xdc41c39b95453c943174f369926018f6963bdd7e",
+      "quavoo"
+    ],
+    [
+      "0x0346afae2603313d2bbee96b628536c8cbe352a5",
+      "GoalLineGhost"
+    ],
+    [
+      "0x0e604be17c231a33dc01e38a722c7fe3984e3bad",
+      "0xwise"
+    ]
+  ],
+  "sports_lb": [
+    {
+      "rank": 1,
+      "wallet": "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+      "username": "0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563-1759935795465",
+      "pnl": 185757.89711528644,
+      "vol": 861506.475967,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 2,
+      "wallet": "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87",
+      "username": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87-1772612985000",
+      "pnl": 130589.10617255897,
+      "vol": 431147.991747,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 3,
+      "wallet": "0x4ab9b54427ec4b7f3646b1a0ef1bed73bc708ebe",
+      "username": "RWCS",
+      "pnl": 102266.86937,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 4,
+      "wallet": "0x6c3aae17140c5e3cde62380daaa323e38575c459",
+      "username": "AvrahamEisenberg - 10161",
+      "pnl": 100287.227136,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 5,
+      "wallet": "0x224a89dbe0db0d6124b335edabd15b3f877da3d5",
+      "username": "wr0ngw4yb3tt0r",
+      "pnl": 100231.40565203177,
+      "vol": 231132.01925700007,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 6,
+      "wallet": "0x5268527977f700f9bf9b6d5cd843859e4e70135d",
+      "username": "HomeRunHazard",
+      "pnl": 98709.0220761816,
+      "vol": 1252524.9908520002,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 7,
+      "wallet": "0xa8cf2ed8751f4e58ad039e1b68a8b58b4395031f",
+      "username": "0xa8cf2ed8",
+      "pnl": 85547.41699299996,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 8,
+      "wallet": "0xfe787d2da716d60e8acff57fb87eb13cd4d10319",
+      "username": "ferrariChampions2026",
+      "pnl": 68507.20144700678,
+      "vol": 2177732.378143,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 9,
+      "wallet": "0x16bb9951a36fce71e2ef57890b786145e0ba8492",
+      "username": "SDTrading",
+      "pnl": 51570.6283000001,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 10,
+      "wallet": "0x3d8a89a20aa73fba0f30d080e8120de9f9555724",
+      "username": "Poyo",
+      "pnl": 50766.935668000006,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 11,
+      "wallet": "0xdc41c39b95453c943174f369926018f6963bdd7e",
+      "username": "quavoo",
+      "pnl": 48867.273729555076,
+      "vol": 225733.811803,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 12,
+      "wallet": "0x085fd7e4886bd3c491d979ea5c8052b0d3d34d1c",
+      "username": "Penisya",
+      "pnl": 46340.86696501685,
+      "vol": 181143.90090399998,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 13,
+      "wallet": "0x684baa57c338c2549aec0aa3f034f695d72a8409",
+      "username": "monkeymashingkeyboard",
+      "pnl": 39068.83665569441,
+      "vol": 19192.529816,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 14,
+      "wallet": "0xe76f0a36d05d215a69f1f84466c8922702a1d40c",
+      "username": "Kulilun",
+      "pnl": 36200.29375449434,
+      "vol": 23022.320000000003,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 15,
+      "wallet": "0x0346afae2603313d2bbee96b628536c8cbe352a5",
+      "username": "GoalLineGhost",
+      "pnl": 33896.035002204124,
+      "vol": 419102.446259,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 16,
+      "wallet": "0x682005011dd19c1e986cb060ed6ab83845f21c19",
+      "username": "winwin518168",
+      "pnl": 32100.000000000004,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 17,
+      "wallet": "0x0d18e30e252008d83f51dae00d36873ddd9e24a6",
+      "username": "MonsieurDimanche",
+      "pnl": 29726.53863699996,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 18,
+      "wallet": "0x9d3e50519d87421645a1717e60a4ba369db1986c",
+      "username": "bigoon",
+      "pnl": 29316.348414513173,
+      "vol": 106570.372924,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 19,
+      "wallet": "0xe954ddb021c19495f1c556f59dadbd1494821ef1",
+      "username": "kingflop",
+      "pnl": 28954.05040617715,
+      "vol": 16480.056665,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 20,
+      "wallet": "0x927cf2bb94d15707993f954552e56c74eb6d6633",
+      "username": "jarosbill",
+      "pnl": 28482.311510999964,
+      "vol": 78549.093876,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 21,
+      "wallet": "0x0f35109cc3ceaf729609c3109310791bd616c84a",
+      "username": "0x0f35109c",
+      "pnl": 27254.641564000005,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 22,
+      "wallet": "0xaa7789219c17e180dcb5933099c90d885f1d15a5",
+      "username": "alaskabaked",
+      "pnl": 27079.427020452255,
+      "vol": 85785.589214,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 23,
+      "wallet": "0x0e604be17c231a33dc01e38a722c7fe3984e3bad",
+      "username": "0xwise",
+      "pnl": 26680.573219999987,
+      "vol": 46456.178766,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 24,
+      "wallet": "0xdb83e85ffd22faa4009273034770f96ffc5b1e50",
+      "username": "sentrio",
+      "pnl": 25877.477123408986,
+      "vol": 85405.919353,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 25,
+      "wallet": "0xc8075693f48668a264b9fa313b47f52712fcc12b",
+      "username": "texaskid",
+      "pnl": 25598.39212957007,
+      "vol": 5055.437362999999,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 26,
+      "wallet": "0x59018ff1f4300838f635386ab5e0b8b353ce63a2",
+      "username": "kamloic",
+      "pnl": 25284.21873974701,
+      "vol": 118200.625923,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 27,
+      "wallet": "0x782186952ef2ca75ea91c95aef25bbdcffb4bb1a",
+      "username": "thif - 33063",
+      "pnl": 23607.800415098936,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 28,
+      "wallet": "0xa71093cafc0c099b4ccab24c3cb8018d817923c4",
+      "username": "Talvez10",
+      "pnl": 20207.534913365496,
+      "vol": 6755.036036,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 29,
+      "wallet": "0xf377b9fb12a4b7507a4f997461a73eb30b564159",
+      "username": "danielwolfmorales3pddb6dl6",
+      "pnl": 19973.60661408033,
+      "vol": 212945.133274,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 30,
+      "wallet": "0x95b198f900d19a80d3d7e47b7b17708af254f9ac",
+      "username": "thepicklebomber - 3805",
+      "pnl": 18124.591877,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 31,
+      "wallet": "0xabb89972b21b304c1bed2bf26f35c8741ac9bba3",
+      "username": "Feromont",
+      "pnl": 18087.50223399978,
+      "vol": 29972.225554,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 32,
+      "wallet": "0x86e99faea12fccd8925de5d9f052471baf7a4cdf",
+      "username": "JUSTINHERBERTMVP",
+      "pnl": 17206.536742244643,
+      "vol": 48512.090476,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 33,
+      "wallet": "0xf5592765133941c40c77e52bc56bbe7ec167f462",
+      "username": "0xf5592765133941c40C77e52Bc56bbe7EC167F462-1755612447740",
+      "pnl": 17031.49265944594,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 34,
+      "wallet": "0xccd81fbd3395dc43a0531f8484b21c2462daf4de",
+      "username": "0F62",
+      "pnl": 16841.920211046032,
+      "vol": 77641.07691999999,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 35,
+      "wallet": "0x689f7d0a49d2646dc199848ffbdb4757242e259c",
+      "username": "ROI-Value",
+      "pnl": 16682.175506037776,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 36,
+      "wallet": "0x56acab44cfca2e88bb9b3406890aea7bfa0cd77e",
+      "username": "dv-pm",
+      "pnl": 16628.399549999274,
+      "vol": 24842.800000000003,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 37,
+      "wallet": "0xf6683d202f76fc9b79e5be716ce8519dab5b5c69",
+      "username": "0xf6683D202f76FC9B79E5BE716CE8519DAb5b5c69-1765800503123",
+      "pnl": 16197.914449999982,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 38,
+      "wallet": "0x6d3c5bd13984b2de47c3a88ddc455309aab3d294",
+      "username": "VeryLucky888",
+      "pnl": 15758.268987949588,
+      "vol": 170652.26949699997,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 39,
+      "wallet": "0x7fb23b0d330ea4ac4f3cecce1eb81fb0bfb3ed4b",
+      "username": "0x7fb23b0d",
+      "pnl": 14768.168524999995,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 40,
+      "wallet": "0x4f70929ba287ac85dc2431c85382ccd9e6b0d185",
+      "username": "Lance Uppercut",
+      "pnl": 14234.245540373951,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 41,
+      "wallet": "0x4f29e103339919c4baaea2a60195cf1c8bb27a7e",
+      "username": "0x4f2",
+      "pnl": 13791.698167101655,
+      "vol": 693782.6819060001,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 42,
+      "wallet": "0x15ae79d7cd60b2a7f06ae46eb4c7a0eb16096ffd",
+      "username": "humiliating piglet",
+      "pnl": 13228.38483,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 43,
+      "wallet": "0x903221b1098263779ae19486028c844e8c338717",
+      "username": "0x903221b1",
+      "pnl": 11412.823804000014,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 44,
+      "wallet": "0xf5fe759cece500f58a431ef8dacea321f6e3e23d",
+      "username": "Stavenson",
+      "pnl": 11278.313893102953,
+      "vol": 41034.57,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 45,
+      "wallet": "0x1ab3580b6d258e31ca0a3efdb93173d081dd64af",
+      "username": "Satisfied",
+      "pnl": 11241.490477905129,
+      "vol": 93.34087,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 46,
+      "wallet": "0x5d7639ed5fd3c5ebf0fc69d548e1046acd0f9168",
+      "username": "yesmate",
+      "pnl": 11172.735991198511,
+      "vol": 110422.738847,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 47,
+      "wallet": "0x54bab0bc94667af224e21528804d49c1b87e04e4",
+      "username": "0x54baB0BC94667Af224E21528804D49C1b87e04e4-1776237217344",
+      "pnl": 11110.071402846981,
+      "vol": 133199.897623,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 48,
+      "wallet": "0x3f3aa7005f8006bfcc367d43a25cde25509fe8fd",
+      "username": "us391",
+      "pnl": 10833.45271954377,
+      "vol": 18265.229140000003,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 49,
+      "wallet": "0x71971342cb4c2555f60366ac62abdcdd1a1d14c8",
+      "username": "RawrRawr",
+      "pnl": 10443.365146020602,
+      "vol": 89060.67085400001,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 50,
+      "wallet": "0x0cdff1e562faf5ece704ef15f6a9fc4232e7ec9e",
+      "username": "0x0CdFf1E562Faf5EcE704Ef15f6A9fc4232E7eC9E-1780718136344",
+      "pnl": 10376.211231642563,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 51,
+      "wallet": "0x322f041810cee536293dcb4c99fc23b3a766940a",
+      "username": "Sports",
+      "pnl": 10043.226767999999,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 52,
+      "wallet": "0x8002f0f179219531566886c539aaf83967a58b6c",
+      "username": "Vladooos",
+      "pnl": 9535.895291000004,
+      "vol": 23425.693886,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 53,
+      "wallet": "0xe0eeb30d92eb2a995fc82b4e58def02c53e6fa3f",
+      "username": "predictor - 3335",
+      "pnl": 9426.288296831113,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 54,
+      "wallet": "0x41b4cd880a61de2f5728594decf7f2cbfc2a10da",
+      "username": "zagzig123",
+      "pnl": 9424.935000000012,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 55,
+      "wallet": "0x9f15613ebf1f36d4bc679e1211d1fc567cf9bdb3",
+      "username": "0x9f15613ebf1f36d4bc679e1211d1fc567cf9bdb3",
+      "pnl": 9144.901900501805,
+      "vol": 8825.745456,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 56,
+      "wallet": "0x84898b583d56054b502c6564f3edfad43b54e211",
+      "username": "JustLearning",
+      "pnl": 8927.851561376445,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 57,
+      "wallet": "0xf3a1493cf87d23177107b5b3f737f0c586f1bf4b",
+      "username": "0xf3a1493c",
+      "pnl": 8523.955199999997,
+      "vol": 14479.16,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 58,
+      "wallet": "0xbca08c1bc204a34f2fddbe47b438b9bd42ac9705",
+      "username": "1winstreak1",
+      "pnl": 8517.285328238737,
+      "vol": 147987.55817899996,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 59,
+      "wallet": "0xfefaf44054fb92d87882f2bd24bddbd163487bed",
+      "username": "vivaFujimori - 33031",
+      "pnl": 8476.656116999999,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 60,
+      "wallet": "0xf1528f12e645462c344799b62b1b421a6a4c64aa",
+      "username": "phonesculptor",
+      "pnl": 8352.845027134987,
+      "vol": 7324.038947999999,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 61,
+      "wallet": "0xae95a2fd8df6b5e621d583157d47412a6b066579",
+      "username": "draintheswamp!",
+      "pnl": 8274.744259,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 62,
+      "wallet": "0x44c58184f89a5c2f699dc8943009cb3d75a08d45",
+      "username": "JhonAlexanderHinestroza",
+      "pnl": 8100.649775516475,
+      "vol": 55746.932128,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 63,
+      "wallet": "0x09fb8ab5f70b2140511c366451e0f02c3c10d01c",
+      "username": "mkiaz - 1025",
+      "pnl": 7974.457056,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 64,
+      "wallet": "0x45e40dbee6f546c7b318498f8c9778560f5a7e20",
+      "username": "fastball67",
+      "pnl": 7906.835157324982,
+      "vol": 5153.541772999999,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 65,
+      "wallet": "0x26b46988d027c6c03cfa12a7c0c6d778be49b8a9",
+      "username": "kkookkoo",
+      "pnl": 7757.056610582455,
+      "vol": 80162.818494,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 66,
+      "wallet": "0x1f682adb9a5cf101bcf53a7cd00bc2c594f7c9b3",
+      "username": "0x3177d25a95524e6d98843c78cd604b67fb1b92b9",
+      "pnl": 7677.93231,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 67,
+      "wallet": "0x7668efbca0df8195ba199d3e19cb768e8b3779ec",
+      "username": "0x7668efbc",
+      "pnl": 7415.563737,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 68,
+      "wallet": "0xf1ef8705e9f63c790c6fffd6329aea7011718cd6",
+      "username": "Outsid3rTrading",
+      "pnl": 7380.495514288006,
+      "vol": 622.8104890000001,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 69,
+      "wallet": "0x7414f47e227846765c8abb1048606003a57072a3",
+      "username": "hamlo",
+      "pnl": 6744.914130999998,
+      "vol": 33069.571288,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 70,
+      "wallet": "0x6485f47d0344c03eb4340f985159f6eb2dcba265",
+      "username": "flatbarrel",
+      "pnl": 6743.72329683986,
+      "vol": 64624.322701,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 71,
+      "wallet": "0x88d17ad6bf91ca0935f6e70b37ebe3db92b618da",
+      "username": "kahe",
+      "pnl": 6673.653208966658,
+      "vol": 28639.056056,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 72,
+      "wallet": "0x9166ec6b0d48b8a046f520c6f71e73914d8c5bd5",
+      "username": "aaaalesshaaa",
+      "pnl": 6623.701300000001,
+      "vol": 24599.995,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 73,
+      "wallet": "0x0393b7a4c1e4a72564bf8287c7d1471ac9a61130",
+      "username": "0x0393b7a4",
+      "pnl": 6550.193144999999,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 74,
+      "wallet": "0x7430669ff298f8dc78e3339448d4994e812d111f",
+      "username": "zwe2edS1ms",
+      "pnl": 6530.533578999999,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 75,
+      "wallet": "0x99f0d31fdced5b3a0e5ee2867730a6644a6c9495",
+      "username": "0x99F0d31fdced5B3A0e5Ee2867730A6644a6C9495-1779037126382",
+      "pnl": 6442.629865297407,
+      "vol": 68624.373308,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 76,
+      "wallet": "0x8fba2c29715c41dd87e781c23373aa1e0549d08a",
+      "username": "abura2025",
+      "pnl": 6278.572064906286,
+      "vol": 10094.720135,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 77,
+      "wallet": "0xade215552e9f86df1a72fbf9a13672fa0f75e86d",
+      "username": "VanGen",
+      "pnl": 6274.224407862794,
+      "vol": 25745.459298,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 78,
+      "wallet": "0x6a0385ed55ebd20067a1a59e908267310f5592d3",
+      "username": "jerall",
+      "pnl": 6262.766816875008,
+      "vol": 6895.79,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 79,
+      "wallet": "0xf5198df69e13937a40d1c76d6f72d9aa067d906b",
+      "username": "sbimbg",
+      "pnl": 6261.477124485653,
+      "vol": 47629.361047,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 80,
+      "wallet": "0xb254cd171eb8d5b4b60703f99fd13474504bb70a",
+      "username": "maga - 97",
+      "pnl": 6116.458664,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 81,
+      "wallet": "0xb915070c8007b1bdf4b1ef04e56b066a022e8da5",
+      "username": "Kingdmandan",
+      "pnl": 6087.39213800001,
+      "vol": 12503.26,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 82,
+      "wallet": "0x0af5f7ff9e6b4957e26d064b3218c38c59c87e3f",
+      "username": "brian - 23314",
+      "pnl": 5982.980714,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 83,
+      "wallet": "0xe9d31c24fc8d6a4beb58ee1808fdbefd0e72079f",
+      "username": "phredmoz",
+      "pnl": 5827.951825433018,
+      "vol": 91145.08939799998,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 84,
+      "wallet": "0xf1302aafc43aa3a69bcd8058fc7a0259dac246ab",
+      "username": "TraderRed",
+      "pnl": 5774.4153815031705,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 85,
+      "wallet": "0xff80bb23621f03fc6300808730316c78abe09b4d",
+      "username": "Zenhack",
+      "pnl": 5748.272450000004,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 86,
+      "wallet": "0x772f8865fb93e6d0eb1d41dda3711589114a8145",
+      "username": "0x772f8865fB93e6D0EB1D41DDa3711589114A8145-1781445006719",
+      "pnl": 5659.513238915839,
+      "vol": 67679.409871,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 87,
+      "wallet": "0x792f8e8bae0323abf8927c6820863fbe8a98328a",
+      "username": "owenliang666",
+      "pnl": 5557.2074034300385,
+      "vol": 85683.45,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 88,
+      "wallet": "0xc2c8ffdd03b96e1787e6e730083efa5afafe142b",
+      "username": "egebar",
+      "pnl": 5364.438076224235,
+      "vol": 9919.48799,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 89,
+      "wallet": "0x986b121c40e715167dde178b8520bf132a57bdc6",
+      "username": "hd777",
+      "pnl": 5332.51201166035,
+      "vol": 239279.98422699998,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 90,
+      "wallet": "0x032eb1bc893940263ad0b01889f262fc232f2a9e",
+      "username": "purplegatto",
+      "pnl": 5272.599202596815,
+      "vol": 42614.85999999999,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 91,
+      "wallet": "0x057000dd171fc8acfc16464feb91a1b31b2e465e",
+      "username": "dannyvermeulen",
+      "pnl": 5210.334946998377,
+      "vol": 5709.228137,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 92,
+      "wallet": "0x2b46bb71681777202368d095196f266944a1684d",
+      "username": "betdge",
+      "pnl": 5186.871682000055,
+      "vol": 8787.0035,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 93,
+      "wallet": "0xfcbe281f11f195423fdf458582e1215790b7aa8b",
+      "username": "igot",
+      "pnl": 5171.851393012967,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 94,
+      "wallet": "0xe3d4dee2427b98042822543f8e1e8ab7bafb2bac",
+      "username": "swy01",
+      "pnl": 5072.117427802463,
+      "vol": 45460.232243,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 95,
+      "wallet": "0x9950ee8a9cf72226eb1f6f02b086c17198074f87",
+      "username": "inanity - 38305",
+      "pnl": 5064.889840753716,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 96,
+      "wallet": "0xb7271c112cbd83eb4c1ef1b554ff963604ae2a9d",
+      "username": "Elaran1993",
+      "pnl": 5022.902534604997,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 97,
+      "wallet": "0x88186ddbea78ab3d65b7d08f0658b9c22037f265",
+      "username": "0x88186ddb",
+      "pnl": 4999.839805000004,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 98,
+      "wallet": "0x081e14554b92ee3dc53a21bd5b01f306692ef76e",
+      "username": "RebornAthena",
+      "pnl": 4973.464312883414,
+      "vol": 24745.176577000002,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 99,
+      "wallet": "0xeba0dcefbb0f450dc22a51e0632639a0c0b24586",
+      "username": "attempt-most",
+      "pnl": 4826.732296491183,
+      "vol": 12644.592843999999,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 100,
+      "wallet": "0x851b1719f70a23f081427a5ded1e534de699961e",
+      "username": "Ramdan",
+      "pnl": 4810.988293151549,
+      "vol": 53207.162862000005,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 101,
+      "wallet": "0x934a375567da25fb5b8989b870d62087fd4ca684",
+      "username": "Richidd",
+      "pnl": 4774.018208092509,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 102,
+      "wallet": "0x8b94313718bbc3a0ff94750e184cc76678458cda",
+      "username": "Gspxz",
+      "pnl": 4760.748950000001,
+      "vol": 9734.99,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 103,
+      "wallet": "0xef1d0c6244e7a8c9640b08758a8425b5d2a5bdcb",
+      "username": "0xef1d0c62",
+      "pnl": 4744.460834,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 104,
+      "wallet": "0x3663ed135115e034de3a9ad8cdca8493e8d68950",
+      "username": "Nikos888",
+      "pnl": 4718.34671329394,
+      "vol": 46676.541863,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 105,
+      "wallet": "0xc3c3b3ef304ddbea39fa2246e683a71da5d0eec8",
+      "username": "comon119",
+      "pnl": 4642.129668258131,
+      "vol": 30679.255960999995,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 106,
+      "wallet": "0xae825b67fac24b92f328f25b5d2530567605faf0",
+      "username": "0xAE825B67FAc24B92f328f25b5d2530567605FAF0-1757008313024",
+      "pnl": 4585.0,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 107,
+      "wallet": "0xe337f5a28e9c530a676c959a1888ba5368664ad6",
+      "username": "0xE337F5A28E9C530a676C959A1888Ba5368664ad6-1779639269540",
+      "pnl": 4475.374522140075,
+      "vol": 69146.62366200001,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 108,
+      "wallet": "0x64310c79be3502dd17e88d9ca7df781700a66f1f",
+      "username": "Sergeantx - 410",
+      "pnl": 4403.783522999996,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 109,
+      "wallet": "0xef292327dc97299c63f30e998614740d9a852f1e",
+      "username": "avotrade",
+      "pnl": 4063.1236096499906,
+      "vol": 23787.382809,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 110,
+      "wallet": "0xa1076b5af1cd6121040cd188db15e31c4583e6a1",
+      "username": "0xA1076B5AF1Cd6121040Cd188db15E31C4583E6a1-1772421122035",
+      "pnl": 3910.043311732,
+      "vol": 7432.035511,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 111,
+      "wallet": "0x730ae359e9441f836022f7ec14b941fdc942a0fe",
+      "username": "rippopsmoke - 56",
+      "pnl": 3882.4374039999993,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 112,
+      "wallet": "0x7789806c754eb0af4c3abeb026c218b4ba78f823",
+      "username": "VibesGreaterRules",
+      "pnl": 3870.9248070000176,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 113,
+      "wallet": "0x9f2fe025f84839ca81dd8e0338892605702d2ca8",
+      "username": "surfandturf",
+      "pnl": 3863.3172552813776,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 114,
+      "wallet": "0x63f8eb9f5f902f6637f75f10fc185e77b0f660ac",
+      "username": "hmm ok",
+      "pnl": 3859.364997,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 115,
+      "wallet": "0xf43842aca68209bd8bd3b4cfae00a32053769559",
+      "username": "PendulumExchange",
+      "pnl": 3855.066449684964,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 116,
+      "wallet": "0x0a77bc0638f13892c8b1d1d2c13ba178540f9d74",
+      "username": "0x0A77exmm",
+      "pnl": 3778.915195875292,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 117,
+      "wallet": "0x351f51e4a6e48d36c79ada2e0ed3fe43929db0d8",
+      "username": "0x351f51e4",
+      "pnl": 3757.1032602199994,
+      "vol": 9617.913207000001,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 118,
+      "wallet": "0x04677c0cd4b904b50f0f829586824b773feefb2e",
+      "username": "shxbyron1",
+      "pnl": 3741.6212561371576,
+      "vol": 14176.003479,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 119,
+      "wallet": "0x7e5972bfc25819775ee5a9d4f191919375487b8b",
+      "username": "Gaditima",
+      "pnl": 3704.495128003153,
+      "vol": 89547.626621,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 120,
+      "wallet": "0xe6bff499390d0988f81967d095925b44aad38380",
+      "username": "CHACHA125655",
+      "pnl": 3666.1586699399995,
+      "vol": 4000.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 121,
+      "wallet": "0xfb07f48542d2b655e9d0bf1cc92a8a6feee8e2cc",
+      "username": "0xfB07F48542d2b655e9D0Bf1cC92a8a6Feee8e2cC-1782415802542",
+      "pnl": 3603.8748398328626,
+      "vol": 8074.704407000001,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 122,
+      "wallet": "0x160bf4f27cdaaaed1408ccd1558ab30c210d4296",
+      "username": "mortewfenloin",
+      "pnl": 3539.653527390823,
+      "vol": 15523.145854000002,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 123,
+      "wallet": "0x4b4071d1456249cd8d7272d533a3efe191aa2f6a",
+      "username": "SebastianAde1996",
+      "pnl": 3499.3291064093755,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 124,
+      "wallet": "0x2de2237e3ac4784425575ea5a09d3652d0b811a9",
+      "username": "bei88688",
+      "pnl": 3491.6992100312646,
+      "vol": 5620.086147,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 125,
+      "wallet": "0xb5fc4d5388952dc7a798fe784fe659f9a20e5ca4",
+      "username": "0xb5fc4d53",
+      "pnl": 3468.8486149997916,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 126,
+      "wallet": "0x3e04fbc51adb75418129f6ce2091ae633070564d",
+      "username": "roldy",
+      "pnl": 3450.5385213451373,
+      "vol": 4443.945539,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 127,
+      "wallet": "0x91feec8af2b517f024d91564ee108d707cc0c1c6",
+      "username": "NordhavenCap",
+      "pnl": 3397.4869029999536,
+      "vol": 11115.305841000001,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 128,
+      "wallet": "0x8717513a2f3936b09dde0a7da636a4da1b0b32c2",
+      "username": "92221",
+      "pnl": 3291.826998,
+      "vol": 2889.423327,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 129,
+      "wallet": "0x126266f57f9812c42daaf69767f622ad36ce056f",
+      "username": "0x87GTa8tyH1946Bhjb674g3fuyUIGYUi4uhflks",
+      "pnl": 3251.691872622106,
+      "vol": 2707.891419,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 130,
+      "wallet": "0x9c3ce009c9b039956665cecc4cd14de862b5e8c9",
+      "username": "0x0x23kjookhaiuohduoayh8c9",
+      "pnl": 3233.732465022984,
+      "vol": 68154.845155,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 131,
+      "wallet": "0x82398835fe16616214d928ba87127e28fc1cd9a3",
+      "username": "Kosherlocks",
+      "pnl": 3113.1038612295233,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 132,
+      "wallet": "0x55b9e6a1dcca2defb01636ba41e9f76a0883a814",
+      "username": "ghostorder",
+      "pnl": 3096.6720053283716,
+      "vol": 73320.32732299999,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 133,
+      "wallet": "0x8b5a7da2fdf239b51b9c68a2a1a35bb156d200f2",
+      "username": "Joe-Biden",
+      "pnl": 3044.8101619998924,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 134,
+      "wallet": "0x53ecc53e7a69aad0e6dda60264cc2e363092df91",
+      "username": "0x53eCc53E7",
+      "pnl": 3024.0103634761217,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 135,
+      "wallet": "0x42c99f38d2b951b0dc8e8bd5371fa80c9dd19623",
+      "username": "TRCM",
+      "pnl": 2993.4687850619666,
+      "vol": 39592.157877000005,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 136,
+      "wallet": "0x4f423d4ad987215b20b95f788f83c250e9628bbc",
+      "username": "Vgsps11",
+      "pnl": 2983.751532552429,
+      "vol": 12781.209161,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 137,
+      "wallet": "0x687349b551df31c4a330bbaf1519458cb521d9e5",
+      "username": "ihatedmyself",
+      "pnl": 2966.8310484142407,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 138,
+      "wallet": "0x6387cfb4719f0b1ed27a73348511b8eaad1895dc",
+      "username": "0x6387cfb4",
+      "pnl": 2960.0398024200003,
+      "vol": 11172.276664999998,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 139,
+      "wallet": "0xd8b4d1e58dc7d60ddc886bcb9d456eb5da887773",
+      "username": "0xd485Cb3aFE838F3DdfdAC69fc14d3b7109E6E57",
+      "pnl": 2896.884114477398,
+      "vol": 138516.26661199998,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 140,
+      "wallet": "0xfab242aa69777dda9ab74b6a6aa878555f3feacd",
+      "username": "Luxy - 6433",
+      "pnl": 2845.680646,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 141,
+      "wallet": "0xa486f1e84d08b356967943a47b70bb8504dd25d4",
+      "username": "cruzzzz",
+      "pnl": 2794.014614000007,
+      "vol": 5588.13,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 142,
+      "wallet": "0xadfb6cba33cebca02eab6111ace1e3924b9cc2ef",
+      "username": "KnightDasCapital",
+      "pnl": 2766.9937189740594,
+      "vol": 70293.646788,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 143,
+      "wallet": "0xc4c81a4e8e39d374b12e27a0373f6e2ccb4f8618",
+      "username": "mhonkasalo",
+      "pnl": 2757.9446580000013,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 144,
+      "wallet": "0x2396babfc88a7a7dcc0390262ab747d7cbad9485",
+      "username": "kabina-",
+      "pnl": 2718.488126020004,
+      "vol": 1467.33,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 145,
+      "wallet": "0x746e936f43ff75bf508cf8375b7a8e2515ef68ca",
+      "username": "tomb2456",
+      "pnl": 2679.590213874999,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 146,
+      "wallet": "0xff81cc85838ce8f91a7d4ae2eeddadfa3f8444c9",
+      "username": "eokho",
+      "pnl": 2654.7081107498525,
+      "vol": 28623.684885000002,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 147,
+      "wallet": "0x592997c2d8119d82d71f21119957c6434d244684",
+      "username": "kitopesivan",
+      "pnl": 2653.2039848366367,
+      "vol": 27625.659262,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 148,
+      "wallet": "0x52d93dcf81444f793dda7fedc370f7a35101fb1a",
+      "username": "LuckyLoo",
+      "pnl": 2592.1202990338406,
+      "vol": 93377.712803,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 149,
+      "wallet": "0xcdfb7564a5731d30713c91943ae395d5f815980c",
+      "username": "ImSmart",
+      "pnl": 2572.7301,
+      "vol": 9528.63,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 150,
+      "wallet": "0x895d3ce8e2650dfdda5fb5e7425339729c5ef2a3",
+      "username": "fo4",
+      "pnl": 2562.6261682349977,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 151,
+      "wallet": "0x4ccc0117ef9506fd57db87537ad785a385bf77ab",
+      "username": "BoundlessLove",
+      "pnl": 2541.167068080762,
+      "vol": 13225.281269,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 152,
+      "wallet": "0xa8845b7cf1cdc5d63a226d7db2be64feb8119d7d",
+      "username": "mbharus - 38295",
+      "pnl": 2537.449412,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 153,
+      "wallet": "0x021c7df18153e2636e368e85f0cedb34c245232f",
+      "username": "0x021C7Df18153E2636e368e85F0Cedb34C245232f-1767207000808",
+      "pnl": 2481.495400000058,
+      "vol": 4699.99,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 154,
+      "wallet": "0x8bfee7aeca33003fe9d7398d5143dc7866542d74",
+      "username": "tennischamp",
+      "pnl": 2476.9838449999224,
+      "vol": 83257.347354,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 155,
+      "wallet": "0xbb90ad2434c27716e987f6318df47285c6ddffbe",
+      "username": "AceBaby256",
+      "pnl": 2473.6647920000005,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 156,
+      "wallet": "0xae50d6935c736696a99c309a4dcabe1343b20354",
+      "username": "dougiedigital - 11986",
+      "pnl": 2428.523338,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 157,
+      "wallet": "0x2b71bc97507076a80bd0000cdb134e4fc3041359",
+      "username": "97507076a80bd0000cdb134e4fc304135",
+      "pnl": 2402.6987620001287,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 158,
+      "wallet": "0x911b788bf209579f9bc47dd3de43cbb81a08344f",
+      "username": "psgwin666",
+      "pnl": 2347.9980199163747,
+      "vol": 12466.243299000002,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 159,
+      "wallet": "0x8718865882e085b764825b637788043c16185040",
+      "username": "hurrican",
+      "pnl": 2343.992700000017,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 160,
+      "wallet": "0xb8e32d575b8d360f90bcc95596e9a0bee444aaf2",
+      "username": "Jan777",
+      "pnl": 2323.0411422972097,
+      "vol": 4544.865750000001,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 161,
+      "wallet": "0x21468ad63a833f5f9ea5c2835fb4e9dec57ad41b",
+      "username": "canoflanagan",
+      "pnl": 2293.1009957399983,
+      "vol": 10888.470000000001,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 162,
+      "wallet": "0xa38a455bbdd4b68486548b7e19da99903f4f821d",
+      "username": "takeormake",
+      "pnl": 2289.3346872605,
+      "vol": 16077.861211,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 163,
+      "wallet": "0xe40aaa5ce1dac0b7dc24c9d0284f27e17c3fe4a2",
+      "username": "Mysaria",
+      "pnl": 2243.953427810309,
+      "vol": 4416.466398999999,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 164,
+      "wallet": "0x70a6798edbf21eb25cbb749569796d1e641aa2eb",
+      "username": "buckspredicts",
+      "pnl": 2119.732063996369,
+      "vol": 22971.191527,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 165,
+      "wallet": "0xb2d62e284ac9f13f09dcdd8accab61bfdd7af3bd",
+      "username": "crystalfalls",
+      "pnl": 2076.737313,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 166,
+      "wallet": "0xdebbe89ceb32828a99648bca497684f5209ceedb",
+      "username": "Lexington",
+      "pnl": 2071.142288315983,
+      "vol": 6183.8,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 167,
+      "wallet": "0x84ad9c5c547a82ec9a08547b94bd922446e5bfb7",
+      "username": "BillBenter2026",
+      "pnl": 2069.6139793054026,
+      "vol": 16402.469886,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 168,
+      "wallet": "0xb8c4482802bbc9256926cde54b3daa03ee8e7385",
+      "username": "HAGIII",
+      "pnl": 2068.520466838556,
+      "vol": 4566.761703,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 169,
+      "wallet": "0xd9476f80a7d12990b3a379b9173aa52fb07a7451",
+      "username": "User.0xE",
+      "pnl": 2041.5492954890651,
+      "vol": 24575.974641,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 170,
+      "wallet": "0xabf543512f33e2d754ada028a689610139cccfeb",
+      "username": "0xAbF543512f33E2D754ada028a689610139Cccfeb-1760974401494",
+      "pnl": 2032.110045074976,
+      "vol": 2845.84,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 171,
+      "wallet": "0xcc5c401d008040c44711e1f83c5486c190cb1498",
+      "username": "hcs0x21",
+      "pnl": 2030.7032965116687,
+      "vol": 19194.594997,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 172,
+      "wallet": "0x778f6b920f7b96b0a76b1711b495e429b932e2c3",
+      "username": "0x778f6b92",
+      "pnl": 2029.288458000461,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 173,
+      "wallet": "0xd106952ebf30a3125affd8a23b6c1f30c35fc79c",
+      "username": "Herdonia",
+      "pnl": 2004.8671906723175,
+      "vol": 1404.4881140000002,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 174,
+      "wallet": "0x32ed517a571c01b6e9adecf61ba81ca48ff2f960",
+      "username": "sportmaster777",
+      "pnl": 2002.9821560224518,
+      "vol": 1529.44,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 175,
+      "wallet": "0xcb016f2b417f98c88fc91fffe7e69d4a6b1c7dfb",
+      "username": "0x7e1f9c90800E42806e242ABC5fcf26B571c79C27-1775842903107",
+      "pnl": 1999.8241070000004,
+      "vol": 4377.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 176,
+      "wallet": "0x709179e7392e59922ab2d73cb1141698b30096f8",
+      "username": "0x709179E7392e59922Ab2D73cb1141698b30096f8-1773173619816",
+      "pnl": 1985.1195597913575,
+      "vol": 6049.214488,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 177,
+      "wallet": "0x495b97dcdd8e3e4ae7788ca6a53156cd4907e3fc",
+      "username": "uuuuu",
+      "pnl": 1971.7628119890958,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 178,
+      "wallet": "0xab9da9de97cd0a7ae2225a75815cb817ed44cf12",
+      "username": "eugenepol0",
+      "pnl": 1947.4305821558557,
+      "vol": 16545.712322000003,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 179,
+      "wallet": "0x5a9fa918bca3e2c55d5615e891f543231fd70485",
+      "username": "Alex - 28",
+      "pnl": 1922.566682,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 180,
+      "wallet": "0x22da1a1fc2b14f5c76b0e179048734c015ef2866",
+      "username": "BlessedSunshine888",
+      "pnl": 1909.978801214922,
+      "vol": 17808.817004999994,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 181,
+      "wallet": "0x841ff7664a363a502639fb6eab10724d5fa1bbd0",
+      "username": "0x841Ff7664a363A502639fb6EaB10724d5fa1bBd0-1765385591475",
+      "pnl": 1904.1452279331202,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 182,
+      "wallet": "0x6368762641f182e0332713d7992bb0948e696dc8",
+      "username": "Takeshirosoku",
+      "pnl": 1878.2650263613468,
+      "vol": 20119.72098,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 183,
+      "wallet": "0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c",
+      "username": "DLEK",
+      "pnl": 1872.0313984057866,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 184,
+      "wallet": "0x63835d2726f2de0ebd571ed36465b025f8d66e28",
+      "username": "0x63835d27",
+      "pnl": 1867.6580343376609,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 185,
+      "wallet": "0x1ba2b1137313b248b03a9be40093b23d7e96d212",
+      "username": "haslii",
+      "pnl": 1858.2391894387483,
+      "vol": 35486.199158,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 186,
+      "wallet": "0xaacac528e8af87ca25809824b384e169b558f5d5",
+      "username": "testyeagles",
+      "pnl": 1846.9404555369765,
+      "vol": 4143.476664,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 187,
+      "wallet": "0xe2cd2aea8e0b02d04d0733868c88273278b73897",
+      "username": "12345432",
+      "pnl": 1838.383155678073,
+      "vol": 7606.561333000001,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 188,
+      "wallet": "0x30af50d04b9c1ddef67ae39996f9607c0f14aa32",
+      "username": "0x30af50d0",
+      "pnl": 1816.179694958355,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 189,
+      "wallet": "0xa6a8aa0792dfb4d2aecd481ff6e926822c01a884",
+      "username": "Degens - 740",
+      "pnl": 1796.6459240000002,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 190,
+      "wallet": "0x161a7f666ca49d592848cf415b42f49a84714103",
+      "username": "torta.tech",
+      "pnl": 1787.3832057813997,
+      "vol": 53604.60876299999,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 191,
+      "wallet": "0xc7e53ac4a7c76d6df8b794de2e7d0794265d2d3a",
+      "username": "LiquidatedDegen",
+      "pnl": 1783.2756956134072,
+      "vol": 13280.376878,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 192,
+      "wallet": "0x511f9c771449162349795d17becf8b37031acbe1",
+      "username": "Bigggggggg",
+      "pnl": 1781.7105914292624,
+      "vol": 39867.65000000001,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 193,
+      "wallet": "0xa032d2358fa08860ba30ba8e8d828b7738202090",
+      "username": "bravewarriorrrrrr",
+      "pnl": 1753.0342479972414,
+      "vol": 43455.826199999996,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 194,
+      "wallet": "0xc3ed109b65de5026da25cf80ce91779dfc2c9f79",
+      "username": "0xc3ed109b",
+      "pnl": 1747.8946606698155,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 195,
+      "wallet": "0x6340f99311533998cf5e5eff3a5857ec7749e272",
+      "username": "4014",
+      "pnl": 1742.4959133139691,
+      "vol": 4249.989997,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 196,
+      "wallet": "0xee292607d48ecee93afc0fe9994fbe316f59c56d",
+      "username": "How do I claim prizes?",
+      "pnl": 1739.240313000002,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 197,
+      "wallet": "0x2792fc28811277f12a54e32bd8188be02c2dc4f6",
+      "username": "0x2792fc28",
+      "pnl": 1730.546240836742,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 198,
+      "wallet": "0xc94171dab78729079b3eb6e14ad33ea60ab80a0b",
+      "username": "shangtr0n - 7868",
+      "pnl": 1723.5970946048967,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 199,
+      "wallet": "0x198fa74120438fb7cabccb61aa824c6720dfc419",
+      "username": "PeterSagan",
+      "pnl": 1704.4673301190778,
+      "vol": 18391.788139999997,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 200,
+      "wallet": "0x4ffd3cab000b04574ec094a3b16310d321de7821",
+      "username": "barabasKarabas",
+      "pnl": 1689.1271072000782,
+      "vol": 5701.7,
+      "window": "all",
+      "category": "sports"
+    }
+  ],
+  "overall_lb": [
+    {
+      "rank": 1,
+      "wallet": "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+      "username": "0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563-1759935795465",
+      "pnl": 212132.13037312814,
+      "vol": 918285.335967,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 2,
+      "wallet": "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87",
+      "username": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87-1772612985000",
+      "pnl": 130589.10617255897,
+      "vol": 431147.991747,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 3,
+      "wallet": "0x224a89dbe0db0d6124b335edabd15b3f877da3d5",
+      "username": "wr0ngw4yb3tt0r",
+      "pnl": 100231.40565203177,
+      "vol": 231132.01925700007,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 4,
+      "wallet": "0x5268527977f700f9bf9b6d5cd843859e4e70135d",
+      "username": "HomeRunHazard",
+      "pnl": 98709.02207618323,
+      "vol": 1252524.990852,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 5,
+      "wallet": "0x6ac5bb06a9eb05641fd5e82640268b92f3ab4b6e",
+      "username": "Lakersfan111",
+      "pnl": 68157.95112421637,
+      "vol": 137937.406866,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 6,
+      "wallet": "0xfe787d2da716d60e8acff57fb87eb13cd4d10319",
+      "username": "ferrariChampions2026",
+      "pnl": 57024.945094193914,
+      "vol": 2386404.9814990005,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 7,
+      "wallet": "0x16bb9951a36fce71e2ef57890b786145e0ba8492",
+      "username": "SDTrading",
+      "pnl": 51570.6283000001,
+      "vol": 0.0,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 8,
+      "wallet": "0xdc41c39b95453c943174f369926018f6963bdd7e",
+      "username": "quavoo",
+      "pnl": 48504.90363540811,
+      "vol": 280596.811803,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 9,
+      "wallet": "0x085fd7e4886bd3c491d979ea5c8052b0d3d34d1c",
+      "username": "Penisya",
+      "pnl": 46340.86696501685,
+      "vol": 181143.90090399998,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 10,
+      "wallet": "0xcf609d3256f0f37f0595e5dc64012fa3a8fea6f5",
+      "username": "0xcF609D3256f0f37f0595E5Dc64012Fa3a8fEa6f5-1771809916847",
+      "pnl": 45760.12700031093,
+      "vol": 168577.25403100002,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 11,
+      "wallet": "0x684baa57c338c2549aec0aa3f034f695d72a8409",
+      "username": "monkeymashingkeyboard",
+      "pnl": 39068.83665569441,
+      "vol": 19192.529816,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 12,
+      "wallet": "0x03805a13a0b3e058f55f6c6af95389d4f431073d",
+      "username": "donthackme",
+      "pnl": 38446.0015756143,
+      "vol": 77508.246407,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 13,
+      "wallet": "0xe76f0a36d05d215a69f1f84466c8922702a1d40c",
+      "username": "Kulilun",
+      "pnl": 36200.29375449434,
+      "vol": 23022.320000000003,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 14,
+      "wallet": "0x0346afae2603313d2bbee96b628536c8cbe352a5",
+      "username": "GoalLineGhost",
+      "pnl": 33896.035002204124,
+      "vol": 419102.446259,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 15,
+      "wallet": "0xdb83e85ffd22faa4009273034770f96ffc5b1e50",
+      "username": "sentrio",
+      "pnl": 32398.65206931999,
+      "vol": 123494.308233,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 16,
+      "wallet": "0x682005011dd19c1e986cb060ed6ab83845f21c19",
+      "username": "winwin518168",
+      "pnl": 32100.000000000004,
+      "vol": 0.0,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 17,
+      "wallet": "0xf377b9fb12a4b7507a4f997461a73eb30b564159",
+      "username": "danielwolfmorales3pddb6dl6",
+      "pnl": 31920.089576890095,
+      "vol": 261754.027951,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 18,
+      "wallet": "0xf5592765133941c40c77e52bc56bbe7ec167f462",
+      "username": "0xf5592765133941c40C77e52Bc56bbe7EC167F462-1755612447740",
+      "pnl": 31405.611223311877,
+      "vol": 25944.988626,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 19,
+      "wallet": "0x9d3e50519d87421645a1717e60a4ba369db1986c",
+      "username": "bigoon",
+      "pnl": 29316.348414513173,
+      "vol": 106570.372924,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 20,
+      "wallet": "0xe954ddb021c19495f1c556f59dadbd1494821ef1",
+      "username": "kingflop",
+      "pnl": 28954.05040617715,
+      "vol": 16480.056665,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 21,
+      "wallet": "0x927cf2bb94d15707993f954552e56c74eb6d6633",
+      "username": "jarosbill",
+      "pnl": 28482.311510999964,
+      "vol": 78549.093876,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 22,
+      "wallet": "0xaa7789219c17e180dcb5933099c90d885f1d15a5",
+      "username": "alaskabaked",
+      "pnl": 27079.427020452255,
+      "vol": 85785.589214,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 23,
+      "wallet": "0x0e604be17c231a33dc01e38a722c7fe3984e3bad",
+      "username": "0xwise",
+      "pnl": 26680.573219999987,
+      "vol": 46456.178766,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 24,
+      "wallet": "0xc8075693f48668a264b9fa313b47f52712fcc12b",
+      "username": "texaskid",
+      "pnl": 25598.39212957007,
+      "vol": 5055.437362999999,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 25,
+      "wallet": "0x59018ff1f4300838f635386ab5e0b8b353ce63a2",
+      "username": "kamloic",
+      "pnl": 25284.21873974701,
+      "vol": 118200.625923,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 26,
+      "wallet": "0xe40aaa5ce1dac0b7dc24c9d0284f27e17c3fe4a2",
+      "username": "Mysaria",
+      "pnl": 24302.69671100083,
+      "vol": 164212.50701,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 27,
+      "wallet": "0xd3b034d7bfb2473fb252d0414646d9786bac329e",
+      "username": "Sunshine.Smile",
+      "pnl": 20292.03585083899,
+      "vol": 57374.35989199999,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 28,
+      "wallet": "0xa71093cafc0c099b4ccab24c3cb8018d817923c4",
+      "username": "Talvez10",
+      "pnl": 20207.534913365496,
+      "vol": 6755.036036,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 29,
+      "wallet": "0xa4b366ad22fc0d06f1e934ff468e8922431a87b8",
+      "username": "HolyMoses7",
+      "pnl": 18127.622380206176,
+      "vol": 32483.108419999993,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 30,
+      "wallet": "0xabb89972b21b304c1bed2bf26f35c8741ac9bba3",
+      "username": "Feromont",
+      "pnl": 18088.402233999783,
+      "vol": 61694.50448300001,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 31,
+      "wallet": "0x7986576408b65a9805ac85553be33ad0b044baa5",
+      "username": "0x7986576408b65a9805AC85553Be33Ad0B044BAa5-1781719173927",
+      "pnl": 17648.367777301588,
+      "vol": 40942.000467,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 32,
+      "wallet": "0xecaa8806a9a05049d7d5260a33dc924220e377a9",
+      "username": "Melody626",
+      "pnl": 17643.168410866347,
+      "vol": 16227.521801,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 33,
+      "wallet": "0xa3282d3e882501229c75d0caf134e62e3afb4977",
+      "username": "korda77",
+      "pnl": 17341.148415891632,
+      "vol": 38412.957977,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 34,
+      "wallet": "0xccd81fbd3395dc43a0531f8484b21c2462daf4de",
+      "username": "0F62",
+      "pnl": 16841.920211046032,
+      "vol": 77641.07691999999,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 35,
+      "wallet": "0x56acab44cfca2e88bb9b3406890aea7bfa0cd77e",
+      "username": "dv-pm",
+      "pnl": 16628.399549999274,
+      "vol": 24842.800000000003,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 36,
+      "wallet": "0x689f7d0a49d2646dc199848ffbdb4757242e259c",
+      "username": "ROI-Value",
+      "pnl": 16481.38492803779,
+      "vol": 1138.0,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 37,
+      "wallet": "0x86e99faea12fccd8925de5d9f052471baf7a4cdf",
+      "username": "JUSTINHERBERTMVP",
+      "pnl": 16354.67116438234,
+      "vol": 78287.120696,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 38,
+      "wallet": "0xf6683d202f76fc9b79e5be716ce8519dab5b5c69",
+      "username": "0xf6683D202f76FC9B79E5BE716CE8519DAb5b5c69-1765800503123",
+      "pnl": 16197.914449999982,
+      "vol": 0.0,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 39,
+      "wallet": "0x6d3c5bd13984b2de47c3a88ddc455309aab3d294",
+      "username": "VeryLucky888",
+      "pnl": 16127.86334626262,
+      "vol": 180710.70094799998,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 40,
+      "wallet": "0x4f1d5ae26fc31472966e951af3183308736d8de2",
+      "username": "e46m3",
+      "pnl": 14916.990015145533,
+      "vol": 26366.750733999997,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 41,
+      "wallet": "0x83733b87090cf97aee473b1000beb9bfab7af0bc",
+      "username": "merod",
+      "pnl": 14771.940802044544,
+      "vol": 34867.116889,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 42,
+      "wallet": "0xa2cd4ccda9a1f95949df7a3355c4c2daa0642ba0",
+      "username": "0xA2cd4CcdA9A1f95949DF7A3355C4c2DAa0642Ba0-1729178570395",
+      "pnl": 14559.755194399972,
+      "vol": 0.0,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 43,
+      "wallet": "0x0224bb9eb0a5c9fd261ac9123a72cbdd5748292a",
+      "username": "zb8",
+      "pnl": 14150.846162164768,
+      "vol": 142638.550406,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 44,
+      "wallet": "0x4f29e103339919c4baaea2a60195cf1c8bb27a7e",
+      "username": "0x4f2",
+      "pnl": 13791.698167101622,
+      "vol": 693782.6819060001,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 45,
+      "wallet": "0xb0c85813a7a4428f1139ff91d3118a92c391fe7f",
+      "username": "starsirens2....--",
+      "pnl": 12674.332923957016,
+      "vol": 58979.90842900002,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 46,
+      "wallet": "0x511f9c771449162349795d17becf8b37031acbe1",
+      "username": "Bigggggggg",
+      "pnl": 12636.897715452102,
+      "vol": 250282.661524,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 47,
+      "wallet": "0x57b4520916577bfb64f93cdee2eba6709301b46b",
+      "username": "Skyfker",
+      "pnl": 12494.43647773136,
+      "vol": 48847.03767,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 48,
+      "wallet": "0xfbe66593e49c4e7a7180a2582f041158bfb800f8",
+      "username": "gaven-willwin",
+      "pnl": 12245.892185489996,
+      "vol": 0.0,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 49,
+      "wallet": "0xf5fe759cece500f58a431ef8dacea321f6e3e23d",
+      "username": "Stavenson",
+      "pnl": 11278.313893102953,
+      "vol": 41034.57,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 50,
+      "wallet": "0x1ab3580b6d258e31ca0a3efdb93173d081dd64af",
+      "username": "Satisfied",
+      "pnl": 11241.490477905129,
+      "vol": 93.34087,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 51,
+      "wallet": "0x5d7639ed5fd3c5ebf0fc69d548e1046acd0f9168",
+      "username": "yesmate",
+      "pnl": 11172.735991198511,
+      "vol": 110422.73884699999,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 52,
+      "wallet": "0xf1ef8705e9f63c790c6fffd6329aea7011718cd6",
+      "username": "Outsid3rTrading",
+      "pnl": 11153.85026650338,
+      "vol": 17008.661928,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 53,
+      "wallet": "0xf23c5bc7b547867eb6532920144562718aa49f81",
+      "username": "ChonkyChocolateCake",
+      "pnl": 11133.956939405296,
+      "vol": 58097.153181999995,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 54,
+      "wallet": "0xc69bd5567b40ef4d11922eaa57e1f9be1c642076",
+      "username": "vtcchampion52",
+      "pnl": 11126.83661858827,
+      "vol": 341893.561492,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 55,
+      "wallet": "0x54bab0bc94667af224e21528804d49c1b87e04e4",
+      "username": "0x54baB0BC94667Af224E21528804D49C1b87e04e4-1776237217344",
+      "pnl": 11110.07140284701,
+      "vol": 133199.897623,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 56,
+      "wallet": "0x3f3aa7005f8006bfcc367d43a25cde25509fe8fd",
+      "username": "us391",
+      "pnl": 10833.45271954377,
+      "vol": 18265.229140000003,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 57,
+      "wallet": "0xd32ce89f16509d3c8f8b5e9750305a5b2bc2a4c2",
+      "username": "0xd32ce89f",
+      "pnl": 10392.758666930227,
+      "vol": 22729.759503,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 58,
+      "wallet": "0x0cdff1e562faf5ece704ef15f6a9fc4232e7ec9e",
+      "username": "0x0CdFf1E562Faf5EcE704Ef15f6A9fc4232E7eC9E-1780718136344",
+      "pnl": 10376.211231642563,
+      "vol": 0.0,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 59,
+      "wallet": "0xc8ab97a9089a9ff7e6ef0688e6e591a066946418",
+      "username": "ArmageddonRewardsBilly",
+      "pnl": 10368.327747101415,
+      "vol": 89778.91761199999,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 60,
+      "wallet": "0x3a8aa345d5db7ec5138298c8c4f4540259be7699",
+      "username": "TheReturnOfDarthMaul",
+      "pnl": 10090.23711087437,
+      "vol": 37914.612191,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 61,
+      "wallet": "0xe015b5a2a299167be835a2fd1e86f09c49e06ffd",
+      "username": "TAIWANNUMBERONE",
+      "pnl": 9814.752497124344,
+      "vol": 106533.55892,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 62,
+      "wallet": "0xa0e72d5575095199ae08ce0dce447f21b7249461",
+      "username": "uninformedfloww",
+      "pnl": 9614.588417391831,
+      "vol": 262937.32145100017,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 63,
+      "wallet": "0x41b4cd880a61de2f5728594decf7f2cbfc2a10da",
+      "username": "zagzig123",
+      "pnl": 9425.026888900013,
+      "vol": 0.0,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 64,
+      "wallet": "0x203b0141b5a1301ca7dbbab6908a2443982646e1",
+      "username": "DanNgl",
+      "pnl": 9317.871688155592,
+      "vol": 42725.508866,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 65,
+      "wallet": "0x8002f0f179219531566886c539aaf83967a58b6c",
+      "username": "Vladooos",
+      "pnl": 9243.777691000007,
+      "vol": 23425.693886,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 66,
+      "wallet": "0xea4262df401e12cb0efa039f061a1f4b1a486b0d",
+      "username": "world-changer",
+      "pnl": 9162.114589386932,
+      "vol": 0.0,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 67,
+      "wallet": "0x71971342cb4c2555f60366ac62abdcdd1a1d14c8",
+      "username": "RawrRawr",
+      "pnl": 8943.372053424002,
+      "vol": 93547.94665400001,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 68,
+      "wallet": "0x9f15613ebf1f36d4bc679e1211d1fc567cf9bdb3",
+      "username": "0x9f15613ebf1f36d4bc679e1211d1fc567cf9bdb3",
+      "pnl": 8743.971754461805,
+      "vol": 8825.745456,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 69,
+      "wallet": "0xf3a1493cf87d23177107b5b3f737f0c586f1bf4b",
+      "username": "0xf3a1493c",
+      "pnl": 8523.955199999997,
+      "vol": 14479.16,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 70,
+      "wallet": "0xbca08c1bc204a34f2fddbe47b438b9bd42ac9705",
+      "username": "1winstreak1",
+      "pnl": 8517.285328238739,
+      "vol": 147987.55817899996,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 71,
+      "wallet": "0xeebde7a0e019a63e6b476eb425505b7b3e6eba30",
+      "username": "Bonereaper",
+      "pnl": 8466.536061838298,
+      "vol": 424994.307254,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 72,
+      "wallet": "0x664a25f165a0150ce687410470f3352f5783fc5f",
+      "username": "itsonlyamatteroftime",
+      "pnl": 8448.913002127736,
+      "vol": 148314.573526,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 73,
+      "wallet": "0xf1528f12e645462c344799b62b1b421a6a4c64aa",
+      "username": "phonesculptor",
+      "pnl": 8352.845027134987,
+      "vol": 7324.038947999999,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 74,
+      "wallet": "0x44c58184f89a5c2f699dc8943009cb3d75a08d45",
+      "username": "JhonAlexanderHinestroza",
+      "pnl": 8250.971625516475,
+      "vol": 85811.302128,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 75,
+      "wallet": "0xec981ed70ae69c5cbcac08c1ba063e734f6bafcd",
+      "username": "0xheavy888",
+      "pnl": 8005.966455191281,
+      "vol": 85167.942808,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 76,
+      "wallet": "0x45e40dbee6f546c7b318498f8c9778560f5a7e20",
+      "username": "fastball67",
+      "pnl": 7906.835157324982,
+      "vol": 5153.541772999999,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 77,
+      "wallet": "0x26b46988d027c6c03cfa12a7c0c6d778be49b8a9",
+      "username": "kkookkoo",
+      "pnl": 7757.056610582455,
+      "vol": 80162.818494,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 78,
+      "wallet": "0xc5187cb669690150643ba2f9aac6b7d98d212594",
+      "username": "mustbethewater",
+      "pnl": 7721.266188579788,
+      "vol": 38073.84609200001,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 79,
+      "wallet": "0xfbd8c9c22ca76b3662d0e53a4f79719fdc684027",
+      "username": "0xfBd8C9C22cA76B3662d0e53A4f79719FDC684027-1779347618060",
+      "pnl": 7720.276233095846,
+      "vol": 21331.905553999997,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 80,
+      "wallet": "0xfd557e6db670c9704bc1d0d8e8b585c7d9c9f905",
+      "username": "northdrawer",
+      "pnl": 7694.46653624403,
+      "vol": 24361.983302,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 81,
+      "wallet": "0xff80bb23621f03fc6300808730316c78abe09b4d",
+      "username": "Zenhack",
+      "pnl": 7554.661773363947,
+      "vol": 145402.227946,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 82,
+      "wallet": "0x684299e6ac5595ff7f78f1f1edc97e77fea420d0",
+      "username": "ColinHe",
+      "pnl": 7482.830827537924,
+      "vol": 37853.602552,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 83,
+      "wallet": "0x91667e40b80c447050904b042f3b85d22fc6b479",
+      "username": "GreenBerry1337",
+      "pnl": 7143.974807770042,
+      "vol": 13890.686791,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 84,
+      "wallet": "0x5a218c7ad04135830a45c41aaed7294df7809318",
+      "username": "balthazar",
+      "pnl": 7062.840861156341,
+      "vol": 80385.411979,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 85,
+      "wallet": "0x98ac23b264a9eb7fb0b50258086f11868a6240d9",
+      "username": "Anon321321321",
+      "pnl": 7033.9874909502505,
+      "vol": 997.85,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 86,
+      "wallet": "0x7d92fd69504bfd391162e1442cb784c0af408676",
+      "username": "mikesports",
+      "pnl": 6809.981029623035,
+      "vol": 72501.407577,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 87,
+      "wallet": "0x7414f47e227846765c8abb1048606003a57072a3",
+      "username": "hamlo",
+      "pnl": 6746.229131,
+      "vol": 33182.571288,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 88,
+      "wallet": "0x6485f47d0344c03eb4340f985159f6eb2dcba265",
+      "username": "flatbarrel",
+      "pnl": 6742.72330805097,
+      "vol": 64624.322701000005,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 89,
+      "wallet": "0xcfff4295288ee29f75a38a7028611b7c1e93673d",
+      "username": "graynotebook19",
+      "pnl": 6683.09874600317,
+      "vol": 17842.52724,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 90,
+      "wallet": "0x88d17ad6bf91ca0935f6e70b37ebe3db92b618da",
+      "username": "kahe",
+      "pnl": 6673.653208966658,
+      "vol": 28639.056056,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 91,
+      "wallet": "0xce50c96b976203b53342a0a801067d2cdcfcf46e",
+      "username": "honey-spot",
+      "pnl": 6638.49005046863,
+      "vol": 119223.08903999999,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 92,
+      "wallet": "0x9166ec6b0d48b8a046f520c6f71e73914d8c5bd5",
+      "username": "aaaalesshaaa",
+      "pnl": 6623.701300000001,
+      "vol": 24599.995,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 93,
+      "wallet": "0x28bf066c6cb952da62d6d182c16ad173ada64a4e",
+      "username": "plainfolder",
+      "pnl": 6516.765149245987,
+      "vol": 17501.352857,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 94,
+      "wallet": "0x99f0d31fdced5b3a0e5ee2867730a6644a6c9495",
+      "username": "0x99F0d31fdced5B3A0e5Ee2867730A6644a6C9495-1779037126382",
+      "pnl": 6442.629865297407,
+      "vol": 68624.373308,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 95,
+      "wallet": "0x0cb038487586d1119b165466072e9baf666f3a90",
+      "username": "0x0cb03848",
+      "pnl": 6344.790677450859,
+      "vol": 411481.67794399994,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 96,
+      "wallet": "0xb1ca909e848cc24ec4e220ce1c453bc290c51705",
+      "username": "abdkxrhxr",
+      "pnl": 6342.402319352135,
+      "vol": 56849.10089299999,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 97,
+      "wallet": "0xe3d4dee2427b98042822543f8e1e8ab7bafb2bac",
+      "username": "swy01",
+      "pnl": 6294.936416161589,
+      "vol": 88544.51287899999,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 98,
+      "wallet": "0x8fba2c29715c41dd87e781c23373aa1e0549d08a",
+      "username": "abura2025",
+      "pnl": 6278.572064906286,
+      "vol": 10094.720135,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 99,
+      "wallet": "0xade215552e9f86df1a72fbf9a13672fa0f75e86d",
+      "username": "VanGen",
+      "pnl": 6274.224407862794,
+      "vol": 25745.459298,
+      "window": "all",
+      "category": "overall"
+    },
+    {
+      "rank": 100,
+      "wallet": "0x6a0385ed55ebd20067a1a59e908267310f5592d3",
+      "username": "jerall",
+      "pnl": 6262.766816875009,
+      "vol": 6895.79,
+      "window": "all",
+      "category": "overall"
+    }
+  ],
+  "repairs": [
+    {
+      "username": "GoalLineGhost",
+      "wallet": "0x0346afae2603313d2bbee96b628536c8cbe352a5",
+      "before": {
+        "rows": 14094,
+        "closed": 10000,
+        "realized_pos": 10005,
+        "realized_neg": 1282,
+        "sum_realized": 53256221.56,
+        "sum_dash": 51997352.92,
+        "hold_wr": 71.41,
+        "winner_capped": true
+      },
+      "after": {
+        "rows": 24261,
+        "closed": 20142,
+        "realized_pos": 12153,
+        "realized_neg": 9274,
+        "sum_realized": 112449.16,
+        "sum_dash": -1159219.67,
+        "hold_wr": 50.35,
+        "winner_capped": false
+      },
+      "dashboard_pnl": -1159219.67,
+      "win_rate": 52.31,
+      "overall_roi": -0.73,
+      "markets_traded": 9600,
+      "last_event_date": "2026-08-19",
+      "sport_stats": {
+        "ESPORTS": {
+          "net_profit": 830.7,
+          "roi": 84.51,
+          "win_rate": 54.55,
+          "events": 11,
+          "avg_bet": 89.36,
+          "median_bet": 33.97
+        },
+        "OTHER": {
+          "net_profit": 1374630.18,
+          "roi": 11.53,
+          "win_rate": 50.31,
+          "events": 4174,
+          "avg_bet": 2856.61,
+          "median_bet": 278.76
+        },
+        "SOCCER (EPL)": {
+          "net_profit": 52094.72,
+          "roi": 13.46,
+          "win_rate": 78.79,
+          "events": 100,
+          "avg_bet": 3870.07,
+          "median_bet": 2655.94
+        },
+        "SOCCER (LaLiga)": {
+          "net_profit": 99420.31,
+          "roi": 17.21,
+          "win_rate": 73.12,
+          "events": 166,
+          "avg_bet": 3479.32,
+          "median_bet": 1972.62
+        },
+        "SOCCER (Other)": {
+          "net_profit": 1819362.19,
+          "roi": 17.95,
+          "win_rate": 52.47,
+          "events": 4750,
+          "avg_bet": 2134.14,
+          "median_bet": 487.58
+        },
+        "SOCCER (UCL)": {
+          "net_profit": 115079.74,
+          "roi": 21.29,
+          "win_rate": 55.88,
+          "events": 394,
+          "avg_bet": 1371.93,
+          "median_bet": 632.77
+        },
+        "TENNIS": {
+          "net_profit": 1025.01,
+          "roi": 34.24,
+          "win_rate": 40.0,
+          "events": 5,
+          "avg_bet": 598.69,
+          "median_bet": 304.49
+        }
+      },
+      "market_stats": {
+        "Draw": {
+          "net_profit": 1092685.23,
+          "roi": 10.89,
+          "win_rate": 63.14,
+          "events": 1397,
+          "avg_bet": 7182.75,
+          "median_bet": 1337.8
+        },
+        "Moneyline / Match": {
+          "net_profit": 545514.34,
+          "roi": 10.81,
+          "win_rate": 48.55,
+          "events": 2270,
+          "avg_bet": 2222.05,
+          "median_bet": 500.32
+        },
+        "Spread": {
+          "net_profit": 329059.73,
+          "roi": 17.88,
+          "win_rate": 38.0,
+          "events": 2286,
+          "avg_bet": 804.98,
+          "median_bet": 72.26
+        },
+        "Totals (O/U)": {
+          "net_profit": 1495183.56,
+          "roi": 22.48,
+          "win_rate": 58.78,
+          "events": 3647,
+          "avg_bet": 1823.74,
+          "median_bet": 565.64
+        }
+      },
+      "value": 22555.814
+    },
+    {
+      "username": "ferrariChampions2026",
+      "wallet": "0xfe787d2da716d60e8acff57fb87eb13cd4d10319",
+      "before": {
+        "rows": 20500,
+        "closed": 10000,
+        "realized_pos": 14642,
+        "realized_neg": 3688,
+        "sum_realized": 108939991.83,
+        "sum_dash": 56557113.66,
+        "hold_wr": 41.29,
+        "winner_capped": true
+      },
+      "after": {
+        "rows": 36322,
+        "closed": 20612,
+        "realized_pos": 18843,
+        "realized_neg": 12791,
+        "sum_realized": 46520379.22,
+        "sum_dash": -6492883.66,
+        "hold_wr": 38.07,
+        "winner_capped": true
+      },
+      "dashboard_pnl": -6492883.66,
+      "win_rate": 30.75,
+      "overall_roi": -1.71,
+      "markets_traded": 18645,
+      "last_event_date": "2026-08-19",
+      "sport_stats": {
+        "ESPORTS": {
+          "net_profit": -744681.03,
+          "roi": -9.72,
+          "win_rate": 37.39,
+          "events": 1420,
+          "avg_bet": 5398.05,
+          "median_bet": 2076.59
+        },
+        "MLB": {
+          "net_profit": 274588.66,
+          "roi": 1.08,
+          "win_rate": 32.26,
+          "events": 4889,
+          "avg_bet": 5195.63,
+          "median_bet": 1698.19
+        },
+        "NBA": {
+          "net_profit": -324747.15,
+          "roi": -6.09,
+          "win_rate": 30.9,
+          "events": 754,
+          "avg_bet": 7074.01,
+          "median_bet": 2135.04
+        },
+        "NHL": {
+          "net_profit": -25508.69,
+          "roi": -4.16,
+          "win_rate": 26.32,
+          "events": 76,
+          "avg_bet": 8076.16,
+          "median_bet": 2604.24
+        },
+        "OTHER": {
+          "net_profit": -3717736.14,
+          "roi": -29.26,
+          "win_rate": 25.6,
+          "events": 2967,
+          "avg_bet": 4282.89,
+          "median_bet": 438.41
+        },
+        "SOCCER (EPL)": {
+          "net_profit": -404691.39,
+          "roi": -49.17,
+          "win_rate": 33.18,
+          "events": 217,
+          "avg_bet": 3792.7,
+          "median_bet": 2423.64
+        },
+        "SOCCER (LaLiga)": {
+          "net_profit": -86019.66,
+          "roi": -8.78,
+          "win_rate": 31.63,
+          "events": 313,
+          "avg_bet": 3131.36,
+          "median_bet": 1573.3
+        },
+        "SOCCER (Other)": {
+          "net_profit": 900735.97,
+          "roi": 7.29,
+          "win_rate": 28.93,
+          "events": 3789,
+          "avg_bet": 3262.09,
+          "median_bet": 714.2
+        },
+        "SOCCER (UCL)": {
+          "net_profit": 130389.84,
+          "roi": 17.88,
+          "win_rate": 35.86,
+          "events": 238,
+          "avg_bet": 3064.84,
+          "median_bet": 1089.3
+        },
+        "TENNIS": {
+          "net_profit": -2750881.29,
+          "roi": -15.2,
+          "win_rate": 32.12,
+          "events": 3593,
+          "avg_bet": 5037.06,
+          "median_bet": 1768.84
+        },
+        "WNBA": {
+          "net_profit": -86295.22,
+          "roi": -8.68,
+          "win_rate": 27.13,
+          "events": 389,
+          "avg_bet": 2555.95,
+          "median_bet": 1256.06
+        }
+      },
+      "market_stats": {
+        "Draw": {
+          "net_profit": -489015.44,
+          "roi": -14.52,
+          "win_rate": 30.69,
+          "events": 752,
+          "avg_bet": 4477.19,
+          "median_bet": 484.06
+        },
+        "Futures": {
+          "net_profit": -143276.97,
+          "roi": -13.59,
+          "win_rate": 40.1,
+          "events": 201,
+          "avg_bet": 5244.06,
+          "median_bet": 2645.21
+        },
+        "Map / Game": {
+          "net_profit": -741544.88,
+          "roi": -16.57,
+          "win_rate": 33.46,
+          "events": 817,
+          "avg_bet": 5478.78,
+          "median_bet": 2246.16
+        },
+        "Moneyline / Match": {
+          "net_profit": -786627.48,
+          "roi": -1.63,
+          "win_rate": 34.16,
+          "events": 7596,
+          "avg_bet": 6366.94,
+          "median_bet": 1557.97
+        },
+        "Spread": {
+          "net_profit": -2697794.98,
+          "roi": -26.47,
+          "win_rate": 28.5,
+          "events": 3065,
+          "avg_bet": 3325.02,
+          "median_bet": 889.73
+        },
+        "Totals (O/U)": {
+          "net_profit": -1976586.35,
+          "roi": -10.83,
+          "win_rate": 27.05,
+          "events": 6214,
+          "avg_bet": 2937.74,
+          "median_bet": 920.44
+        }
+      },
+      "value": 180689.3738
+    }
+  ],
+  "comparisons": [
+    {
+      "username": "kch123",
+      "wallet": "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee",
+      "our_dash_pnl": 12200722.44,
+      "our_hold_wr": 52.38,
+      "closed": 4032,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {
+        "username": "kch123",
+        "polydata_lifetime_pnl": 11390000,
+        "polydata_rank": 5,
+        "polydata_smart_score": 59,
+        "note": "Polydata all-time #5. Our closed book WR ~52% matches public. Dormant for live tailing since ~2026-07-01."
+      }
+    },
+    {
+      "username": "DLEK",
+      "wallet": "0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c",
+      "our_dash_pnl": 1434196.08,
+      "our_hold_wr": 54.69,
+      "closed": 1165,
+      "winner_capped": false,
+      "lb_sports_pnl": 1872.0313984057866,
+      "lb_sports_rank": 183,
+      "public": {}
+    },
+    {
+      "username": "JhonAlexanderHinestroza",
+      "wallet": "0x44c58184f89a5c2f699dc8943009cb3d75a08d45",
+      "our_dash_pnl": 171815.41,
+      "our_hold_wr": 53.3,
+      "closed": 1695,
+      "winner_capped": false,
+      "lb_sports_pnl": 8100.649775516475,
+      "lb_sports_rank": 62,
+      "public": {}
+    },
+    {
+      "username": "ShortFlutterStock",
+      "wallet": "0x13414a77a4be48988851c73dfd824d0168e70853",
+      "our_dash_pnl": 1823003.98,
+      "our_hold_wr": 61.5,
+      "closed": 4309,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "Avarice31",
+      "wallet": "0x781caf04d98a281712caf1677877c442789fdb68",
+      "our_dash_pnl": 756886.67,
+      "our_hold_wr": 49.54,
+      "closed": 17840,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "Capman",
+      "wallet": "0xc5b5bbd42624a8f0c8dfa90221913007d8c77e80",
+      "our_dash_pnl": 406259.93,
+      "our_hold_wr": 57.77,
+      "closed": 15804,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "ShucksIt69",
+      "wallet": "0x84dbb7103982e3617704a2ed7d5b39691952aeeb",
+      "our_dash_pnl": 1527083.75,
+      "our_hold_wr": 51.89,
+      "closed": 2566,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "TutiFromFactsOfLife",
+      "wallet": "0xc660ae71765d0d9eaf5fa8328c1c959841d2bd28",
+      "our_dash_pnl": -590519.45,
+      "our_hold_wr": 50.14,
+      "closed": 1730,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "EIf",
+      "wallet": "0xd6966eb1ae7b52320ba7ab1016680198c9e08a49",
+      "our_dash_pnl": -771388.16,
+      "our_hold_wr": 53.11,
+      "closed": 2922,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "ckw",
+      "wallet": "0x92672c80d36dcd08172aa1e51dface0f20b70f9a",
+      "our_dash_pnl": 839271.82,
+      "our_hold_wr": 52.81,
+      "closed": 2533,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "bigmoneyloser00",
+      "wallet": "0xdbb9b3616f733e19278d1ca6f3207a8344b5ed8d",
+      "our_dash_pnl": 298891.04,
+      "our_hold_wr": 55.56,
+      "closed": 19255,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "fkgggg2",
+      "wallet": "0x52ecea7b3159f09db589e4f4ee64872fd0bba6f3",
+      "our_dash_pnl": 1164295.0,
+      "our_hold_wr": 58.98,
+      "closed": 3614,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "RandomPunter",
+      "wallet": "0xf588b19afe63e1aba00f125f91e3e3b0fdc62b81",
+      "our_dash_pnl": 1022696.83,
+      "our_hold_wr": 50.58,
+      "closed": 16640,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "JuniorB",
+      "wallet": "0x9ac5c8496bc84f642bac181499bf64405a5c6a3d",
+      "our_dash_pnl": 136485.1,
+      "our_hold_wr": 60.12,
+      "closed": 1352,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563",
+      "wallet": "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+      "our_dash_pnl": -28489139.88,
+      "our_hold_wr": 53.37,
+      "closed": 8479,
+      "winner_capped": false,
+      "lb_sports_pnl": 185757.89711528644,
+      "lb_sports_rank": 1,
+      "public": {}
+    },
+    {
+      "username": "0x20D6436849F930584892730C7F96eBB2Ac763856",
+      "wallet": "0x20d6436849f930584892730c7f96ebb2ac763856",
+      "our_dash_pnl": 308526.31,
+      "our_hold_wr": 50.62,
+      "closed": 1761,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "S-Works",
+      "wallet": "0xee00ba338c59557141789b127927a55f5cc5cea1",
+      "our_dash_pnl": 9862277.54,
+      "our_hold_wr": 64.67,
+      "closed": 9814,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "BoomLaLa",
+      "wallet": "0xe40172522c7c64afa2d052ddae6c92cd0f417b88",
+      "our_dash_pnl": 875809.76,
+      "our_hold_wr": 47.22,
+      "closed": 31680,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "Bienville",
+      "wallet": "0x9f138019d5481fdc5c59b93b0ae4b9b817cce0fd",
+      "our_dash_pnl": 391644.56,
+      "our_hold_wr": 50.16,
+      "closed": 2404,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "tcp2",
+      "wallet": "0x6b7c75862e64d6e976d2c08ad9f9b54add6c5f83",
+      "our_dash_pnl": 585084.21,
+      "our_hold_wr": 50.03,
+      "closed": 20811,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "0xheavy888",
+      "wallet": "0xec981ed70ae69c5cbcac08c1ba063e734f6bafcd",
+      "our_dash_pnl": 3850655.73,
+      "our_hold_wr": 53.43,
+      "closed": 8349,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "LynxTitan",
+      "wallet": "0x68146921df11eab44296dc4e58025ca84741a9e7",
+      "our_dash_pnl": -308036.53,
+      "our_hold_wr": 46.42,
+      "closed": 39251,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "geniusMC",
+      "wallet": "0x0b9cae2b0dfe7a71c413e0604eaac1c352f87e44",
+      "our_dash_pnl": -22629943.56,
+      "our_hold_wr": 72.02,
+      "closed": 1129,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "redskinrick",
+      "wallet": "0xe24838258b572f1771dffba3bcdde57a78def293",
+      "our_dash_pnl": 198400.5,
+      "our_hold_wr": 54.68,
+      "closed": 865,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "middleoftheocean",
+      "wallet": "0x6c743aafd813475986dcd930f380a1f50901bd4e",
+      "our_dash_pnl": 24863.62,
+      "our_hold_wr": 81.77,
+      "closed": 1789,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "Andromeda1",
+      "wallet": "0x39932ca2b7a1b8ab6cbf0b8f7419261b950ccded",
+      "our_dash_pnl": 482002.51,
+      "our_hold_wr": 53.35,
+      "closed": 2435,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "CoryLahey",
+      "wallet": "0x5c3a1a602848565bb16165fcd460b00c3d43020b",
+      "our_dash_pnl": 1647052.81,
+      "our_hold_wr": 58.5,
+      "closed": 1652,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "TheArena",
+      "wallet": "0xafd492974cd531aae7786210438ae46b42047e61",
+      "our_dash_pnl": -65092.05,
+      "our_hold_wr": 60.07,
+      "closed": 2616,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "xytest",
+      "wallet": "0x3471a897e56a8d3621ca79af87dae4325977f17e",
+      "our_dash_pnl": 382138.1,
+      "our_hold_wr": 50.53,
+      "closed": 7508,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "UAEVALORANTFAN",
+      "wallet": "0xc65ca4755436f82d8eb461e65781584b8cadea39",
+      "our_dash_pnl": 423169.61,
+      "our_hold_wr": 55.12,
+      "closed": 1153,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "TheMangler",
+      "wallet": "0x9703676286b93c2eca71ca96e8757104519a69c2",
+      "our_dash_pnl": -12206379.73,
+      "our_hold_wr": 48.91,
+      "closed": 5349,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "iDropMyHotdog",
+      "wallet": "0xc49fe658479db29e1a2fefebf0735f657dca9e05",
+      "our_dash_pnl": 54325.96,
+      "our_hold_wr": 49.12,
+      "closed": 1348,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "bloodmaster",
+      "wallet": "0x58f8f1138be2192696378629fc9aa23c7910dc70",
+      "our_dash_pnl": 557942.49,
+      "our_hold_wr": 87.07,
+      "closed": 3516,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "9sh8f",
+      "wallet": "0xf9b5f7293b8258be8b0e1f03717c5d2ad94809ee",
+      "our_dash_pnl": 268986.09,
+      "our_hold_wr": 56.95,
+      "closed": 448,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "0x53eCc53E7",
+      "wallet": "0x53ecc53e7a69aad0e6dda60264cc2e363092df91",
+      "our_dash_pnl": 4789.2,
+      "our_hold_wr": 45.91,
+      "closed": 1894,
+      "winner_capped": false,
+      "lb_sports_pnl": 3024.0103634761217,
+      "lb_sports_rank": 134,
+      "public": {}
+    },
+    {
+      "username": "877s8d8g89I9f8d98fd99ww2",
+      "wallet": "0x1b5e20a28d7115f10ce6190a5ae9a91169be83f8",
+      "our_dash_pnl": 147886.39,
+      "our_hold_wr": 51.91,
+      "closed": 646,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "Vetch",
+      "wallet": "0x9c82c60829df081d593055ee5fa288870c051f13",
+      "our_dash_pnl": 321366.97,
+      "our_hold_wr": 58.38,
+      "closed": 694,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "TTdes",
+      "wallet": "0x25867077c891354137bbaf7fde12eec6949cc893",
+      "our_dash_pnl": 147218.5,
+      "our_hold_wr": 53.04,
+      "closed": 825,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "Supah9ga",
+      "wallet": "0x57cd939930fd119067ca9dc42b22b3e15708a0fb",
+      "our_dash_pnl": 2001694.32,
+      "our_hold_wr": 52.55,
+      "closed": 659,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "norrisfan",
+      "wallet": "0xe72bb501df5306c75c89383d48a1e81073fbb0a0",
+      "our_dash_pnl": -2917985.68,
+      "our_hold_wr": 43.42,
+      "closed": 1295,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "HedgeMaster88",
+      "wallet": "0x036c159d5a348058a81066a76b89f35926d4178d",
+      "our_dash_pnl": 931922.76,
+      "our_hold_wr": 53.57,
+      "closed": 137,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "CemeterySun",
+      "wallet": "0x37c1874a60d348903594a96703e0507c518fc53a",
+      "our_dash_pnl": 3102530.04,
+      "our_hold_wr": 52.93,
+      "closed": 5316,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "0p0jogggg",
+      "wallet": "0x6ac5bb06a9eb05641fd5e82640268b92f3ab4b6e",
+      "our_dash_pnl": 7170623.22,
+      "our_hold_wr": 50.38,
+      "closed": 38913,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "Cannae",
+      "wallet": "0x7ea571c40408f340c1c8fc8eaacebab53c1bde7b",
+      "our_dash_pnl": 6824705.49,
+      "our_hold_wr": 48.1,
+      "closed": 24700,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "RN1",
+      "wallet": "0x2005d16a84ceefa912d4e380cd32e7ff827875ea",
+      "our_dash_pnl": 67401575.08,
+      "our_hold_wr": 47.0,
+      "closed": 92891,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {
+        "username": "RN1",
+        "polypnl_url": "https://polymarket.com/@RN1",
+        "polymarket_url": "https://polymarket.com/@RN1",
+        "polydata_url": "https://polydata.pro/traders",
+        "polypnl_pnl": null,
+        "polypnl_wr": null,
+        "polydata_lifetime_pnl": 12770000,
+        "polydata_rank": 4,
+        "polydata_volume": 1075670000,
+        "polydata_smart_score": 75,
+        "note": "Polydata all-time #4 (~+$12.8M). Our CSV is deeper than Ghost's but still PnL-inflated vs Polydata."
+      }
+    },
+    {
+      "username": "JPMorgan101",
+      "wallet": "0xb6d6e99d3bfe055874a04279f659f009fd57be17",
+      "our_dash_pnl": 2156372.4,
+      "our_hold_wr": 49.08,
+      "closed": 376,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6",
+      "wallet": "0xcb6ed9332a8fd1b930893c705dd234f37aa248e6",
+      "our_dash_pnl": 317828.93,
+      "our_hold_wr": 64.29,
+      "closed": 25,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+      "wallet": "0x8a3ab8120807bd64a3de48695110e390fa2ceb9a",
+      "our_dash_pnl": 674530.17,
+      "our_hold_wr": 53.71,
+      "closed": 423,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "WTSA",
+      "wallet": "0x04d5524a0a5af2eca6e39e03defc261d42fe66d8",
+      "our_dash_pnl": 1154833.48,
+      "our_hold_wr": 53.44,
+      "closed": 71,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "Qpkwks",
+      "wallet": "0x9ee8bbc36d378af72e5f6b8e2ea2eb67c05a89de",
+      "our_dash_pnl": 1770380.72,
+      "our_hold_wr": 41.79,
+      "closed": 36,
+      "winner_capped": false,
+      "lb_sports_pnl": null,
+      "lb_sports_rank": null,
+      "public": {}
+    },
+    {
+      "username": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
+      "wallet": "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87",
+      "our_dash_pnl": 955440.95,
+      "our_hold_wr": 54.95,
+      "closed": 71,
+      "winner_capped": false,
+      "lb_sports_pnl": 130589.10617255897,
+      "lb_sports_rank": 2,
+      "public": {}
+    },
+    {
+      "username": "HomeRunHazard",
+      "wallet": "0x5268527977f700f9bf9b6d5cd843859e4e70135d",
+      "our_dash_pnl": 1010528.92,
+      "our_hold_wr": 50.66,
+      "closed": 39675,
+      "winner_capped": false,
+      "lb_sports_pnl": 98709.0220761816,
+      "lb_sports_rank": 6,
+      "public": {}
+    },
+    {
+      "username": "ferrariChampions2026",
+      "wallet": "0xfe787d2da716d60e8acff57fb87eb13cd4d10319",
+      "our_dash_pnl": -6492883.66,
+      "our_hold_wr": 38.07,
+      "closed": 20612,
+      "winner_capped": true,
+      "lb_sports_pnl": 68507.20144700678,
+      "lb_sports_rank": 8,
+      "public": {
+        "username": "ferrariChampions2026",
+        "polymarket_url": "https://polymarket.com/@ferrariChampions2026",
+        "polydata_url": "https://polydata.pro/traders",
+        "note": "Live Polymarket sports leaderboard ~+$68k (rank 8). Our closed book was also 10k-capped on winners."
+      }
+    },
+    {
+      "username": "wr0ngw4yb3tt0r",
+      "wallet": "0x224a89dbe0db0d6124b335edabd15b3f877da3d5",
+      "our_dash_pnl": -4767781.18,
+      "our_hold_wr": 50.0,
+      "closed": 7880,
+      "winner_capped": false,
+      "lb_sports_pnl": 100231.40565203177,
+      "lb_sports_rank": 5,
+      "public": {}
+    },
+    {
+      "username": "quavoo",
+      "wallet": "0xdc41c39b95453c943174f369926018f6963bdd7e",
+      "our_dash_pnl": -1500276.3,
+      "our_hold_wr": 44.24,
+      "closed": 5447,
+      "winner_capped": false,
+      "lb_sports_pnl": 48867.273729555076,
+      "lb_sports_rank": 11,
+      "public": {}
+    },
+    {
+      "username": "GoalLineGhost",
+      "wallet": "0x0346afae2603313d2bbee96b628536c8cbe352a5",
+      "our_dash_pnl": -1159219.67,
+      "our_hold_wr": 50.35,
+      "closed": 20142,
+      "winner_capped": false,
+      "lb_sports_pnl": 33896.035002204124,
+      "lb_sports_rank": 15,
+      "public": {
+        "username": "GoalLineGhost",
+        "polypnl_url": "https://polypnl.kaeose.me/profile/0x0346afae2603313d2bbee96b628536c8cbe352a5",
+        "polymarket_url": "https://polymarket.com/@GoalLineGhost",
+        "polydata_url": "https://polydata.pro/traders",
+        "polypnl_pnl": -1140000,
+        "polypnl_wr": 52.8,
+        "polypnl_wr_n": "1925/3648 sports (30d)",
+        "polypnl_volume_30d": 86820000,
+        "polydata_lifetime_pnl": null,
+        "note": "Not in Polydata all-time top 50. Lifetime trackers ~\u2212$1.1M to \u2212$2.1M, ~52% WR, ~$247M volume."
+      }
+    }
+  ],
+  "new_on_sports_lb": [
+    {
+      "rank": 3,
+      "wallet": "0x4ab9b54427ec4b7f3646b1a0ef1bed73bc708ebe",
+      "username": "RWCS",
+      "pnl": 102266.86937,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 4,
+      "wallet": "0x6c3aae17140c5e3cde62380daaa323e38575c459",
+      "username": "AvrahamEisenberg - 10161",
+      "pnl": 100287.227136,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 7,
+      "wallet": "0xa8cf2ed8751f4e58ad039e1b68a8b58b4395031f",
+      "username": "0xa8cf2ed8",
+      "pnl": 85547.41699299996,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 9,
+      "wallet": "0x16bb9951a36fce71e2ef57890b786145e0ba8492",
+      "username": "SDTrading",
+      "pnl": 51570.6283000001,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 10,
+      "wallet": "0x3d8a89a20aa73fba0f30d080e8120de9f9555724",
+      "username": "Poyo",
+      "pnl": 50766.935668000006,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 12,
+      "wallet": "0x085fd7e4886bd3c491d979ea5c8052b0d3d34d1c",
+      "username": "Penisya",
+      "pnl": 46340.86696501685,
+      "vol": 181143.90090399998,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 13,
+      "wallet": "0x684baa57c338c2549aec0aa3f034f695d72a8409",
+      "username": "monkeymashingkeyboard",
+      "pnl": 39068.83665569441,
+      "vol": 19192.529816,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 14,
+      "wallet": "0xe76f0a36d05d215a69f1f84466c8922702a1d40c",
+      "username": "Kulilun",
+      "pnl": 36200.29375449434,
+      "vol": 23022.320000000003,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 16,
+      "wallet": "0x682005011dd19c1e986cb060ed6ab83845f21c19",
+      "username": "winwin518168",
+      "pnl": 32100.000000000004,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 17,
+      "wallet": "0x0d18e30e252008d83f51dae00d36873ddd9e24a6",
+      "username": "MonsieurDimanche",
+      "pnl": 29726.53863699996,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 18,
+      "wallet": "0x9d3e50519d87421645a1717e60a4ba369db1986c",
+      "username": "bigoon",
+      "pnl": 29316.348414513173,
+      "vol": 106570.372924,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 19,
+      "wallet": "0xe954ddb021c19495f1c556f59dadbd1494821ef1",
+      "username": "kingflop",
+      "pnl": 28954.05040617715,
+      "vol": 16480.056665,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 20,
+      "wallet": "0x927cf2bb94d15707993f954552e56c74eb6d6633",
+      "username": "jarosbill",
+      "pnl": 28482.311510999964,
+      "vol": 78549.093876,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 21,
+      "wallet": "0x0f35109cc3ceaf729609c3109310791bd616c84a",
+      "username": "0x0f35109c",
+      "pnl": 27254.641564000005,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 22,
+      "wallet": "0xaa7789219c17e180dcb5933099c90d885f1d15a5",
+      "username": "alaskabaked",
+      "pnl": 27079.427020452255,
+      "vol": 85785.589214,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 24,
+      "wallet": "0xdb83e85ffd22faa4009273034770f96ffc5b1e50",
+      "username": "sentrio",
+      "pnl": 25877.477123408986,
+      "vol": 85405.919353,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 25,
+      "wallet": "0xc8075693f48668a264b9fa313b47f52712fcc12b",
+      "username": "texaskid",
+      "pnl": 25598.39212957007,
+      "vol": 5055.437362999999,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 26,
+      "wallet": "0x59018ff1f4300838f635386ab5e0b8b353ce63a2",
+      "username": "kamloic",
+      "pnl": 25284.21873974701,
+      "vol": 118200.625923,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 27,
+      "wallet": "0x782186952ef2ca75ea91c95aef25bbdcffb4bb1a",
+      "username": "thif - 33063",
+      "pnl": 23607.800415098936,
+      "vol": 0.0,
+      "window": "all",
+      "category": "sports"
+    },
+    {
+      "rank": 28,
+      "wallet": "0xa71093cafc0c099b4ccab24c3cb8018d817923c4",
+      "username": "Talvez10",
+      "pnl": 20207.534913365496,
+      "vol": 6755.036036,
+      "window": "all",
+      "category": "sports"
+    }
+  ],
+  "recency_policy": {
+    "HOT": [
+      0,
+      7,
+      1.0
+    ],
+    "WARM": [
+      8,
+      14,
+      0.7
+    ],
+    "COLD": [
+      15,
+      21,
+      0.35
+    ],
+    "DARK": [
+      22,
+      45,
+      0.0
+    ],
+    "DROP": [
+      46,
+      9999,
+      0.0
+    ]
+  }
+}

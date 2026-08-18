@@ -73,7 +73,7 @@ def write_markdown(payload: dict) -> str:
         f"As of **{payload.get('as_of')}**. Last resolved game **{payload.get('universe', {}).get('max_resolved_date')}**. "
         f"$100/play, hold to resolution, fill at **join_max + 2¢** (the later voter’s price plus two cents).",
         "",
-        "Copy-all of every tailable wallet is **−1.5% ROI**. Only take the books below.",
+        "Copy-all of every tailable wallet is **−1.5% ROI**. Ghost/ferrari closed books were winner-sorted; do not take the 98% Ghost cluster.",
         "",
         "## Take these",
         "",
@@ -145,10 +145,10 @@ def main() -> int:
     specs = [
         {
             "id": "ghost_2plus_ml",
-            "name": "GoalLineGhost moneyline (2+)",
-            "recommended": True,
+            "name": "GoalLineGhost moneyline (2+) — DO NOT TAKE",
+            "recommended": False,
             "priority": 1,
-            "rule": "Moneyline, Ghost is on the ticket with at least one other tailable wallet. Skip NFL and Cannae.",
+            "rule": "INVALID. Closed-positions were winner-sorted. Ghost public WR is ~53% / PnL −$1.14M. The 98% book was missing losers.",
             "description": (
                 "This is the book to take. Ghost’s soccer/other moneylines with a second voter. "
                 "Without Ghost, 2+ Q50 moneyline is −52%. You are tailing Ghost, not a 12-name consensus. "
@@ -169,8 +169,8 @@ def main() -> int:
         },
         {
             "id": "ghost_ferrari_ml",
-            "name": "Ghost + ferrari moneyline",
-            "recommended": True,
+            "name": "Ghost + ferrari moneyline — DO NOT TAKE",
+            "recommended": False,
             "priority": 2,
             "rule": "Same as #1, and ferrariChampions2026 is also on the ticket.",
             "description": (
@@ -191,8 +191,8 @@ def main() -> int:
         },
         {
             "id": "ghost_rn1_ml",
-            "name": "Ghost + RN1 moneyline",
-            "recommended": True,
+            "name": "Ghost + RN1 moneyline — DO NOT TAKE",
+            "recommended": False,
             "priority": 3,
             "rule": "Same as #1, and RN1 is also on the ticket.",
             "description": "Second-best pair. Still Ghost’s moneyline with RN1 confirming.",
@@ -211,8 +211,8 @@ def main() -> int:
         },
         {
             "id": "favorites_60_80",
-            "name": "Favorites 60–80¢ (low vol)",
-            "recommended": True,
+            "name": "Favorites 60–80¢ — contaminated tape",
+            "recommended": False,
             "priority": 4,
             "rule": "2+ wallets, price 60–80¢, no Cannae, no NFL. Use when you do not want Ghost-sized variance.",
             "description": (
@@ -232,8 +232,8 @@ def main() -> int:
         },
         {
             "id": "soccer_ml_no_cannae",
-            "name": "Soccer moneyline, no Cannae",
-            "recommended": True,
+            "name": "Soccer moneyline, no Cannae — contaminated tape",
+            "recommended": False,
             "priority": 5,
             "rule": "Soccer match-winner, 2+ wallets, Cannae does not vote. Optional if Ghost is not on the play.",
             "description": (

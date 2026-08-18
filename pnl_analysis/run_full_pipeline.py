@@ -349,6 +349,36 @@ def fetch_open_positions_complete(address: str) -> pd.DataFrame:
     return combined
 
 
+def fetch_closed_positions_complete(address: str, max_pages: int = 200) -> pd.DataFrame:
+    """Closed-positions default sort is REALIZEDPNL DESC (biggest winners first).
+
+    A 200-page cap therefore stores ~10k winners and drops the matching losers,
+    which is how GoalLineGhost showed +$52M / 73% WR while PolyPnL/Polydata
+    show ~−$1M / ~53% WR on the same wallet. Pull winners, losers, and recency.
+    """
+    frames = []
+    for extra in (
+        {"sortBy": "REALIZEDPNL", "sortDirection": "DESC"},
+        {"sortBy": "REALIZEDPNL", "sortDirection": "ASC"},
+        {"sortBy": "TIMESTAMP", "sortDirection": "DESC"},
+    ):
+        label = f"{extra['sortBy']} {extra['sortDirection']}"
+        print(f"    📥 closed-positions {label} (≤{max_pages} pages)…")
+        frames.append(fetch_positions(address, "closed-positions", max_pages=max_pages, extra_params=extra))
+        time.sleep(PAGE_SLEEP_SEC)
+    nonempty = [f for f in frames if f is not None and not f.empty]
+    if not nonempty:
+        return pd.DataFrame()
+    combined = pd.concat(nonempty, ignore_index=True)
+    combined = normalize_position_keys(combined)
+    if "asset" in combined.columns:
+        combined = combined.drop_duplicates(subset=["asset"], keep="last")
+    elif "conditionId" in combined.columns and "outcome" in combined.columns:
+        combined = combined.drop_duplicates(subset=["conditionId", "outcome"], keep="last")
+    print(f"    📦 Closed unique after winner+loser+recent sorts: {len(combined):,}")
+    return combined
+
+
 def _csv_closed_open_counts(csv_path: Path) -> tuple[int, int]:
     if not csv_path.exists():
         return (0, 0)
@@ -431,7 +461,7 @@ def fetch_recent_and_merge(address, username):
     prev_closed, prev_open = _csv_closed_open_counts(csv_path)
     closed_pages = 80
     is_mm = address.lower() == MM_WALLET
-    df_closed = fetch_positions(address, "closed-positions", max_pages=closed_pages)
+    df_closed = fetch_closed_positions_complete(address, max_pages=closed_pages)
     time.sleep(PAGE_SLEEP_SEC)
     if is_mm:
         print(f"    🔄 Incremental: {closed_pages} closed pages + 2 open (MM skip full book)…")
@@ -480,8 +510,8 @@ def collect_and_save(address, username):
     # Newest 10k closed (200 pages × 50) is enough to grade a new wallet.
     # Full closed history on whales never finishes and the API has no resume token.
     closed_pages = 200
-    print(f"    🔄 Full fetch: up to {closed_pages} closed pages + unique open book")
-    df_closed = fetch_positions(address, "closed-positions", max_pages=closed_pages)
+    print(f"    🔄 Full fetch: up to {closed_pages} pages × 3 closed sorts + unique open book")
+    df_closed = fetch_closed_positions_complete(address, max_pages=closed_pages)
     time.sleep(PAGE_SLEEP_SEC)
     df_open = fetch_open_positions_complete(address) if not is_mm else fetch_positions(address, "positions", max_pages=2)
 

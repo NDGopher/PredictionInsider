@@ -288,7 +288,7 @@ function Stat({ label, value, className }: { label: string; value: string; class
 }
 
 export default function Strategies() {
-  const [id, setId] = useState<string>("ghost_2plus_ml");
+  const [id, setId] = useState<string>("soccer_ml_no_cannae");
   const [tab, setTab] = useState<"plays" | "history" | "roster" | "research">("plays");
 
   const { data, isLoading } = useQuery<TailStrategiesResponse>({
@@ -352,9 +352,11 @@ export default function Strategies() {
         <div>
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Recommended plays · $100/play · hold to resolution</div>
           <h1 className="text-xl font-semibold tracking-tight">Take these</h1>
+          <p className="text-xs text-amber-400 mt-1 max-w-2xl">
+            GoalLineGhost public tape is ~52% WR and about −$1.1M PnL on the same wallet. Our old 98% / +$52M book was a closed-positions sort bug (winners first, 10k cap). Do not copy that cluster.
+          </p>
           <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-            Copy-all is {data?.copyAll?.roi ?? "—"}% ROI. Only take the ranked books below.
-            Fill at the later voter’s price + 2¢ — you will not get their VWAP.
+            Copy-all is {data?.copyAll?.roi ?? "—"}% ROI. Fill at the later voter’s price + 2¢.
             Last resolved game: {data?.research?.freshness?.consensus_last_play || data?.universe?.max_resolved_date || "—"}.
           </p>
         </div>

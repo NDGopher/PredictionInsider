@@ -36,6 +36,8 @@ MIN_COST = 25.0
 AS_OF = datetime.now(timezone.utc)
 CANNAE = "0x7ea571c40408f340c1c8fc8eaacebab53c1bde7b"
 MM = {"0xd9e0aaca471f489be338fd0c91a26e8669a805f2", "0xd9e0aaca471f489be338fd0f91a26e8669a805f2"}
+COLD_DAYS = 14
+DARK_DAYS = 21
 QUIT_DAYS = 45
 UNTAILABLE_MEDIAN = 50_000.0
 GRINDER_WR = 94.0
@@ -194,10 +196,11 @@ def decide(row: dict) -> tuple[str, str]:
         return "KICK", "Confirmed market-maker / both-sides bot. Do not tail."
     if row.get("untailable"):
         return "KICK", str(row.get("untailable_reason") or "Impossible to tail (size / both-sides / bond grind).")
-    if row.get("possibly_quit"):
+    if row.get("possibly_quit") or row.get("recency_band") in {"DARK", "DROP"}:
+        band = row.get("recency_band") or "DROP"
         return "KICK", (
-            f"No dated activity in {QUIT_DAYS}+ days (last={row.get('max_date')}). "
-            "Account looks quit or dormant — do not tail stale markers."
+            f"{band}: last dated event {row.get('max_date')} "
+            f"({row.get('days_since_last')}d ago). Weight to 0, then remove if they stay dark."
         )
 
     overall = row["overall"]
@@ -287,18 +290,22 @@ def decide(row: dict) -> tuple[str, str]:
         return "TIGHTEN", f"YES-side only (YES {yes['roi']:.1f}% vs NO {no['roi']:.1f}%). Mute NO."
 
     if n90 >= 15 and roi90 >= 5 and roi >= 0:
-        return "KEEP", f"Still printing: last 90d {roi90:.1f}% (n={n90}), full {roi:.1f}% on {n}."
+        action, reason = "KEEP", f"Still printing: last 90d {roi90:.1f}% (n={n90}), full {roi:.1f}% on {n}."
+    elif roi >= 8 and n >= 30 and (n90 < 10 or roi90 >= -5):
+        action, reason = "KEEP", f"Full-sample {roi:.1f}% on {n}. Recent book is thin or flat, not a blow-up."
+    elif roi >= 3 and n90 >= 20 and roi90 >= 0:
+        action, reason = "KEEP", f"Modest but positive: {roi:.1f}% full, {roi90:.1f}% last 90d."
+    elif n90 >= 20 and roi90 < 0 and roi < 5:
+        action, reason = "TIGHTEN", f"Edge faded recently ({roi90:.1f}% last 90d). Restrict to proven sports/types or sit out."
+    else:
+        action, reason = "WATCH", f"Mixed: full {roi:.1f}% (n={n}), last60d dash {roi60:.1f}% (n={n60}). Revisit after more games."
 
-    if roi >= 8 and n >= 30 and (n90 < 10 or roi90 >= -5):
-        return "KEEP", f"Full-sample {roi:.1f}% on {n}. Recent book is thin or flat, not a blow-up."
-
-    if roi >= 3 and n90 >= 20 and roi90 >= 0:
-        return "KEEP", f"Modest but positive: {roi:.1f}% full, {roi90:.1f}% last 90d."
-
-    if n90 >= 20 and roi90 < 0 and roi < 5:
-        return "TIGHTEN", f"Edge faded recently ({roi90:.1f}% last 90d). Restrict to proven sports/types or sit out."
-
-    return "WATCH", f"Mixed: full {roi:.1f}% (n={n}), last60d dash {roi60:.1f}% (n={n60}). Revisit after more games."
+    if action == "KEEP" and row.get("recency_band") == "COLD":
+        return (
+            "TIGHTEN",
+            f"COLD ({row.get('days_since_last')}d since {row.get('max_date')}): weight 0.35. {reason}",
+        )
+    return action, reason
 
 
 def quality_proxy(overall: dict, last90: dict) -> int:
@@ -365,6 +372,18 @@ def main() -> int:
         elif not mk.empty and len(mk) >= GRINDER_MIN_N and wr >= GRINDER_WR and _stats(mk)["roi"] < 8:
             untailable, untailable_reason = True, f"{wr:.1f}% WR grinder — favorite/bond, not copyable."
         possibly_quit = bool(days_since is not None and days_since >= QUIT_DAYS and _dash_stats(d30)["n"] == 0)
+        if days_since is None:
+            recency_band, live_weight = "UNKNOWN", 0.5
+        elif days_since <= 7:
+            recency_band, live_weight = "HOT", 1.0
+        elif days_since <= COLD_DAYS:
+            recency_band, live_weight = "WARM", 0.7
+        elif days_since <= DARK_DAYS:
+            recency_band, live_weight = "COLD", 0.35
+        elif days_since <= QUIT_DAYS:
+            recency_band, live_weight = "DARK", 0.0
+        else:
+            recency_band, live_weight = "DROP", 0.0
         rec = {
             "username": username,
             "wallet": w,
@@ -372,6 +391,8 @@ def main() -> int:
             "max_date": max_date,
             "min_date": min_date,
             "days_since_last": days_since,
+            "recency_band": recency_band,
+            "live_weight": live_weight,
             "possibly_quit": possibly_quit,
             "untailable": untailable,
             "untailable_reason": untailable_reason,
