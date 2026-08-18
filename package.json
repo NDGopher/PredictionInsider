@@ -29,7 +29,8 @@
     "backtest:verify": "python pnl_analysis/verify_public_ranks.py",
     "backtest:ranks": "python pnl_analysis/build_insider_ranks.py",
     "backtest:asof": "python pnl_analysis/asof_fullbook_backtest.py --write-product",
-    "backtest:elites": "python pnl_analysis/discover_polydata_elites.py"
+    "backtest:elites": "python pnl_analysis/discover_polydata_elites.py",
+    "backtest:bankroll": "python pnl_analysis/take_book_bankroll.py"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

@@ -342,3 +342,5 @@ Copy-all of these 12 after warmup: **n=33696 WR=54.04% ROI -1.93% at their price
 | As-of Q60 with no size/sport gate — skip | 7935 | -2.44% | Q ≥ 60 alone is not enough. +2¢ ROI is negative. You need sport expertise and size. |
 | GoalLineGhost 2+ moneyline — DO NOT TAKE | — | 0.0% | INVALID. Closed-positions were winner-sorted. Ghost public WR is ~53% / PnL −$1.14M. |
 
+Bankroll / Kelly / Sharpe / Q and size buckets for the take book: [`TAKE_BOOK_BANKROLL.md`](./TAKE_BOOK_BANKROLL.md). `npm run backtest:bankroll`.
+
