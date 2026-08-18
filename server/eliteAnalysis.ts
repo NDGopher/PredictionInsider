@@ -80,10 +80,15 @@ export const CURATED_TRADERS: { wallet: string; username: string; url?: string }
   { wallet: "0x036c159d5a348058a81066a76b89f35926d4178d", username: "HedgeMaster88", url: "https://polymarket.com/@HedgeMaster88" },
   { wallet: "0x2005d16a84ceefa912d4e380cd32e7ff827875ea", username: "RN1", url: "https://polymarket.com/@RN1" },
   { wallet: "0x7ea571c40408f340c1c8fc8eaacebab53c1bde7b", username: "Cannae", url: "https://polymarket.com/@Cannae" },
+  // Pipeline roster (CSV/JSON already produced) — keep in lockstep with pnl_analysis/run_full_pipeline.py ALL_TRADERS
+  { wallet: "0xc660ae71765d0d9eaf5fa8328c1c959841d2bd28", username: "TutiFromFactsOfLife", url: "https://polymarket.com/@TutiFromFactsOfLife" },
+  { wallet: "0x9f138019d5481fdc5c59b93b0ae4b9b817cce0fd", username: "Bienville", url: "https://polymarket.com/@Bienville" },
+  { wallet: "0x37c1874a60d348903594a96703e0507c518fc53a", username: "CemeterySun", url: "https://polymarket.com/@CemeterySun" },
+  { wallet: "0xc49fe658479db29e1a2fefebf0735f657dca9e05", username: "iDropMyHotdog", url: "https://polymarket.com/@iDropMyHotdog" },
 ];
 
 /**
- * Leaderboard-discovered wallets (sports category) — not in the 42 curated set.
+ * Leaderboard-discovered wallets (sports category) — not in the curated set.
  * Seeded into `elite_traders` so the pipeline ingests them; Live Signals only **merge**
  * trades/positions for rows that pass canonical **qualityScore ≥ 50** (see routes.ts).
  * Remove or add entries after re-scanning Polymarket sports leaderboard + CSV review.

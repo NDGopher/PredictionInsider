@@ -1012,8 +1012,8 @@ async function fetchMidpointsBatch(tokenIds: string[]): Promise<Map<string, numb
 }
 
 // ─── Curated elite sports traders ────────────────────────────────────────────
-// Derived directly from CURATED_TRADERS (the single source of truth for all 42
-// hand-picked elite traders). Used for BOTH the main signals function AND the
+// Derived directly from CURATED_TRADERS (the single source of truth for the
+// hand-picked elite roster). Used for BOTH the main signals function AND the
 // elite analytics system — so updating CURATED_TRADERS in eliteAnalysis.ts
 // automatically propagates to both systems.
 /** Code-seeded elite traders (names + wallets). Merged with DB roster + discovered for signal sources. */

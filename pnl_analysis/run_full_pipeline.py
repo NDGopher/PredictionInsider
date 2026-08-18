@@ -102,6 +102,8 @@ STALE_DAYS    = args.stale_days
 INCREMENTAL   = getattr(args, "incremental", False)
 SKIP_IF_ROWS_OVER = getattr(args, "skip_if_rows_over", 0)
 FILTER_NAMES  = set(n.strip() for n in args.traders.split(",") if n.strip())
+# Optional extra wallets (leaderboard discoveries). Same schema as ALL_TRADERS rows.
+EXTRA_TRADERS_PATH = Path(__file__).resolve().parent / "extra_traders.json"
 
 # ================================================================
 # ALL CURATED TRADERS  (wallet, username)
@@ -154,6 +156,36 @@ ALL_TRADERS = [
     ("0x7ea571c40408f340c1c8fc8eaacebab53c1bde7b", "Cannae"),
     ("0x2005d16a84ceefa912d4e380cd32e7ff827875ea", "RN1"),
 ]
+
+def load_extra_traders():
+    """Load vetted extra wallets from extra_traders.json (not already in ALL_TRADERS)."""
+    extra = []
+    if not EXTRA_TRADERS_PATH.exists():
+        return extra
+    try:
+        data = json.loads(EXTRA_TRADERS_PATH.read_text(encoding="utf-8"))
+    except Exception as e:
+        print(f"[warn] Could not read extra_traders.json: {e}")
+        return extra
+    if not isinstance(data, list):
+        return extra
+    seen = {w.lower() for w, _ in ALL_TRADERS}
+    for row in data:
+        if not isinstance(row, dict):
+            continue
+        wallet = (row.get("wallet") or "").strip().lower()
+        username = (row.get("username") or "").strip()
+        if not wallet or not username or wallet in seen:
+            continue
+        extra.append((wallet, username))
+        seen.add(wallet)
+    return extra
+
+
+def roster_traders():
+    """Curated ALL_TRADERS plus any extra_traders.json discoveries."""
+    return ALL_TRADERS + load_extra_traders()
+
 
 def csv_path_for(wallet, username):
     safe = username.replace("/", "_").replace("\\", "_")
@@ -612,9 +644,14 @@ def rebuild_master_json(allowed_wallets: set[str]):
 # ================================================================
 
 def main():
+    roster = roster_traders()
+    extra_n = len(roster) - len(ALL_TRADERS)
+    if extra_n:
+        print(f"[roster] {len(ALL_TRADERS)} curated + {extra_n} extra from extra_traders.json")
+
     # Apply username filter
     if FILTER_NAMES:
-        traders = [(w, u) for w, u in ALL_TRADERS if u in FILTER_NAMES]
+        traders = [(w, u) for w, u in roster if u in FILTER_NAMES]
         missing = FILTER_NAMES - {u for _, u in traders}
         if missing:
             print(f"⚠️  Unknown trader names: {', '.join(missing)}")
@@ -622,7 +659,7 @@ def main():
             print("No matching traders found. Check spelling (case-sensitive).")
             sys.exit(1)
     else:
-        traders = ALL_TRADERS
+        traders = roster
 
     print(f"{'='*70}")
     print(f"Polymarket Pipeline — {len(traders)} trader(s)")
