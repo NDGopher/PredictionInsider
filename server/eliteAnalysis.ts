@@ -68,6 +68,7 @@ export const SIGNAL_KICK_WALLETS = new Set<string>([
   "0xc49fe658479db29e1a2fefebf0735f657dca9e05", // iDropMyHotdog — 1.1% on 2.4k markets
   "0xafd492974cd531aae7786210438ae46b42047e61", // TheArena — −0.8% hold-to-res at volume
   "0x39932ca2b7a1b8ab6cbf0b8f7419261b950ccded", // Andromeda1 — stale, last dated 2026-07-19
+  "0x58f8f1138be2192696378629fc9aa23c7910dc70", // bloodmaster — 92.6% WR / 4.1% ROI grinder-adjacent
 ]);
 
 export const CURATED_TRADERS: { wallet: string; username: string; url?: string }[] = [

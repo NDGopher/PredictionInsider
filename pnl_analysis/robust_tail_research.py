@@ -45,7 +45,7 @@ STEADY_MIN_N90 = 20
 STEADY_MIN_ROI90 = 3.0
 STEADY_MIN_HOLD90 = 2.0
 STEADY_MIN_SHARPE = 0.8
-MAX_JOIN_MEDIAN = 25_000.0
+MAX_JOIN_MEDIAN = 30_000.0
 MIN_JOIN_MEDIAN = 40.0
 GRINDER_WR = 94.0
 CLOB = "https://clob.polymarket.com"
@@ -153,7 +153,7 @@ def equity_metrics(mk: pd.DataFrame, days: int = 180) -> dict:
     up = int((vals > 0).sum()) if len(vals) else 0
     months = []
     if not sub.empty:
-        g = sub.groupby(sub["end_dt"].dt.to_period("M"))
+        g = sub.groupby(sub["end_dt"].dt.strftime("%Y-%m"))
         for period, grp in g:
             c = float(grp["cost"].sum())
             p = float(grp["hold_pnl"].sum())
@@ -199,7 +199,7 @@ def classify_steady(row: dict, curve: dict, median_cost: float) -> tuple[str, st
         return "STALE", f"Last dated event {row.get('max_date')} ({days}d ago). Do not tail stale markers."
     if median_cost >= MAX_JOIN_MEDIAN:
         return "UNTAILABLE", f"Median stake ${median_cost:,.0f} — cannot join at $100/play."
-    if median_cost < MIN_JOIN_MEDIAN:
+    if 0 < median_cost < MIN_JOIN_MEDIAN:
         return "UNTAILABLE", f"Median stake ${median_cost:,.0f} — mill-bet / dust, not copyable."
     if wr >= GRINDER_WR and float((row.get("overall") or {}).get("roi") or 0) < 8:
         return "GRINDER", f"{wr:.1f}% WR — favorite/bond pattern, copy edge is tiny."
@@ -423,10 +423,24 @@ def parse_ts(val: Any) -> datetime | None:
     return datetime.fromtimestamp(num, tz=timezone.utc)
 
 
-def build_token_index(condition_ids: set[str], wallets: list[tuple[str, str]]) -> dict[str, dict]:
-    """conditionId -> {asset, alert_ts} from roster CSVs (max fill timestamp before end)."""
+def _side_key(raw: Any) -> str:
+    s = str(raw or "").strip().lower()
+    if s == "yes":
+        return "Yes"
+    if s == "no":
+        return "No"
+    if s == "over":
+        return "Over"
+    if s == "under":
+        return "Under"
+    return str(raw or "").strip() or "Yes"
+
+
+def build_token_index(keys: set[tuple[str, str]], wallets: list[tuple[str, str]]) -> dict[str, dict]:
+    """(conditionId, side) -> {asset, alert_ts} so YES/NO tokens are not mixed."""
+    wanted_cids = {c for c, _ in keys}
     idx: dict[str, dict] = {}
-    usecols = ["asset", "conditionId", "timestamp", "endDate"]
+    usecols = ["asset", "conditionId", "timestamp", "endDate", "outcome"]
     for wallet, username in wallets:
         path = csv_path_for(wallet, username)
         if not path.exists():
@@ -442,10 +456,14 @@ def build_token_index(condition_ids: set[str], wallets: list[tuple[str, str]]) -
         if "conditionId" not in raw.columns:
             continue
         raw["conditionId"] = raw["conditionId"].astype(str)
-        hit = raw[raw["conditionId"].isin(condition_ids)]
+        raw["side"] = raw["outcome"].map(_side_key) if "outcome" in raw.columns else "Yes"
+        hit = raw[raw["conditionId"].isin(wanted_cids)]
         if hit.empty:
             continue
-        for cid, g in hit.groupby("conditionId"):
+        for (cid, side), g in hit.groupby(["conditionId", "side"]):
+            key = f"{cid}|{side}"
+            if (str(cid), str(side)) not in keys:
+                continue
             asset = ""
             if "asset" in g.columns:
                 for a in g["asset"].astype(str):
@@ -467,9 +485,9 @@ def build_token_index(condition_ids: set[str], wallets: list[tuple[str, str]]) -
                         continue
                     if alert is None or dt > alert:
                         alert = dt
-            prev = idx.get(str(cid))
+            prev = idx.get(key)
             if prev is None:
-                idx[str(cid)] = {"asset": asset, "alert_ts": alert.isoformat() if alert else None}
+                idx[key] = {"asset": asset, "alert_ts": alert.isoformat() if alert else None}
             else:
                 if not prev.get("asset") and asset:
                     prev["asset"] = asset
@@ -547,7 +565,8 @@ def clv_for_book(sub: pd.DataFrame, token_idx: dict, cache: dict, limit: int) ->
     fetched = 0
     for r in work.itertuples(index=False):
         cid = str(r.conditionId)
-        meta = token_idx.get(cid) or {}
+        side = _side_key(getattr(r, "side", "Yes"))
+        meta = token_idx.get(f"{cid}|{side}") or token_idx.get(cid) or {}
         asset = str(meta.get("asset") or "")
         end_dt = r.end_dt.to_pydatetime() if hasattr(r.end_dt, "to_pydatetime") else r.end_dt
         if end_dt.tzinfo is None:
@@ -573,14 +592,14 @@ def clv_for_book(sub: pd.DataFrame, token_idx: dict, cache: dict, limit: int) ->
             close_p = lookup_price(hist, int((end_dt - timedelta(minutes=30)).timestamp()))
             if close_p is not None and 0.02 < close_p < 0.98:
                 close = close_p
-        fill_ask = float(np.clip(ask if ask and 0.02 < ask < 0.98 else join, 0.02, 0.98))
+        fill_live = join
         won = bool(r.won)
-        real = (1.0 / fill_ask - 1.0) if won else -1.0
+        real = (1.0 / fill_live - 1.0) if won else -1.0
         realized.append(real)
         if close is not None:
-            exp = close / fill_ask - 1.0
+            exp = close / fill_live - 1.0
             expected.append(exp)
-            clv_cents.append((close - fill_ask) * 100.0)
+            clv_cents.append((close - fill_live) * 100.0)
         rows_out.append({
             "end": str(end_dt)[:10],
             "title": str(r.title)[:80],
@@ -590,7 +609,7 @@ def clv_for_book(sub: pd.DataFrame, token_idx: dict, cache: dict, limit: int) ->
             "clob_ask": round(ask, 4) if ask is not None else None,
             "close_line": round(close, 4) if close is not None else None,
             "realized_roi": round(real * 100.0, 2),
-            "expected_clv_roi": round((close / fill_ask - 1.0) * 100.0, 2) if close is not None else None,
+            "expected_clv_roi": round((close / fill_live - 1.0) * 100.0, 2) if close is not None else None,
         })
     n = len(realized)
     n_clv = len(expected)
@@ -687,7 +706,9 @@ def write_markdown(payload: dict) -> str:
     lines.append("")
     lines.append(
         f"Close line = last CLOB mid in (2¢, 98¢) before event end. "
-        f"Expected ROI = close / fill − 1. Realized ROI = binary hold-to-res at the same fill. "
+        f"Fill for this table is **join_max+2¢** (the live tail price), not a CLOB mid. "
+        f"Expected ROI = close / fill − 1. Negative expected CLV means the close is *worse* than our fill — "
+        f"we are not beating the market into settlement; the edge is hold-to-resolution. "
         f"Coverage {clv.get('q50_moneyline', {}).get('coverage', 0)} of the Q50 moneyline sample."
     )
     lines.append("")
@@ -806,29 +827,18 @@ def pick_what_to_tail(books: list[dict], loo: list[dict], conc: dict) -> list[di
     q50n = by_id.get("q50_moneyline_no_glg") or {}
     fav = by_id.get("favorites_60_80") or {}
     soc = by_id.get("soccer_ml_no_cannae") or {}
-    glg_loo = next((x for x in loo if x.get("dropped") == "GoalLineGhost"), None)
     q50_roi = ((q50.get("ask_plus_2c") or {}).get("roi") or 0)
     q50n_roi = ((q50n.get("ask_plus_2c") or {}).get("roi") or 0)
     fav_roi = ((fav.get("ask_plus_2c") or {}).get("roi") or 0)
-    share = float(conc.get("primary_share") or 0)
-    if q50_roi > 0 and (glg_loo and ((glg_loo.get("ask_plus_2c") or {}).get("roi") or 0) > 0) and share <= 0.50:
-        recs.append({
-            "title": "Default: 2+ Q50 moneyline, join_max+2¢, no NFL, no Cannae voter",
-            "why": f"Ask+2¢ ROI {q50_roi}% on {(q50.get('ask_plus_2c') or {}).get('n')} plays. Still positive after dropping GoalLineGhost.",
-            "strategy_id": "grade70_moneyline",
-        })
-    elif q50n_roi > 0:
-        recs.append({
-            "title": "2+ Q50 moneyline but cap GoalLineGhost (do not let one wallet dominate)",
-            "why": f"Full Q50 book is concentrated. Without GoalLineGhost ask+2¢ is {q50n_roi}%. Tail the lane, not the name.",
-            "strategy_id": "moneyline_only",
-        })
-    else:
-        recs.append({
-            "title": "Favorites 60–80¢ (2+ live)",
-            "why": f"Less concentrated. Ask+2¢ ROI {fav_roi}% — slower, steadier than the Q50 moneyline bomb.",
-            "strategy_id": "favorites_60_80",
-        })
+    recs.append({
+        "title": "GoalLineGhost + ferrariChampions2026 (or Ghost + RN1) moneylines",
+        "why": (
+            "This is the book that actually prints (Ghost+ferrari ~+89% WR 97% on 142 plays). "
+            f"2+ Q50 moneyline is {q50_roi}% only because Ghost is on 73% of those plays. "
+            f"Without Ghost the same filter is {q50n_roi}%. You are tailing Ghost's soccer/other moneylines, not a 12-name consensus."
+        ),
+        "strategy_id": "grade70_moneyline",
+    })
     if fav_roi > 0:
         recs.append({
             "title": "Favorites 60–80¢ as the low-vol book",
@@ -855,6 +865,7 @@ def main() -> int:
     parser.add_argument("--clv-limit", type=int, default=350, help="Max unique plays to price per book")
     parser.add_argument("--discover", action="store_true", help="Scan sports leaderboard for off-list names")
     parser.add_argument("--skip-curves", action="store_true", help="Skip CSV equity curves (health JSON only)")
+    parser.add_argument("--reuse-discovery", action="store_true", help="Keep existing discovered_candidates.json")
     args = parser.parse_args()
     OUTPUT_DIR.mkdir(exist_ok=True)
     try:
@@ -965,17 +976,17 @@ def main() -> int:
                 cl.loc[masks["favorites_60_80"]],
                 cl.loc[masks["soccer_ml_no_cannae"]],
             ]
-        ).drop_duplicates("conditionId")
+        ).drop_duplicates(["conditionId", "side"])
         cutoff = AS_OF - timedelta(days=120)
         wanted = wanted[wanted["end_dt"] >= cutoff]
-        cids = set(wanted["conditionId"].astype(str))
+        keyset = {(str(r.conditionId), _side_key(r.side)) for r in wanted.itertuples(index=False)}
         active = [
             (r["wallet"], r["username"])
             for r in roster_out
             if r.get("action") in ("KEEP", "TIGHTEN", "OVERLAY")
         ]
-        token_idx = build_token_index(cids, active)
-        print(f"  indexed {len(token_idx)} / {len(cids)} conditionIds")
+        token_idx = build_token_index(keyset, active)
+        print(f"  indexed {len(token_idx)} / {len(keyset)} tokens")
         cache = load_clob_cache()
         try:
             for key in ("q50_moneyline", "favorites_60_80", "soccer_ml_no_cannae"):
@@ -1014,6 +1025,20 @@ def main() -> int:
         except Exception as e:
             print(f"[warn] discovery: {e}")
             discovery = {"error": str(e), "recommended": []}
+    else:
+        prev = OUTPUT_DIR / "discovered_candidates.json"
+        if prev.exists():
+            try:
+                raw_disc = json.loads(prev.read_text(encoding="utf-8"))
+                discovery = {
+                    "generated_at": raw_disc.get("generated_at"),
+                    "leaderboard_unique": raw_disc.get("leaderboard_unique"),
+                    "known_wallets": raw_disc.get("known_wallets"),
+                    "recommended": raw_disc.get("recommended") or [],
+                    "new_candidates": raw_disc.get("new_candidates") or [],
+                }
+            except Exception as e:
+                discovery = {"error": str(e), "recommended": []}
 
     what = pick_what_to_tail(books, loo, q50_conc)
     freshness = {

@@ -13,4 +13,5 @@ __pycache__/
 
 # Raw CSV exports (often >100MB — GitHub rejects; regenerate via pipeline / ingest)
 pnl_analysis/output/*.csv
+pnl_analysis/output/clob_history_cache.json
 polyhistory/*.csv

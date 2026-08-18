@@ -2,7 +2,8 @@
 
 Run: `npm run backtest:consensus`  
 Health: `npm run backtest:health`  
-Frontend: **Strategies** (`/strategies`) reads `pnl_analysis/output/tail_strategies.json` and live `/api/signals`.
+Research (dual fill, CLV, combos, steady winners): `npm run backtest:research` → `pnl_analysis/ROBUST_TAIL_RESEARCH.md`  
+Frontend: **Strategies** (`/strategies`) Research tab reads `pnl_analysis/output/robust_research.json`.
 
 ## What was wrong with the last-60d numbers
 
