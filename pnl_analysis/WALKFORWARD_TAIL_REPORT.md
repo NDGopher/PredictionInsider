@@ -37,17 +37,29 @@ Grades rank-order well. They are **not** calibrated probabilities (80+ wins ~89%
 
 | Strategy | n | WR | ROI their $ | ROI +2¢ | ROI +5¢ | PF | Sharpe | MaxDD $ | Exp $ |
 |----------|--:|---:|------------:|--------:|--------:|---:|-------:|--------:|------:|
-| Uncapped 90+ | 1,864 | 96.0% | **70.9%** | 64.5% | 55.9% | 18.9 | 14.95 | −300 | 70.88 |
-| Uncapped 85+ | 2,880 | 94.1% | 67.1% | 60.8% | 52.4% | 12.4 | 13.64 | −600 | 67.13 |
-| Grade≥70 AND 40–60¢ flip | 2,829 | 83.2% | 65.7% | 59.3% | 50.8% | 4.92 | 12.95 | −1,000 | 65.71 |
-| Trader Q≥70 AND play≥70 | 4,183 | 92.1% | 64.1% | 57.8% | 49.4% | 9.13 | 12.03 | −700 | 64.05 |
-| Dashboard 80+ | 2,453 | 89.3% | 55.5% | 49.1% | 41.1% | 6.17 | 11.56 | −500 | 55.47 |
-| Dashboard 70+ | 5,973 | 85.6% | 51.4% | 45.5% | 37.9% | 4.54 | 10.73 | −1,000 | 51.41 |
-| S-tier any play (Q≥70) | 13,886 | 89.1% | **73.8%** | 64.7% | 54.1% | 9.06 | 9.22 | −4,000 | 73.83 |
-| High-grade (Q50 + lane + 2×med) | 7,556 | 82.6% | 43.1% | 37.2% | 29.8% | 3.25 | 9.15 | −1,800 | 43.11 |
-| Copy all after warmup | 68,158 | 65.6% | 23.0% | 16.6% | 8.7% | 1.85 | 4.81 | −4,700 | 23.03 |
+| Uncapped 90+ | 1,864 | 96.0% | **70.9%** | 64.5% | 55.9% | 18.85 | 14.95 | −300 | 70.88 |
+| Uncapped 85+ | 2,880 | 94.1% | 67.1% | 60.9% | 52.6% | 12.43 | 13.64 | −400 | 67.09 |
+| Grade≥70 AND 40–60¢ flip | 2,829 | 83.2% | 65.7% | 59.3% | 50.6% | 4.92 | 12.95 | −734 | 65.66 |
+| Trader Q≥70 AND play≥70 | 4,183 | 92.1% | 64.1% | 57.8% | 49.4% | 9.13 | 12.03 | −1,052 | 64.12 |
+| Dashboard 80+ | 2,453 | 89.3% | 55.5% | 49.1% | 41.1% | 6.17 | 11.56 | −400 | 55.46 |
+| S-tier any play (Q≥70) | 13,886 | 89.1% | **73.8%** | 64.5% | 54.1% | 7.75 | 10.73 | −3,997 | 73.82 |
+| Dashboard 70+ | 5,973 | 85.5% | 50.8% | 44.7% | 37.0% | 4.51 | 9.92 | −1,007 | 50.75 |
+| High-grade (Q50 + lane + 2×med) | 7,556 | 82.6% | 43.1% | 37.2% | 29.8% | 3.48 | 8.93 | −1,218 | 43.11 |
+| Dashboard 60+ | 18,048 | 82.9% | 57.7% | 49.4% | 40.1% | 4.37 | 8.66 | −2,309 | 57.67 |
+| Copy all after warmup | 68,158 | 65.8% | 23.1% | 16.1% | 8.7% | 1.68 | 7.14 | −22,305 | 23.09 |
 
 Copy-all at **+5¢ still +8.7%**. The **&lt;50 band goes negative at 5¢ (−4.7%)**.
+
+## Extra buckets
+
+| Strategy | n | WR | ROI their $ | ROI +2¢ | ROI +5¢ | Sharpe |
+|----------|--:|---:|------------:|--------:|--------:|-------:|
+| Grade≥70 underdog (&lt;50¢) | 875 | 66.6% | **95.3%** | 81.1% | 65.2% | 10.24 |
+| Grade≥70 favorite | 2,666 | 92.8% | 24.5% | 21.3% | 16.8% | 10.42 |
+| Q≥50 AND play≥70 | 4,994 | 88.9% | 57.3% | 50.9% | 42.8% | 10.68 |
+| Grade 60–69 only | 12,075 | 81.5% | 61.1% | 51.7% | 41.7% | 8.73 |
+| Grade 50–59 only | 9,847 | 67.3% | 20.5% | 13.0% | 5.7% | 4.26 |
+| Grade &lt;50 | 40,263 | 57.8% | 8.2% | 2.0% | **−4.7%** | 4.91 |
 
 ## What to actually run (matches the live dashboard)
 
@@ -60,4 +72,4 @@ Because single-trader **90+ never prints** on the product:
 
 Underdog 70+ has lower WR (66.6%) but huge expectancy (~$95/play at their price) because of longshot payouts — high variance, not a “safe” bucket.
 
-Sports on the high-grade filter: NHL / NBA / esports strongest; tennis weakest (70.5% WR, 11% ROI). Years: 2024 small-n; 2025 +25% ROI; 2026 +48% ROI (regime, not a guarantee).
+Sports on the high-grade filter (Q≥50, winning lane, 2× median): NHL 59.5% ROI / 90.0% WR, NBA 56.6%, esports 49.5%; tennis weakest (70.5% WR, 11.0% ROI). Years: 2024 n=106, +21.1% ROI; 2025 n=1,560, +25.4%; 2026 n=5,890, +48.2% (regime, not a guarantee).
