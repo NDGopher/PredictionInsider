@@ -5,6 +5,9 @@ Mega/high-frequency books (100k+ Polydata trades or 50k+ CSV rows) are not
 copyable at $100 and are skipped by the daily pipeline so we spend the
 refresh budget on joinable sports books.
 
+Copy-focus (daily refresh): live + bench + watch. Skip/kicked/reference stay
+on disk but are not re-fetched.
+
 Writes: pnl_analysis/output/copy_universe.json
 """
 from __future__ import annotations
@@ -176,7 +179,9 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
         "median_stake": round(median, 2),
         "last_event_date": our.get("last_event_date"),
         "reasons": reasons,
-        "refresh": bucket in {"live", "bench"},
+        # Live + bench + watch stay on the daily fetch so ranks/PnL stay current.
+        # Skip/kicked/reference are uncopyable bots or unfinished tapes — do not spend API budget.
+        "refresh": bucket in {"live", "bench", "watch"},
     }
 
 
@@ -254,10 +259,14 @@ def live_copy_books() -> list[dict[str, str]]:
     ]
 
 
+def copy_focus_buckets() -> tuple[str, ...]:
+    return ("live", "bench", "watch")
+
+
 def refresh_usernames() -> set[str]:
     uni = load_universe()
     names: set[str] = set()
-    for key in ("live", "bench"):
+    for key in copy_focus_buckets():
         for t in uni.get(key) or []:
             names.add(str(t.get("username") or ""))
     return {n for n in names if n}
@@ -277,7 +286,11 @@ def should_skip_pipeline(username: str, wallet: str, csv_rows: int = 0) -> str |
         if extra.get(w) in {"kicked", "kick", "grinder"}:
             return "extra_kicked"
         return None
-    refresh = {str(t.get("username") or "") for t in (uni.get("live") or []) + (uni.get("bench") or [])}
+    refresh = {
+        str(t.get("username") or "")
+        for key in copy_focus_buckets()
+        for t in (uni.get(key) or [])
+    }
     skip_names = {str(t.get("username") or "") for t in (uni.get("skip") or []) + (uni.get("kicked") or [])}
     if u in refresh:
         return None
@@ -294,13 +307,15 @@ def main() -> int:
     print(f"[copy-roster] wrote {OUT_PATH}")
     counts = payload.get("counts") or {}
     print(
-        f"  live={counts.get('live')} bench={counts.get('bench')} "
+        f"  live={counts.get('live')} bench={counts.get('bench')} watch={counts.get('watch')} "
         f"skip={counts.get('skip')} kicked={counts.get('kicked')}"
     )
     for t in payload.get("live") or []:
         print(f"  LIVE  {t['username']:<32} closed={t['closed']:<5} wr={t['win_rate']} rec={t['recency']}")
     for t in payload.get("bench") or []:
         print(f"  BENCH {t['username']:<32} closed={t['closed']:<5} wr={t['win_rate']} rec={t['recency']} {t.get('reasons')}")
+    for t in payload.get("watch") or []:
+        print(f"  WATCH {t['username']:<32} closed={t['closed']:<5} wr={t['win_rate']} rec={t['recency']}")
     return 0
 
 

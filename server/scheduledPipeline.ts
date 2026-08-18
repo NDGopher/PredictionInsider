@@ -84,6 +84,22 @@ export function runScheduledPipelineIfNeeded(): void {
               roster.on("close", (uc) => {
                 if (uc === 0) console.log("[ScheduledPipeline] copy universe rebuilt");
                 else console.warn(`[ScheduledPipeline] copy universe exited ${uc}`);
+                const evolve = spawn(command, [...prefixArgs, join(process.cwd(), "pnl_analysis", "evolve_copy_book.py")], {
+                  cwd: process.cwd(),
+                  stdio: ["ignore", "pipe", "pipe"],
+                });
+                evolve.on("close", (ec) => {
+                  if (ec === 0) console.log("[ScheduledPipeline] copy evolve finished");
+                  else console.warn(`[ScheduledPipeline] copy evolve exited ${ec}`);
+                  const verify = spawn(command, [...prefixArgs, join(process.cwd(), "pnl_analysis", "verify_copy_books.py")], {
+                    cwd: process.cwd(),
+                    stdio: ["ignore", "pipe", "pipe"],
+                  });
+                  verify.on("close", (vc) => {
+                    if (vc === 0) console.log("[ScheduledPipeline] copy books verified");
+                    else console.warn(`[ScheduledPipeline] copy book verify exited ${vc}`);
+                  });
+                });
               });
             });
           });

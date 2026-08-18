@@ -826,7 +826,7 @@ def main():
         focus = [(w, u) for w, u in roster if u in copy_focus]
         rest = [(w, u) for w, u in roster if u not in copy_focus]
         traders = focus + rest
-        print(f"[copy] refresh first: {len(focus)} live/bench, skip mega/kicked on the rest")
+        print(f"[copy] refresh first: {len(focus)} live/bench/watch, skip mega/kicked on the rest")
 
     print(f"{'='*70}")
     print(f"Polymarket Pipeline — {len(traders)} trader(s)")
