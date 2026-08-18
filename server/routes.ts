@@ -2,13 +2,13 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { Pool } from "pg";
 import {
-  seedCuratedTraders, startPeriodicRefresh, startCanonicalPNLRefresh, runAnalysisForTrader,
+  seedCuratedTraders, runAnalysisForTrader,
   resolveUsernameToWallet, generateTraderCSV, curatedWalletSet, curatedWalletToUsername,
   settleUnresolvedTrades, fetchFullTradeHistory, computeTraderProfile,
   settleAllUnresolvedTradesGlobal, fetchAllActivity, computeTraderProfileFromActivity,
   CURATED_TRADERS, DISCOVERED_ELITES, KNOWN_ALIASES, MARKET_MAKER_WALLETS, SIGNAL_KICK_WALLETS, TRADER_CATEGORY_FILTERS, getEffectiveCategoryFilter, classifySport, classifySportFull, patchProfileWithCanonicalPNL, fetchCanonicalPNL,
   runCanonicalPNLRefreshForAll, computeMarketOFI, syncTraderPositions,
-  runDailyRefreshForCurated, scheduleDailyRefresh, getDailyRefreshState
+  runDailyRefreshForCurated, getDailyRefreshState
 } from "./eliteAnalysis";
 import {
   annotateSignal,
@@ -2188,24 +2188,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       );
     }
 
-    // startPeriodicRefresh() intentionally disabled — CSV analysis is the ONLY source of truth
-    startCanonicalPNLRefresh(); // runs 30s after startup, then every 24h (canonical PNL only)
-    scheduleDailyRefresh();     // armed: runs full incremental analysis at 3 AM UTC daily
-
-    // Auto-sync activity for all wallets on every server start (incremental, safe)
-    try {
-      const { rows } = await elitePool.query(
-        `SELECT wallet FROM elite_traders WHERE wallet NOT LIKE 'pending-%' ORDER BY wallet`
-      );
-      if (rows.length > 0) {
-        console.log(`[Startup] Syncing activity for ${rows.length} wallets...`);
-        runActivitySyncForAll(rows.map((r: any) => r.wallet), "Startup").catch((e: Error) =>
-          console.error("[Startup] Activity sync error:", e.message)
-        );
-      }
-    } catch (e: any) {
-      console.error("[Startup] Failed to start activity sync:", e?.message ?? e);
-    }
+    // CSV unique-book ingest is the only PnL source of truth. Do not re-fetch
+    // closed-positions from the API on every boot (that was the old Elite path).
+    console.log("[Startup] Elite API refresh skipped — PnL/ROI come from Python unique books + ingest.");
+    // startCanonicalPNLRefresh();
+    // scheduleDailyRefresh();
+    // runActivitySyncForAll on boot disabled — it was 60 wallets of [Elite/PNL] on every skip start.
   }).catch((e: Error) => console.error("[Elite] Seed error:", e?.message ?? e));
 
   // ── GET /api/elite/traders ─────────────────────────────────────────────────

@@ -97,13 +97,12 @@ export function loadTrustedCopyBooks(): Array<{ username: string; wallet: string
   const live = (uni?.live || [])
     .map((t) => ({ username: String(t.username || ""), wallet: String(t.wallet || "") }))
     .filter((t) => t.username || t.wallet);
-  if (live.length > 0) return live;
-  const data = loadJson<{ trusted?: Array<{ username?: string; wallet?: string }> }>(
-    "pnl_analysis/output/trusted_full_books.json",
-  );
-  return (data?.trusted || [])
-    .map((t) => ({ username: String(t.username || ""), wallet: String(t.wallet || "") }))
-    .filter((t) => t.username || t.wallet);
+  if (live.length > 0) {
+    console.log(`[take-plays] copy books from copy_universe live (${live.length}): ${live.map((t) => t.username).join(", ")}`);
+    return live;
+  }
+  console.warn("[take-plays] copy_universe.json has no live books — not falling back to the stale take-book 12");
+  return [];
 }
 
 export interface LaneBacktest {
