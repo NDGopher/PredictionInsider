@@ -284,6 +284,8 @@ def screen_one(wallet: str, username: str, why: str) -> dict[str, Any]:
         flags.append("stale")
     if closed > 12_000 or median < 5:
         flags.append("hard_skip_volume")
+    if mix.get("n", 0) >= 20_000 and roi < 5:
+        flags.append("grinder_or_mm")
     last30 = analysis.get("last_30d") or {}
     joinable = (
         40 <= closed <= 12_000
@@ -294,7 +296,8 @@ def screen_one(wallet: str, username: str, why: str) -> dict[str, Any]:
     )
     take = {"n": 0, "win_rate": 0.0, "roi_2c": 0.0}
     slices = unique_book_slices(csv_p, username, wallet)
-    if csv_p.exists() and closed >= 30:
+    skip_take = mix.get("n", 0) >= 20_000 or "grinder_or_mm" in flags or "hard_skip_volume" in flags
+    if csv_p.exists() and closed >= 30 and not skip_take:
         take = take_rule_stat(username, wallet)
         if int(take.get("n") or 0) >= 12 and _f(take.get("roi_2c")) < 0:
             flags.append("take_rule_negative")

@@ -1,0 +1,265 @@
+{
+  "wallet": "0x983eedfbd75803602e4a6e6ea9aab6dc6b9c6748",
+  "username": "3edmond.dantes",
+  "total_profit": 292265.8,
+  "raw_realized_pnl": 711679.38,
+  "dashboard_pnl": 292265.8,
+  "total_risked": 1151945.85,
+  "overall_roi": 25.37,
+  "redeemed_only_roi": 61.78,
+  "last_30d": {
+    "n": 4,
+    "pnl": 292265.8,
+    "cost": 1151945.85,
+    "roi": 25.37,
+    "wins": 2,
+    "win_rate": 50.0,
+    "first": "2026-08-15",
+    "last": "2026-08-18"
+  },
+  "last_60d": {
+    "n": 4,
+    "pnl": 292265.8,
+    "cost": 1151945.85,
+    "roi": 25.37,
+    "wins": 2,
+    "win_rate": 50.0,
+    "first": "2026-08-15",
+    "last": "2026-08-18"
+  },
+  "last_90d": {
+    "n": 4,
+    "pnl": 292265.8,
+    "cost": 1151945.85,
+    "roi": 25.37,
+    "wins": 2,
+    "win_rate": 50.0,
+    "first": "2026-08-15",
+    "last": "2026-08-18"
+  },
+  "last_event_date": "2026-08-17",
+  "days_since_last_event": 1,
+  "possibly_quit": false,
+  "win_rate": 50.0,
+  "avg_bet_size": 287986.46,
+  "median_market_stake": 278599.5,
+  "mean_market_stake": 287986.46,
+  "markets_traded": 4,
+  "total_events": 4,
+  "pseudo_sharpe": 3.52,
+  "profitable_days": 2,
+  "total_days": 4,
+  "hedge_count": 0,
+  "hedge_risk": 0.0,
+  "hedge_profit": 0.0,
+  "bond_count": 0,
+  "bond_risk": 0.0,
+  "bond_profit": 0.0,
+  "open_count": 1,
+  "open_risk": 186347.82,
+  "open_value": 184519.51,
+  "open_pnl": -1828.31,
+  "sport_stats": {
+    "SOCCER (LaLiga)": {
+      "net_profit": 294094.11,
+      "roi": 30.46,
+      "win_rate": 66.67,
+      "events": 3,
+      "avg_bet": 321866.01,
+      "median_bet": 370851.18
+    },
+    "SOCCER (UCL)": {
+      "net_profit": -1828.31,
+      "roi": -0.98,
+      "win_rate": 0.0,
+      "events": 1,
+      "avg_bet": 186347.82,
+      "median_bet": 186347.82
+    }
+  },
+  "market_stats": {
+    "Moneyline / Match": {
+      "net_profit": 292265.8,
+      "roi": 25.37,
+      "win_rate": 50.0,
+      "events": 4,
+      "avg_bet": 287986.46,
+      "median_bet": 278599.5
+    }
+  },
+  "sport_market_stats": {
+    "Soccer|Moneyline / Match": {
+      "net_profit": 294094.11,
+      "roi": 30.46,
+      "win_rate": 66.67,
+      "events": 3,
+      "avg_bet": 321866.01,
+      "median_bet": 370851.18
+    },
+    "UCL|Moneyline / Match": {
+      "net_profit": -1828.31,
+      "roi": -0.98,
+      "win_rate": 0.0,
+      "events": 1,
+      "avg_bet": 186347.82,
+      "median_bet": 186347.82
+    }
+  },
+  "price_stats": {
+    "Flip (40-60c)": {
+      "net_profit": 292265.8,
+      "roi": 25.37,
+      "win_rate": 50.0,
+      "events": 4
+    }
+  },
+  "side_stats": {
+    "Yes": {
+      "net_profit": 292265.8,
+      "roi": 25.37,
+      "positions": 4
+    }
+  },
+  "monthly_pnl": {
+    "2026-08": 292265.8
+  },
+  "top_wins": [
+    {
+      "title": "Will Deportivo Alav\u00e9s win on 2026-08-15?",
+      "slug": "lal-ala-get-2026-08-15-ala",
+      "eventSlug": "lal-ala-get-2026-08-15",
+      "sport_type": "SOCCER (LaLiga)",
+      "outcome": "Yes",
+      "conditionId": "0xe0c81e7a3a84597dad5db3101e6295b1f35aaedec4d511ee5121dd6571d65357",
+      "total_pnl": 516930.32,
+      "total_cost": 370851.18,
+      "avg_price": 0.4177,
+      "status": "closed"
+    },
+    {
+      "title": "Will RCD Espanyol de Barcelona win on 2026-08-16?",
+      "slug": "lal-esp-lev-2026-08-16-esp",
+      "eventSlug": "lal-esp-lev-2026-08-16",
+      "sport_type": "SOCCER (LaLiga)",
+      "outcome": "Yes",
+      "conditionId": "0x091cf26c853682dbdc91ee38d63b1838801842992bdd4dc761b39cffc531e106",
+      "total_pnl": 206562.69,
+      "total_cost": 177247.07,
+      "avg_price": 0.4618,
+      "status": "closed"
+    },
+    {
+      "title": "Will Fenerbah\u00e7e SK win on 2026-08-18?",
+      "slug": "ucl-fen-lyo-2026-08-18-fen",
+      "eventSlug": "ucl-fen-lyo-2026-08-18",
+      "sport_type": "SOCCER (UCL)",
+      "outcome": "Yes",
+      "conditionId": "0xfb6aebc7096dd036681802e29b2f28ff6d6c675eda504b672966047ff41cb5c3",
+      "total_pnl": -1828.31,
+      "total_cost": 186347.82,
+      "avg_price": 0.4797,
+      "status": "open"
+    },
+    {
+      "title": "Will RC Deportivo A Coru\u00f1a win on 2026-08-17?",
+      "slug": "lal-dep-elc-2026-08-17-dep",
+      "eventSlug": "lal-dep-elc-2026-08-17",
+      "sport_type": "SOCCER (LaLiga)",
+      "outcome": "Yes",
+      "conditionId": "0xd702d3b8523d0a3b23e5f4f4c0e98673923cf53181382ea190b721a0861e22a0",
+      "total_pnl": -429398.91,
+      "total_cost": 417499.78,
+      "avg_price": 0.4336,
+      "status": "closed"
+    }
+  ],
+  "top_losses": [
+    {
+      "title": "Will RC Deportivo A Coru\u00f1a win on 2026-08-17?",
+      "slug": "lal-dep-elc-2026-08-17-dep",
+      "eventSlug": "lal-dep-elc-2026-08-17",
+      "sport_type": "SOCCER (LaLiga)",
+      "outcome": "Yes",
+      "conditionId": "0xd702d3b8523d0a3b23e5f4f4c0e98673923cf53181382ea190b721a0861e22a0",
+      "total_pnl": -429398.91,
+      "total_cost": 417499.78,
+      "avg_price": 0.4336,
+      "status": "closed"
+    },
+    {
+      "title": "Will Fenerbah\u00e7e SK win on 2026-08-18?",
+      "slug": "ucl-fen-lyo-2026-08-18-fen",
+      "eventSlug": "ucl-fen-lyo-2026-08-18",
+      "sport_type": "SOCCER (UCL)",
+      "outcome": "Yes",
+      "conditionId": "0xfb6aebc7096dd036681802e29b2f28ff6d6c675eda504b672966047ff41cb5c3",
+      "total_pnl": -1828.31,
+      "total_cost": 186347.82,
+      "avg_price": 0.4797,
+      "status": "open"
+    },
+    {
+      "title": "Will RCD Espanyol de Barcelona win on 2026-08-16?",
+      "slug": "lal-esp-lev-2026-08-16-esp",
+      "eventSlug": "lal-esp-lev-2026-08-16",
+      "sport_type": "SOCCER (LaLiga)",
+      "outcome": "Yes",
+      "conditionId": "0x091cf26c853682dbdc91ee38d63b1838801842992bdd4dc761b39cffc531e106",
+      "total_pnl": 206562.69,
+      "total_cost": 177247.07,
+      "avg_price": 0.4618,
+      "status": "closed"
+    },
+    {
+      "title": "Will Deportivo Alav\u00e9s win on 2026-08-15?",
+      "slug": "lal-ala-get-2026-08-15-ala",
+      "eventSlug": "lal-ala-get-2026-08-15",
+      "sport_type": "SOCCER (LaLiga)",
+      "outcome": "Yes",
+      "conditionId": "0xe0c81e7a3a84597dad5db3101e6295b1f35aaedec4d511ee5121dd6571d65357",
+      "total_pnl": 516930.32,
+      "total_cost": 370851.18,
+      "avg_price": 0.4177,
+      "status": "closed"
+    }
+  ],
+  "top_sport": "OTHER",
+  "best_price_bucket": null,
+  "best_market": "Moneyline / Match",
+  "quality_score": 50,
+  "tier": "A-Tier",
+  "tags": [
+    "\u2b50\u2b50 A-Tier",
+    "\u2705 Yes-Side Specialist",
+    "\ud83d\udc0b Mega Whale"
+  ],
+  "tail_guide": "How to Tail 3edmond.dantes [A-Tier]\n\n\n\ud83d\udcc8 Stick to Moneylines (25.4% ROI over 4 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 100% of edge from 'Yes' side \u2014 copy that side only\n\u26a1 Typical market stake ~$278,599 (median per market) \u2014 alert at 3\u00d7 for high conviction",
+  "do_not_tail_sports": [],
+  "auto_tail_sports": [],
+  "do_not_tail_market_types": [],
+  "do_not_tail_sides": [],
+  "score_breakdown": {
+    "sharpe_score": 13.2,
+    "roi_score": 25,
+    "wr_score": 2.0,
+    "cons_score": 5.0,
+    "vol_score": 4.5,
+    "base_score": 49.7,
+    "flip_bonus": 0,
+    "leakage_penalty": 0,
+    "midzone_roi": 0,
+    "directional_roi": 25.37,
+    "roi_dashboard": 25.37,
+    "roi_redeemed_only": 61.78,
+    "last_60d_roi": 25.37,
+    "last_60d_pnl": 292265.8,
+    "recency_penalty": 0,
+    "roi_for_quality": 25.37,
+    "hedge_risk_frac": 0.0,
+    "hedge_profit_share": 0.0,
+    "markets_traded": 4,
+    "median_market_stake": 278599.5,
+    "mean_market_stake": 287986.46,
+    "pnl_sum_check_ok": true
+  }
+}

@@ -8,7 +8,7 @@ Tracking sites rank individual traders with Smart Score, win rate, profit factor
 
 Polydata Smart Score mix: PnL consistency 25%, WR quality 20%, risk 20%, diversification 15%, timing 10%, bot penalty 10%.
 
-Our mix: same first four slots, then **recency 10%** and **copyability 10%**.
+Our mix: PnL consistency 22%, WR 18%, risk 18%, diversification 8%, **recency 22%**, **copyability 12%**. DROP/DARK take-book names stay in the archive filter — they do not get a live copyability boost.
 
 ## Polydata Sports ranks (scraped profiles)
 
@@ -47,21 +47,21 @@ Copyable = the 12 matched sports books in `trusted_full_books.json`. Health KICK
 | Trader | Recency | Last | Our PnL | Our WR | PD WR | ΔWR | Accuracy | Closed |
 |--------|---------|------|--------:|-------:|------:|----:|----------|-------:|
 | Supah9ga | HOT | 2026-08-15 | +$2,001,694 | 52.23% | 53.0% | -0.8 | matched | 659 |
-| 0x5966Db1fE50763C9e3C014d756369BAd07E1F804 | DARK | 2026-07-16 | +$3,458,340 | 58.24% | 62.0% | -3.8 | matched | 123 |
-| WTSA | HOT | 2026-08-17 | +$1,154,833 | 54.2% | 55.0% | -0.8 | matched | 71 |
-| 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a | HOT | 2026-08-19 | +$670,157 | 53.86% | 58.0% | -4.1 | matched | 423 |
-| kch123 | DROP | 2026-07-01 | +$12,061,185 | 58.0% | 55.0% | +3.0 | matched | 3818 |
+| WTSA | HOT | 2026-08-17 | +$1,154,301 | 53.44% | 55.0% | -1.6 | matched | 71 |
+| 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a | HOT | 2026-08-19 | +$670,123 | 53.86% | 58.0% | -4.1 | matched | 423 |
 | DLEK | COLD | 2026-07-30 | +$1,433,484 | 55.62% | 55.0% | +0.6 | matched | 1165 |
-| HedgeMaster88 | DROP | 2026-05-27 | +$931,923 | 53.39% | 53.0% | +0.4 | matched | 137 |
 | Vetch | COLD | 2026-08-02 | +$321,367 | 60.87% | 61.0% | -0.1 | matched | 694 |
-| Capman | DROP | 2026-04-08 | +$267,281 | 55.09% | 54.0% | +1.1 | matched | 15803 |
+| 0x5966Db1fE50763C9e3C014d756369BAd07E1F804 | DARK | 2026-07-16 | +$3,458,340 | 58.24% | 62.0% | -3.8 | matched | 123 |
+| kch123 | DROP | 2026-07-01 | +$12,061,185 | 58.0% | 55.0% | +3.0 | matched | 3818 |
+| HedgeMaster88 | DROP | 2026-05-27 | +$931,923 | 53.39% | 53.0% | +0.4 | matched | 137 |
 | ckw | DARK | 2026-07-26 | +$839,272 | 54.93% | 56.0% | -1.1 | matched | 2533 |
+| Capman | DROP | 2026-04-08 | +$267,281 | 55.09% | 54.0% | +1.1 | matched | 15803 |
 | Bienville | DROP | 2026-04-30 | +$391,645 | 50.15% | 52.0% | -1.9 | matched | 2404 |
 | tcp2 | DROP | 2026-04-16 | +$539,799 | 49.93% | 55.0% | -5.1 | matched | 20810 |
 
-**Take book (12):** Supah9ga, 0x5966Db1fE50763C9e3C014d756369BAd07E1F804, WTSA, 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a, kch123, DLEK, HedgeMaster88, Vetch, Capman, ckw, Bienville, tcp2
+**Take book (12):** Supah9ga, WTSA, 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a, DLEK, Vetch, 0x5966Db1fE50763C9e3C014d756369BAd07E1F804, kch123, HedgeMaster88, ckw, Capman, Bienville, tcp2
 
-**Kicked / do-not-copy (25):** GoalLineGhost, fkgggg2, HomeRunHazard, iDropMyHotdog, wr0ngw4yb3tt0r, xytest, 0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563, quavoo, EIf, bigmoneyloser00, TheArena, RandomPunter, 0x53eCc53E7, middleoftheocean, 0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6, redskinrick, Qpkwks, 877s8d8g89I9f8d98fd99ww2, JPMorgan101, CemeterySun, ferrariChampions2026, 9sh8f, TheMangler, LynxTitan, 0xwise
+**Kicked / do-not-copy (26):** GoalLineGhost, fkgggg2, HomeRunHazard, xytest, iDropMyHotdog, wr0ngw4yb3tt0r, 0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563, quavoo, EIf, TheArena, Qpkwks, ferrariChampions2026, TheMangler, 0x53eCc53E7, RandomPunter, bigmoneyloser00, 0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6, middleoftheocean, redskinrick, 877s8d8g89I9f8d98fd99ww2, 0p0jogggg, JPMorgan101, CemeterySun, 9sh8f, 0xwise, LynxTitan
 
 ## Notes
 

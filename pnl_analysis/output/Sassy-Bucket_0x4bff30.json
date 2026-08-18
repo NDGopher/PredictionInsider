@@ -1,36 +1,71 @@
 {
   "wallet": "0x4bff30af91642dc7d2b19a8664378fe55c45fc26",
   "username": "Sassy-Bucket",
-  "total_profit": -2643421.79,
-  "raw_realized_pnl": -2643421.79,
-  "total_risked": 46614493.78,
-  "overall_roi": -5.67,
-  "win_rate": 47.21,
-  "avg_bet_size": 70021.89,
+  "total_profit": -3532480.3,
+  "raw_realized_pnl": -2570969.12,
+  "dashboard_pnl": -3532480.3,
+  "total_risked": 46621862.71,
+  "overall_roi": -7.58,
+  "redeemed_only_roi": -5.51,
+  "last_30d": {
+    "n": 157,
+    "pnl": 1012609.41,
+    "cost": 6419240.37,
+    "roi": 15.77,
+    "wins": 72,
+    "win_rate": 45.9,
+    "first": "2026-07-21",
+    "last": "2026-08-19"
+  },
+  "last_60d": {
+    "n": 393,
+    "pnl": -542362.55,
+    "cost": 22988959.7,
+    "roi": -2.36,
+    "wins": 186,
+    "win_rate": 47.3,
+    "first": "2026-06-20",
+    "last": "2026-08-19"
+  },
+  "last_90d": {
+    "n": 572,
+    "pnl": 102391.61,
+    "cost": 35797881.21,
+    "roi": 0.29,
+    "wins": 272,
+    "win_rate": 47.6,
+    "first": "2026-05-21",
+    "last": "2026-08-19"
+  },
+  "last_event_date": "2026-08-19",
+  "days_since_last_event": 0,
+  "possibly_quit": false,
+  "win_rate": 46.91,
+  "avg_bet_size": 70032.97,
   "median_market_stake": 42941.47,
-  "mean_market_stake": 70021.89,
+  "mean_market_stake": 70032.97,
   "markets_traded": 665,
   "total_events": 517,
-  "pseudo_sharpe": -2.58,
-  "profitable_days": 47,
-  "total_days": 110,
+  "pseudo_sharpe": -2.63,
+  "profitable_days": 46,
+  "total_days": 111,
   "hedge_count": 4,
   "hedge_risk": 49934.38,
   "hedge_profit": 6701.39,
   "bond_count": 0,
   "bond_risk": 0.0,
   "bond_profit": 0.0,
-  "open_count": 31,
-  "open_risk": 1092892.04,
-  "open_value": 188067.46,
-  "open_pnl": -797740.02,
+  "open_count": 0,
+  "open_risk": 0.0,
+  "open_value": 0.0,
+  "open_pnl": 0.0,
   "sport_stats": {
     "MLB": {
-      "net_profit": -127113.16,
-      "roi": -0.65,
-      "win_rate": 50.0,
+      "net_profit": -166683.71,
+      "roi": -0.85,
+      "win_rate": 49.44,
       "events": 361,
-      "avg_bet": 54402.29,
+      "avg_bet": 54422.74,
       "median_bet": 37400.26
     },
     "NBA": {
@@ -70,7 +105,7 @@
       "roi": -1.25,
       "win_rate": 45.56,
       "events": 90,
-      "avg_bet": 52304.2,
+      "avg_bet": 52304.03,
       "median_bet": 33088.47
     },
     "WNBA": {
@@ -83,13 +118,21 @@
     }
   },
   "market_stats": {
+    "Draw": {
+      "net_profit": -47817.94,
+      "roi": -40.59,
+      "win_rate": 50.0,
+      "events": 2,
+      "avg_bet": 58903.87,
+      "median_bet": 58903.87
+    },
     "Moneyline / Match": {
-      "net_profit": -1853001.96,
-      "roi": -7.28,
-      "win_rate": 48.93,
-      "events": 234,
-      "avg_bet": 108765.09,
-      "median_bet": 82990.1
+      "net_profit": -1828093.2,
+      "roi": -7.22,
+      "win_rate": 48.48,
+      "events": 232,
+      "avg_bet": 109194.91,
+      "median_bet": 84879.88
     },
     "Spread": {
       "net_profit": -483803.55,
@@ -100,29 +143,29 @@
       "median_bet": 50663.87
     },
     "Totals (O/U)": {
-      "net_profit": -1162805.64,
-      "roi": -5.86,
-      "win_rate": 46.04,
+      "net_profit": -1179467.0,
+      "roi": -5.94,
+      "win_rate": 45.8,
       "events": 418,
-      "avg_bet": 47494.98,
-      "median_bet": 30778.82
+      "avg_bet": 47512.62,
+      "median_bet": 30775.48
     }
   },
   "sport_market_stats": {
     "MLB|Moneyline / Match": {
-      "net_profit": -785733.0,
-      "roi": -13.47,
-      "win_rate": 52.7,
+      "net_profit": -808642.18,
+      "roi": -13.86,
+      "win_rate": 51.35,
       "events": 74,
-      "avg_bet": 78841.82,
+      "avg_bet": 78841.78,
       "median_bet": 53963.89
     },
     "MLB|Totals (O/U)": {
-      "net_profit": 658619.83,
-      "roi": 4.77,
-      "win_rate": 49.3,
+      "net_profit": 641958.47,
+      "roi": 4.65,
+      "win_rate": 48.95,
       "events": 287,
-      "avg_bet": 48100.8,
+      "avg_bet": 48126.54,
       "median_bet": 32687.73
     },
     "NBA|Moneyline / Match": {
@@ -165,13 +208,21 @@
       "avg_bet": 67356.2,
       "median_bet": 41881.14
     },
+    "Other|Draw": {
+      "net_profit": -47817.94,
+      "roi": -40.59,
+      "win_rate": 50.0,
+      "events": 2,
+      "avg_bet": 58903.87,
+      "median_bet": 58903.87
+    },
     "Other|Moneyline / Match": {
-      "net_profit": -807452.58,
-      "roi": -5.82,
-      "win_rate": 51.65,
-      "events": 92,
-      "avg_bet": 150723.42,
-      "median_bet": 132398.74
+      "net_profit": -759634.65,
+      "roi": -5.53,
+      "win_rate": 51.69,
+      "events": 90,
+      "avg_bet": 152763.85,
+      "median_bet": 135139.65
     },
     "Other|Spread": {
       "net_profit": 255000.0,
@@ -202,7 +253,7 @@
       "roi": -13.58,
       "win_rate": 44.59,
       "events": 74,
-      "avg_bet": 49034.28,
+      "avg_bet": 49034.08,
       "median_bet": 31384.43
     },
     "WNBA|Moneyline / Match": {
@@ -230,9 +281,9 @@
       "events": 50
     },
     "Flip (40-60c)": {
-      "net_profit": -331930.72,
-      "roi": -0.99,
-      "win_rate": 48.5,
+      "net_profit": -348592.08,
+      "roi": -1.04,
+      "win_rate": 48.31,
       "events": 534
     },
     "Longshot (0-20c)": {
@@ -248,9 +299,9 @@
       "events": 4
     },
     "Underdog (20-40c)": {
-      "net_profit": -1696048.37,
-      "roi": -55.08,
-      "win_rate": 26.47,
+      "net_profit": -1718957.55,
+      "roi": -55.82,
+      "win_rate": 25.0,
       "events": 68
     }
   },
@@ -261,8 +312,8 @@
       "positions": 13
     },
     "Specific Selection": {
-      "net_profit": -3049991.29,
-      "roi": -6.89,
+      "net_profit": -3089561.83,
+      "roi": -6.98,
       "positions": 641
     },
     "Yes": {
@@ -273,10 +324,10 @@
   },
   "monthly_pnl": {
     "2026-04": -1022010.94,
-    "2026-05": -2838863.18,
-    "2026-06": 57299.19,
+    "2026-05": -2814122.12,
+    "2026-06": 32558.13,
     "2026-07": -810384.26,
-    "2026-08": 1114348.04
+    "2026-08": 1074777.5
   },
   "top_wins": [
     {
@@ -410,10 +461,11 @@
   "tags": [
     "\u2b50 C-Tier",
     "\ud83d\udc0b Mega Whale",
+    "Recency penalty \u221210 Q",
     "\u26d4 Fade NBA",
     "\u26d4 Fade Spreads"
   ],
-  "tail_guide": "How to Tail Sassy-Bucket [C-Tier]\n\n\n\ud83d\udd34 DO NOT TAIL:\n   NBA \u2014 ROI -41.8%, $-1,169,191\n   WNBA \u2014 ROI -23.0%, $-748,653\n   OTHER \u2014 ROI -3.9%, $-552,453\n\n\u26d4 Mute all Spread bets (-38.4% ROI)\n\u26d4 Mute all O/U bets (-5.9% ROI)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\u26a1 Typical market stake ~$42,941 (median per market) \u2014 alert at 3\u00d7 for high conviction\n   (Mean $70,022 \u2014 some very large markets; size to the median unless you match their whale plays)",
+  "tail_guide": "How to Tail Sassy-Bucket [C-Tier]\n\n\n\ud83d\udd34 DO NOT TAIL:\n   NBA \u2014 ROI -41.8%, $-1,169,191\n   WNBA \u2014 ROI -23.0%, $-748,653\n   OTHER \u2014 ROI -3.9%, $-552,453\n\n\u26d4 Mute all Spread bets (-38.4% ROI)\n\u26d4 Mute all O/U bets (-5.9% ROI)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\u26a1 Typical market stake ~$42,941 (median per market) \u2014 alert at 3\u00d7 for high conviction\n   (Mean $70,033 \u2014 some very large markets; size to the median unless you match their whale plays)",
   "do_not_tail_sports": [
     "NBA",
     "NHL",
@@ -430,20 +482,24 @@
     "sharpe_score": 0,
     "roi_score": 0,
     "wr_score": 0,
-    "cons_score": 4.3,
+    "cons_score": 4.1,
     "vol_score": 5,
-    "base_score": 9.3,
+    "base_score": 9.1,
     "flip_bonus": 0,
     "leakage_penalty": 15,
-    "midzone_roi": -28.0,
-    "directional_roi": -7.52,
-    "roi_dashboard": -5.67,
-    "roi_for_quality": -7.52,
+    "midzone_roi": -28.4,
+    "directional_roi": -7.6,
+    "roi_dashboard": -7.58,
+    "roi_redeemed_only": -5.51,
+    "last_60d_roi": -2.36,
+    "last_60d_pnl": -542362.55,
+    "recency_penalty": 10,
+    "roi_for_quality": -7.6,
     "hedge_risk_frac": 0.001,
     "hedge_profit_share": 0.0,
     "markets_traded": 665,
     "median_market_stake": 42941.47,
-    "mean_market_stake": 70021.89,
+    "mean_market_stake": 70032.97,
     "pnl_sum_check_ok": true
   }
 }
