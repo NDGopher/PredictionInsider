@@ -36,12 +36,37 @@ export const MARKET_MAKER_WALLETS = new Set<string>([
   "0xd9e0aaca471f489be338fd0f91a26e8669a805f2", // 0xD9E0AACa — 97.4% both-sides, Sharpe 13.34 algorithmic curve, DO NOT TAIL
 ]);
 
-/** Drop from live /api/signals after 2026-08-18 hold-to-res regrade (last-90d blow-ups). */
+/** Drop from live /api/signals after 2026-08-18 full-open regrade. Quit, blow-up, or un-tailable. */
 export const SIGNAL_KICK_WALLETS = new Set<string>([
-  "0x68146921df11eab44296dc4e58025ca84741a9e7", // LynxTitan — last 90d −92% hold-to-res (n=222)
-  "0x0b9cae2b0dfe7a71c413e0604eaac1c352f87e44", // geniusMC — last 90d −21%
-  "0x53ecc53e7a69aad0e6dda60264cc2e363092df91", // 0x53eCc53E7 — last 90d −49.5% (n=186); do not tail until recovered
-  "0x5268527977f700f9bf9b6d5cd843859e4e70135d", // HomeRunHazard — 97% WR / ~1% ROI on $124M; favorite grinder, impossible to tail
+  "0x68146921df11eab44296dc4e58025ca84741a9e7", // LynxTitan — last 60d dashboard −44%
+  "0x0b9cae2b0dfe7a71c413e0604eaac1c352f87e44", // geniusMC — stale / thin last 60d
+  "0x53ecc53e7a69aad0e6dda60264cc2e363092df91", // 0x53eCc53E7 — last 60d dashboard −60%
+  "0x5268527977f700f9bf9b6d5cd843859e4e70135d", // HomeRunHazard — ~1% ROI on 24k markets; volume grinder
+  "0xdbb9b3616f733e19278d1ca6f3207a8344b5ed8d", // bigmoneyloser00 — quit, last dated Apr 2026
+  "0x6b7c75862e64d6e976d2c08ad9f9b54add6c5f83", // tcp2 — quit, last dated Apr 2026
+  "0xf588b19afe63e1aba00f125f91e3e3b0fdc62b81", // RandomPunter — quit, last dated May 2026
+  "0x224a89dbe0db0d6124b335edabd15b3f877da3d5", // wr0ngw4yb3tt0r — hold-to-res −6% at volume
+  "0xc5b5bbd42624a8f0c8dfa90221913007d8c77e80", // Capman — quit, last dated Apr 2026
+  "0xdc41c39b95453c943174f369926018f6963bdd7e", // quavoo — hold-to-res −10.5%; closed-only sample was fake
+  "0x9703676286b93c2eca71ca96e8757104519a69c2", // TheMangler — hold-to-res −5.8% at volume
+  "0x37c1874a60d348903594a96703e0507c518fc53a", // CemeterySun — quit, last dated Apr 2026
+  "0x9f138019d5481fdc5c59b93b0ae4b9b817cce0fd", // Bienville — quit, last dated Apr 2026
+  "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee", // kch123 — dormant since 2026-07-01
+  "0x92672c80d36dcd08172aa1e51dface0f20b70f9a", // ckw — last 90d collapsed
+  "0x6c743aafd813475986dcd930f380a1f50901bd4e", // middleoftheocean — dormant since 2026-07-01
+  "0xe24838258b572f1771dffba3bcdde57a78def293", // redskinrick — quit, last dated Apr 2026
+  "0xf9b5f7293b8258be8b0e1f03717c5d2ad94809ee", // 9sh8f — quit, last dated Apr 2026
+  "0x1b5e20a28d7115f10ce6190a5ae9a91169be83f8", // 877s8d8g89I9f8d98fd99ww2 — quit, last dated May 2026
+  "0xb6d6e99d3bfe055874a04279f659f009fd57be17", // JPMorgan101 — quit, last dated Jul 2026
+  "0x036c159d5a348058a81066a76b89f35926d4178d", // HedgeMaster88 — quit, last dated May 2026
+  "0x9ee8bbc36d378af72e5f6b8e2ea2eb67c05a89de", // Qpkwks — median stake ~$92k, impossible to join
+  "0xcb6ed9332a8fd1b930893c705dd234f37aa248e6", // 0xCb6Ed933… — quit, last dated Mar 2026
+  "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563", // 0x2c335066… — −2.8% hold-to-res on 6k markets
+  "0xd6966eb1ae7b52320ba7ab1016680198c9e08a49", // EIf — −3.4% on 4.5k markets
+  "0x3471a897e56a8d3621ca79af87dae4325977f17e", // xytest — 2.5% on 4k markets, no copyable edge
+  "0x52ecea7b3159f09db589e4f4ee64872fd0bba6f3", // fkgggg2 — 1.9% volume grinder
+  "0xc49fe658479db29e1a2fefebf0735f657dca9e05", // iDropMyHotdog — 1.1% on 2.4k markets
+  "0xafd492974cd531aae7786210438ae46b42047e61", // TheArena — −0.8% hold-to-res at volume
 ]);
 
 export const CURATED_TRADERS: { wallet: string; username: string; url?: string }[] = [
@@ -103,12 +128,11 @@ export const CURATED_TRADERS: { wallet: string; username: string; url?: string }
  * Last refresh: 2026-08-18 — dropped LB names that graded C-tier; added WTSA, Qpkwks, 0xE30E.
  */
 export const DISCOVERED_ELITES: { wallet: string; username: string; url?: string; notes?: string }[] = [
-  { wallet: "0xb6d6e99d3bfe055874a04279f659f009fd57be17", username: "JPMorgan101", url: "https://polymarket.com/@JPMorgan101", notes: "A-Tier Q=54, 56% ROI, 252 events (2026-08 regrade)" },
-  { wallet: "0xcb6ed9332a8fd1b930893c705dd234f37aa248e6", username: "0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6", url: "https://polymarket.com/@0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6-1774405511911", notes: "S-Tier Q=98, 33% ROI — thin sample (23 events)" },
-  { wallet: "0x8a3ab8120807bd64a3de48695110e390fa2ceb9a", username: "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a", url: "https://polymarket.com/@0x8a3aB8120807bD64a3De48695110e390fa2ceB9a-1771005965025", notes: "A-Tier Q=61, 19% ROI, 425 events" },
-  { wallet: "0x04d5524a0a5af2eca6e39e03defc261d42fe66d8", username: "WTSA", url: "https://polymarket.com/@WTSA", notes: "New 2026-08: S-Tier Q=72, 58% ROI, ALL+MONTH+WEEK sports LB" },
-  { wallet: "0x9ee8bbc36d378af72e5f6b8e2ea2eb67c05a89de", username: "Qpkwks", url: "https://polymarket.com/@Qpkwks", notes: "New 2026-08: A-Tier Q=57, 61% ROI soccer specialist" },
-  { wallet: "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87", username: "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87", url: "https://polymarket.com/@0xE30E74595517de48f1FB19f4553dd3d9F1E96B87-1772612985000", notes: "New 2026-08: B-Tier Q=46, 38% ROI — passes signal Q gate" },
+  { wallet: "0x8a3ab8120807bd64a3de48695110e390fa2ceb9a", username: "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a", url: "https://polymarket.com/@0x8a3aB8120807bD64a3De48695110e390fa2ceB9a-1771005965025", notes: "KEEP 2026-08-18: hold-to-res 14.3% (435 mkts), still active" },
+  { wallet: "0x04d5524a0a5af2eca6e39e03defc261d42fe66d8", username: "WTSA", url: "https://polymarket.com/@WTSA", notes: "KEEP 2026-08-18: 20% hold-to-res, last 60d +20%, active" },
+  { wallet: "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87", username: "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87", url: "https://polymarket.com/@0xE30E74595517de48f1FB19f4553dd3d9F1E96B87-1772612985000", notes: "KEEP 2026-08-18: tennis, last 60d +13%" },
+  { wallet: "0xfe787d2da716d60e8acff57fb87eb13cd4d10319", username: "ferrariChampions2026", url: "https://polymarket.com/@ferrariChampions2026", notes: "KEEP 2026-08-18 full-open grade: 14.2% hold-to-res / last 60d +27%. Hedge-heavy, median ~$4k." },
+  { wallet: "0x0346afae2603313d2bbee96b628536c8cbe352a5", username: "GoalLineGhost", url: "https://polymarket.com/@GoalLineGhost", notes: "KEEP 2026-08-18: 49.8% hold-to-res (11.8k mkts), last 60d +48%, median ~$1.3k" },
 ];
 
 // ─── In-memory set for fast signal lookup ────────────────────────────────────
@@ -245,10 +269,9 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
     doNotTail: ["NFL"],
   },
   "0x7ea571c40408f340c1c8fc8eaacebab53c1bde7b": { // Cannae — OVERLAY ONLY. Domestic soccer moneyline NO fader.
-    // 2026-08-18 regrade: closed-only books were win-biased (unredeemed losers stayed status=open).
-    // Honest hold-to-res including settled-open is much worse than the old 40% closed ROI.
-    // Keep as a soccer ML NO overlay only — never an unfiltered 2+ consensus voter.
-    // Still mute: UCL, NBA/NFL/NHL, spreads, totals, draw markets, YES side.
+    // 2026-08-18 full-open: dashboard PnL = realized+cash (open book ~−$16.5M MTM; portfolio ~$45k).
+    // Last 60d size-weighted dashboard can still print (+45%) off World Cup bombs; last 30d copy WR is ~22%.
+    // Never an unfiltered 2+ voter. Mute UCL, NBA/NFL/NHL, spreads, totals, draws, YES.
     autoTail:                ["Soccer"],
     doNotTail:               ["UCL", "NBA", "NFL", "NHL", "eSports", "CS2", "Valorant", "LoL", "Dota2", "Tennis", "College Sports", "Other", "UFC/MMA", "Politics", "Finance/Crypto"],
     doNotTailMarketTypes:    ["total", "spread"],

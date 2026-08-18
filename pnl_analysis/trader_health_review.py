@@ -251,6 +251,8 @@ def decide(row: dict) -> tuple[str, str]:
     wr = overall.get("win_rate") or 0
     if n >= GRINDER_MIN_N and wr >= GRINDER_WR and roi < 8:
         return "KICK", f"{wr:.1f}% WR on {n} markets at {roi:.1f}% ROI — favorite/bond grinder, impossible to copy."
+    if n >= 2000 and roi < 4:
+        return "KICK", f"{n} markets at {roi:.1f}% ROI — volume grinder with no copyable edge. Do not tail."
 
     if n < 15:
         if roi >= 20 and n >= 8:

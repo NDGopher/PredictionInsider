@@ -271,7 +271,7 @@ def _get_json_list_with_retry(url: str, params: dict, label: str):
     return None
 
 
-def fetch_positions(address, endpoint, max_pages=None, page_limit=None):
+def fetch_positions(address, endpoint, max_pages=None, page_limit=None, extra_params=None):
     """Fetch positions. Open books support limit=500; closed-positions max is 50.
 
     The /positions API keeps returning a full last page after the unique book is
@@ -282,10 +282,13 @@ def fetch_positions(address, endpoint, max_pages=None, page_limit=None):
         page_limit = 500 if endpoint == "positions" else 50
     base_url = f"https://data-api.polymarket.com/{endpoint}"
     params   = {"user": address, "limit": page_limit, "offset": 0}
+    if extra_params:
+        params.update(extra_params)
     all_data = []
     seen: set = set()
     page     = 0
     max_open_rows = 40_000
+    sort_lbl = extra_params.get("sortBy") if extra_params else None
 
     while True:
         if max_pages is not None and page >= max_pages:
@@ -293,7 +296,7 @@ def fetch_positions(address, endpoint, max_pages=None, page_limit=None):
         if endpoint == "positions" and len(all_data) >= max_open_rows:
             print(f"    [cap] {endpoint} stopped at {len(all_data):,} unique rows")
             break
-        label = f"{endpoint} offset={params['offset']} limit={page_limit}"
+        label = f"{endpoint} offset={params['offset']} limit={page_limit}" + (f" sort={sort_lbl}" if sort_lbl else "")
         data = _get_json_list_with_retry(base_url, params, label)
         if data is None:
             break
@@ -318,9 +321,32 @@ def fetch_positions(address, endpoint, max_pages=None, page_limit=None):
             break
         params["offset"] += page_limit
         page += 1
+        if page % 20 == 0:
+            print(f"    … {endpoint} page {page}, unique={len(all_data):,}")
         time.sleep(PAGE_SLEEP_SEC)
 
     return pd.DataFrame(all_data)
+
+
+def fetch_open_positions_complete(address: str) -> pd.DataFrame:
+    """Default sort plus CURRENT DESC / CASHPNL ASC so last-60d zeros are not hidden behind whale March losses."""
+    frames = []
+    for extra in (
+        None,
+        {"sortBy": "CURRENT", "sortDirection": "DESC"},
+        {"sortBy": "CASHPNL", "sortDirection": "ASC"},
+    ):
+        frames.append(fetch_positions(address, "positions", extra_params=extra))
+        time.sleep(PAGE_SLEEP_SEC)
+    nonempty = [f for f in frames if f is not None and not f.empty]
+    if not nonempty:
+        return pd.DataFrame()
+    combined = pd.concat(nonempty, ignore_index=True)
+    combined = normalize_position_keys(combined)
+    if "asset" in combined.columns:
+        combined = combined.drop_duplicates(subset=["asset"], keep="last")
+    print(f"    📦 Open unique after multi-sort: {len(combined):,}")
+    return combined
 
 
 def _csv_closed_open_counts(csv_path: Path) -> tuple[int, int]:
@@ -405,18 +431,14 @@ def fetch_recent_and_merge(address, username):
     prev_closed, prev_open = _csv_closed_open_counts(csv_path)
     closed_pages = 80
     is_mm = address.lower() == MM_WALLET
-    # Always pull the full /positions book except the endless MM wallet.
-    # Partial open pages left May–Aug unredeemed losers out of last-60d windows.
-    open_pages: int | None
-    if is_mm:
-        open_pages = 2
-        print(f"    🔄 Incremental: {closed_pages} closed pages + {open_pages} open (MM skip full book)…")
-    else:
-        open_pages = None
-        print(f"    🔄 Full-open merge: {closed_pages} closed pages + ALL open ({prev_open:,} existing open)…")
     df_closed = fetch_positions(address, "closed-positions", max_pages=closed_pages)
     time.sleep(PAGE_SLEEP_SEC)
-    df_open = fetch_positions(address, "positions", max_pages=open_pages)
+    if is_mm:
+        print(f"    🔄 Incremental: {closed_pages} closed pages + 2 open (MM skip full book)…")
+        df_open = fetch_positions(address, "positions", max_pages=2)
+    else:
+        print(f"    🔄 Full-open merge: {closed_pages} closed pages + unique open ({prev_open:,} existing open)…")
+        df_open = fetch_open_positions_complete(address)
     if df_closed.empty and df_open.empty:
         return csv_path
     if df_closed.empty and prev_closed >= MIN_PREV_CLOSED_TO_GUARD:
@@ -455,9 +477,13 @@ def collect_and_save(address, username):
             existing = None
 
     is_mm = address.lower() == MM_WALLET
-    df_closed = fetch_positions(address, "closed-positions")
+    # Newest 10k closed (200 pages × 50) is enough to grade a new wallet.
+    # Full closed history on whales never finishes and the API has no resume token.
+    closed_pages = 200
+    print(f"    🔄 Full fetch: up to {closed_pages} closed pages + unique open book")
+    df_closed = fetch_positions(address, "closed-positions", max_pages=closed_pages)
     time.sleep(PAGE_SLEEP_SEC)
-    df_open = fetch_positions(address, "positions", max_pages=(2 if is_mm else None))
+    df_open = fetch_open_positions_complete(address) if not is_mm else fetch_positions(address, "positions", max_pages=2)
 
     # Do not replace a deep closed history with open-only data (typical after 429 on page 0).
     if df_closed.empty and not df_open.empty and prev_closed >= MIN_PREV_CLOSED_TO_GUARD:

@@ -56,6 +56,29 @@ STALE_ENTRY = 0.88  # live signals drop avgEntry > 0.88
 LIVE_LO, LIVE_HI = 0.10, 0.90
 SLIPS = (0.0, 0.01, 0.02, 0.05)
 MARKET_MAKERS = {"0xd9e0aaca471f489be338fd0f91a26e8669a805f2"}
+
+
+def load_skip_wallets() -> set[str]:
+    """KICK / quit / un-tailable wallets from the latest health review + MM."""
+    skip = set(MARKET_MAKERS)
+    health_path = OUTPUT_DIR / "trader_health.json"
+    if health_path.exists():
+        try:
+            data = json.loads(health_path.read_text(encoding="utf-8"))
+            for row in data.get("traders") or []:
+                if not isinstance(row, dict):
+                    continue
+                action = str(row.get("action") or "")
+                wallet = str(row.get("wallet") or "").lower()
+                if not wallet:
+                    continue
+                if action == "KICK" or row.get("possibly_quit") or row.get("untailable"):
+                    skip.add(wallet)
+                if row.get("username") == "HomeRunHazard":
+                    skip.add(wallet)
+        except Exception as e:
+            print(f"[warn] trader_health.json skip list: {e}")
+    return skip
 ELITE_TS = Path(__file__).resolve().parents[1] / "server" / "eliteAnalysis.ts"
 
 
@@ -642,7 +665,8 @@ def plays_payload(sub: pd.DataFrame, n: int = 20) -> list[dict]:
 def main() -> int:
     filters = load_category_filters()
     aliases = load_aliases()
-    print(f"Loaded {len(filters)} category filters, {len(aliases)} alias keys")
+    skip_wallets = load_skip_wallets()
+    print(f"Loaded {len(filters)} category filters, {len(aliases)} alias keys, {len(skip_wallets)} skip wallets")
 
     all_markets: list[pd.DataFrame] = []
     snaps_by_wallet: dict[str, list[dict]] = {}
@@ -650,6 +674,9 @@ def main() -> int:
     for wallet, username in roster_traders():
         w = wallet.lower()
         if w in MARKET_MAKERS:
+            continue
+        if w in skip_wallets:
+            print(f"  skip {username}: kicked/quit/un-tailable")
             continue
         # Collapse known aliases onto the canonical wallet id for consensus counting
         canon = aliases.get(username.lower()) or aliases.get(w) or w

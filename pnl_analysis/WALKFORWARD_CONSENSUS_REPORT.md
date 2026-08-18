@@ -4,102 +4,78 @@ Run: `npm run backtest:consensus`
 Health: `npm run backtest:health`  
 Frontend: **Strategies** (`/strategies`) reads `pnl_analysis/output/tail_strategies.json` and live `/api/signals`.
 
-## Why last 20 used to freeze in April
+## What was wrong with the last-60d numbers
 
-Three stacked bugs, not “the market died”:
+Three bugs stacked:
 
-1. **Closed-only books are win-biased.** Losers stay on `/positions` with `status=open` and `curPrice` 0 or 1 until the wallet redeems. Winners get redeemed and show up as closed.
-2. Incremental ingest only pulled **20 open pages** (~1,000 rows). Cannae/RN1/CemeterySun have thousands of unredeemed settled rows, so May–August never merged.
-3. Many of those rows have **null `endDate`**. We now parse `20XX-MM-DD` from slug/title and drop still-future markets.
+1. **Redeem timestamps are not event dates.** Closed winners get a fresh `timestamp`; unredeemed losers often have none. Last-60d windows looked like 100% winners.
+2. **`realizedPnl` ignored `cashPnl`.** Open settled losers live in `/positions` with `curPrice` 0 and large negative `cashPnl`. Cannae’s closed-only “+44% ROI / +$31M” was redeemed winners only. After merging the unique open book, dashboard PnL is **+$6.8M / +12.9%**, and the open book MTM is about **−$16.5M**. Polymarket portfolio value is ~$45k.
+3. **`/positions` repeats the last page forever** after ~10,500 rows, and pandas was reading 77-digit `asset` ids as float64 so merges did not dedupe.
 
-Copy-all hold-to-res **including settled-open**, dates through today:
+Last 30/60/90d are now **dashboard PnL** (`realizedPnl + cashPnl`) dated from `endDate` / slug, including redeemable losers.
+
+Cannae **last 60d size-weighted dashboard is still +45%** because of a handful of World Cup bombs. **Last 30d copy WR is 21.8%.** You will not get his size. Overlay soccer ML NO only; never an unfiltered 2+ voter.
+
+## Copy-all baseline (tailable wallets only)
+
+Quitters, MMs, $90k-median whales, and volume grinders (~1% ROI on thousands of markets) are skipped.
 
 | Book | n | WR | Implied | ROI |
 |------|--:|---:|--------:|----:|
 | Previous closed-only copy-all | 267,698 | 58.2% | 53.0% | **+3.7%** |
-| **Now (through 2026-08-19 horizon)** | 327,025 | 54.1% | 51.9% | **−2.9%** |
+| Prior “full” book still including kicked wallets | 327,025 | 54.1% | 51.9% | **−2.9%** |
+| **Now, tailable roster only** | **214,024** | **53.2%** | **50.8%** | **−1.5%** |
 
-That is the honest baseline. Consensus does **not** print 20–50% after this fix.
+Blind copy-all still loses after slippage. Consensus has to earn its keep.
 
-## Cannae — still include?
+## Roster (see `TRADER_HEALTH_REPORT.md`)
 
-**Overlay only. Do not use as a 2+ voter.**
+**KEEP 12 · TIGHTEN 14 · OVERLAY 1 (Cannae) · WATCH 1 · KICK 28**
 
-Honest hold-to-res (settled-open included, dated through **2026-08-16**):
+Kicked from live `/api/signals` (quit, last-60d blow-up, or un-tailable):
 
-| Window | n | WR | ROI |
-|--------|--:|---:|----:|
-| Full (Jan 7 → Aug 16) | 14,602 | 53.8% | **+27.1%** |
-| Last 90d | 385 | 87.3% | **+56.0%** |
-| Last 30d | 34 | 76.5% | **+50.3%** |
-| May–Aug dated | 571 | 87.9% | **+63.8%** |
+- **Quit / dormant** (no dated play in 45+ days): Capman, tcp2, CemeterySun, Bienville, RandomPunter, redskinrick, 9sh8f, HedgeMaster88, 877s8d8g89I9f8d98fd99ww2, JPMorgan101, 0xCb6Ed933, kch123, middleoftheocean
+- **Blow-ups:** LynxTitan (−44% last 60d), 0x53eCc53E7 (−60%), TheMangler (−5.8% at volume)
+- **Impossible to join:** Qpkwks (median ~$92k), HomeRunHazard (~1% ROI on 24k markets)
+- **Closed-only sample was fake:** quavoo (−10.5% hold-to-res), wr0ngw4yb3tt0r (−6.1%)
 
-He did **not** go −50% on hold-to-resolution. What changed:
+**New KEEP after full-open grade:** GoalLineGhost (49.8% hold-to-res, median ~$1.3k), ferrariChampions2026 (14.2%, hedge-heavy, median ~$4k), WTSA, 0x8a3aB812…
 
-- **Volume collapsed** after April (~60 markets/day Jan–Apr vs a thin May–Aug book).
-- Live UI is full of **unredeemed losers** that never hit `closed-positions`.
-- Leave-one-out still shows he **inflates 2+ soccer-NO clusters**. Core 2+ with him looks great and is not a stable edge.
+## Strategy ROI @ join_max + 2¢
 
-Live filters: soccer only, mute UCL / NBA / NFL / NHL / spreads / totals / draws / **YES**.
+$100/play. Universe last resolved play: **2026-08-17**. Grade &lt;60 band is **−43% ROI** (calibration holds).
 
-## Roster re-grade (hold-to-res)
+| Strategy | n | WR | Implied | ROI | Notes |
+|----------|--:|---:|--------:|----:|-------|
+| **2+ Q50 moneyline (best)** | 375 | 77.6% | 59.0% | **+41.2%** | GoalLineGhost 34% of book |
+| Core ML grade70, no Cannae, no NFL | 615 | 81.3% | 61.6% | **+39.7%** | GoalLineGhost 34% |
+| Grade 70+ live, no Cannae | 758 | 82.1% | 63.5% | **+37.6%** | |
+| Favorites 60–80¢ | 469 | 84.0% | 75.4% | **+12.3%** | RN1/GoalLine mix |
+| Soccer ML **no** Cannae | 678 | 63.9% | 57.5% | **+14.0%** | |
+| Soccer ML **with** Cannae | 1,055 | 62.2% | 59.5% | **+7.1%** | He inflates 2+ |
+| Copy-all | 214,024 | 53.2% | 50.8% | **−1.5%** | |
+| Grade &lt;60 | 502 | 34.1% | 55.1% | **−43.3%** | Do not take |
 
-See `TRADER_HEALTH_REPORT.md` and the Strategies → Roster tab.
+Last 20 of the best book are **2026-08-15 → 2026-08-17** (through today), labeled title · side · submarket.
 
-**Kicked from live `/api/signals`:**
-
-| Trader | Why |
-|--------|-----|
-| **LynxTitan** | Last 90d **−92%** (n=222) |
-| **geniusMC** | Last 90d **−21%** (n=35) |
-| **0x53eCc53E7** | Last 90d **−49.5%** (n=186) |
-
-**Keep (examples):** RN1, BoomLaLa, TheArena, S-Works, 0xheavy888, WTSA, Qpkwks, 0p0jogggg, CemeterySun (CSV still maxes 2026-04-30 — needs full-open refresh).
-
-**Tighten:** CoryLahey (spreads already muted), TutiFromFactsOfLife (−2% full / −7.6% 90d), 0x2c3350 (high-volume slightly negative — he is 13% of the favorites book, size down).
-
-**Watch:** kch123 last 90d −39% on only 33 plays (volume died); JPMorgan101 last 90d −27.5%; 0xCb6Ed933 n=28 last play March.
-
-**New candidates (sports LB rank 2–4):** HomeRunHazard fetched: **~1% ROI on $124M** (96.9% WR moneylines) — favorite/bond grinder, **do not tail**. ferrariChampions2026 / wr0ngw4yb3tt0r still fetching; closed-sample ~97% ROI is the win-bias artifact.
-
-## Strategy ROI @ join_max + 2¢ (what you actually pay)
-
-$100/play. Last resolved play in the universe: **2026-08-17/19**.
-
-| Strategy | n | WR | Implied | ROI | Trades/day | Last play |
-|----------|--:|---:|--------:|----:|-----------:|-----------|
-| **Favorites 60–80¢ (recommended)** | 399 | 77.4% | 74.7% | **+4.0%** | **2.08** | 2026-08-16 |
-| Core 2+ no Cannae, no NFL, 10–88¢ | 1,220 | 56.5% | 60.2% | **−8.6%** | **4.15** | 2026-08-17 |
-| Grade 70+ same filters | 638 | 59.1% | 61.2% | −4.9% | 2.79 | 2026-08-17 |
-| Moneyline only | 1,050 | 55.3% | 59.0% | −8.2% | 3.89 | 2026-08-17 |
-| 2+ live including Cannae | 1,440 | 56.5% | 59.8% | −7.9% | 4.74 | 2026-08-17 |
-| Soccer 2+ no Cannae | 859 | 57.2% | — | −6.0% | 3.78 | 2026-08-17 |
-
-Favorites 60–80¢ years @ join+2¢: 2025 **−1.3%** (n=129), 2026 **+6.5%** (n=269). Not a 2025-stable machine — size modestly.
-
-VWAP (their price, you cannot actually get this until the later wallet is in): favorites **+12.2%**. Join+5¢ is ~flat.
-
-### Sport × submarket (favorites 60–80¢)
+### Sport × submarket (best book, join_max+2¢)
 
 | Sport | Submarket | n | WR | ROI | /day | Last |
 |-------|-----------|--:|---:|----:|-----:|------|
-| Soccer | Moneyline | 262 | 74.4% | +1.4% | 1.93 | 2026-08-16 |
-| Other | Moneyline | 52 | 78.8% | +6.4% | 1.30 | 2026-08-12 |
-| Soccer | Draw | 32 | 84.4% | +10.2% | 1.10 | 2026-07-15 |
-| Other | Draw | 21 | 76.2% | +0.7% | 1.17 | 2026-07-07 |
-
-Longshots 0–20¢: **−67%**. NFL moneyline consensus inside the wide book: still terrible. Spreads/totals almost never make 2+ after `doNotTail` (n=0 in those product filters).
+| Soccer | Moneyline | 254 | 75.2% | +39.7% | 2.73 | 2026-08-17 |
+| Other | Moneyline | 121 | 82.6% | +44.3% | 2.12 | 2026-08-17 |
 
 ## What to trade
 
-1. **Default:** 2+ wallets, **60–80¢**, join_max+2¢, skip NFL. ~**2 plays/day**, ~**+4% ROI** after slippage.
-2. Do **not** run “core 10–88¢ no Cannae” expecting the old +8–19% — that was closed-only + Cannae mirage.
-3. Cannae soccer overlay is optional and concentrated; never let him create a 2+ by himself pairing with RN1/CemeterySun.
-4. Live plays: Strategies page, polls `/api/signals` every 30s, labeled **title · side · sport · submarket**.
+1. **Default:** 2+ warmed-up wallets, **moneyline**, Q≥50, join_max+2¢, skip NFL and Cannae as a 2+ voter.
+2. **Favorites 60–80¢** if you want a slower, less GoalLineGhost-concentrated book (~+12% after slip).
+3. Cannae soccer ML **NO** overlay is optional; soccer 2+ is worse with him in the cluster (+7% vs +14%).
+4. Do not tail quitters, $90k-median wallets, or 1% ROI grinders.
 
 ## Method
 
-- Win iff `curPrice ≥ 0.99`, including `status=open`.
-- Event date from `endDate` or slug/title `YYYY-MM-DD`; drop dates after tomorrow.
+- Win iff `curPrice ≥ 0.99` or `redeemable`, including `status=open`.
+- Event date from `endDate` or slug/title; **never** fill/redeem timestamp.
+- Full unique `/positions` book (stop on wrap; multi-sort CURRENT/CASHPNL so recent zeros are not hidden behind March whales).
 - Play = `conditionId` + side. Walk-forward Q uses only markets dated ≥1 day earlier.
 - 20 warmup, ≥$200, category filters, $100 flat.
