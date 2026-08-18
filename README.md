@@ -29,15 +29,13 @@ Elite Polymarket trader tracking system. Monitors 42 curated wallets in `CURATED
 
 ## Local Development Setup
 
-The live **Take these** home page, Telegram pings, and paper tickets live on pull request branch `cursor/trader-refresh-backtest-51c7` until it is merged to `main`. Clone that branch (or check it out after clone).
+Clone `main`. That is the only branch you need.
 
 ### 1. Clone the repo
 
 ```bash
 git clone https://github.com/NDGopher/PredictionInsider.git
 cd PredictionInsider
-git fetch origin
-git checkout cursor/trader-refresh-backtest-51c7
 ```
 
 ### 2. Install Node dependencies
