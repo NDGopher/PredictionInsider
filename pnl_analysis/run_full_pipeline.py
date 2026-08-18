@@ -325,7 +325,8 @@ def _position_dedupe_key(df: pd.DataFrame):
 
 def fetch_recent_and_merge(address, username):
     """
-    Incremental: fetch recent closed (up to 40 pages) + open (up to 20 pages), overlay onto existing CSV.
+    Incremental: fetch recent closed (up to 60 pages) + open (80 pages, or full
+    open book when the CSV already has 800+ open rows). Overlay onto existing CSV.
     Rows with the same position id (or asset on older CSVs) keep the newest API copy.
     Returns path to updated CSV or None if no existing CSV.
     """
@@ -342,12 +343,19 @@ def fetch_recent_and_merge(address, username):
         print("    ⚠️  CSV has no id/asset/conditionId key — cannot incremental-merge, running full fetch")
         return collect_and_save(address, username)
 
-    prev_closed, _prev_open = _csv_closed_open_counts(csv_path)
-    # Up to ~2000 closed + ~1000 open (40 + 20 pages) — fast, avoids 50k+ full fetch
-    print("    🔄 Incremental fetch (recent closed + open pages)…")
-    df_closed = fetch_positions(address, "closed-positions", max_pages=40)
+    prev_closed, prev_open = _csv_closed_open_counts(csv_path)
+    # Whales leave thousands of settled losers in /positions. Incremental 20 open
+    # pages never pulled May–Aug unredeemed rows, which froze last-20 tapes in April.
+    closed_pages = 60
+    open_pages: int | None = 80
+    if prev_open >= 800 and address.lower() != "0xd9e0aaca471f489be338fd0f91a26e8669a805f2":
+        open_pages = None
+        print(f"    🔄 Incremental: {closed_pages} closed pages + FULL open ({prev_open:,} existing open)…")
+    else:
+        print(f"    🔄 Incremental fetch ({closed_pages} closed + {open_pages} open pages)…")
+    df_closed = fetch_positions(address, "closed-positions", max_pages=closed_pages)
     time.sleep(PAGE_SLEEP_SEC)
-    df_open  = fetch_positions(address, "positions", max_pages=20)
+    df_open = fetch_positions(address, "positions", max_pages=open_pages)
     if df_closed.empty and df_open.empty:
         return csv_path
     if df_closed.empty and prev_closed >= MIN_PREV_CLOSED_TO_GUARD:

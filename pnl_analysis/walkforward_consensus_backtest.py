@@ -36,6 +36,12 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from analyze_trader import get_market_type, get_sport, price_bucket  # noqa: E402
+from position_utils import (  # noqa: E402
+    attach_event_dates,
+    classify_submarket,
+    play_label,
+    sport_family,
+)
 from run_full_pipeline import OUTPUT_DIR, csv_path_for, roster_traders  # noqa: E402
 
 STAKE = 100.0
@@ -135,6 +141,8 @@ def market_keys(market_type: str) -> list[str]:
         return ["total"]
     if "future" in m:
         return ["futures"]
+    if "draw" in m:
+        return ["draw"]
     return ["moneyline"]
 
 
@@ -368,21 +376,27 @@ def load_trader_markets(csv_path: Path, username: str, wallet: str) -> pd.DataFr
     need = [
         "conditionId", "avgPrice", "totalBought", "realizedPnl", "cashPnl",
         "curPrice", "title", "slug", "eventSlug", "outcome", "endDate", "status",
+        "timestamp", "initialValue",
     ]
     for col in need:
         if col not in df.columns:
             df[col] = np.nan
-    for col in ("avgPrice", "totalBought", "realizedPnl", "cashPnl", "curPrice"):
+    for col in ("avgPrice", "totalBought", "realizedPnl", "cashPnl", "curPrice", "initialValue"):
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)
-    df = df[df["status"].astype(str).str.lower().eq("closed")].copy()
+    # Include unredeemed settled tokens (status=open, curPrice 0 or 1). Closed-only
+    # is win-biased because winners redeem and losers sit in /positions.
+    resolved = (df["curPrice"] >= 0.99) | (df["curPrice"] <= 0.01)
+    df = df[resolved].copy()
     if df.empty:
         return df
     df["side"] = df["outcome"].astype(str).str.strip().str.lower()
     df.loc[df["side"].eq("yes"), "side"] = "Yes"
     df.loc[df["side"].eq("no"), "side"] = "No"
-    df["cost"] = df["totalBought"] * df["avgPrice"]
+    bought_cost = df["totalBought"] * df["avgPrice"]
+    df["cost"] = bought_cost.where(bought_cost > 0, df["initialValue"])
     df["sport_type"] = df.apply(get_sport, axis=1)
     df["market_type"] = df.apply(get_market_type, axis=1)
+    df["submarket"] = df.apply(classify_submarket, axis=1)
     # Drop 95c+ NO bonds
     df = df[~((df["side"] == "No") & (df["avgPrice"] >= 0.95))].copy()
     # Both-sides hedge: drop the whole condition for this trader
@@ -392,10 +406,12 @@ def load_trader_markets(csv_path: Path, username: str, wallet: str) -> pd.DataFr
         if hedged:
             df = df[~df["conditionId"].isin(hedged)].copy()
     df = df[df["cost"] >= MIN_COST].copy()
-    df["end_dt"] = pd.to_datetime(df["endDate"], errors="coerce", utc=True)
+    df = attach_event_dates(df)
+    df["end_dt"] = df["event_dt"]
     df = df.dropna(subset=["end_dt", "conditionId"])
-    resolved = (df["curPrice"] >= 0.99) | (df["curPrice"] <= 0.01)
-    df = df[resolved].copy()
+    # Price can sit at 0/1 on still-open futures. Only count games that have already happened.
+    horizon = datetime.now(timezone.utc) + timedelta(days=1)
+    df = df[df["end_dt"] <= horizon]
     if df.empty:
         return df
     df["won"] = df["curPrice"] >= 0.99
@@ -419,6 +435,7 @@ def load_trader_markets(csv_path: Path, username: str, wallet: str) -> pd.DataFr
         cur_price=("curPrice", "first"),
         sport_type=("sport_type", "first"),
         market_type=("market_type", "first"),
+        submarket=("submarket", "first"),
         title=("title", "first"),
         event_slug=("eventSlug", "first"),
         slug=("slug", "first"),
@@ -503,7 +520,7 @@ def summarize(sub: pd.DataFrame, fill_col: str, slip: float) -> dict:
             "profit_factor": 0.0, "sharpe_daily_roi": 0.0, "max_dd": 0.0,
             "avg_grade": 0.0, "avg_q": 0.0, "avg_fill": 0.0, "avg_vwap": 0.0,
             "implied_wr": 0.0, "edge": 0.0, "avg_traders": 0.0, "avg_rel": 0.0,
-            "calmar": 0.0, "days": 0,
+            "calmar": 0.0, "days": 0, "trades_per_day": 0.0, "first": None, "last": None,
         }
     fills = np.clip(sub[fill_col].to_numpy(dtype=float) + slip, 0.02, 0.98)
     won = sub["won"].to_numpy()
@@ -536,6 +553,9 @@ def summarize(sub: pd.DataFrame, fill_col: str, slip: float) -> dict:
         "avg_rel": round(float(sub["rel_size"].mean()), 2),
         "calmar": round(upnl / abs(dd or 1.0), 2),
         "days": int(sub["end_dt"].dt.date.nunique()),
+        "trades_per_day": round(n / max(int(sub["end_dt"].dt.date.nunique()), 1), 2),
+        "first": str(sub["end_dt"].min())[:10] if n else None,
+        "last": str(sub["end_dt"].max())[:10] if n else None,
     }
 
 
@@ -546,6 +566,70 @@ def year_split(sub: pd.DataFrame, fill_col: str, slip: float) -> dict[str, dict]
     years = sub["end_dt"].dt.year
     for year, grp in sub.groupby(years):
         out[str(int(year))] = summarize(grp, fill_col, slip)
+    return out
+
+
+def breakdown_table(sub: pd.DataFrame, col: str, fill_col: str = "join_max", slip: float = 0.02) -> dict[str, dict]:
+    out: dict[str, dict] = {}
+    if sub.empty or col not in sub.columns:
+        return out
+    for key, grp in sub.groupby(col):
+        out[str(key)] = summarize(grp, fill_col, slip)
+    return out
+
+
+def sport_submarket_rows(sub: pd.DataFrame) -> list[dict]:
+    if sub.empty:
+        return []
+    tmp = sub.copy()
+    tmp["sport_fam"] = tmp["sport_type"].map(sport_family)
+    if "submarket" not in tmp.columns:
+        tmp["submarket"] = tmp["market_type"]
+    rows: list[dict] = []
+    for (sport, mtype), grp in tmp.groupby(["sport_fam", "submarket"]):
+        st = summarize(grp, "join_max", 0.02)
+        rows.append({"sport": str(sport), "submarket": str(mtype), **st})
+    rows.sort(key=lambda r: (-r["n"], str(r["sport"]), str(r["submarket"])))
+    return rows
+
+
+def plays_payload(sub: pd.DataFrame, n: int = 20) -> list[dict]:
+    out: list[dict] = []
+    if sub.empty:
+        return out
+    last = sub.sort_values("end_dt", ascending=False).head(n)
+    for r in last.itertuples(index=False):
+        fill = min(max(float(r.join_max) + 0.02, 0.02), 0.98)
+        pnl = STAKE * (1.0 / fill - 1.0) if bool(r.won) else -STAKE
+        subm = str(getattr(r, "submarket", None) or r.market_type)
+        title = str(r.title or "")
+        out.append({
+            "end": r.end_dt.isoformat(),
+            "title": title,
+            "side": r.side,
+            "sport": r.sport_type,
+            "sport_family": sport_family(str(r.sport_type)),
+            "market": r.market_type,
+            "submarket": subm,
+            "play": play_label(title, str(r.side), str(r.sport_type), subm),
+            "traders": r.traders,
+            "n_traders": int(r.n_traders),
+            "n_counters": int(r.n_counters),
+            "grade": int(r.grade),
+            "avg_q": float(r.avg_q),
+            "min_q": int(r.min_q),
+            "rel_size": float(r.rel_size),
+            "primary": getattr(r, "primary", ""),
+            "their_vwap": float(r.vwap),
+            "join_max": float(r.join_max),
+            "fill_join_plus_2c": round(fill, 4),
+            "resolved": "WIN" if bool(r.won) else "LOSS",
+            "unit_pnl_at_2c": round(pnl, 2),
+            "total_size": float(r.total_size),
+            "event_slug": r.event_slug,
+            "slug": str(getattr(r, "slug", "") or ""),
+            "conditionId": str(getattr(r, "conditionId", "") or ""),
+        })
     return out
 
 
@@ -684,6 +768,7 @@ def main() -> int:
         title = str(dom["title"].iloc[0] or "")
         sport = str(dom["sport_type"].iloc[0])
         mtype = str(dom["market_type"].iloc[0])
+        submarket = str(dom["submarket"].iloc[0] if "submarket" in dom.columns else mtype)
         won = bool(dom["won"].iloc[0])
         # If members disagree on resolution, skip
         if int(dom["won"].nunique()) != 1:
@@ -697,6 +782,7 @@ def main() -> int:
             "slug": str(dom["slug"].iloc[0] or ""),
             "sport_type": sport,
             "market_type": mtype,
+            "submarket": submarket,
             "end_dt": end_dt,
             "won": won,
             "voters": voters,
@@ -748,6 +834,8 @@ def main() -> int:
                 "event_slug": c["event_slug"],
                 "sport_type": c["sport_type"],
                 "market_type": c["market_type"],
+                "submarket": c.get("submarket") or c["market_type"],
+                "slug": c.get("slug") or "",
                 "end_dt": c["end_dt"],
                 "won": c["won"],
                 "n_traders": n_dom,
@@ -777,6 +865,10 @@ def main() -> int:
     # ── Strategies ────────────────────────────────────────────────────────────
     filt = cl[cl["filter_mode"] == "filtered"].copy()
     raw = cl[cl["filter_mode"] == "raw"].copy()
+    if "submarket" not in filt.columns:
+        filt["submarket"] = filt.get("market_type", "Moneyline")
+    if "submarket" not in raw.columns:
+        raw["submarket"] = raw.get("market_type", "Moneyline")
 
     def m_ge2(df: pd.DataFrame) -> pd.Series:
         return df["n_traders"] >= 2
@@ -838,6 +930,27 @@ def main() -> int:
     add("filt_2plus_any_no_cannae", filt, m_ge2(filt) & no_cannae)
     add("filt_2plus_live_no_cannae", filt, live_px & no_cannae)
     add("filt_2plus_grade70_no_cannae", filt, m_ge2(filt) & (filt["grade"] >= 70) & no_cannae)
+    add("filt_2plus_grade70_live_no_cannae", filt, live_px & (filt["grade"] >= 70) & no_cannae)
+    add("filt_2plus_q35_live_no_cannae", filt, live_px & (filt["min_q"] >= 35) & no_cannae)
+
+    is_ml = filt["submarket"].astype(str).isin(["Moneyline", "Moneyline / Match"]) | filt["market_type"].astype(str).str.contains("Moneyline", na=False)
+    is_spread = filt["submarket"].astype(str).eq("Spread") | filt["market_type"].astype(str).str.contains("Spread", na=False)
+    is_total = filt["submarket"].astype(str).eq("Total") | filt["market_type"].astype(str).str.contains("Total|O/U", na=False, regex=True)
+    is_draw = filt["submarket"].astype(str).eq("Draw") | filt["market_type"].astype(str).str.contains("Draw", na=False)
+    no_nfl = ~filt["sport_type"].astype(str).str.contains("NFL", na=False)
+    soccer = filt["sport_type"].astype(str).str.startswith("SOCCER")
+    add("core_2plus_live_no_cannae_no_nfl", filt, live_px & no_cannae & no_nfl)
+    add("core_grade70_live_no_cannae_no_nfl", filt, live_px & no_cannae & no_nfl & (filt["grade"] >= 70))
+    add("core_ml_live_no_cannae_no_nfl", filt, live_px & no_cannae & no_nfl & is_ml)
+    add("core_ml_grade70_no_cannae_no_nfl", filt, live_px & no_cannae & no_nfl & is_ml & (filt["grade"] >= 70))
+    add("sub_moneyline_2plus_live", filt, live_px & is_ml)
+    add("sub_spread_2plus_live", filt, live_px & is_spread)
+    add("sub_total_2plus_live", filt, live_px & is_total)
+    add("sub_draw_2plus_live", filt, live_px & is_draw)
+    add("soccer_2plus_live_no_cannae", filt, live_px & soccer & no_cannae)
+    add("soccer_2plus_live_with_cannae", filt, live_px & soccer)
+    add("soccer_ml_no_cannae", filt, live_px & soccer & is_ml & no_cannae)
+    add("soccer_ml_with_cannae", filt, live_px & soccer & is_ml)
 
     # Grade bands for calibration
     add("band_grade_90", filt, m_ge2(filt) & (filt["grade"] >= 90))
@@ -885,6 +998,9 @@ def main() -> int:
         "filt_2plus_any_no_cannae", "filt_2plus_live_no_cannae",
         "filt_2plus_grade70_no_cannae", "filt_3plus_any",
         "filt_2plus_fav_60_80", "filt_2plus_flip_40_60",
+        "core_2plus_live_no_cannae_no_nfl", "core_grade70_live_no_cannae_no_nfl",
+        "core_ml_live_no_cannae_no_nfl", "core_ml_grade70_no_cannae_no_nfl",
+        "filt_2plus_grade70_live_no_cannae",
     }
 
     def pack_strategy(df: pd.DataFrame, mask: pd.Series) -> dict:
@@ -962,7 +1078,7 @@ def main() -> int:
     for y, ys in sorted(best_pack["years"].items()):
         print(f"    {y}: n={ys['n']} WR={ys['win_rate']:.1f}% ROI={ys['roi']:.1f}% edge={ys['edge']:+.1f}")
 
-    # Sport / price breakdown of best
+    # Sport / submarket / price breakdown of best
     by_sport = {}
     for sport, grp in best_sub.groupby("sport_type"):
         by_sport[str(sport)] = {
@@ -975,37 +1091,20 @@ def main() -> int:
             "vwap_0c": summarize(grp, "vwap", 0.0),
             "join_2c": summarize(grp, "join_max", 0.02),
         }
+    by_submarket = breakdown_table(best_sub, "submarket")
+    sport_x_sub = sport_submarket_rows(best_sub)
+    print("\nBest strategy by sport × submarket (join_max+2¢):")
+    for row in sport_x_sub[:25]:
+        print(
+            f"  {row['sport']:<12} {row['submarket']:<14} n={row['n']:<5} "
+            f"WR={row['win_rate']:5.1f}% ROI={row['roi']:6.1f}% "
+            f"{row['trades_per_day']:.2f}/day last={row.get('last')}"
+        )
 
     filt_out = OUTPUT_DIR / "walkforward_consensus_filtered_2plus.csv"
     filt[m_ge2(filt)].to_csv(filt_out, index=False)
 
-    last20 = best_sub.sort_values("end_dt", ascending=False).head(20)
-    last20_out = []
-    for r in last20.itertuples(index=False):
-        fill = min(max(float(r.join_max) + 0.02, 0.02), 0.98)
-        pnl = STAKE * (1.0 / fill - 1.0) if bool(r.won) else -STAKE
-        last20_out.append({
-            "end": r.end_dt.isoformat(),
-            "title": r.title,
-            "side": r.side,
-            "sport": r.sport_type,
-            "market": r.market_type,
-            "traders": r.traders,
-            "n_traders": int(r.n_traders),
-            "n_counters": int(r.n_counters),
-            "grade": int(r.grade),
-            "avg_q": float(r.avg_q),
-            "min_q": int(r.min_q),
-            "rel_size": float(r.rel_size),
-            "primary": getattr(r, "primary", ""),
-            "their_vwap": float(r.vwap),
-            "join_max": float(r.join_max),
-            "fill_join_plus_2c": round(fill, 4),
-            "resolved": "WIN" if bool(r.won) else "LOSS",
-            "unit_pnl_at_2c": round(pnl, 2),
-            "total_size": float(r.total_size),
-            "event_slug": r.event_slug,
-        })
+    last20_out = plays_payload(best_sub, 20)
 
     # Calibration of 2+ filtered grades
     calibration = []
@@ -1023,13 +1122,221 @@ def main() -> int:
         st = summarize(band, "join_max", 0.02)
         calibration.append({"band": label, **st})
 
+    def strategy_card(name: str, df: pd.DataFrame, mask: pd.Series, **meta: object) -> dict:
+        sub = df.loc[mask]
+        pack = pack_strategy(df, mask)
+        return {
+            "id": name,
+            "join_max_plus_2c": pack["sjoin2"],
+            "join_max": pack.get("sjoin0"),
+            "vwap": pack["s0"],
+            "vwap_plus_2c": pack["s2"],
+            "years": pack["years"],
+            "by_sport": breakdown_table(sub, "sport_type"),
+            "by_submarket": breakdown_table(sub, "submarket"),
+            "sport_x_submarket": sport_submarket_rows(sub),
+            "last_20": plays_payload(sub, 20),
+            "date_span": {
+                "first": pack["sjoin2"].get("first"),
+                "last": pack["sjoin2"].get("last"),
+                "trades_per_day": pack["sjoin2"].get("trades_per_day"),
+            },
+            **meta,
+        }
+
+    named_lookup = {name: (df, mask) for name, df, mask in strategies}
+
+    def named_or_empty(key: str) -> tuple[pd.DataFrame, pd.Series]:
+        if key in named_lookup:
+            return named_lookup[key]
+        empty_mask = pd.Series(False, index=filt.index)
+        return filt, empty_mask
+
+    product: list[dict] = []
+    product_specs = [
+        {
+            "id": "core_consensus",
+            "name": "Core 2+ (no Cannae, no NFL)",
+            "backtest_key": "core_2plus_live_no_cannae_no_nfl",
+            "recommended": True,
+            "description": (
+                "2+ filtered wallets, live 10–88¢, join_max+2¢, exclude Cannae, skip NFL. "
+                "Default book to actually trade."
+            ),
+            "filters": {
+                "minTraders": 2,
+                "minGrade": 0,
+                "minQ": 0,
+                "priceLo": 0.10,
+                "priceHi": 0.88,
+                "excludeUsernames": ["Cannae"],
+                "skipSports": ["NFL"],
+                "marketTypes": [],
+            },
+        },
+        {
+            "id": "grade70",
+            "name": "Grade 70+ (no Cannae, no NFL)",
+            "backtest_key": "core_grade70_live_no_cannae_no_nfl",
+            "recommended": True,
+            "description": "Same as Core, but only grade ≥70. Fewer trades, historically cleaner edge.",
+            "filters": {
+                "minTraders": 2,
+                "minGrade": 70,
+                "minQ": 0,
+                "priceLo": 0.10,
+                "priceHi": 0.88,
+                "excludeUsernames": ["Cannae"],
+                "skipSports": ["NFL"],
+                "marketTypes": [],
+            },
+        },
+        {
+            "id": "moneyline_only",
+            "name": "Moneyline only (no Cannae, no NFL)",
+            "backtest_key": "core_ml_live_no_cannae_no_nfl",
+            "recommended": False,
+            "description": "Core book restricted to moneyline / match winner. No spreads, totals, or draws.",
+            "filters": {
+                "minTraders": 2,
+                "minGrade": 0,
+                "minQ": 0,
+                "priceLo": 0.10,
+                "priceHi": 0.88,
+                "excludeUsernames": ["Cannae"],
+                "skipSports": ["NFL"],
+                "marketTypes": ["Moneyline", "Moneyline / Match"],
+            },
+        },
+        {
+            "id": "grade70_moneyline",
+            "name": "Grade 70+ moneyline",
+            "backtest_key": "core_ml_grade70_no_cannae_no_nfl",
+            "recommended": False,
+            "description": "Tightest consensus: grade 70+, moneyline, no Cannae, no NFL.",
+            "filters": {
+                "minTraders": 2,
+                "minGrade": 70,
+                "minQ": 0,
+                "priceLo": 0.10,
+                "priceHi": 0.88,
+                "excludeUsernames": ["Cannae"],
+                "skipSports": ["NFL"],
+                "marketTypes": ["Moneyline", "Moneyline / Match"],
+            },
+        },
+        {
+            "id": "with_cannae",
+            "name": "2+ live including Cannae",
+            "backtest_key": "filt_2plus_live_10_90",
+            "recommended": False,
+            "description": (
+                "Same live band but Cannae votes. Inflated by 2026 soccer-NO clusters — "
+                "do not treat as a stable edge."
+            ),
+            "filters": {
+                "minTraders": 2,
+                "minGrade": 0,
+                "minQ": 0,
+                "priceLo": 0.10,
+                "priceHi": 0.88,
+                "excludeUsernames": [],
+                "skipSports": [],
+                "marketTypes": [],
+            },
+        },
+        {
+            "id": "soccer_no_cannae",
+            "name": "Soccer 2+ without Cannae",
+            "backtest_key": "soccer_2plus_live_no_cannae",
+            "recommended": False,
+            "description": "Soccer consensus after stripping Cannae.",
+            "filters": {
+                "minTraders": 2,
+                "minGrade": 0,
+                "minQ": 0,
+                "priceLo": 0.10,
+                "priceHi": 0.88,
+                "excludeUsernames": ["Cannae"],
+                "skipSports": [],
+                "sportIncludes": ["Soccer", "SOCCER", "UCL"],
+                "marketTypes": [],
+            },
+        },
+        {
+            "id": "spreads",
+            "name": "Spreads 2+ live",
+            "backtest_key": "sub_spread_2plus_live",
+            "recommended": False,
+            "description": "Consensus on spread markets only. Usually worse than moneyline.",
+            "filters": {
+                "minTraders": 2,
+                "minGrade": 0,
+                "minQ": 0,
+                "priceLo": 0.10,
+                "priceHi": 0.88,
+                "excludeUsernames": ["Cannae"],
+                "skipSports": ["NFL"],
+                "marketTypes": ["Spread"],
+            },
+        },
+        {
+            "id": "totals",
+            "name": "Totals 2+ live",
+            "backtest_key": "sub_total_2plus_live",
+            "recommended": False,
+            "description": "Consensus on O/U / total markets only.",
+            "filters": {
+                "minTraders": 2,
+                "minGrade": 0,
+                "minQ": 0,
+                "priceLo": 0.10,
+                "priceHi": 0.88,
+                "excludeUsernames": ["Cannae"],
+                "skipSports": ["NFL"],
+                "marketTypes": ["Total", "Totals (O/U)"],
+            },
+        },
+    ]
+    for spec in product_specs:
+        df_s, mask_s = named_or_empty(str(spec["backtest_key"]))
+        product.append(strategy_card(str(spec["id"]), df_s, mask_s, **{k: v for k, v in spec.items() if k != "id"}))
+
+    tail_payload = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "as_of": datetime.now(timezone.utc).date().isoformat(),
+        "fill": "join_max+2c",
+        "stake": STAKE,
+        "method": (
+            "Hold-to-resolution walk-forward. Includes status=open tokens that already "
+            "resolved (curPrice 0 or 1). Dates from endDate or slug/title YYYY-MM-DD."
+        ),
+        "copy_all": {
+            "n": int(len(pos)),
+            "win_rate": round(copy_wr, 2),
+            "implied_wr": round(copy_imp, 1),
+            "edge": round(copy_wr - copy_imp, 1),
+            "roi": round(copy_roi, 2),
+        },
+        "strategies": product,
+        "universe": {
+            "trader_markets": int(len(pos)),
+            "wallets": int(pos["wallet"].nunique()),
+            "clusters": int(len(clusters)),
+            "max_resolved_date": str(pos["end_dt"].max())[:10] if len(pos) else None,
+        },
+    }
+    tail_path = OUTPUT_DIR / "tail_strategies.json"
+    tail_path.write_text(json.dumps(tail_payload, indent=2, default=str), encoding="utf-8")
+
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "method": (
             "Hold-to-resolution walk-forward multi-trader consensus. "
             "Win iff curPrice>=0.99 (token paid $1), loss iff curPrice<=0.01. "
+            "Includes unredeemed settled-open rows. Dates from endDate or slug/title. "
             "Play = conditionId+side. Trader Q/lane/median use only markets with "
-            "endDate <= this market endDate minus 1 day. Voters need 20 prior "
+            "event date <= this market date minus 1 day. Voters need 20 prior "
             "resolved markets and ≥$200 stake. Category doNotTail filters applied "
             "in 'filtered' strategies. $100/play. VWAP = their price; join_max = "
             "worse member entry; slips +1/2/5c."
@@ -1037,7 +1344,8 @@ def main() -> int:
         "bugfix": {
             "previous_error": (
                 "First backtest treated realizedPnl>0 as a binary win and paid 1/price-1. "
-                "Scalps on losing tokens were scored as huge underdog wins."
+                "Scalps on losing tokens were scored as huge underdog wins. "
+                "Closed-only books also omitted unredeemed losers (win-biased)."
             ),
             "copy_all_hold_to_res": {
                 "n": int(len(pos)),
@@ -1059,6 +1367,8 @@ def main() -> int:
             "wallets": int(pos["wallet"].nunique()),
             "clusters": int(len(clusters)),
             "filtered_2plus": int((m_ge2(filt)).sum()),
+            "max_resolved_date": str(pos["end_dt"].max())[:10] if len(pos) else None,
+            "min_resolved_date": str(pos["end_dt"].min())[:10] if len(pos) else None,
         },
         "calibration_2plus_filtered_join_2c": calibration,
         "strategies": by_strategy,
@@ -1071,6 +1381,8 @@ def main() -> int:
                 "edge": pack["sjoin2"]["edge"],
                 "win_rate": pack["sjoin2"]["win_rate"],
                 "implied": pack["sjoin2"]["implied_wr"],
+                "trades_per_day": pack["sjoin2"].get("trades_per_day"),
+                "last": pack["sjoin2"].get("last"),
                 "primary_share": pack.get("primary_share"),
                 "top_primary": pack.get("top_primary"),
                 "years": pack["years"],
@@ -1091,9 +1403,12 @@ def main() -> int:
                 "n_primaries": best_pack.get("n_primaries"),
             },
             "by_sport": by_sport,
+            "by_submarket": by_submarket,
+            "sport_x_submarket": sport_x_sub,
             "by_price_band": by_band,
         },
         "last_20_plays": last20_out,
+        "product_strategies": product,
     }
 
     out_json = OUTPUT_DIR / "walkforward_consensus_backtest.json"
@@ -1102,13 +1417,15 @@ def main() -> int:
     best_sub.to_csv(out_csv, index=False)
     print(f"\nWrote {out_json}")
     print(f"Wrote {out_csv} ({len(best_sub)} best-strategy trades)")
+    print(f"Wrote {tail_path}")
     print("\nLast 20 plays this strategy would have taken:")
     for p in last20_out:
         print(
             f"  {p['end'][:10]}  {p['resolved']:<4}  {p['side']:<3}  "
-            f"vwap={p['their_vwap']:.3f} join+2c={p.get('fill_join_plus_2c', p.get('fill_vwap_plus_2c', 0)):.3f}  "
-            f"g={p['grade']} q={p['avg_q']:.0f} n={p['n_traders']} {p.get('traders','')[:40]}  "
-            f"{p['title'][:70]}"
+            f"{p.get('submarket','')[:10]:<10}  "
+            f"vwap={p['their_vwap']:.3f} join+2c={p.get('fill_join_plus_2c', 0):.3f}  "
+            f"g={p['grade']} q={p['avg_q']:.0f} n={p['n_traders']} {p.get('traders','')[:36]}  "
+            f"{p['title'][:64]}"
         )
     return 0
 

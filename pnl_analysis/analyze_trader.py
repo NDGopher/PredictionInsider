@@ -37,9 +37,13 @@ def get_sport(row):
 
 def get_market_type(row):
     title = str(row.get("title", "") or "").lower()
-    if "spread" in title or "(+" in title or "(-" in title:                     return "Spread"
+    slug = str(row.get("slug", "") or "").lower()
+    comb = f"{title} {slug}"
+    if "draw" in comb or "end in a draw" in title:                              return "Draw"
+    if "spread" in comb or "(+" in title or "(-" in title:                      return "Spread"
     if "o/u" in title or " over " in title or " under " in title or "total" in title: return "Totals (O/U)"
     if "win the" in title or "champion" in title or "mvp" in title or "award" in title or "draft" in title or "season" in title: return "Futures"
+    if any(x in title for x in ("map ", "game 1", "game 2", "game 3")):         return "Map / Game"
     return "Moneyline / Match"
 
 def get_bet_side(row):
@@ -69,6 +73,15 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
             df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
         else:
             df[col] = 0.0
+    # Unredeemed losers stay status=open with curPrice 0/1. Treat them as closed so
+    # cost basis uses shares×avgPrice (same as redeemed winners) instead of initialValue.
+    if "curPrice" in df.columns:
+        df["curPrice"] = pd.to_numeric(df["curPrice"], errors="coerce").fillna(0)
+        settled = (df["curPrice"] <= 0.01) | (df["curPrice"] >= 0.99)
+        if "status" not in df.columns:
+            df["status"] = np.where(settled, "closed", "open")
+        else:
+            df.loc[settled, "status"] = "closed"
 
     if "total_position_pnl" not in df.columns:
         df["total_position_pnl"] = df["realizedPnl"] + df["cashPnl"]

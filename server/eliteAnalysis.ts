@@ -36,6 +36,13 @@ export const MARKET_MAKER_WALLETS = new Set<string>([
   "0xd9e0aaca471f489be338fd0f91a26e8669a805f2", // 0xD9E0AACa — 97.4% both-sides, Sharpe 13.34 algorithmic curve, DO NOT TAIL
 ]);
 
+/** Drop from live /api/signals after 2026-08-18 hold-to-res regrade (last-90d blow-ups). */
+export const SIGNAL_KICK_WALLETS = new Set<string>([
+  "0x68146921df11eab44296dc4e58025ca84741a9e7", // LynxTitan — last 90d −92% hold-to-res (n=222)
+  "0x0b9cae2b0dfe7a71c413e0604eaac1c352f87e44", // geniusMC — last 90d −21%
+  "0x53ecc53e7a69aad0e6dda60264cc2e363092df91", // 0x53eCc53E7 — last 90d −49.5% (n=186); do not tail until recovered
+]);
+
 export const CURATED_TRADERS: { wallet: string; username: string; url?: string }[] = [
   { wallet: "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee", username: "kch123", url: "https://polymarket.com/@kch123" },
   { wallet: "0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c", username: "DLEK", url: "https://polymarket.com/@DLEK" },
@@ -236,17 +243,15 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
     autoTail:  ["Soccer", "UCL", "Tennis", "NBA", "NHL", "MLB", "eSports", "CS2", "LoL", "College Sports", "Other"],
     doNotTail: ["NFL"],
   },
-  "0x7ea571c40408f340c1c8fc8eaacebab53c1bde7b": { // Cannae — C-Tier Domestic Soccer specialist (Q=7, ROI=4.9% overall)
-    // Pipeline: $10.6M arb/bond-yield trades stripped — domestic Euro soccer specialist
-    // EPL: +61.5% ROI (62 events, +$49K) | Soccer Other: +15.1% ROI (969 events, +$90K) | LaLiga: +10.0% (92 events)
-    // UCL: -25.6% ROI (-$60K) — severe structural flaw: over-bets draws + uses EPL O/U model for UCL
-    // NHL: -19.3% ROI (-$28K) | NBA tilt: catastrophic -$54K single-day loss (NFL/NBA impulsive bets)
-    // O/U all leagues: -8.7% ROI — never tail totals
-    // DRAW TRAP: loses heavily on "Will X vs Y end in a draw?" markets — blocked by title keyword
-    // Best in: EPL/LaLiga/Serie A/Ligue 1 MONEYLINES only (domestic leagues, not knockout format)
+  "0x7ea571c40408f340c1c8fc8eaacebab53c1bde7b": { // Cannae — OVERLAY ONLY. Domestic soccer moneyline NO fader.
+    // 2026-08-18 regrade: closed-only books were win-biased (unredeemed losers stayed status=open).
+    // Honest hold-to-res including settled-open is much worse than the old 40% closed ROI.
+    // Keep as a soccer ML NO overlay only — never an unfiltered 2+ consensus voter.
+    // Still mute: UCL, NBA/NFL/NHL, spreads, totals, draw markets, YES side.
     autoTail:                ["Soccer"],
     doNotTail:               ["UCL", "NBA", "NFL", "NHL", "eSports", "CS2", "Valorant", "LoL", "Dota2", "Tennis", "College Sports", "Other", "UFC/MMA", "Politics", "Finance/Crypto"],
     doNotTailMarketTypes:    ["total", "spread"],
+    doNotTailSides:          ["Yes"],
     doNotTailTitleKeywords:  ["draw"],
   },
   "0xc65ca4755436f82d8eb461e65781584b8cadea39": { // UAEVALORANTFAN — B-Tier Multi-Esports + NBA/NHL Whale (Q=47, ROI=3.0%, PnL=$229K)

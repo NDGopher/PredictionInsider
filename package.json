@@ -22,7 +22,8 @@
     "discover:traders": "python pnl_analysis/discover_traders.py",
     "backtest:high-grade": "python pnl_analysis/backtest_high_grade.py",
     "backtest:walkforward": "python pnl_analysis/walkforward_tail_backtest.py",
-    "backtest:consensus": "python pnl_analysis/walkforward_consensus_backtest.py"
+    "backtest:consensus": "python pnl_analysis/walkforward_consensus_backtest.py",
+    "backtest:health": "python pnl_analysis/trader_health_review.py"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
