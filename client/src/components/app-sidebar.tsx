@@ -1,4 +1,4 @@
-import { LayoutDashboard, Zap, BarChart3, TrendingUp, BookOpen, Star, FlaskConical, Trophy } from "lucide-react";
+import { LayoutDashboard, Zap, BarChart3, TrendingUp, BookOpen, FlaskConical, Trophy } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -19,9 +19,8 @@ const navItems = [
   { title: "Live Signals", url: "/signals", icon: Zap, badge: "LIVE" },
   { title: "Markets", url: "/markets", icon: BarChart3, badge: null },
   { title: "My Bets", url: "/bets", icon: BookOpen, badge: null },
-  { title: "Elite Traders", url: "/elite", icon: Star, badge: "NEW" },
+  { title: "Insider Ranks", url: "/ranks", icon: Trophy, badge: "LIVE" },
   { title: "Strategies", url: "/strategies", icon: FlaskConical, badge: "LAB" },
-  { title: "Insider Ranks", url: "/ranks", icon: Trophy, badge: "NEW" },
 ];
 
 export function AppSidebar() {

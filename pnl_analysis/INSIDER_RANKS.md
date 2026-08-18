@@ -19,6 +19,7 @@ Our mix: same first four slots, then **recency 10%** and **copyability 10%**.
 | 3 | [kch123](https://polydata.pro/traders/kch123) | +$11,485,086 | 59 | 55.0% | 1.12 | 0.75 | yes |
 | 12 | [0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563](https://polydata.pro/traders/0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563) | +$4,881,729 | 74 | 56.0% | 1.18 | 1.02 | yes |
 | 31 | [ferrariChampions2026](https://polydata.pro/traders/ferrariChampions2026) | +$2,986,649 | 73 | 49.0% | 1.1 | 1.427 | yes |
+| 36 | [0x5966Db1fE50763C9e3C014d756369BAd07E1F804](https://polydata.pro/traders/0x5966Db1fE50763C9e3C014d756369BAd07E1F804) | +$2,665,879 | 94 | 62.0% | — | — | yes |
 | 50 | [HomeRunHazard](https://polydata.pro/traders/HomeRunHazard) | +$2,098,046 | 61 | 54.0% | 1.06 | 1.528 | yes |
 | 52 | [geniusMC](https://polydata.pro/traders/geniusMC) | +$2,091,209 | 39 | 83.0% | 0.82 | -1.007 | yes |
 | 53 | [S-Works](https://polydata.pro/traders/S-Works) | +$2,007,755 | 76 | 70.0% | 1.14 | 1.218 | yes |
@@ -38,59 +39,34 @@ Our mix: same first four slots, then **recency 10%** and **copyability 10%**.
 | 220 | [tcp2](https://polydata.pro/traders/tcp2) | +$537,617 | 60 | 55.0% | 1.05 | 1.041 | yes |
 | 234 | [Bienville](https://polydata.pro/traders/Bienville) | +$497,188 | 62 | 52.0% | 1.08 | 1.153 | yes |
 | 250 | [JPMorgan101](https://polydata.pro/traders/JPMorgan101) | +$463,736 | 22 | 46.0% | 0.93 | -0.406 | yes |
-| 251 | [RandomPunter](https://polydata.pro/traders/RandomPunter) | +$462,027 | 58 | 56.0% | 1.09 | 1.534 | yes |
 
-## Our Insider Score (copy product)
+## Take book (the copy list)
 
-| Rank | Trader | Score | Recency | Copy? | Our PnL | Our WR | PD sports # | PD SS | Gap | Book |
-|-----:|--------|------:|---------|-------|--------:|-------:|------------:|------:|-----|------|
-| 1 | S-Works | 88.7 | HOT | yes | +$9,862,278 | 70.89% | 53 | 76 | magnitude_gap | full_book |
-| 2 | Supah9ga | 77.1 | HOT | yes | +$2,001,694 | 52.23% | 56 | 82 | aligned | full_book |
-| 3 | 0p0jogggg | 76.3 | HOT | yes | +$7,170,623 | 51.57% | — | — | no_polydata_pnl | deep_book |
-| 4 | CoryLahey | 74.7 | HOT | yes | +$1,647,053 | 59.4% | — | — | no_polydata_pnl | full_book |
-| 5 | ShucksIt69 | 73.3 | HOT | yes | +$1,527,084 | 53.19% | — | — | no_polydata_pnl | full_book |
-| 6 | 0xheavy888 | 71.5 | HOT | yes | +$3,850,656 | 65.94% | — | 66 | magnitude_gap | full_book |
-| 7 | 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a | 71.2 | HOT | yes | +$674,530 | 54.01% | 172 | 90 | aligned | full_book |
-| 8 | ShortFlutterStock | 71.0 | COLD | no | +$1,823,004 | 58.74% | — | — | no_polydata_pnl | full_book |
-| 9 | WTSA | 71.0 | HOT | yes | +$1,154,833 | 54.2% | 98 | 64 | aligned | full_book |
-| 10 | UAEVALORANTFAN | 69.3 | HOT | yes | +$423,170 | 55.25% | — | — | no_polydata_pnl | full_book |
-| 11 | JhonAlexanderHinestroza | 68.8 | HOT | yes | +$171,815 | 51.76% | 311 | 47 | aligned | full_book |
-| 12 | GoalLineGhost | 68.6 | HOT | no | −$1,159,220 | 52.31% | — | 66 | aligned | deep_book |
-| 13 | RN1 | 68.6 | HOT | no | +$67,401,575 | 42.74% | 2 | 75 | magnitude_gap | deep_book |
-| 14 | TTdes | 67.9 | HOT | yes | +$147,218 | 53.78% | 566 | 65 | aligned | full_book |
-| 15 | 0x20D6436849F930584892730C7F96eBB2Ac763856 | 67.3 | HOT | yes | +$308,526 | 51.3% | 367 | 55 | aligned | full_book |
-| 16 | kch123 | 65.9 | DROP | no | +$12,200,722 | 58.25% | 3 | 59 | aligned | full_book |
-| 17 | Cannae | 65.7 | HOT | no | +$6,824,705 | 44.61% | 79 | 72 | magnitude_gap | deep_book |
-| 18 | DLEK | 65.4 | COLD | no | +$1,434,196 | 55.62% | 74 | 71 | aligned | full_book |
-| 19 | HomeRunHazard | 63.1 | HOT | no | +$1,010,529 | 55.37% | 50 | 61 | aligned | deep_book |
-| 20 | CemeterySun | 62.5 | DROP | no | +$3,102,530 | 55.19% | 57 | 45 | aligned | full_book |
-| 21 | 0xE30E74595517de48f1FB19f4553dd3d9F1E96B87 | 62.3 | HOT | yes | +$955,441 | 55.21% | 107 | 20 | aligned | full_book |
-| 22 | fkgggg2 | 61.9 | HOT | no | +$1,164,295 | 68.04% | — | — | no_polydata_pnl | full_book |
-| 23 | Vetch | 61.4 | COLD | no | +$321,367 | 60.87% | 495 | 85 | aligned | full_book |
-| 25 | swisstony (PD shadow) | 58.6 | UNKNOWN | no | +$23,480,049 | 58.0% | 1 | 74 | aligned | reference_only_no_csv |
-| 26 | TheArena | 58.0 | HOT | no | −$65,092 | 58.46% | — | 20 | magnitude_gap | full_book |
-| 27 | JuniorB | 57.9 | COLD | no | +$136,485 | 58.16% | 644 | 73 | aligned | full_book |
-| 28 | EIf | 57.4 | HOT | no | −$771,388 | 53.15% | — | — | no_polydata_pnl | full_book |
-| 29 | iDropMyHotdog | 57.1 | HOT | no | +$54,326 | 48.9% | — | — | no_polydata_pnl | full_book |
-| 30 | xytest | 57.1 | HOT | no | +$382,138 | 54.15% | — | 74 | aligned | full_book |
-| 31 | 0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563 | 57.0 | HOT | no | −$28,489,140 | 55.45% | 12 | 74 | sign_mismatch | full_book |
-| 32 | HedgeMaster88 | 56.8 | DROP | no | +$931,923 | 53.39% | 134 | 75 | aligned | full_book |
-| 33 | TutiFromFactsOfLife | 55.8 | HOT | no | −$590,519 | 50.31% | — | — | no_polydata_pnl | full_book |
-| 34 | wr0ngw4yb3tt0r | 55.1 | HOT | no | −$4,767,781 | 50.25% | — | 24 | aligned | full_book |
-| 35 | TheMangler | 55.0 | HOT | no | −$12,206,380 | 52.16% | — | — | no_polydata_pnl | full_book |
-| 36 | bloodmaster | 53.9 | HOT | no | +$557,942 | 88.75% | — | 81 | aligned | full_book |
-| 38 | Andromeda1 | 52.8 | DARK | no | +$482,003 | 55.72% | 573 | 59 | aligned | full_book |
-| 39 | ckw | 51.2 | DARK | no | +$839,272 | 54.93% | 152 | 64 | aligned | full_book |
-| 40 | Bienville | 49.2 | DROP | no | +$391,645 | 50.15% | 234 | 62 | aligned | full_book |
-| 41 | 0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6 | 49.1 | DROP | no | +$317,829 | 64.29% | 325 | 71 | aligned | full_book |
-| 42 | 9sh8f | 49.0 | DROP | no | +$268,986 | 57.7% | — | 66 | aligned | full_book |
+Copyable = the 12 matched sports books in `trusted_full_books.json`. Health KICK on hold-to-res does **not** remove a take-book name.
 
-**Copyable now (13):** S-Works, Supah9ga, 0p0jogggg, CoryLahey, ShucksIt69, 0xheavy888, 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a, WTSA, UAEVALORANTFAN, JhonAlexanderHinestroza, TTdes, 0x20D6436849F930584892730C7F96eBB2Ac763856, 0xE30E74595517de48f1FB19f4553dd3d9F1E96B87
+| Trader | Recency | Last | Our PnL | Our WR | PD WR | ΔWR | Accuracy | Closed |
+|--------|---------|------|--------:|-------:|------:|----:|----------|-------:|
+| WTSA | HOT | 2026-08-17 | +$1,154,833 | 54.2% | 55.0% | -0.8 | matched | 71 |
+| 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a | HOT | 2026-08-19 | +$674,530 | 54.01% | 58.0% | -4.0 | matched | 423 |
+| Supah9ga | HOT | 2026-08-15 | +$922,469 | 52.32% | 53.0% | -0.7 | matched | 549 |
+| DLEK | COLD | 2026-07-29 | +$961,550 | 55.03% | 55.0% | +0.0 | matched | 1123 |
+| kch123 | DROP | 2026-07-01 | +$12,061,185 | 58.0% | 55.0% | +3.0 | matched | 3818 |
+| HedgeMaster88 | DROP | 2026-05-27 | +$927,148 | 52.99% | 53.0% | -0.0 | matched | 136 |
+| Vetch | COLD | 2026-08-02 | +$218,154 | 60.72% | 61.0% | -0.3 | matched | 613 |
+| 0x5966Db1fE50763C9e3C014d756369BAd07E1F804 | DARK | 2026-07-16 | +$3,458,340 | 58.24% | 62.0% | -3.8 | matched | 123 |
+| Capman | DROP | 2026-04-08 | +$267,281 | 55.09% | 54.0% | +1.1 | matched | 15803 |
+| ckw | DARK | 2026-07-26 | +$861,782 | 55.04% | 56.0% | -1.0 | matched | 2384 |
+| Bienville | DROP | 2026-04-30 | +$391,645 | 50.15% | 52.0% | -1.9 | matched | 2404 |
+| tcp2 | DROP | 2026-04-16 | +$539,799 | 49.93% | 55.0% | -5.1 | matched | 20810 |
+
+**Take book (12):** WTSA, 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a, Supah9ga, DLEK, kch123, HedgeMaster88, Vetch, 0x5966Db1fE50763C9e3C014d756369BAd07E1F804, Capman, ckw, Bienville, tcp2
+
+**Kicked / do-not-copy (25):** GoalLineGhost, fkgggg2, HomeRunHazard, iDropMyHotdog, wr0ngw4yb3tt0r, xytest, 0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563, quavoo, EIf, bigmoneyloser00, TheArena, RandomPunter, 0x53eCc53E7, middleoftheocean, 0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6, redskinrick, Qpkwks, 877s8d8g89I9f8d98fd99ww2, JPMorgan101, CemeterySun, ferrariChampions2026, 9sh8f, TheMangler, LynxTitan, 0xwise
 
 ## Notes
 
-- ROI/PnL in this file come from our CSVs (`dashboard_pnl` = realized + cash on the full book).
-- A large `pnl_vs_polydata` gap usually means trade-level vs position-level books, not a scrape bug.
-- `winner_capped` names are scored but **not copyable** until loser+recent closed fetches land.
+- ROI/PnL come from our CSVs (`dashboard_pnl` = realized + cash on the full book).
+- Accuracy `matched` = our WR within 6pp of Polydata and PnL same sign / within 3x.
+- Kicked names stay in the file so the UI can show what we removed.
 - swisstony is Sports #1 on Polydata and is listed as reference-only until we ingest a full book.
 

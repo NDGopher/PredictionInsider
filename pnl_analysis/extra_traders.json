@@ -3,96 +3,112 @@
     "wallet": "0xb6d6e99d3bfe055874a04279f659f009fd57be17",
     "username": "JPMorgan101",
     "source": "sports_leaderboard",
-    "notes": "2026-08 regrade A-Tier Q=54 ROI=56.3% (252 events)"
+    "status": "kicked",
+    "notes": "Health KICK. 2026-08 regrade A-Tier Q=54 ROI=56.3% (252 events) — not on the take book."
   },
   {
     "wallet": "0xcb6ed9332a8fd1b930893c705dd234f37aa248e6",
     "username": "0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6",
     "source": "sports_leaderboard",
-    "notes": "2026-08 regrade S-Tier Q=98 ROI=33.3% (thin sample, 23 events)"
+    "status": "kicked",
+    "notes": "Health KICK. Thin S-Tier sample (23 events) — do not tail."
   },
   {
     "wallet": "0x8a3ab8120807bd64a3de48695110e390fa2ceb9a",
     "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
     "source": "sports_leaderboard",
-    "notes": "2026-08 regrade A-Tier Q=61 ROI=19.0% (425 events)"
+    "status": "take_book",
+    "notes": "On the live take book. 2026-08 regrade A-Tier Q=61 ROI=19.0% (425 events)"
   },
   {
     "wallet": "0x04d5524a0a5af2eca6e39e03defc261d42fe66d8",
     "username": "WTSA",
     "source": "sports_leaderboard",
-    "notes": "New 2026-08: S-Tier Q=72 ROI=57.7% (104 events) ALL+MONTH+WEEK sports LB"
+    "status": "take_book",
+    "notes": "On the live take book. S-Tier Q=72 ROI=57.7% (104 events)"
   },
   {
     "wallet": "0x9ee8bbc36d378af72e5f6b8e2ea2eb67c05a89de",
     "username": "Qpkwks",
     "source": "sports_leaderboard",
-    "notes": "New 2026-08: A-Tier Q=57 ROI=60.8% (52 events) soccer specialist"
+    "status": "kicked",
+    "notes": "Health KICK. Soccer specialist — not on the take book."
   },
   {
     "wallet": "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87",
     "username": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
     "source": "sports_leaderboard",
-    "notes": "New 2026-08: B-Tier Q=46 ROI=38.0% (95 events) \u2014 above signal Q gate"
+    "status": "watch",
+    "notes": "B-Tier Q=46 ROI=38.0% (95 events). Tracked, not on the take book."
   },
   {
     "wallet": "0x5268527977f700f9bf9b6d5cd843859e4e70135d",
     "username": "HomeRunHazard",
     "source": "sports_leaderboard",
-    "notes": "2026-08-18 honest grade: ~1% ROI on $124M / 24k markets (96.9% WR moneylines). Favorite/bond grinder \u2014 do not tail."
+    "status": "kicked",
+    "notes": "KICK: ~1% ROI on $124M / 24k markets (96.9% WR moneylines). Favorite/bond grinder — do not tail."
   },
   {
     "wallet": "0xfe787d2da716d60e8acff57fb87eb13cd4d10319",
     "username": "ferrariChampions2026",
     "source": "sports_leaderboard",
-    "notes": "Sports LB rank 8 ~+$68k. After loser-side closed fetch, dashboard \u2212$6.5M / 38% WR. Previous +$56M was 10k winner cap."
+    "status": "kicked",
+    "notes": "KICK: after loser-side closed fetch, dashboard −$6.5M / 38% WR. Previous +$56M was 10k winner cap."
   },
   {
     "wallet": "0x224a89dbe0db0d6124b335edabd15b3f877da3d5",
     "username": "wr0ngw4yb3tt0r",
     "source": "sports_leaderboard",
-    "notes": "KICK 2026-08-18: hold-to-res \u22126.1% at 6.8k markets. Closed-only LB sample was fake."
+    "status": "kicked",
+    "notes": "KICK 2026-08-18: hold-to-res −6.1% at 6.8k markets. Closed-only LB sample was fake."
   },
   {
     "wallet": "0xdc41c39b95453c943174f369926018f6963bdd7e",
     "username": "quavoo",
     "source": "sports_leaderboard",
-    "notes": "KICK 2026-08-18: hold-to-res \u221210.5%. Closed-only sample 97% ROI was win-biased."
+    "status": "kicked",
+    "notes": "KICK 2026-08-18: hold-to-res −10.5%. Closed-only sample 97% ROI was win-biased."
   },
   {
     "wallet": "0x0346afae2603313d2bbee96b628536c8cbe352a5",
     "username": "GoalLineGhost",
     "source": "sports_leaderboard",
-    "notes": "PUBLIC 2026-08-18: PolyPnL \u2212$1.14M / 52.8% WR. After loser-side fetch our dash \u2212$1.16M / 52% WR. Old +$52M/73% was winner-sorted closed book. Sports LB HOT rank 15 (+$34k) \u2014 not a copy-sharp."
+    "status": "kicked",
+    "notes": "KICK: PolyPnL −$1.14M / 52.8% WR. Old +$52M/73% was winner-sorted closed book. Not a copy-sharp."
   },
   {
     "wallet": "0x0e604be17c231a33dc01e38a722c7fe3984e3bad",
     "username": "0xwise",
     "source": "sports_leaderboard",
-    "notes": "2026-08-18 screen only: sports LB week+month+all, honest hold ROI +60% (n=151, WR 40%, closed-only bias \u22124). Do not tail until unique full-open grade."
+    "status": "watch",
+    "notes": "Screen only: honest hold ROI +60% (n=151). Do not tail until unique full-open grade."
   },
   {
     "wallet": "0x17db3fcd93ba12d38382a0cade24b200185c5f6d",
     "username": "fengdubiying",
     "source": "polydata_smart_score",
-    "notes": "SS 98, WR 76 vs our 71, PnL $3.03M match. Sports #563 \u2014 not a sports specialist; tracked for score calibration only."
+    "status": "watch",
+    "notes": "SS 98 calibration only. Sports #563 — not a sports specialist."
   },
   {
     "wallet": "0x5966db1fe50763c9e3c014d756369bad07e1f804",
     "username": "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
     "source": "polydata_smart_score",
-    "notes": "SS 94 sports #36. Our WR 58.2 vs PD 62, PnL $3.46M vs $3.58M. Full book 123 closed."
+    "status": "take_book",
+    "notes": "On the live take book. SS 94 sports #36. Full book matches Polydata."
   },
   {
     "wallet": "0x94f199fb7789f1aef7fff6b758d6b375100f4c7a",
     "username": "KeyTransporter",
     "source": "polydata_smart_score",
-    "notes": "SS 89 sports #11. PnL exact $5.71M but only 11 closed \u2014 too thin to tail."
+    "status": "watch",
+    "notes": "SS 89 sports #11. PnL exact $5.71M but only 11 closed — too thin to tail."
   },
   {
     "wallet": "0x476e1322d1a412fa0325527b8c3bc5e707b1396d",
     "username": "asparagus2012",
     "source": "polydata_smart_score",
-    "notes": "SS 83 sports #28. PnL $3.55M vs $3.56M but only 15 closed \u2014 too thin to tail."
+    "status": "watch",
+    "notes": "SS 83 sports #28. PnL $3.55M vs $3.56M but only 15 closed — too thin to tail."
   }
 ]

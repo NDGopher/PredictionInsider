@@ -6248,6 +6248,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         });
         return;
       }
+      res.setHeader("Cache-Control", "no-store");
       res.json({
         generatedAt: file.generated_at || null,
         asOf: file.as_of || null,

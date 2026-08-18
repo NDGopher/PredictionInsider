@@ -92,10 +92,18 @@ export interface InsiderOurMetrics {
   markets?: number | null;
   events?: number | null;
   hedge_frac?: number | null;
-  last_30d_pnl?: number | null;
-  last_30d_wr?: number | null;
-  last_90d_pnl?: number | null;
-  last_90d_wr?: number | null;
+    last_30d_pnl?: number | null;
+    last_30d_wr?: number | null;
+    last_30d_roi?: number | null;
+    last_30d_n?: number | null;
+    last_60d_pnl?: number | null;
+    last_60d_wr?: number | null;
+    last_60d_roi?: number | null;
+    last_60d_n?: number | null;
+    last_90d_pnl?: number | null;
+    last_90d_wr?: number | null;
+    last_90d_roi?: number | null;
+    last_90d_n?: number | null;
   quality_score?: number | null;
   tier?: string | null;
   top_sport?: string | null;
@@ -137,10 +145,28 @@ export interface PolydataReference {
   active_hours?: number | null;
 }
 
+export interface RankWindow {
+  n?: number | null;
+  pnl?: number | null;
+  wr?: number | null;
+  roi?: number | null;
+  first?: string | null;
+  last?: string | null;
+}
+
+export interface RankAccuracy {
+  wr_delta_pp?: number | null;
+  pnl_ratio?: number | null;
+  matched?: boolean;
+  note?: string;
+}
+
 export interface InsiderRankRow {
   username: string;
   wallet: string;
   on_roster?: boolean;
+  lane?: string;
+  take_book?: boolean;
   score_source?: string;
   insider_rank?: number;
   insider_score: number;
@@ -150,12 +176,20 @@ export interface InsiderRankRow {
   recency_band?: string;
   live_weight?: number;
   days_since_last?: number | null;
+  polymarket_url?: string;
   our?: InsiderOurMetrics;
+  windows?: {
+    last_30d?: RankWindow | null;
+    last_60d?: RankWindow | null;
+    last_90d?: RankWindow | null;
+  };
   book?: InsiderBookFlags;
   polydata?: PolydataReference;
+  accuracy?: RankAccuracy;
   pnl_vs_polydata?: { ratio?: number | null; flag?: boolean; note?: string };
   components?: Record<string, number>;
   health_action?: string;
+  extra_status?: string;
   untailable?: boolean;
   untailable_reason?: string;
   market_maker?: boolean;

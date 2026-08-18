@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -27,14 +28,22 @@ from polydata_reference import (  # noqa: E402
     REFERENCE_USERNAMES,
     scrape_polydata_profiles,
 )
-from run_full_pipeline import OUTPUT_DIR, csv_path_for, json_path_for, roster_traders  # noqa: E402
+from run_full_pipeline import (  # noqa: E402
+    EXTRA_TRADERS_PATH,
+    OUTPUT_DIR,
+    csv_path_for,
+    json_path_for,
+    roster_traders,
+)
 
 AS_OF = datetime.now(timezone.utc)
 ROOT = Path(__file__).resolve().parent
 HEALTH_PATH = OUTPUT_DIR / "trader_health.json"
+TRUSTED_PATH = OUTPUT_DIR / "trusted_full_books.json"
 CACHE_PATH = OUTPUT_DIR / "polydata_profiles.json"
 OUT_JSON = OUTPUT_DIR / "insider_ranks.json"
 OUT_MD = ROOT / "INSIDER_RANKS.md"
+KICK_NOTE_RE = re.compile(r"\bKICK\b|do not tail|not a copy", re.I)
 
 # Same mix as Polydata Smart Score, with our two custom slots.
 INSIDER_WEIGHTS = {
@@ -84,11 +93,13 @@ def csv_book_flags(csv_path: Path) -> dict[str, Any]:
         "profit_factor": None,
         "winner_capped": False,
         "book_note": "missing_csv",
+        "last_end_date": None,
+        "csv_wr": None,
     }
     if not csv_path.exists():
         return empty
     try:
-        cols = ("status", "realizedPnl", "cashPnl", "total_position_pnl")
+        cols = ("status", "realizedPnl", "cashPnl", "total_position_pnl", "endDate")
         df = pd.read_csv(csv_path, usecols=lambda c: c in cols, low_memory=False)
     except Exception as exc:
         empty["book_note"] = f"csv_read_error:{exc}"
@@ -118,6 +129,15 @@ def csv_book_flags(csv_path: Path) -> dict[str, Any]:
         note = "winner_capped_10k"
     elif closed >= 20_000:
         note = "deep_book"
+    last_end = None
+    if "endDate" in df.columns and len(df):
+        try:
+            last_end = str(pd.to_datetime(df["endDate"], errors="coerce").max())[:10]
+            if last_end in {"NaT", "nat", "None"}:
+                last_end = None
+        except Exception:
+            last_end = None
+    csv_wr = round(100.0 * pos / closed, 2) if closed else None
     return {
         "rows": int(len(df)),
         "closed": closed,
@@ -128,6 +148,8 @@ def csv_book_flags(csv_path: Path) -> dict[str, Any]:
         "profit_factor": pf,
         "winner_capped": winner_capped,
         "book_note": note,
+        "last_end_date": last_end,
+        "csv_wr": csv_wr,
     }
 
 
@@ -247,6 +269,122 @@ def load_health_by_wallet() -> dict[str, dict[str, Any]]:
     return out
 
 
+def load_take_book() -> dict[str, dict[str, Any]]:
+    """Trusted 12 from take_book_daily / asof consensus — source of truth for copyable."""
+    if not TRUSTED_PATH.exists():
+        return {}
+    try:
+        data = json.loads(TRUSTED_PATH.read_text(encoding="utf-8"))
+    except Exception as exc:
+        print(f"[insider-ranks] could not read trusted_full_books.json: {exc}")
+        return {}
+    out: dict[str, dict[str, Any]] = {}
+    for row in data.get("trusted") or []:
+        if not isinstance(row, dict):
+            continue
+        w = str(row.get("wallet") or "").strip().lower()
+        if w:
+            out[w] = row
+    return out
+
+
+def load_extra_meta() -> dict[str, dict[str, Any]]:
+    if not EXTRA_TRADERS_PATH.exists():
+        return {}
+    try:
+        data = json.loads(EXTRA_TRADERS_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    if not isinstance(data, list):
+        return {}
+    out: dict[str, dict[str, Any]] = {}
+    for row in data:
+        if not isinstance(row, dict):
+            continue
+        w = str(row.get("wallet") or "").strip().lower()
+        if w:
+            out[w] = row
+    return out
+
+
+def window_snapshot(raw: Any) -> dict[str, Any] | None:
+    if not isinstance(raw, dict) or not raw:
+        return None
+    n = raw.get("n")
+    try:
+        n_i = int(n) if n is not None else None
+    except (TypeError, ValueError):
+        n_i = None
+    return {
+        "n": n_i,
+        "pnl": raw.get("pnl"),
+        "wr": raw.get("win_rate"),
+        "roi": raw.get("roi"),
+        "first": raw.get("first"),
+        "last": raw.get("last"),
+    }
+
+
+def book_accuracy(
+    our_wr: float | None,
+    our_pnl: float | None,
+    pd_wr: float | None,
+    pd_pnl: float | None,
+) -> dict[str, Any]:
+    wr_delta = None
+    if our_wr is not None and pd_wr is not None:
+        wr_delta = round(float(our_wr) - float(pd_wr), 2)
+    gap = polydata_gap(
+        float(our_pnl or 0),
+        float(pd_pnl) if isinstance(pd_pnl, (int, float)) else None,
+    )
+    wr_ok = wr_delta is not None and abs(wr_delta) <= 6.0
+    matched = bool(wr_ok and not gap["flag"] and pd_wr is not None)
+    if pd_wr is None and pd_pnl is None:
+        note = "no_polydata"
+    elif matched:
+        note = "matched"
+    elif not wr_ok and wr_delta is not None:
+        note = "wr_gap"
+    else:
+        note = str(gap.get("note") or "gap")
+    return {
+        "wr_delta_pp": wr_delta,
+        "pnl_ratio": gap.get("ratio"),
+        "matched": matched,
+        "note": note,
+    }
+
+
+def classify_lane(
+    *,
+    on_roster: bool,
+    take_book: bool,
+    health_action: str | None,
+    extra_status: str | None,
+    extra_notes: str | None,
+    score_source: str,
+) -> str:
+    """Product lane. Take book always wins over a stale health KICK."""
+    if take_book:
+        return "take_book"
+    extra = (extra_status or "").strip().lower()
+    if extra in {"kicked", "kick", "grinder", "untailable"}:
+        return "kicked"
+    if extra_notes and KICK_NOTE_RE.search(extra_notes):
+        return "kicked"
+    action = (health_action or "").strip().upper()
+    if action in BLOCK_COPY_ACTIONS:
+        return "kicked"
+    if not on_roster or score_source == "polydata_shadow":
+        return "reference"
+    if extra in {"watch", "calibration", "thin"}:
+        return "watch"
+    if action in {"WATCH", "TIGHTEN", "OVERLAY"}:
+        return "watch"
+    return "roster"
+
+
 def load_analysis(wallet: str, username: str) -> dict[str, Any] | None:
     path = json_path_for(wallet, username)
     if not path.exists():
@@ -277,13 +415,23 @@ def score_trader(
     book: dict[str, Any],
     poly: dict[str, Any] | None,
     on_roster: bool,
+    take_row: dict[str, Any] | None = None,
+    extra_row: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     a = analysis or {}
     h = health or {}
+    extra = extra_row or {}
+    on_take = bool(take_row)
     pd_early = poly if poly and poly.get("ok") else {}
     score_source = "our_book"
     pnl = float(a.get("dashboard_pnl") if a.get("dashboard_pnl") is not None else book.get("sum_dash") or 0)
     wr = float(a.get("win_rate") or (h.get("overall") or {}).get("win_rate") or 0)
+    if wr == 0 and take_row and take_row.get("our_wr") is not None:
+        wr = float(take_row["our_wr"])
+    if wr == 0 and book.get("csv_wr") is not None:
+        wr = float(book["csv_wr"])
+    if pnl == 0 and take_row and take_row.get("our_pnl") is not None:
+        pnl = float(take_row["our_pnl"])
     sharpe = float(a.get("pseudo_sharpe") or 0)
     median = float(a.get("median_market_stake") or 0)
     if not on_roster and not a and pd_early:
@@ -296,6 +444,9 @@ def score_trader(
         sharpe = float(pd_early.get("sharpe") or sharpe)
     markets = int(a.get("markets_traded") or 0)
     events = int(a.get("total_events") or markets)
+    if markets == 0:
+        markets = int(book.get("closed") or 0)
+        events = max(events, markets)
     hedge_risk = float(a.get("hedge_risk") or 0)
     total_risked = float(a.get("total_risked") or 0)
     hedge_frac = hedge_risk / max(hedge_risk + total_risked, 1.0)
@@ -306,11 +457,21 @@ def score_trader(
         days_since_i = int(days_since) if days_since is not None else None
     except (TypeError, ValueError):
         days_since_i = None
+    last_event_early = a.get("last_event_date") or h.get("max_date") or book.get("last_end_date")
+    if days_since_i is None and last_event_early:
+        try:
+            last_dt = datetime.fromisoformat(str(last_event_early)[:10]).replace(tzinfo=timezone.utc)
+            days_since_i = max(0, int((AS_OF - last_dt).total_seconds() // 86400))
+        except (TypeError, ValueError):
+            pass
     recency_band = str(h.get("recency_band") or recency_from_days(days_since_i)[0])
     live_weight = float(h.get("live_weight") if h.get("live_weight") is not None else recency_from_days(days_since_i)[1])
     market_maker = wallet.lower() in MM_WALLETS
     untailable = bool(h.get("untailable") or market_maker)
     winner_capped = bool(book.get("winner_capped"))
+    health_action = str(h.get("action") or "") or None
+    extra_status = str(extra.get("status") or "") or None
+    extra_notes = str(extra.get("notes") or "") or None
 
     pnl_s = pnl_consistency_score(
         pnl,
@@ -330,7 +491,7 @@ def score_trader(
         winner_capped=winner_capped,
         market_maker=market_maker,
         untailable=untailable,
-        health_action=str(h.get("action") or "") or None,
+        health_action=health_action,
     )
     if winner_capped:
         pnl_s = min(pnl_s, 20.0)
@@ -338,6 +499,35 @@ def score_trader(
     if score_source == "polydata_shadow":
         copy_s = min(copy_s, 35.0)
         copy_note = "Reference only — we do not have this full book yet."
+
+    lane = classify_lane(
+        on_roster=on_roster,
+        take_book=on_take,
+        health_action=health_action,
+        extra_status=extra_status,
+        extra_notes=extra_notes,
+        score_source=score_source,
+    )
+    copyable = lane == "take_book"
+    if copyable:
+        copy_s = max(copy_s, 80.0)
+        take_reason = str((take_row or {}).get("reason") or "").strip()
+        copy_note = take_reason or "On the live take book (12 matched sports books)."
+        if health_action and health_action.upper() in BLOCK_COPY_ACTIONS:
+            copy_note += (
+                f" Health still flags {health_action} on hold-to-res — "
+                "the as-of take book is the copy list."
+            )
+    elif lane == "kicked":
+        copy_s = min(copy_s, 12.0)
+        if extra_notes:
+            copy_note = extra_notes
+        elif health_action:
+            copy_note = f"Removed from copy list ({health_action})."
+    elif lane == "watch":
+        copy_note = extra_notes or copy_note or "Watch — not on the take book."
+    elif lane == "reference":
+        copy_note = "Polydata reference only — no full book on our roster."
 
     components = {
         "pnl_consistency": round(pnl_s, 1),
@@ -353,19 +543,23 @@ def score_trader(
     insider = round(_clip(insider), 1)
 
     pd = poly if poly and poly.get("ok") else {}
+    if take_row and not pd.get("win_rate"):
+        pd = {
+            **pd,
+            "ok": bool(pd.get("ok") or take_row.get("pd_wr") is not None),
+            "url": pd.get("url") or f"https://polydata.pro/traders/{username}",
+            "win_rate": pd.get("win_rate") if pd.get("win_rate") is not None else take_row.get("pd_wr"),
+            "pnl": pd.get("pnl") if pd.get("pnl") is not None else take_row.get("pd_pnl"),
+            "smart_score": pd.get("smart_score") if pd.get("smart_score") is not None else take_row.get("smart_score"),
+            "sports_rank": pd.get("sports_rank") if pd.get("sports_rank") is not None else take_row.get("sports_rank"),
+            "sports_pnl": pd.get("sports_pnl") if pd.get("sports_pnl") is not None else take_row.get("sports_pnl"),
+        }
     gap = polydata_gap(pnl, pd.get("pnl") if isinstance(pd.get("pnl"), (int, float)) else None)
-    copyable = (
-        copy_s >= 60
-        and not winner_capped
-        and not market_maker
-        and recency_band in {"HOT", "WARM"}
-        and wr < GRINDER_WR
-        and 45 <= wr <= 75
-        and median < UNTAILABLE_MEDIAN
-        and pnl > 0
-        and hedge_frac < 0.50
-        and (h.get("action") or "").upper() not in BLOCK_COPY_ACTIONS
-        and score_source == "our_book"
+    accuracy = book_accuracy(
+        wr,
+        pnl,
+        float(pd["win_rate"]) if isinstance(pd.get("win_rate"), (int, float)) else None,
+        float(pd["pnl"]) if isinstance(pd.get("pnl"), (int, float)) else None,
     )
     if insider >= 80:
         badge = "Elite"
@@ -377,11 +571,19 @@ def score_trader(
         badge = "Standard"
 
     last_30 = a.get("last_30d") or h.get("last_30d") or {}
+    last_60 = a.get("last_60d") or h.get("last_60d") or {}
     last_90 = a.get("last_90d") or h.get("last_90d") or {}
+    overall_h = h.get("overall") if isinstance(h.get("overall"), dict) else {}
+    roi = a.get("overall_roi")
+    if roi is None:
+        roi = overall_h.get("roi")
+    last_event = a.get("last_event_date") or h.get("max_date") or overall_h.get("last") or book.get("last_end_date")
     return {
         "username": username,
         "wallet": wallet.lower(),
         "on_roster": on_roster,
+        "lane": lane,
+        "take_book": on_take,
         "score_source": score_source,
         "insider_score": insider,
         "badge": badge,
@@ -390,9 +592,10 @@ def score_trader(
         "recency_band": recency_band,
         "live_weight": live_weight,
         "days_since_last": days_since_i,
+        "polymarket_url": f"https://polymarket.com/profile/{wallet.lower()}",
         "our": {
             "dashboard_pnl": round(pnl, 2),
-            "roi": a.get("overall_roi"),
+            "roi": roi,
             "win_rate": round(wr, 2),
             "sharpe": sharpe,
             "profit_factor": book.get("profit_factor"),
@@ -402,12 +605,25 @@ def score_trader(
             "hedge_frac": round(hedge_frac, 3),
             "last_30d_pnl": last_30.get("pnl"),
             "last_30d_wr": last_30.get("win_rate"),
+            "last_30d_roi": last_30.get("roi"),
+            "last_30d_n": last_30.get("n"),
+            "last_60d_pnl": last_60.get("pnl"),
+            "last_60d_wr": last_60.get("win_rate"),
+            "last_60d_roi": last_60.get("roi"),
+            "last_60d_n": last_60.get("n"),
             "last_90d_pnl": last_90.get("pnl"),
             "last_90d_wr": last_90.get("win_rate"),
+            "last_90d_roi": last_90.get("roi"),
+            "last_90d_n": last_90.get("n"),
             "quality_score": a.get("quality_score"),
             "tier": a.get("tier"),
             "top_sport": a.get("top_sport"),
-            "last_event_date": a.get("last_event_date") or h.get("max_date"),
+            "last_event_date": last_event,
+        },
+        "windows": {
+            "last_30d": window_snapshot(last_30),
+            "last_60d": window_snapshot(last_60),
+            "last_90d": window_snapshot(last_90),
         },
         "book": book,
         "polydata": {
@@ -432,9 +648,11 @@ def score_trader(
             "trades_per_day": pd.get("trades_per_day"),
             "active_hours": pd.get("active_hours"),
         },
+        "accuracy": accuracy,
         "pnl_vs_polydata": gap,
         "components": components,
-        "health_action": h.get("action"),
+        "health_action": health_action,
+        "extra_status": extra_status,
         "untailable": untailable,
         "untailable_reason": h.get("untailable_reason") or "",
         "market_maker": market_maker,
@@ -453,7 +671,6 @@ def write_markdown(payload: dict[str, Any]) -> None:
     traders: list[dict[str, Any]] = payload["traders"]
     sports_board = [t for t in traders if t.get("polydata", {}).get("sports_rank")]
     sports_board.sort(key=lambda t: t["polydata"]["sports_rank"] or 9_999)
-    copyable = [t for t in traders if t.get("copyable")]
     lines = [
         "# Insider Ranks",
         "",
@@ -485,73 +702,97 @@ def write_markdown(payload: dict[str, Any]) -> None:
             f"{pd.get('win_rate') or '—'}% | {pd.get('profit_factor') or '—'} | "
             f"{pd.get('sharpe') or '—'} | {'yes' if t.get('on_roster') else 'no'} |"
         )
+    take_book = [t for t in traders if t.get("lane") == "take_book"]
+    kicked = [t for t in traders if t.get("lane") == "kicked"]
     lines += [
         "",
-        "## Our Insider Score (copy product)",
+        "## Take book (the copy list)",
         "",
-        "| Rank | Trader | Score | Recency | Copy? | Our PnL | Our WR | PD sports # | PD SS | Gap | Book |",
-        "|-----:|--------|------:|---------|-------|--------:|-------:|------------:|------:|-----|------|",
+        "Copyable = the 12 matched sports books in `trusted_full_books.json`. "
+        "Health KICK on hold-to-res does **not** remove a take-book name.",
+        "",
+        "| Trader | Recency | Last | Our PnL | Our WR | PD WR | ΔWR | Accuracy | Closed |",
+        "|--------|---------|------|--------:|-------:|------:|----:|----------|-------:|",
     ]
-    shown = 0
-    for t in traders:
-        if not t.get("on_roster") and not t.get("copyable"):
-            sr = t.get("polydata", {}).get("sports_rank")
-            if not (isinstance(sr, int) and sr <= 10):
-                continue
+    for t in take_book:
         our = t["our"]
         pd = t["polydata"]
-        gap = t.get("pnl_vs_polydata") or {}
-        copy = "yes" if t.get("copyable") else "no"
-        src = "" if t.get("score_source") == "our_book" else " (PD shadow)"
+        acc = t.get("accuracy") or {}
+        wr_d = acc.get("wr_delta_pp")
+        wr_d_s = f"{wr_d:+.1f}" if isinstance(wr_d, (int, float)) else "—"
         lines.append(
-            f"| {t.get('insider_rank')} | {t['username']}{src} | {t['insider_score']:.1f} | "
-            f"{t.get('recency_band')} | {copy} | "
+            f"| {t['username']} | {t.get('recency_band')} | {our.get('last_event_date') or '—'} | "
             f"{_md_money(our.get('dashboard_pnl'))} | {our.get('win_rate')}% | "
-            f"{pd.get('sports_rank') or '—'} | {pd.get('smart_score') or '—'} | "
-            f"{gap.get('note')} | {t.get('book', {}).get('book_note')} |"
+            f"{pd.get('win_rate') or '—'}% | {wr_d_s} | {acc.get('note')} | "
+            f"{t.get('book', {}).get('closed', 0)} |"
         )
-        shown += 1
-        if shown >= 40:
-            break
     lines += [
         "",
-        f"**Copyable now ({len(copyable)}):** "
-        + (", ".join(t["username"] for t in copyable[:20]) or "none"),
+        f"**Take book ({len(take_book)}):** "
+        + (", ".join(t["username"] for t in take_book) or "none"),
+        "",
+        f"**Kicked / do-not-copy ({len(kicked)}):** "
+        + (", ".join(t["username"] for t in kicked[:30]) or "none"),
         "",
         "## Notes",
         "",
-        "- ROI/PnL in this file come from our CSVs (`dashboard_pnl` = realized + cash on the full book).",
-        "- A large `pnl_vs_polydata` gap usually means trade-level vs position-level books, not a scrape bug.",
-        "- `winner_capped` names are scored but **not copyable** until loser+recent closed fetches land.",
+        "- ROI/PnL come from our CSVs (`dashboard_pnl` = realized + cash on the full book).",
+        "- Accuracy `matched` = our WR within 6pp of Polydata and PnL same sign / within 3x.",
+        "- Kicked names stay in the file so the UI can show what we removed.",
         "- swisstony is Sports #1 on Polydata and is listed as reference-only until we ingest a full book.",
         "",
     ]
     OUT_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def main() -> int:
-    roster = roster_traders()
-    health_map = load_health_by_wallet()
-    names = [u for _, u in roster] + list(REFERENCE_USERNAMES)
-    offline = "--offline" in sys.argv
-    if offline and CACHE_PATH.exists():
+def _load_profiles(names: list[str], offline: bool) -> dict[str, Any]:
+    cached: dict[str, Any] = {}
+    if CACHE_PATH.exists():
+        try:
+            cached = json.loads(CACHE_PATH.read_text(encoding="utf-8"))
+        except Exception:
+            cached = {}
+    if offline and cached:
         print(f"[insider-ranks] using cached Polydata profiles {CACHE_PATH}")
-        profiles = json.loads(CACHE_PATH.read_text(encoding="utf-8"))
-    else:
+        return cached
+    try:
         print(f"[insider-ranks] scraping {len(names)} Polydata profiles…")
         profiles = scrape_polydata_profiles(names)
         CACHE_PATH.write_text(json.dumps(profiles, indent=2, default=str), encoding="utf-8")
+        return profiles
+    except Exception as exc:
+        print(f"[insider-ranks] Polydata scrape failed ({exc}); using cache")
+        if cached:
+            return cached
+        return {}
+
+
+def main() -> int:
+    roster = roster_traders()
+    health_map = load_health_by_wallet()
+    take_book = load_take_book()
+    extra_meta = load_extra_meta()
+    names = [u for _, u in roster] + list(REFERENCE_USERNAMES)
+    offline = "--offline" in sys.argv
+    profiles = _load_profiles(names, offline)
+    by_wallet: dict[str, dict[str, Any]] = {}
+    for row in profiles.values():
+        if isinstance(row, dict) and row.get("wallet"):
+            by_wallet[str(row["wallet"]).lower()] = row
 
     traders: list[dict[str, Any]] = []
     roster_set = {w.lower() for w, _ in roster}
     for wallet, username in roster:
+        w = wallet.lower()
         analysis = load_analysis(wallet, username)
         book = csv_book_flags(csv_path_for(wallet, username))
-        poly = profiles.get(username.lower())
+        poly = profiles.get(username.lower()) or by_wallet.get(w)
         traders.append(
             score_trader(
-                wallet, username, analysis, health_map.get(wallet.lower()),
+                wallet, username, analysis, health_map.get(w),
                 book, poly, on_roster=True,
+                take_row=take_book.get(w),
+                extra_row=extra_meta.get(w),
             )
         )
 
@@ -571,30 +812,53 @@ def main() -> int:
                     "book_note": "reference_only_no_csv",
                 },
                 poly, on_roster=False,
+                take_row=take_book.get(wallet),
+                extra_row=extra_meta.get(wallet),
             )
         )
 
-    traders.sort(key=lambda t: (-float(t["insider_score"]), t["username"].lower()))
+    traders.sort(
+        key=lambda t: (
+            0 if t.get("lane") == "take_book" else 1,
+            -float(t["insider_score"]),
+            t["username"].lower(),
+        )
+    )
     for i, t in enumerate(traders, 1):
         t["insider_rank"] = i
 
     sports = [t for t in traders if t.get("polydata", {}).get("sports_rank")]
     sports.sort(key=lambda t: t["polydata"]["sports_rank"] or 9_999)
+    lane_counts = {
+        "take_book": sum(1 for t in traders if t.get("lane") == "take_book"),
+        "watch": sum(1 for t in traders if t.get("lane") == "watch"),
+        "kicked": sum(1 for t in traders if t.get("lane") == "kicked"),
+        "roster": sum(1 for t in traders if t.get("lane") == "roster"),
+        "reference": sum(1 for t in traders if t.get("lane") == "reference"),
+    }
+    matched = sum(1 for t in traders if (t.get("accuracy") or {}).get("matched"))
     payload = {
         "generated_at": AS_OF.isoformat(),
         "as_of": AS_OF.date().isoformat(),
         "method": (
-            "Insider Score from our full closed+open CSVs. Polydata HTML profiles are a "
+            "Insider Score from our full closed+open CSVs. Copyable = the 12 take-book "
+            "sports books in trusted_full_books.json. Polydata HTML profiles are a "
             "calibration reference (Smart Score, WR, PF, Sharpe/Sortino/HHI/Kelly, sports rank). "
             "Not used as product PnL."
         ),
         "weights": INSIDER_WEIGHTS,
         "polydata_weights": POLYDATA_SMART_SCORE_WEIGHTS,
+        "take_book_wallets": sorted(take_book.keys()),
         "counts": {
             "roster": len(roster),
             "scored": len(traders),
             "copyable": sum(1 for t in traders if t.get("copyable")),
+            "take_book": lane_counts["take_book"],
+            "watch": lane_counts["watch"],
+            "kicked": lane_counts["kicked"],
+            "reference": lane_counts["reference"],
             "polydata_ok": sum(1 for t in traders if t.get("polydata", {}).get("ok")),
+            "accuracy_matched": matched,
             "winner_capped": sum(1 for t in traders if t.get("winner_capped")),
             "polydata_sports_ranked": len(sports),
         },
@@ -603,6 +867,7 @@ def main() -> int:
                 "username": t["username"],
                 "wallet": t["wallet"],
                 "on_roster": t["on_roster"],
+                "lane": t.get("lane"),
                 "sports_rank": t["polydata"].get("sports_rank"),
                 "sports_pnl": t["polydata"].get("sports_pnl"),
                 "smart_score": t["polydata"].get("smart_score"),
@@ -618,8 +883,14 @@ def main() -> int:
     OUT_JSON.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
     write_markdown(payload)
     print(f"[insider-ranks] wrote {OUT_JSON} and {OUT_MD}")
-    print(f"  copyable={payload['counts']['copyable']} polydata_ok={payload['counts']['polydata_ok']} "
-          f"winner_capped={payload['counts']['winner_capped']}")
+    print(
+        f"  take_book={lane_counts['take_book']} kicked={lane_counts['kicked']} "
+        f"watch={lane_counts['watch']} matched={matched} "
+        f"polydata_ok={payload['counts']['polydata_ok']}"
+    )
+    missing = [w[:10] for w in take_book if not any(t["wallet"] == w for t in traders)]
+    if missing:
+        print(f"  WARNING take-book wallets not scored: {missing}")
     return 0
 
 

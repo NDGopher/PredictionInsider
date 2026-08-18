@@ -70,6 +70,14 @@ export function runScheduledPipelineIfNeeded(): void {
           health.on("close", (hc) => {
             if (hc === 0) console.log("[ScheduledPipeline] take_book_daily finished");
             else console.warn(`[ScheduledPipeline] take_book_daily exited ${hc}`);
+            const ranks = spawn(command, [...prefixArgs, join(process.cwd(), "pnl_analysis", "build_insider_ranks.py"), "--offline"], {
+              cwd: process.cwd(),
+              stdio: ["ignore", "pipe", "pipe"],
+            });
+            ranks.on("close", (rc) => {
+              if (rc === 0) console.log("[ScheduledPipeline] insider ranks rebuilt");
+              else console.warn(`[ScheduledPipeline] insider ranks exited ${rc}`);
+            });
           });
         } else {
           console.warn(
