@@ -2,9 +2,21 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { BookmarkPlus, ExternalLink, Flame, PauseCircle, Radio } from "lucide-react";
+import { ExternalLink, Flame, PauseCircle, Radio } from "lucide-react";
+import { useState } from "react";
 import { Link } from "wouter";
+
+interface PriceFmt {
+  price: number;
+  cents: number;
+  decimal: number;
+  american: number;
+  americanLabel: string;
+  decimalLabel: string;
+  compact: string;
+}
 
 interface TakePlay {
   id: string;
@@ -17,6 +29,15 @@ interface TakePlay {
   currentPrice: number;
   avgEntryPrice: number;
   fillPlus2c: number;
+  takeCap: number;
+  liveAsk: number | null;
+  takePrice: number | null;
+  quoteSource?: string;
+  takeFmt: PriceFmt | null;
+  liveFmt: PriceFmt | null;
+  vwapFmt: PriceFmt | null;
+  valid: boolean;
+  invalidReason: string | null;
   confidence: number;
   q: number;
   rel: number;
@@ -47,68 +68,75 @@ interface TakePlaysResponse {
   near?: TakePlay[];
   csvOpen?: { live?: TakePlay[]; near?: TakePlay[] };
   telegramConfigured?: boolean;
-  signalsFetchedAt?: number | null;
+  quotesAt?: number | null;
 }
 
-function cents(p: number): string {
-  return `${Math.round(p * 100)}¢`;
+function americanFromPrice(p: number): number {
+  if (!p || p <= 0 || p >= 1) return 0;
+  if (p >= 0.5) return -Math.round((p / (1 - p)) * 100);
+  return Math.round(((1 - p) / p) * 100);
 }
 
-function playKey(p: TakePlay): string {
-  return `${(p.slug || p.marketQuestion).toLowerCase()}|${p.side.toLowerCase()}`;
+function decimalFromPrice(p: number): number {
+  if (!p || p <= 0) return 0;
+  return Math.round((1 / p) * 100) / 100;
 }
 
-function mergePlays(primary: TakePlay[], extra: TakePlay[]): TakePlay[] {
-  const seen = new Set(primary.map(playKey));
-  const out = [...primary];
-  for (const p of extra) {
-    const k = playKey(p);
-    if (seen.has(k)) continue;
-    seen.add(k);
-    out.push(p);
+function americanLabel(n: number): string {
+  if (!n) return "—";
+  return n > 0 ? `+${n}` : String(n);
+}
+
+function fmtTriple(p: number | null | undefined, fallback?: PriceFmt | null): string {
+  if (fallback && fallback.price > 0) {
+    return `${fallback.price.toFixed(3)}  ${fallback.decimalLabel}  ${fallback.americanLabel}`;
   }
-  return out;
+  if (p == null || p <= 0) return "—";
+  return `${p.toFixed(3)}  ${decimalFromPrice(p).toFixed(2)}  ${americanLabel(americanFromPrice(p))}`;
 }
 
-async function logPaperTicket(play: TakePlay): Promise<void> {
-  const body = {
-    id: `take-paper-${play.id}`,
-    marketQuestion: play.marketQuestion,
-    outcomeLabel: play.playLabel,
-    side: play.side,
-    slug: play.slug,
-    entryPrice: play.fillPlus2c,
-    betAmount: 100,
-    betDate: Date.now(),
-    status: "open",
-    book: "paper",
-    polymarketPrice: play.currentPrice,
-    sport: play.sport,
-    notes: `TAKE $100 · Q ${Math.round(play.q)} · ${play.rel.toFixed(1)}× · ${play.traders.join(", ")} · fill ≤ ${cents(play.fillPlus2c)} · human, no auto-bet`,
-  };
-  const res = await fetch("/api/bets", {
-    method: "POST",
+async function saveActualFill(playId: string, cents: string): Promise<void> {
+  const n = Number(cents);
+  if (!Number.isFinite(n) || n <= 0 || n >= 100) {
+    throw new Error("Enter actual fill in cents, e.g. 54");
+  }
+  const price = n / 100;
+  const res = await fetch(`/api/bets/take-paper-${playId}`, {
+    method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ actualPrice: price, entryPrice: price, americanOdds: americanFromPrice(price) }),
   });
-  if (!res.ok) {
-    throw new Error(`Could not log paper ticket (${res.status})`);
-  }
+  if (!res.ok) throw new Error(`Could not save fill (${res.status})`);
+}
+
+function PriceRow({ label, price, fmt, hint }: { label: string; price: number | null | undefined; fmt?: PriceFmt | null; hint?: string }) {
+  return (
+    <div className="grid grid-cols-[7.5rem_1fr] gap-2 text-xs font-mono tabular-nums">
+      <span className="text-muted-foreground font-sans">{label}</span>
+      <span>
+        {fmtTriple(price, fmt)}
+        {hint ? <span className="text-muted-foreground font-sans ml-1">{hint}</span> : null}
+      </span>
+    </div>
+  );
 }
 
 function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [cents, setCents] = useState(
+    play.liveAsk != null ? String(Math.round(play.liveAsk * 1000) / 10) : "",
+  );
   const href = play.url || (play.slug ? `https://polymarket.com/event/${play.slug}` : undefined);
 
-  async function onPaper(): Promise<void> {
+  async function onSaveFill(): Promise<void> {
     try {
-      await logPaperTicket(play);
+      await saveActualFill(play.id, cents);
       await queryClient.invalidateQueries({ queryKey: ["/api/bets"] });
-      toast({ title: "Paper $100 logged", description: `${play.side} · fill ≤ ${cents(play.fillPlus2c)} · My Bets` });
+      toast({ title: "Actual fill saved", description: `${cents}¢ · My Bets` });
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "log failed";
-      toast({ title: "Could not log paper ticket", description: msg, variant: "destructive" });
+      const msg = err instanceof Error ? err.message : "save failed";
+      toast({ title: "Could not save fill", description: msg, variant: "destructive" });
     }
   }
 
@@ -122,33 +150,45 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
           <Badge variant="outline">{play.submarket}</Badge>
           <Badge variant="outline">Q {Math.round(play.q)}</Badge>
           <Badge variant="outline">{play.rel.toFixed(1)}×</Badge>
+          {play.quoteSource === "clob" ? (
+            <Badge variant="outline">live book</Badge>
+          ) : (
+            <Badge variant="outline">signal px</Badge>
+          )}
         </div>
         <div className="font-medium leading-snug">{play.marketQuestion}</div>
-        <div className="text-xs text-muted-foreground">
-          {play.traders.join(", ") || "matched book"} · their {cents(play.avgEntryPrice)} · live {cents(play.currentPrice)} · fill ≤ {cents(play.fillPlus2c)}
+        <div className="space-y-0.5 rounded-md bg-muted/40 p-2">
+          <PriceRow label="Take cap" price={play.takeCap} fmt={play.takeFmt} hint="VWAP+2¢ max" />
+          <PriceRow label="Live ask" price={play.liveAsk ?? play.currentPrice} fmt={play.liveFmt} hint="pay this" />
+          <PriceRow label="Their VWAP" price={play.avgEntryPrice} fmt={play.vwapFmt} />
+        </div>
+        <div className="text-[11px] text-muted-foreground">
+          Decimal = 1/price · American next to it. {play.traders.join(", ") || "matched book"}
           {play.sportRoi != null ? ` · sport ROI ${play.sportRoi.toFixed(0)}%` : ""}
         </div>
         {!take && play.misses.length > 0 && (
           <div className="text-xs text-amber-500">Missing: {play.misses.join(" · ")}</div>
         )}
         {take && (
-          <div className="text-xs text-muted-foreground">
-            Pay up to live + 2¢, hold to resolution, $100 flat (or 1% of bank). Do not chase after 88¢. Human fill — no auto-bet.
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted-foreground">Actual fill (¢)</span>
+            <Input
+              className="h-7 w-24 text-xs"
+              inputMode="decimal"
+              value={cents}
+              onChange={(e) => setCents(e.target.value)}
+              placeholder="54"
+            />
+            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => void onSaveFill()}>
+              I took it at
+            </Button>
           </div>
         )}
-        <div className="flex flex-wrap items-center gap-2">
-          {href && (
-            <a href={href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-primary">
-              Polymarket <ExternalLink className="w-3 h-3" />
-            </a>
-          )}
-          {take && (
-            <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => void onPaper()}>
-              <BookmarkPlus className="w-3 h-3" />
-              Log $100 paper
-            </Button>
-          )}
-        </div>
+        {href && (
+          <a href={href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-primary">
+            Polymarket <ExternalLink className="w-3 h-3" />
+          </a>
+        )}
       </CardContent>
     </Card>
   );
@@ -157,12 +197,12 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
 export default function TakeBookFeed() {
   const { data, isLoading, error, refetch } = useQuery<TakePlaysResponse>({
     queryKey: ["/api/take-plays"],
-    staleTime: 20_000,
-    refetchInterval: 30_000,
+    staleTime: 8_000,
+    refetchInterval: 12_000,
   });
 
-  const live = mergePlays(data?.live || [], data?.csvOpen?.live || []);
-  const near = mergePlays(data?.near || [], data?.csvOpen?.near || []);
+  const live = (data?.live || []).filter((p) => p.valid !== false);
+  const near = [...(data?.near || []), ...(data?.csvOpen?.near || [])].slice(0, 8);
   const w30 = data?.health?.windows?.last_30d;
   const w60 = data?.health?.windows?.last_60d;
   const w90 = data?.health?.windows?.last_90d;
@@ -172,7 +212,9 @@ export default function TakeBookFeed() {
     <div className="space-y-4" data-testid="take-book-feed">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
         <div>
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Recommended plays · $100 · VWAP + 2¢ · hold to res</div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            Recommended plays · $100 · live ask · decimal + American · auto-drop when invalid
+          </div>
           <h2 className="text-xl font-semibold tracking-tight flex items-center gap-2">
             <Flame className="w-5 h-5 text-primary" />
             Take these
@@ -190,15 +232,9 @@ export default function TakeBookFeed() {
           ) : (
             <Badge className="gap-1"><Radio className="w-3 h-3" /> Live copy ON</Badge>
           )}
-          {w30?.n ? (
-            <Badge variant="outline">30d {w30.n} · {w30.roi_2c}% ROI</Badge>
-          ) : null}
-          {w60?.n ? (
-            <Badge variant="outline">60d {w60.n} · {w60.roi_2c}% ROI</Badge>
-          ) : null}
-          {w90?.n ? (
-            <Badge variant="outline">90d {w90.n} · {w90.roi_2c}% ROI</Badge>
-          ) : null}
+          {w30?.n ? <Badge variant="outline">30d {w30.n} · {w30.roi_2c}% ROI</Badge> : null}
+          {w60?.n ? <Badge variant="outline">60d {w60.n} · {w60.roi_2c}% ROI</Badge> : null}
+          {w90?.n ? <Badge variant="outline">90d {w90.n} · {w90.roi_2c}% ROI</Badge> : null}
           {data?.telegramConfigured ? (
             <Badge variant="outline">Telegram on</Badge>
           ) : (
@@ -222,8 +258,8 @@ export default function TakeBookFeed() {
       {!isLoading && live.length === 0 && (
         <Card>
           <CardContent className="p-6 text-sm text-muted-foreground space-y-1">
-            <div>No live take-book tickets right now. That is the point — ~1 play per calendar day, not a firehose.</div>
-            <div>Telegram pings when one prints. Size $100 (or 1% of bank). Do not auto-bet.</div>
+            <div>No live take-book tickets right now. Alerts auto-delete on Telegram when they go invalid.</div>
+            <div>When one prints: Telegram + paper ticket at the live ask. Type the cents you actually paid.</div>
           </CardContent>
         </Card>
       )}
@@ -235,7 +271,7 @@ export default function TakeBookFeed() {
       {near.length > 0 && (
         <div className="space-y-2">
           <div className="text-xs uppercase tracking-widest text-muted-foreground">Close — missing one or two gates</div>
-          {near.slice(0, 8).map((p) => (
+          {near.map((p) => (
             <PlayCard key={p.id} play={p} take={false} />
           ))}
         </div>

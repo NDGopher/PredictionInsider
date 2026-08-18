@@ -122,5 +122,9 @@ CREATE TABLE IF NOT EXISTS tracked_bets (
   american_odds INTEGER,
   polymarket_price NUMERIC,
   sport TEXT,
+  alert_price NUMERIC,
+  actual_price NUMERIC,
+  token_id TEXT,
+  take_cap NUMERIC,
   created_at BIGINT DEFAULT (extract(epoch from now()) * 1000)::BIGINT
 );

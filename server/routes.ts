@@ -19,10 +19,39 @@ import {
   signalMatchesStrategy,
   type TailStrategyFilters,
 } from "./tailStrategies";
-import { collectTakePlays, loadTakeHealthFile, mapCsvOpenRows, takeStrategyCard } from "./takePlays";
-import { notifyTakePlays } from "./telegramTakeAlerts";
-import { paperLogTakePlays } from "./paperTakeBets";
+import { collectTakePlays, enrichTakePlaysWithBook, loadTakeHealthFile, mapCsvOpenRows, takeStrategyCard, type TakePlayBundle } from "./takePlays";
+import { syncTakeBookAlerts, telegramConfigured } from "./telegramTakeAlerts";
+import { cancelUnfilledTake, paperLogTakePlays } from "./paperTakeBets";
+import { americanFromPrice } from "./oddsFormat";
 import type { Signal, SignalsResponse } from "@shared/schema";
+
+let takeSyncLock: Promise<void> = Promise.resolve();
+
+function enqueueTakeBookSync(bundle: TakePlayBundle): void {
+  takeSyncLock = takeSyncLock
+    .then(() => syncTakeBookFromSignals(bundle))
+    .catch((err: unknown) => {
+      console.warn("[take-book] sync:", err);
+    });
+}
+
+async function syncTakeBookFromSignals(bundle: TakePlayBundle): Promise<void> {
+  try {
+    await enrichTakePlaysWithBook(bundle);
+    await syncTakeBookAlerts(bundle, {
+      paused: bundle.paused,
+      allowDrop: true,
+      onNewTake: async (play) => {
+        await paperLogTakePlays([play], { paused: bundle.paused });
+      },
+      onDrop: async (paperId, reason) => {
+        await cancelUnfilledTake(paperId, reason);
+      },
+    });
+  } catch (err: unknown) {
+    console.warn("[take-book] sync:", err);
+  }
+}
 
 const elitePool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -5300,15 +5329,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       };
       // Shorter TTL so live/in-play rows refresh before prices move multiple cents off entry.
       if (cKey) setCache(cKey, response, 30 * 1000);
-      {
-        const take = collectTakePlays(outSignals);
-        void notifyTakePlays(take.live, { paused: take.paused }).catch((err: unknown) =>
-          console.warn("[telegram] take alert:", err),
-        );
-        void paperLogTakePlays(take.live, { paused: take.paused }).catch((err: unknown) =>
-          console.warn("[paper-take] log:", err),
-        );
-      }
+      void enqueueTakeBookSync(collectTakePlays(outSignals));
 
       // ── SSE push: broadcast new high-confidence signals to connected clients ──
       {
@@ -5969,7 +5990,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       polymarket_price NUMERIC,
       sport TEXT,
       created_at BIGINT DEFAULT (extract(epoch from now()) * 1000)::BIGINT
-    )
+    );
+    ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS alert_price NUMERIC;
+    ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS actual_price NUMERIC;
+    ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS token_id TEXT;
+    ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS take_cap NUMERIC;
   `).catch(e => console.error("[Bets] Table init error:", e?.message ?? e));
 
   app.get("/api/bets", async (_req, res) => {
@@ -5993,9 +6018,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         pnl: r.pnl ? parseFloat(r.pnl) : undefined,
         notes: r.notes,
         book: r.book,
-        americanOdds: r.american_odds,
+        americanOdds: r.american_odds != null ? parseInt(r.american_odds, 10) : undefined,
         polymarketPrice: r.polymarket_price ? parseFloat(r.polymarket_price) : undefined,
         sport: r.sport,
+        alertPrice: r.alert_price ? parseFloat(r.alert_price) : undefined,
+        actualPrice: r.actual_price ? parseFloat(r.actual_price) : undefined,
+        tokenId: r.token_id || undefined,
+        takeCap: r.take_cap ? parseFloat(r.take_cap) : undefined,
       }));
       res.json(bets);
     } catch (err: any) {
@@ -6031,7 +6060,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.patch("/api/bets/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const b = req.body;
+      const b = req.body as Record<string, unknown>;
+      const actualRaw = b.actualPrice;
+      const actual = actualRaw == null || actualRaw === "" ? null : Number(actualRaw);
+      const entryRaw = b.entryPrice;
+      const entryFromBody = entryRaw == null || entryRaw === "" ? null : Number(entryRaw);
+      const fill = actual != null && Number.isFinite(actual) && actual > 0
+        ? actual
+        : (entryFromBody != null && Number.isFinite(entryFromBody) ? entryFromBody : null);
+      const american = fill != null ? americanFromPrice(fill) : (b.americanOdds != null ? Number(b.americanOdds) : null);
       await elitePool.query(`
         UPDATE tracked_bets SET
           status = COALESCE($1, status),
@@ -6041,16 +6078,22 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           notes = COALESCE($5, notes),
           bet_amount = COALESCE($6, bet_amount),
           book = COALESCE($7, book),
-          american_odds = COALESCE($8, american_odds)
-        WHERE id = $9
+          american_odds = COALESCE($8, american_odds),
+          entry_price = COALESCE($9, entry_price),
+          actual_price = COALESCE($10, actual_price),
+          polymarket_price = COALESCE($11, polymarket_price)
+        WHERE id = $12
       `, [
         b.status ?? null, b.resolvedPrice ?? null, b.resolvedDate ?? null,
         b.pnl ?? null, b.notes ?? null, b.betAmount ?? null,
-        b.book ?? null, b.americanOdds ?? null, id,
+        b.book ?? null, american,
+        fill, actual != null && Number.isFinite(actual) ? actual : null,
+        b.polymarketPrice ?? null, id,
       ]);
       res.json({ ok: true });
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      res.status(500).json({ error: msg });
     }
   });
 
@@ -6145,6 +6188,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const health = loadTakeHealthFile();
       const cached = getCache<SignalsResponse>("signals-elite-v59-vip-premium-sp");
       const bundle = collectTakePlays(cached?.signals || []);
+      await enrichTakePlaysWithBook(bundle);
+      const hasTape = (cached?.signals?.length || 0) > 0;
+      if (hasTape) {
+        void enqueueTakeBookSync(bundle);
+      }
       const stats = card?.join_max_plus_2c || {};
       res.json({
         generatedAt: file?.generated_at || null,
@@ -6168,15 +6216,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           : null,
         paused: bundle.paused,
         pauseReason: bundle.pauseReason,
-        live: bundle.paused ? [] : bundle.live,
-        paperLive: bundle.paused ? bundle.live : [],
+        live: bundle.live,
         near: bundle.near,
         csvOpen: {
-          live: mapCsvOpenRows(health?.live_open || []),
+          live: [],
           near: mapCsvOpenRows(health?.near_open || []),
         },
         signalsFetchedAt: cached?.fetchedAt || null,
-        telegramConfigured: Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID),
+        quotesAt: Date.now(),
+        telegramConfigured: telegramConfigured(),
       });
     } catch (err: unknown) {
       console.error("take-plays error:", err);

@@ -1,6 +1,10 @@
 # Take-book ops (recommended plays)
 
-Home page = the take book. **The end.** Fill **VWAP + 2¢**, **$100 flat** (or 1% of a $10k bank). Hold to resolution.
+Home page = the take book. **The end.** Fill **the live ask**, never more than **VWAP + 2¢**. Hold to resolution. Telegram and the home page show **take cap + live ask** in decimal (1/price) and American. If the ask leaves 10–88¢ or runs through the cap, the play is deleted from the feed and Telegram.
+
+An alert auto-papers a $100 ticket **at the current ask**. Type the cents you actually paid in My Bets / on the card. Auto-bettor can wait.
+
+## Product
 
 ## Product
 
@@ -34,7 +38,7 @@ TELEGRAM_BOT_TOKEN=...
 TELEGRAM_CHAT_ID=...
 ```
 
-Create a bot with @BotFather, `/start` it, get chat id from `@userinfobot`. The server posts a new TAKE when `/api/signals` refreshes (deduped by signal id). Daily health digest fires once per calendar day from `take_book_daily.py`.
+The server posts a TAKE when the book prints (deduped). The same Telegram message is **edited** when the live ask moves ≥0.5¢. If the ask leaves 10–88¢ or runs through VWAP+2¢, that message is **deleted** and a short DROPPED ping is sent. Paper tickets with no actual fill are cancelled.
 
 ## Stay fluid without overfitting
 

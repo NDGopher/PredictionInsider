@@ -1,6 +1,8 @@
 import fs from "fs";
 import path from "path";
 import type { Signal, SignalsResponse } from "@shared/schema";
+import { fetchClobQuotes } from "./clobAsk";
+import { formatPriceQuote, type PriceQuoteFmt } from "./oddsFormat";
 import {
   annotateSignal,
   diagnoseTakeGates,
@@ -11,6 +13,9 @@ import {
 } from "./tailStrategies";
 
 export const TAKE_STRATEGY_ID = "asof_live_q60_sport_rel2";
+export const TAKE_PRICE_LO = 0.1;
+export const TAKE_PRICE_HI = 0.88;
+export const TAKE_CUSHION = 0.02;
 
 export interface TakeHealthFile {
   generated_at?: string;
@@ -35,6 +40,17 @@ export interface AnnotatedTakePlay {
   currentPrice: number;
   avgEntryPrice: number;
   fillPlus2c: number;
+  takeCap: number;
+  liveAsk: number | null;
+  liveBid: number | null;
+  takePrice: number | null;
+  quoteSource: "clob" | "signal" | "none";
+  quoteAt: number | null;
+  takeFmt: PriceQuoteFmt | null;
+  liveFmt: PriceQuoteFmt | null;
+  vwapFmt: PriceQuoteFmt | null;
+  valid: boolean;
+  invalidReason: string | null;
   confidence: number;
   q: number;
   rel: number;
@@ -44,6 +60,15 @@ export interface AnnotatedTakePlay {
   url?: string;
   take: boolean;
   close: boolean;
+  tokenId?: string;
+  conditionId?: string;
+}
+
+export interface TakePlayBundle {
+  live: AnnotatedTakePlay[];
+  near: AnnotatedTakePlay[];
+  paused: boolean;
+  pauseReason: string | null;
 }
 
 function loadJson<T>(rel: string): T | null {
@@ -71,12 +96,103 @@ export function takeStrategyCard(): TailStrategyCard | null {
   );
 }
 
-export function collectTakePlays(signals: Signal[]): {
-  live: AnnotatedTakePlay[];
-  near: AnnotatedTakePlay[];
-  paused: boolean;
-  pauseReason: string | null;
+export function tokenIdForSignal(signal: Signal): string | undefined {
+  const side = (signal.side || "YES").toUpperCase();
+  if (side === "NO") return signal.noTokenId || undefined;
+  return signal.yesTokenId || undefined;
+}
+
+function takeCapFromVwap(vwap: number): number {
+  return Math.min(TAKE_PRICE_HI, Math.max(TAKE_PRICE_LO, vwap + TAKE_CUSHION));
+}
+
+function validityForAsk(ask: number | null, takeCap: number, quoteSource: AnnotatedTakePlay["quoteSource"]): {
+  valid: boolean;
+  reason: string | null;
 } {
+  if (ask == null || ask <= 0) {
+    return { valid: quoteSource !== "clob", reason: quoteSource === "clob" ? "no live ask" : null };
+  }
+  if (ask <= 0.02 || ask >= 0.98) {
+    return { valid: false, reason: `locked/resolved at ${ask.toFixed(3)}` };
+  }
+  if (ask < TAKE_PRICE_LO || ask > TAKE_PRICE_HI) {
+    return { valid: false, reason: `live ask ${ask.toFixed(3)} outside ${TAKE_PRICE_LO}–${TAKE_PRICE_HI}` };
+  }
+  if (ask > takeCap + 0.001) {
+    return { valid: false, reason: `live ask ${ask.toFixed(3)} > take cap ${takeCap.toFixed(3)}` };
+  }
+  return { valid: true, reason: null };
+}
+
+function applyQuote(row: AnnotatedTakePlay): void {
+  const ask = row.liveAsk;
+  const takePrice = ask != null && ask > 0 ? ask : row.currentPrice || row.avgEntryPrice;
+  row.takePrice = takePrice;
+  row.takeFmt = takePrice > 0 ? formatPriceQuote(row.takeCap) : null;
+  row.liveFmt = ask != null && ask > 0 ? formatPriceQuote(ask) : (row.currentPrice > 0 ? formatPriceQuote(row.currentPrice) : null);
+  row.vwapFmt = row.avgEntryPrice > 0 ? formatPriceQuote(row.avgEntryPrice) : null;
+  const gate = validityForAsk(ask, row.takeCap, row.quoteSource);
+  if (row.take && !gate.valid) {
+    row.valid = false;
+    row.invalidReason = gate.reason;
+    row.take = false;
+    if (gate.reason && !row.misses.includes(gate.reason)) row.misses.push(gate.reason);
+  } else if (row.take) {
+    row.valid = true;
+    row.invalidReason = null;
+  } else {
+    row.valid = false;
+    row.invalidReason = row.misses[0] || gate.reason;
+  }
+}
+
+function playFromSignal(raw: Signal, report: TakeGateReport): AnnotatedTakePlay {
+  const ann = annotateSignal(raw);
+  const vwap = raw.avgEntryPrice || raw.currentPrice || 0;
+  const takeCap = takeCapFromVwap(vwap);
+  const tokenId = tokenIdForSignal(raw);
+  const filters = takeStrategyCard()?.filters;
+  const take = Boolean(filters && report.take && signalMatchesStrategy(raw, filters));
+  const row: AnnotatedTakePlay = {
+    id: raw.id,
+    marketQuestion: raw.marketQuestion,
+    slug: raw.slug,
+    side: raw.side,
+    sport: raw.sport || raw.category,
+    submarket: ann.submarket,
+    playLabel: ann.playLabel,
+    currentPrice: raw.currentPrice,
+    avgEntryPrice: raw.avgEntryPrice,
+    fillPlus2c: takeCap,
+    takeCap,
+    liveAsk: raw.currentPrice || null,
+    liveBid: null,
+    takePrice: raw.currentPrice || takeCap,
+    quoteSource: "signal",
+    quoteAt: null,
+    takeFmt: null,
+    liveFmt: null,
+    vwapFmt: null,
+    valid: false,
+    invalidReason: null,
+    confidence: raw.confidence,
+    q: report.q,
+    rel: report.rel,
+    sportRoi: report.sportRoi,
+    traders: report.allowTraders,
+    misses: [...report.misses],
+    url: raw.slug ? `https://polymarket.com/event/${raw.slug}` : undefined,
+    take,
+    close: report.close,
+    tokenId,
+    conditionId: raw.marketId,
+  };
+  applyQuote(row);
+  return row;
+}
+
+export function collectTakePlays(signals: Signal[]): TakePlayBundle {
   const card = takeStrategyCard();
   const filters = card?.filters;
   const health = loadTakeHealthFile();
@@ -88,28 +204,7 @@ export function collectTakePlays(signals: Signal[]): {
   const near: AnnotatedTakePlay[] = [];
   for (const raw of signals) {
     const report: TakeGateReport = diagnoseTakeGates(raw, filters);
-    const ann = annotateSignal(raw);
-    const row: AnnotatedTakePlay = {
-      id: raw.id,
-      marketQuestion: raw.marketQuestion,
-      slug: raw.slug,
-      side: raw.side,
-      sport: raw.sport || raw.category,
-      submarket: ann.submarket,
-      playLabel: ann.playLabel,
-      currentPrice: raw.currentPrice,
-      avgEntryPrice: raw.avgEntryPrice,
-      fillPlus2c: report.fillPlus2c,
-      confidence: raw.confidence,
-      q: report.q,
-      rel: report.rel,
-      sportRoi: report.sportRoi,
-      traders: report.allowTraders,
-      misses: report.misses,
-      url: raw.slug ? `https://polymarket.com/event/${raw.slug}` : undefined,
-      take: report.take && signalMatchesStrategy(raw, filters),
-      close: report.close,
-    };
+    const row = playFromSignal(raw, report);
     if (row.take) live.push(row);
     else if (row.close) near.push(row);
   }
@@ -123,7 +218,46 @@ export function collectTakePlays(signals: Signal[]): {
   };
 }
 
-export function takePlaysFromCache(cached: SignalsResponse | null): ReturnType<typeof collectTakePlays> {
+/** Overlay CLOB asks; drop TAKEs that can no longer be filled inside the cap. */
+export async function enrichTakePlaysWithBook(bundle: TakePlayBundle): Promise<TakePlayBundle> {
+  const rows = [...bundle.live, ...bundle.near];
+  const tokenIds = rows.map((r) => r.tokenId).filter((t): t is string => Boolean(t));
+  const quotes = tokenIds.length > 0 ? await fetchClobQuotes(tokenIds) : new Map();
+  const stillLive: AnnotatedTakePlay[] = [];
+  const stillNear: AnnotatedTakePlay[] = [];
+  for (const row of bundle.live) {
+    const q = row.tokenId ? quotes.get(row.tokenId) : undefined;
+    if (q && q.ask != null) {
+      row.liveAsk = q.ask;
+      row.liveBid = q.bid;
+      row.quoteSource = "clob";
+      row.quoteAt = q.fetchedAt;
+      row.currentPrice = q.ask;
+    }
+    applyQuote(row);
+    if (row.take && row.valid) stillLive.push(row);
+    else if (row.close || row.misses.length > 0) stillNear.push(row);
+  }
+  for (const row of bundle.near) {
+    const q = row.tokenId ? quotes.get(row.tokenId) : undefined;
+    if (q && q.ask != null) {
+      row.liveAsk = q.ask;
+      row.liveBid = q.bid;
+      row.quoteSource = "clob";
+      row.quoteAt = q.fetchedAt;
+      row.currentPrice = q.ask;
+    }
+    applyQuote(row);
+    stillNear.push(row);
+  }
+  stillLive.sort((a, b) => b.rel - a.rel || b.q - a.q);
+  stillNear.sort((a, b) => b.rel - a.rel || b.q - a.q);
+  bundle.live = stillLive.slice(0, 40);
+  bundle.near = stillNear.slice(0, 20);
+  return bundle;
+}
+
+export function takePlaysFromCache(cached: SignalsResponse | null): TakePlayBundle {
   return collectTakePlays(cached?.signals || []);
 }
 
@@ -149,7 +283,10 @@ export function mapCsvOpenRow(row: Record<string, unknown>): AnnotatedTakePlay {
   const title = String(row.title || row.play || "");
   const slug = row.slug ? String(row.slug) : undefined;
   const username = row.username ? String(row.username) : "";
-  return {
+  const vwap = num(row.entry);
+  const live = num(row.live);
+  const takeCap = takeCapFromVwap(vwap);
+  const play: AnnotatedTakePlay = {
     id: `csv-${String(row.wallet || username)}-${slug || title}-${String(row.side || "")}`,
     marketQuestion: title,
     slug,
@@ -157,9 +294,20 @@ export function mapCsvOpenRow(row: Record<string, unknown>): AnnotatedTakePlay {
     sport: row.sport ? String(row.sport) : undefined,
     submarket: String(row.submarket || ""),
     playLabel: String(row.play || title),
-    currentPrice: num(row.live),
-    avgEntryPrice: num(row.entry),
-    fillPlus2c: num(row.fill_plus_2c),
+    currentPrice: live,
+    avgEntryPrice: vwap,
+    fillPlus2c: num(row.fill_plus_2c, takeCap),
+    takeCap,
+    liveAsk: live || null,
+    liveBid: null,
+    takePrice: live || takeCap,
+    quoteSource: "signal",
+    quoteAt: null,
+    takeFmt: null,
+    liveFmt: null,
+    vwapFmt: null,
+    valid: misses.length === 0,
+    invalidReason: misses[0] || null,
     confidence: num(row.q),
     q: num(row.q),
     rel: num(row.rel),
@@ -170,6 +318,8 @@ export function mapCsvOpenRow(row: Record<string, unknown>): AnnotatedTakePlay {
     take: misses.length === 0,
     close: misses.length > 0 && misses.length <= 2,
   };
+  applyQuote(play);
+  return play;
 }
 
 export function mapCsvOpenRows(rows: Array<Record<string, unknown>>): AnnotatedTakePlay[] {

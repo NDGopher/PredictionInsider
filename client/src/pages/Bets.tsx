@@ -29,10 +29,14 @@ export interface TrackedBet {
   resolvedDate?: number;
   pnl?: number;
   notes?: string;
-  book?: "PPH" | "Kalshi" | "Polymarket";
+  book?: "PPH" | "Kalshi" | "Polymarket" | "paper";
   americanOdds?: number;
   polymarketPrice?: number;
   sport?: string;
+  alertPrice?: number;
+  actualPrice?: number;
+  tokenId?: string;
+  takeCap?: number;
 }
 
 // ─── API helpers ──────────────────────────────────────────────────────────────
@@ -326,18 +330,28 @@ function AddBetForm({ onAdd, onCancel, prefill }: {
 
 // ─── Bet card ─────────────────────────────────────────────────────────────────
 
-function BetCard({ bet, onResolve, onDelete, onUpdateNotes, onReopen }: {
+function BetCard({ bet, onResolve, onDelete, onUpdateNotes, onReopen, onSetActualFill }: {
   bet: TrackedBet;
   onResolve: (id: string, status: "won" | "lost" | "cancelled", price?: number) => void;
   onDelete: (id: string) => void;
   onUpdateNotes: (id: string, notes: string) => void;
   onReopen: (id: string) => void;
+  onSetActualFill: (id: string, price: number) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [resolveMode, setResolveMode] = useState(false);
   const [finalPrice, setFinalPrice] = useState("");
   const [editingNotes, setEditingNotes] = useState(false);
   const [notes, setNotes] = useState(bet.notes || "");
+  const [fillCents, setFillCents] = useState(
+    bet.actualPrice != null
+      ? String(Math.round(bet.actualPrice * 1000) / 10)
+      : bet.alertPrice != null
+        ? String(Math.round(bet.alertPrice * 1000) / 10)
+        : bet.entryPrice
+          ? String(Math.round(bet.entryPrice * 1000) / 10)
+          : "",
+  );
 
   const priceNum = bet.entryPrice || 0;
   // entryPrice is always the purchased token's price — same formula for YES and NO
@@ -397,6 +411,18 @@ function BetCard({ bet, onResolve, onDelete, onUpdateNotes, onReopen }: {
               <span className="text-muted-foreground ml-1">(PM: {Math.round(bet.polymarketPrice * 100)}¢)</span>
             )}
           </div>
+          {bet.alertPrice != null && (
+            <div>
+              <span className="text-muted-foreground">Alert ask: </span>
+              <span className="font-bold">{bet.alertPrice.toFixed(3)} · {toAmericanOdds(bet.alertPrice)}</span>
+            </div>
+          )}
+          {bet.actualPrice != null && (
+            <div>
+              <span className="text-muted-foreground">Actual: </span>
+              <span className="font-bold">{bet.actualPrice.toFixed(3)} · {toAmericanOdds(bet.actualPrice)}</span>
+            </div>
+          )}
           <div>
             <span className="text-muted-foreground">Bet: </span>
             <span className="font-bold">{fmtUsdc(bet.betAmount)}</span>
@@ -456,6 +482,32 @@ function BetCard({ bet, onResolve, onDelete, onUpdateNotes, onReopen }: {
               >
                 View market <ExternalLink className="w-3 h-3" />
               </a>
+            )}
+
+            {bet.status === "open" && bet.id.startsWith("take-paper-") && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs text-muted-foreground">Actual fill (¢)</span>
+                <Input
+                  className="h-7 w-24 text-xs"
+                  value={fillCents}
+                  onChange={e => setFillCents(e.target.value)}
+                  placeholder="54"
+                  data-testid={`input-actual-fill-${bet.id}`}
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    const n = parseFloat(fillCents);
+                    if (!Number.isFinite(n) || n <= 0 || n >= 100) return;
+                    onSetActualFill(bet.id, n / 100);
+                  }}
+                  data-testid={`button-save-actual-fill-${bet.id}`}
+                >
+                  Save fill
+                </Button>
+              </div>
             )}
 
             {bet.status === "open" && (
@@ -581,6 +633,19 @@ export default function Bets() {
 
   function handleUpdateNotes(id: string, notes: string) {
     patchMutation.mutate({ id, patch: { notes } });
+  }
+
+  function handleSetActualFill(id: string, price: number) {
+    patchMutation.mutate({
+      id,
+      patch: {
+        actualPrice: price,
+        entryPrice: price,
+        americanOdds: price >= 0.5
+          ? -Math.round((price / (1 - price)) * 100)
+          : Math.round(((1 - price) / price) * 100),
+      },
+    });
   }
 
   function handleReopen(id: string) {
@@ -732,6 +797,7 @@ export default function Bets() {
               onResolve={handleResolve}
               onDelete={handleDelete}
               onUpdateNotes={handleUpdateNotes}
+              onSetActualFill={handleSetActualFill}
               onReopen={handleReopen}
             />
           ))}
@@ -743,7 +809,7 @@ export default function Bets() {
           <div className="font-semibold text-foreground flex items-center gap-1.5">
             <Target className="w-3.5 h-3.5" /> How to use
           </div>
-          <div>1. Find a signal on the Signals or Dashboard page</div>
+          <div>TAKE alerts auto-log here at the live ask. Type the cents you actually paid, then Won/Lost at resolve.</div>
           <div>2. Click "Track Bet" on any signal card to pre-fill the form</div>
           <div>3. Enter your actual bet amount and click "Track Bet"</div>
           <div>4. When the market resolves, come back and click Won/Lost to log your PNL</div>
