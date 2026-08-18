@@ -8,7 +8,7 @@ The Node process **pings itself** every 30–60s so Telegram still fires with no
 
 | Channel | Role |
 |---------|------|
-| `/` Take these | Live TAKEs + near-misses, 30s poll, rolling 30/60/90d ROI, pause banner, roster proposals |
+| `/` Take these | Sports ML/spread/total by default. Politics/futures on a second tab. Same Q/size rule. |
 | Telegram | 1–2 pings a day with Q / rel / sport ROI / fill cap / Polymarket link. Share the chat. |
 | `/bets` | Paper + human fills. TAKEs also auto-paper-log at $100 when the signals cache refreshes. |
 | `/strategies` | Lab only. Skip books, Ghost warning, not the live take list. |

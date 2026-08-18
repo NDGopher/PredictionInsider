@@ -25,7 +25,10 @@ interface TakePlay {
   side: string;
   sport?: string;
   submarket: string;
-  playLabel: string;
+  playLabel?: string;
+  pick?: string;
+  lane?: "sports" | "other";
+  outcomeLabel?: string;
   currentPrice: number;
   avgEntryPrice: number;
   fillPlus2c: number;
@@ -69,6 +72,12 @@ interface TakePlaysResponse {
   csvOpen?: { live?: TakePlay[]; near?: TakePlay[] };
   telegramConfigured?: boolean;
   quotesAt?: number | null;
+  copyBooks?: Array<{ username: string; wallet: string }>;
+  lanes?: {
+    sports?: { n?: number; win_rate?: number; roi_2c?: number };
+    other?: { n?: number; win_rate?: number; roi_2c?: number };
+    by_submarket?: Record<string, { n?: number; win_rate?: number; roi_2c?: number }>;
+  };
 }
 
 function americanFromPrice(p: number): number {
@@ -145,9 +154,8 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
       <CardContent className="p-4 space-y-2">
         <div className="flex flex-wrap items-center gap-1.5">
           {take ? <Badge>TAKE</Badge> : <Badge variant="outline">NEAR</Badge>}
-          <Badge variant="outline">{play.side}</Badge>
+          <Badge>{play.submarket}</Badge>
           <Badge variant="outline">{play.sport || "—"}</Badge>
-          <Badge variant="outline">{play.submarket}</Badge>
           <Badge variant="outline">Q {Math.round(play.q)}</Badge>
           <Badge variant="outline">{play.rel.toFixed(1)}×</Badge>
           {play.quoteSource === "clob" ? (
@@ -156,7 +164,10 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
             <Badge variant="outline">signal px</Badge>
           )}
         </div>
-        <div className="font-medium leading-snug">{play.marketQuestion}</div>
+        <div className="text-lg font-semibold leading-snug tracking-tight">
+          {play.playLabel || play.pick || play.outcomeLabel || play.side}
+        </div>
+        <div className="text-xs text-muted-foreground">{play.marketQuestion}</div>
         <div className="space-y-0.5 rounded-md bg-muted/40 p-2">
           <PriceRow label="Take cap" price={play.takeCap} fmt={play.takeFmt} hint="VWAP+2¢ max" />
           <PriceRow label="Live ask" price={play.liveAsk ?? play.currentPrice} fmt={play.liveFmt} hint="pay this" />
@@ -201,8 +212,12 @@ export default function TakeBookFeed() {
     refetchInterval: 12_000,
   });
 
-  const live = (data?.live || []).filter((p) => p.valid !== false);
-  const near = [...(data?.near || []), ...(data?.csvOpen?.near || [])].slice(0, 8);
+  const liveAll = (data?.live || []).filter((p) => p.valid !== false);
+  const nearAll = [...(data?.near || []), ...(data?.csvOpen?.near || [])];
+  const [laneTab, setLaneTab] = useState<"sports" | "other">("sports");
+  const inLane = (p: TakePlay) => (p.lane || "sports") === laneTab;
+  const live = liveAll.filter(inLane);
+  const near = nearAll.filter(inLane).slice(0, 8);
   const w30 = data?.health?.windows?.last_30d;
   const w60 = data?.health?.windows?.last_60d;
   const w90 = data?.health?.windows?.last_90d;
@@ -222,7 +237,32 @@ export default function TakeBookFeed() {
           <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
             {data?.rule || "As-of Q60 + sport expert + 2× size, no NFL."}
             {bt?.n ? ` Backtest n=${bt.n} · ${bt.win_rate}% WR · ${bt.roi}% ROI after 2¢.` : ""}
+            {" "}Take these is the only copy rule. Live Signals is a separate, weaker consensus tape.
           </p>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {(["sports", "other"] as const).map((tab) => {
+              const st = tab === "sports" ? data?.lanes?.sports : data?.lanes?.other;
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setLaneTab(tab)}
+                  className={`text-xs px-3 py-1 rounded-full border ${
+                    laneTab === tab ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"
+                  }`}
+                >
+                  {tab === "sports" ? "Sports (ML / spread / total)" : "Politics & futures"}
+                  {st?.n ? ` · n=${st.n} ${st.roi_2c}% ROI` : ""}
+                </button>
+              );
+            })}
+          </div>
+          {laneTab === "other" && (
+            <p className="text-[11px] text-muted-foreground mt-1 max-w-2xl">
+              Same Q/size gates, not the live copy list. Futures in the historical tape: n=5, −37% after 2¢ — too small to follow.
+              Other (mostly non-game / politics-tagged): n={data?.lanes?.other?.n ?? 71}, {data?.lanes?.other?.roi_2c ?? 9.23}% ROI after 2¢ vs sports {data?.lanes?.sports?.roi_2c ?? 10.99}%.
+            </p>
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs">
           {data?.paused ? (

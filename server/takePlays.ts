@@ -3,6 +3,7 @@ import path from "path";
 import type { Signal, SignalsResponse } from "@shared/schema";
 import { fetchClobQuotes } from "./clobAsk";
 import { formatPriceQuote, type PriceQuoteFmt } from "./oddsFormat";
+import { formatBetHeadline, inferSubmarket, playLane, resolvePick } from "./betDescribe";
 import {
   annotateSignal,
   diagnoseTakeGates,
@@ -37,6 +38,9 @@ export interface AnnotatedTakePlay {
   sport?: string;
   submarket: string;
   playLabel: string;
+  pick: string;
+  lane: "sports" | "other";
+  outcomeLabel?: string;
   currentPrice: number;
   avgEntryPrice: number;
   fillPlus2c: number;
@@ -84,6 +88,25 @@ function loadJson<T>(rel: string): T | null {
 
 export function loadTakeHealthFile(): TakeHealthFile | null {
   return loadJson<TakeHealthFile>("pnl_analysis/output/take_health.json");
+}
+
+export function loadTrustedCopyBooks(): Array<{ username: string; wallet: string }> {
+  const data = loadJson<{ trusted?: Array<{ username?: string; wallet?: string }> }>(
+    "pnl_analysis/output/trusted_full_books.json",
+  );
+  return (data?.trusted || [])
+    .map((t) => ({ username: String(t.username || ""), wallet: String(t.wallet || "") }))
+    .filter((t) => t.username || t.wallet);
+}
+
+export interface LaneBacktest {
+  n: number;
+  win_rate: number;
+  roi_2c: number;
+}
+
+export function loadLaneBacktest(): { sports?: LaneBacktest; other?: LaneBacktest; all?: LaneBacktest; by_submarket?: Record<string, LaneBacktest> } | null {
+  return loadJson("pnl_analysis/output/take_lane_backtest.json");
 }
 
 export function takeStrategyCard(): TailStrategyCard | null {
@@ -162,6 +185,9 @@ function playFromSignal(raw: Signal, report: TakeGateReport): AnnotatedTakePlay 
     sport: raw.sport || raw.category,
     submarket: ann.submarket,
     playLabel: ann.playLabel,
+    pick: ann.pick,
+    lane: playLane(raw.sport || raw.category, ann.submarket),
+    outcomeLabel: raw.outcomeLabel || ann.pick,
     currentPrice: raw.currentPrice,
     avgEntryPrice: raw.avgEntryPrice,
     fillPlus2c: takeCap,
@@ -286,14 +312,25 @@ export function mapCsvOpenRow(row: Record<string, unknown>): AnnotatedTakePlay {
   const vwap = num(row.entry);
   const live = num(row.live);
   const takeCap = takeCapFromVwap(vwap);
+  const side = String(row.side || "YES");
+  const sport = row.sport ? String(row.sport) : undefined;
+  const pick = resolvePick({
+    marketQuestion: title,
+    side,
+    outcome: row.outcome ? String(row.outcome) : undefined,
+  });
+  const submarket = String(row.submarket || inferSubmarket({ marketQuestion: title, sport }));
   const play: AnnotatedTakePlay = {
-    id: `csv-${String(row.wallet || username)}-${slug || title}-${String(row.side || "")}`,
+    id: `csv-${String(row.wallet || username)}-${slug || title}-${side}`,
     marketQuestion: title,
     slug,
-    side: String(row.side || ""),
-    sport: row.sport ? String(row.sport) : undefined,
-    submarket: String(row.submarket || ""),
-    playLabel: String(row.play || title),
+    side,
+    sport,
+    submarket,
+    playLabel: formatBetHeadline(pick, submarket, sport),
+    pick,
+    lane: playLane(sport, submarket),
+    outcomeLabel: pick,
     currentPrice: live,
     avgEntryPrice: vwap,
     fillPlus2c: num(row.fill_plus_2c, takeCap),

@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import type { Signal } from "@shared/schema";
+import { formatBetHeadline, inferSubmarket, resolvePick } from "./betDescribe";
 
 export interface TailStrategyFilters {
   minTraders: number;
@@ -303,30 +304,6 @@ export function loadRobustResearchFile(): RobustResearchFile | null {
   return readJsonFile<RobustResearchFile>("pnl_analysis/output/robust_research.json");
 }
 
-function textHaystack(signal: Signal): string {
-  return [
-    signal.marketQuestion,
-    signal.slug,
-    signal.marketType,
-    signal.marketCategory,
-    signal.sport,
-    signal.category,
-    signal.outcomeLabel,
-  ]
-    .filter((x): x is string => typeof x === "string" && x.length > 0)
-    .join(" ")
-    .toLowerCase();
-}
-
-function inferSubmarket(signal: Signal): string {
-  const h = textHaystack(signal);
-  if (h.includes("draw")) return "Draw";
-  if (h.includes("spread") || h.includes("(+") || h.includes("(-")) return "Spread";
-  if (h.includes("o/u") || h.includes(" over ") || h.includes(" under ") || h.includes("total")) return "Total";
-  if (h.includes("mvp") || h.includes("champion") || h.includes("win the")) return "Futures";
-  return "Moneyline";
-}
-
 function sportSkipped(sport: string | undefined, skips: string[]): boolean {
   if (!skips.length) return false;
   const s = (sport || "").toLowerCase();
@@ -344,7 +321,16 @@ function sportIncluded(sport: string | undefined, includes: string[] | undefined
 function marketAllowed(signal: Signal, types: string[] | undefined): boolean {
   if (!types || types.length === 0) return true;
   const sub = inferSubmarket(signal);
-  const h = textHaystack(signal);
+  const h = [
+    signal.marketQuestion,
+    signal.slug,
+    signal.outcomeLabel,
+    signal.outcome,
+    sub,
+  ]
+    .filter((x): x is string => typeof x === "string" && x.length > 0)
+    .join(" ")
+    .toLowerCase();
   return types.some((t) => {
     const tl = t.toLowerCase();
     if (tl.includes("moneyline")) return sub === "Moneyline";
@@ -474,13 +460,14 @@ export function diagnoseTakeGates(signal: Signal, filters: TailStrategyFilters):
   };
 }
 
-export function annotateSignal(signal: Signal): Signal & { submarket: string; playLabel: string } {
+export function annotateSignal(signal: Signal): Signal & { submarket: string; playLabel: string; pick: string } {
   const submarket = inferSubmarket(signal);
-  const side = signal.side;
   const sport = signal.sport || signal.category || "Unknown";
+  const pick = resolvePick(signal);
   return {
     ...signal,
     submarket,
-    playLabel: `${signal.marketQuestion} · ${side} · ${sport} · ${submarket}`,
+    pick,
+    playLabel: formatBetHeadline(pick, submarket, sport),
   };
 }

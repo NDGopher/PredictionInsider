@@ -177,7 +177,7 @@ function ComponentBars({ components }: { components?: Record<string, number> }) 
 
 export default function Ranks() {
   const [sortBy, setSortBy] = useState<SortKey>("insider");
-  const [filter, setFilter] = useState<FilterKey>("all");
+  const [filter, setFilter] = useState<FilterKey>("copyable");
   const [open, setOpen] = useState<string | null>(null);
 
   const { data, isLoading, error } = useQuery<InsiderRanksResponse>({
@@ -218,8 +218,7 @@ export default function Ranks() {
           Insider Ranks
         </h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Our copy-tail ranking from full order books — winners, losers, and recent closes.
-          Polydata Sports / Smart Score is the public calibration, not product PnL.
+          Polydata is calibration, not the take list. Default view is <span className="text-foreground">copyable</span> names. DROP/COLD/sign-mismatch books stay in All for research. Take these only copies the 12 matched sports books.
         </p>
       </div>
 

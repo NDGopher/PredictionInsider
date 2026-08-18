@@ -893,11 +893,22 @@ function TraderCard({ trader }: { trader: EliteTrader }) {
 export default function Elite() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [sortBy, setSortBy] = useState<"quality" | "roi" | "name">("quality");
+  const [rosterOnly, setRosterOnly] = useState(true);
 
   const { data, isLoading, error } = useQuery<{ traders: EliteTrader[]; fetchedAt: number }>({
     queryKey: ["/api/elite/traders"],
     staleTime: 30_000,
     refetchInterval: 60_000,
+  });
+
+  const { data: takeMeta } = useQuery<{ copyBooks?: Array<{ username: string; wallet: string }> }>({
+    queryKey: ["/api/take-plays-roster"],
+    queryFn: async () => {
+      const res = await fetch("/api/take-plays");
+      if (!res.ok) return { copyBooks: [] };
+      return res.json() as Promise<{ copyBooks?: Array<{ username: string; wallet: string }> }>;
+    },
+    staleTime: 60_000,
   });
 
   const traders = (data?.traders || []).sort((a, b) => {
@@ -909,6 +920,10 @@ export default function Elite() {
   const resolved = traders.filter(t => t.wallet_resolved);
   const analyzed = traders.filter(t => t.computed_at);
   const pending = traders.filter(t => !t.wallet_resolved);
+  const copyWallets = new Set((takeMeta?.copyBooks || []).map((b) => b.wallet.toLowerCase()));
+  const copyNames = new Set((takeMeta?.copyBooks || []).map((b) => b.username.toLowerCase()));
+  const copyList = traders.filter((t) => copyWallets.has(t.wallet.toLowerCase()) || copyNames.has(t.username.toLowerCase()));
+  const shown = rosterOnly ? copyList : traders;
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-4">
@@ -920,7 +935,7 @@ export default function Elite() {
             Elite Traders
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Deep analysis of {traders.length} hand-curated traders — full trade history, specialization, consistency
+            Take these copies 12 Polydata-matched sports books. The full list is lab / Live Signals context — many are stale grinders we do not copy.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -956,8 +971,23 @@ export default function Elite() {
 
       {/* Sort controls */}
       {traders.length > 0 && (
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">Sort:</span>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-muted-foreground">Show:</span>
+          <button
+            type="button"
+            onClick={() => setRosterOnly(true)}
+            className={`text-xs px-2 py-0.5 rounded-full border ${rosterOnly ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"}`}
+          >
+            Copy books ({copyList.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setRosterOnly(false)}
+            className={`text-xs px-2 py-0.5 rounded-full border ${!rosterOnly ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"}`}
+          >
+            All tracked ({traders.length})
+          </button>
+          <span className="text-xs text-muted-foreground ml-2">Sort:</span>
           {(["quality", "roi", "name"] as const).map(s => (
             <button
               key={s}
@@ -1009,7 +1039,7 @@ export default function Elite() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {traders.map(trader => (
+        {shown.map(trader => (
           <TraderCard key={trader.wallet} trader={trader} />
         ))}
       </div>

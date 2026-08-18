@@ -19,7 +19,7 @@ import {
   signalMatchesStrategy,
   type TailStrategyFilters,
 } from "./tailStrategies";
-import { collectTakePlays, enrichTakePlaysWithBook, loadTakeHealthFile, mapCsvOpenRows, takeStrategyCard, type TakePlayBundle } from "./takePlays";
+import { collectTakePlays, enrichTakePlaysWithBook, loadLaneBacktest, loadTakeHealthFile, loadTrustedCopyBooks, mapCsvOpenRows, takeStrategyCard, type TakePlayBundle } from "./takePlays";
 import { syncTakeBookAlerts, telegramConfigured } from "./telegramTakeAlerts";
 import { cancelUnfilledTake, paperLogTakePlays } from "./paperTakeBets";
 import { americanFromPrice } from "./oddsFormat";
@@ -6227,6 +6227,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         signalsFetchedAt: cached?.fetchedAt || null,
         quotesAt: Date.now(),
         telegramConfigured: telegramConfigured(),
+        copyBooks: loadTrustedCopyBooks(),
+        lanes: loadLaneBacktest(),
       });
     } catch (err: unknown) {
       console.error("take-plays error:", err);

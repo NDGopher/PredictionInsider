@@ -224,6 +224,7 @@ export function formatTakeTelegram(p: AnnotatedTakePlay, paused: boolean): strin
   const lines = [
     paused ? "⏸ TAKE BOOK PAUSED — paper only, do not fill" : "🟢 LIVE TAKE — fillable now",
     p.playLabel,
+    p.marketQuestion,
     `Sport ${p.sport || "—"} · ${p.submarket} · ${p.side}`,
     `Trader: ${p.traders.join(", ") || "—"}`,
     `As-of Q ${Math.round(p.q)} · ${p.rel.toFixed(1)}× own median · sport ROI ${sportRoi}`,
