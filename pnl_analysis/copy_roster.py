@@ -168,7 +168,9 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
         reasons.append(f"median=${median:,.0f}_unjoinable")
     if closed > CLOSED_MAX_COPY:
         reasons.append(f"closed={closed}>12k")
-    if row.get("market_maker"):
+    # Ranks may flag Polydata bot_class/high tpd as MM. Unique-book gates are copy truth.
+    # Only 100k+ fills is an uncopyable tape (RN1). Take-book whales like WTSA stay bench.
+    if row.get("market_maker") and pd_trades >= PD_TRADES_BOT:
         reasons.append("market_maker")
     if row.get("winner_capped"):
         reasons.append("winner_capped")
@@ -246,6 +248,11 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
         "median_stake": round(median, 2),
         "unique_roi": round(roi, 2) if roi is not None else None,
         "events": events,
+        "last_30d_n": last_30_n,
+        "last_30d_roi": _f(our.get("last_30d_roi")),
+        "last_60d_n": last_60_n,
+        "last_60d_roi": last_60_roi,
+        "extra_status": extra or None,
         "last_event_date": our.get("last_event_date"),
         "reasons": reasons,
         # Live + bench + watch stay on the daily fetch so ranks/PnL stay current.

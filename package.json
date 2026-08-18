@@ -34,6 +34,7 @@
     "backtest:elites": "python pnl_analysis/discover_polydata_elites.py",
     "backtest:bankroll": "python pnl_analysis/take_book_bankroll.py",
     "backtest:copy-evolve": "python pnl_analysis/evolve_copy_book.py",
+    "model:rebuild": "python pnl_analysis/rebuild_working_model.py",
     "backtest:take-health": "python pnl_analysis/take_book_daily.py"
   },
   "dependencies": {

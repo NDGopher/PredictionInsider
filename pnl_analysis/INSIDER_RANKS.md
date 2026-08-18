@@ -61,7 +61,7 @@ Copyable = the 12 matched sports books in `trusted_full_books.json`. Health KICK
 
 **Take book (12):** Supah9ga, WTSA, 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a, DLEK, Vetch, 0x5966Db1fE50763C9e3C014d756369BAd07E1F804, kch123, HedgeMaster88, ckw, Capman, Bienville, tcp2
 
-**Kicked / do-not-copy (26):** GoalLineGhost, fkgggg2, HomeRunHazard, xytest, iDropMyHotdog, wr0ngw4yb3tt0r, 0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563, quavoo, EIf, TheArena, Qpkwks, ferrariChampions2026, TheMangler, 0x53eCc53E7, RandomPunter, bigmoneyloser00, 0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6, middleoftheocean, redskinrick, 877s8d8g89I9f8d98fd99ww2, 0p0jogggg, JPMorgan101, CemeterySun, 9sh8f, 0xwise, LynxTitan
+**Kicked / do-not-copy (30):** GoalLineGhost, fkgggg2, HomeRunHazard, xytest, iDropMyHotdog, 0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563, wr0ngw4yb3tt0r, quavoo, EIf, TheArena, Qpkwks, 0xwise, TheMangler, 0x53eCc53E7, bigmoneyloser00, ferrariChampions2026, 0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6, RandomPunter, middleoftheocean, redskinrick, 877s8d8g89I9f8d98fd99ww2, 0p0jogggg, JPMorgan101, CemeterySun, 9sh8f, betterfasterstronger, HOG993, mentionmarket, midwicket72, LynxTitan
 
 ## Notes
 

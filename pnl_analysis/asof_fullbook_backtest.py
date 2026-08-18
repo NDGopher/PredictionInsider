@@ -333,6 +333,8 @@ def collect_plays(trusted: list[dict], extra_books: list[dict] | None = None) ->
                 "username": username,
                 "wallet": w,
                 "end_dt": end_dt,
+                "conditionId": str(getattr(r, "conditionId", "") or ""),
+                "side": str(getattr(r, "side", "Yes") or "Yes"),
                 "sport": sport,
                 "sport_family": sport_family(sport),
                 "submarket": sub,

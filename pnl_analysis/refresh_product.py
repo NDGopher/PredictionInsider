@@ -18,7 +18,7 @@ STEPS: list[tuple[str, list[str]]] = [
     ("take-book health", [sys.executable, str(ROOT / "take_book_daily.py")]),
     ("copy universe", [sys.executable, str(ROOT / "copy_roster.py")]),
     ("insider ranks", [sys.executable, str(ROOT / "build_insider_ranks.py"), "--offline"]),
-    ("copy evolve", [sys.executable, str(ROOT / "evolve_copy_book.py")]),
+    ("working copy model", [sys.executable, str(ROOT / "rebuild_working_model.py")]),
     ("hot-copy screen", [sys.executable, str(ROOT / "screen_hot_copy.py")]),
     ("verify copy books", [sys.executable, str(ROOT / "verify_copy_books.py")]),
 ]

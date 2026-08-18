@@ -90,6 +90,19 @@ def test_extra_watch_no_csv_still_refresh() -> None:
     assert out["refresh"] is True
 
 
+def test_polydata_bot_class_does_not_skip_joinable_book() -> None:
+    """0x8a3a is Polydata BOT at 17 tpd — still $100 live if unique gates pass."""
+    out = classify_trader(
+        _row(
+            market_maker=True,
+            polydata={"trades": 3187, "trades_per_day": 17.6, "bot_class": "BOT"},
+        ),
+        {},
+    )
+    assert out["bucket"] == "live", out
+    assert "market_maker" not in out["reasons"]
+
+
 def test_quiet_30d_benches_take_book() -> None:
     row = _row()
     row["our"] = {**row["our"], "last_30d_n": 1}  # type: ignore[dict-item]
@@ -106,6 +119,7 @@ if __name__ == "__main__":
         test_mentionmarket_hard_skip,
         test_no_csv_roster_skipped,
         test_extra_watch_no_csv_still_refresh,
+        test_polydata_bot_class_does_not_skip_joinable_book,
         test_quiet_30d_benches_take_book,
     ]
     for fn in tests:

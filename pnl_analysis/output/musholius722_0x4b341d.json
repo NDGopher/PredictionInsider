@@ -1,0 +1,223 @@
+{
+  "wallet": "0x4b341d4612437b6e5b5fbcf98e5b675dbacf48a8",
+  "username": "musholius722",
+  "total_profit": 210464.89,
+  "raw_realized_pnl": 210464.89,
+  "dashboard_pnl": 210464.89,
+  "total_risked": 347135.16,
+  "overall_roi": 60.63,
+  "redeemed_only_roi": 60.63,
+  "last_30d": {
+    "n": 1,
+    "pnl": 210476.02,
+    "cost": 347094.3,
+    "roi": 60.64,
+    "wins": 1,
+    "win_rate": 100.0,
+    "first": "2026-08-12",
+    "last": "2026-08-12"
+  },
+  "last_60d": {
+    "n": 1,
+    "pnl": 210476.02,
+    "cost": 347094.3,
+    "roi": 60.64,
+    "wins": 1,
+    "win_rate": 100.0,
+    "first": "2026-08-12",
+    "last": "2026-08-12"
+  },
+  "last_90d": {
+    "n": 1,
+    "pnl": 210476.02,
+    "cost": 347094.3,
+    "roi": 60.64,
+    "wins": 1,
+    "win_rate": 100.0,
+    "first": "2026-08-12",
+    "last": "2026-08-12"
+  },
+  "last_event_date": "2026-08-19",
+  "days_since_last_event": 0,
+  "possibly_quit": false,
+  "win_rate": 50.0,
+  "avg_bet_size": 173567.58,
+  "median_market_stake": 173567.58,
+  "mean_market_stake": 173567.58,
+  "markets_traded": 2,
+  "total_events": 2,
+  "pseudo_sharpe": 13.51,
+  "profitable_days": 1,
+  "total_days": 2,
+  "hedge_count": 0,
+  "hedge_risk": 0.0,
+  "hedge_profit": 0.0,
+  "bond_count": 0,
+  "bond_risk": 0.0,
+  "bond_profit": 0.0,
+  "open_count": 0,
+  "open_risk": 0.0,
+  "open_value": 0.0,
+  "open_pnl": 0.0,
+  "sport_stats": {
+    "MLB": {
+      "net_profit": -11.13,
+      "roi": -27.23,
+      "win_rate": 0.0,
+      "events": 1,
+      "avg_bet": 40.87,
+      "median_bet": 40.87
+    },
+    "OTHER": {
+      "net_profit": 210476.02,
+      "roi": 60.64,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 347094.3,
+      "median_bet": 347094.3
+    }
+  },
+  "market_stats": {
+    "Moneyline / Match": {
+      "net_profit": 210464.89,
+      "roi": 60.63,
+      "win_rate": 50.0,
+      "events": 2,
+      "avg_bet": 173567.58,
+      "median_bet": 173567.58
+    }
+  },
+  "sport_market_stats": {
+    "MLB|Moneyline / Match": {
+      "net_profit": -11.13,
+      "roi": -27.23,
+      "win_rate": 0.0,
+      "events": 1,
+      "avg_bet": 40.87,
+      "median_bet": 40.87
+    },
+    "Other|Moneyline / Match": {
+      "net_profit": 210476.02,
+      "roi": 60.64,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 347094.3,
+      "median_bet": 347094.3
+    }
+  },
+  "price_stats": {
+    "Favorite (60-80c)": {
+      "net_profit": 210464.89,
+      "roi": 60.63,
+      "win_rate": 50.0,
+      "events": 2
+    }
+  },
+  "side_stats": {
+    "Specific Selection": {
+      "net_profit": -11.13,
+      "roi": -27.23,
+      "positions": 1
+    },
+    "Yes": {
+      "net_profit": 210476.02,
+      "roi": 60.64,
+      "positions": 1
+    }
+  },
+  "monthly_pnl": {
+    "2026-08": 210464.89
+  },
+  "top_wins": [
+    {
+      "title": "Will Paris Saint-Germain win on 2026-08-12?",
+      "slug": "usc-psg-av-2026-08-12-psg",
+      "eventSlug": "usc-psg-av-2026-08-12",
+      "sport_type": "OTHER",
+      "outcome": "Yes",
+      "conditionId": "0xa010c8e7ab644ca49a8c7d015bd80d6524e2d822fec6077e1f1019327507c65b",
+      "total_pnl": 210476.02,
+      "total_cost": 347094.3,
+      "avg_price": 0.6218,
+      "status": "closed"
+    },
+    {
+      "title": "Milwaukee Brewers vs. San Diego Padres",
+      "slug": "mlb-mil-sd-2026-08-12",
+      "eventSlug": "mlb-mil-sd-2026-08-12",
+      "sport_type": "MLB",
+      "outcome": "Milwaukee Brewers",
+      "conditionId": "0x3123fec7392b672800fe8029a76d6b86d8de98146ccd796b11d8fe34837a4cdb",
+      "total_pnl": -11.13,
+      "total_cost": 40.87,
+      "avg_price": 0.6287,
+      "status": "closed"
+    }
+  ],
+  "top_losses": [
+    {
+      "title": "Milwaukee Brewers vs. San Diego Padres",
+      "slug": "mlb-mil-sd-2026-08-12",
+      "eventSlug": "mlb-mil-sd-2026-08-12",
+      "sport_type": "MLB",
+      "outcome": "Milwaukee Brewers",
+      "conditionId": "0x3123fec7392b672800fe8029a76d6b86d8de98146ccd796b11d8fe34837a4cdb",
+      "total_pnl": -11.13,
+      "total_cost": 40.87,
+      "avg_price": 0.6287,
+      "status": "closed"
+    },
+    {
+      "title": "Will Paris Saint-Germain win on 2026-08-12?",
+      "slug": "usc-psg-av-2026-08-12-psg",
+      "eventSlug": "usc-psg-av-2026-08-12",
+      "sport_type": "OTHER",
+      "outcome": "Yes",
+      "conditionId": "0xa010c8e7ab644ca49a8c7d015bd80d6524e2d822fec6077e1f1019327507c65b",
+      "total_pnl": 210476.02,
+      "total_cost": 347094.3,
+      "avg_price": 0.6218,
+      "status": "closed"
+    }
+  ],
+  "top_sport": "OTHER",
+  "best_price_bucket": null,
+  "best_market": "Moneyline / Match",
+  "quality_score": 66,
+  "tier": "A-Tier",
+  "tags": [
+    "\u2b50\u2b50 A-Tier",
+    "\u2705 Yes-Side Specialist",
+    "\ud83d\udc8e Consistent Grinder",
+    "\ud83d\udc0b Mega Whale"
+  ],
+  "tail_guide": "How to Tail musholius722 [A-Tier]\n\n\n\ud83d\udcc8 Stick to Moneylines (60.6% ROI over 2 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 100% of edge from 'Yes' side \u2014 copy that side only\n\u26a1 Typical market stake ~$173,568 (median per market) \u2014 alert at 3\u00d7 for high conviction",
+  "do_not_tail_sports": [],
+  "auto_tail_sports": [],
+  "do_not_tail_market_types": [],
+  "do_not_tail_sides": [],
+  "score_breakdown": {
+    "sharpe_score": 30,
+    "roi_score": 25,
+    "wr_score": 2.0,
+    "cons_score": 5.0,
+    "vol_score": 4.1,
+    "base_score": 66.1,
+    "flip_bonus": 0,
+    "leakage_penalty": 0,
+    "midzone_roi": 0,
+    "directional_roi": 60.63,
+    "roi_dashboard": 60.63,
+    "roi_redeemed_only": 60.63,
+    "last_60d_roi": 60.64,
+    "last_60d_pnl": 210476.02,
+    "recency_penalty": 0,
+    "roi_for_quality": 60.63,
+    "hedge_risk_frac": 0.0,
+    "hedge_profit_share": 0.0,
+    "markets_traded": 2,
+    "median_market_stake": 173567.58,
+    "mean_market_stake": 173567.58,
+    "pnl_sum_check_ok": true
+  }
+}

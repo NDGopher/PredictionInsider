@@ -79,14 +79,30 @@ Weekly (not daily): `npm run backtest:elites` then inspect `POLYDATA_ELITES.md`.
 
 Do **not** retune Q, rel, or sport thresholds because last week was cold. The pause switch exists so you stop copying without rewriting the rule.
 
+## Working copy model (grab these)
+
+After ingest, rebuild the live/bench/watch backtest + recent TAKE tape:
+
+```bat
+python pnl_analysis/rebuild_working_model.py
+```
+
+Committed files you can pull without CSVs:
+
+| File | What it is |
+|------|------------|
+| `pnl_analysis/WORKING_COPY_MODEL.md` | Live vs bench vs watch, take-rule ROI, recent alerts/CLV |
+| `pnl_analysis/output/working_copy_model.json` | Same numbers as JSON |
+| `pnl_analysis/output/recent_take_alerts.json` | Would-fire tape last 30d |
+| `pnl_analysis/output/copy_universe.json` | Who is live / bench / watch tonight |
+| `pnl_analysis/extra_traders.json` | Human watch/kick/take_book tags |
+
+Live copy is **not** the frozen Capman 12. Take these tails `copy_universe.json` → `live` only.
+
 ## Right now
 
-Rolling take book is **GO**: last 30d n=32, **+14.7%** after 2¢; last 60d n=66, **+17.6%**. No drop proposals.
+Rolling take book: **live copy is 0x8a3a + TTdes**. Last 30d those two fired **0** product TAKEs (Q/rel/price). Historical as-of tape for those names is n=28, WR 53.6%, **−1.45%** after 2¢ (TTdes n=4 at −55% drags 0x8a3a’s n=24 at +7.4%). Empty Take these tonight is honest.
 
-Open books after dropping already-resolved / dated-stale games: **0 live TAKEs**. Closest:
+Hypothetical last 7d if we also tailed bench+watch: n=13, WR 77%, +20% after 2¢ — mostly HVAB tennis (watch, WR 82%). Do not auto-promote.
 
-- DLEK Kane Ballon d'Or Yes — only miss is Q 52
-- DLEK politics (House / Newsom) — Q 52 and not a sports lane
-- Vetch 90¢ nos (China/Japan, Putin) — outside 10–88¢
-- DLEK Poilievre / NY Liberty — Q 52 and tiny size
-- Cincinnati Medvedev and July MLS tickets dropped off (stale or no longer open)
+Open books: **0 live TAKEs** on the current live list.

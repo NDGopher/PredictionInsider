@@ -475,11 +475,12 @@ def score_trader(
     except (TypeError, ValueError):
         tpd = 0.0
     bot_class = str(pd_early.get("bot_class") or "").upper()
+    # Polydata bot_class=BOT is noisy (0x8a3a is BOT at 17.6 trades/day).
+    # $100 copy skip = 100k fills, 400+ trades/day, or known MM wallet.
     market_maker = (
         wallet.lower() in MM_WALLETS
         or pd_trades >= 100_000
         or tpd >= 400
-        or bot_class == "BOT"
     )
     untailable = bool(h.get("untailable") or market_maker)
     winner_capped = bool(book.get("winner_capped"))
