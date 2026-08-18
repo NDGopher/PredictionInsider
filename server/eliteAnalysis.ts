@@ -90,20 +90,17 @@ export const CURATED_TRADERS: { wallet: string; username: string; url?: string }
 /**
  * Leaderboard-discovered wallets (sports category) — not in the curated set.
  * Seeded into `elite_traders` so the pipeline ingests them; Live Signals only **merge**
- * trades/positions for rows that pass canonical **qualityScore ≥ 50** (see routes.ts).
+ * trades/positions for rows that pass canonical **qualityScore ≥ 35** (see routes.ts).
  * Remove or add entries after re-scanning Polymarket sports leaderboard + CSV review.
+ * Last refresh: 2026-08-18 — dropped LB names that graded C-tier; added WTSA, Qpkwks, 0xE30E.
  */
 export const DISCOVERED_ELITES: { wallet: string; username: string; url?: string; notes?: string }[] = [
-  { wallet: "0xb6d6e99d3bfe055874a04279f659f009fd57be17", username: "JPMorgan101", url: "https://polymarket.com/@JPMorgan101", notes: "Sports LB #1 PnL (API scan)" },
-  { wallet: "0x03e8a544e97eeff5753bc1e90d46e5ef22af1697", username: "weflyhigh", url: "https://polymarket.com/@weflyhigh", notes: "Sports LB #2 PnL" },
-  { wallet: "0xb45a797faa52b0fd8adc56d30382022b7b12192c", username: "bcda", url: "https://polymarket.com/@bcda", notes: "Sports LB #3 PnL" },
-  { wallet: "0xfa41acf573021e64b607b3294bd0c0518884a7a1", username: "hovanpavi", url: "https://polymarket.com/@hovanpavi", notes: "Sports LB #4 PnL" },
-  { wallet: "0xcb6ed9332a8fd1b930893c705dd234f37aa248e6", username: "0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6", url: "https://polymarket.com/@0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6-1774405511911", notes: "Sports LB #5 PnL" },
-  { wallet: "0x93abbc022ce98d6f45d4444b594791cc4b7a9723", username: "gatorr", url: "https://polymarket.com/@gatorr", notes: "Sports LB #6 PnL" },
-  { wallet: "0xfbf3d501e88815464642d0e913f15379c3eeb218", username: "VPenguin", url: "https://polymarket.com/@VPenguin", notes: "Sports LB #7 PnL" },
-  { wallet: "0x8a3ab8120807bd64a3de48695110e390fa2ceb9a", username: "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a", url: "https://polymarket.com/@0x8a3aB8120807bD64a3De48695110e390fa2ceB9a-1771005965025", notes: "Sports LB #8 PnL" },
-  { wallet: "0xa71093cafc0c099b4ccab24c3cb8018d817923c4", username: "Talvez10", url: "https://polymarket.com/@Talvez10", notes: "Sports LB #9 PnL" },
-  { wallet: "0x492442eab586f242b53bda933fd5de859c8a3782", username: "0x492442EaB586F242B53bDa933fD5dE859c8A3782", url: "https://polymarket.com/@0x492442EaB586F242B53bDa933fD5dE859c8A3782-1766317541188", notes: "Sports LB #10 PnL" },
+  { wallet: "0xb6d6e99d3bfe055874a04279f659f009fd57be17", username: "JPMorgan101", url: "https://polymarket.com/@JPMorgan101", notes: "A-Tier Q=54, 56% ROI, 252 events (2026-08 regrade)" },
+  { wallet: "0xcb6ed9332a8fd1b930893c705dd234f37aa248e6", username: "0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6", url: "https://polymarket.com/@0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6-1774405511911", notes: "S-Tier Q=98, 33% ROI — thin sample (23 events)" },
+  { wallet: "0x8a3ab8120807bd64a3de48695110e390fa2ceb9a", username: "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a", url: "https://polymarket.com/@0x8a3aB8120807bD64a3De48695110e390fa2ceB9a-1771005965025", notes: "A-Tier Q=61, 19% ROI, 425 events" },
+  { wallet: "0x04d5524a0a5af2eca6e39e03defc261d42fe66d8", username: "WTSA", url: "https://polymarket.com/@WTSA", notes: "New 2026-08: S-Tier Q=72, 58% ROI, ALL+MONTH+WEEK sports LB" },
+  { wallet: "0x9ee8bbc36d378af72e5f6b8e2ea2eb67c05a89de", username: "Qpkwks", url: "https://polymarket.com/@Qpkwks", notes: "New 2026-08: A-Tier Q=57, 61% ROI soccer specialist" },
+  { wallet: "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87", username: "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87", url: "https://polymarket.com/@0xE30E74595517de48f1FB19f4553dd3d9F1E96B87-1772612985000", notes: "New 2026-08: B-Tier Q=46, 38% ROI — passes signal Q gate" },
 ];
 
 // ─── In-memory set for fast signal lookup ────────────────────────────────────

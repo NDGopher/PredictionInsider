@@ -1,0 +1,272 @@
+{
+  "wallet": "0xcb6ed9332a8fd1b930893c705dd234f37aa248e6",
+  "username": "0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6",
+  "total_profit": 403714.51,
+  "raw_realized_pnl": 403714.51,
+  "total_risked": 1210911.33,
+  "overall_roi": 33.34,
+  "win_rate": 64.29,
+  "avg_bet_size": 43246.83,
+  "median_market_stake": 33200.49,
+  "mean_market_stake": 43246.83,
+  "markets_traded": 28,
+  "total_events": 23,
+  "pseudo_sharpe": 9.99,
+  "profitable_days": 5,
+  "total_days": 6,
+  "hedge_count": 0,
+  "hedge_risk": 0.0,
+  "hedge_profit": 0.0,
+  "bond_count": 0,
+  "bond_risk": 0.0,
+  "bond_profit": 0.0,
+  "open_count": 2,
+  "open_risk": 85885.58,
+  "open_value": 0.0,
+  "open_pnl": -85885.58,
+  "sport_stats": {
+    "NBA": {
+      "net_profit": 317828.93,
+      "roi": 26.25,
+      "win_rate": 64.29,
+      "events": 28,
+      "avg_bet": 43246.83,
+      "median_bet": 33200.49
+    }
+  },
+  "market_stats": {
+    "Moneyline / Match": {
+      "net_profit": 56108.91,
+      "roi": 7.64,
+      "win_rate": 55.56,
+      "events": 9,
+      "avg_bet": 81562.24,
+      "median_bet": 81177.34
+    },
+    "Totals (O/U)": {
+      "net_profit": 261720.02,
+      "roi": 54.89,
+      "win_rate": 68.42,
+      "events": 19,
+      "avg_bet": 25097.43,
+      "median_bet": 25000.0
+    }
+  },
+  "sport_market_stats": {
+    "NBA|Moneyline / Match": {
+      "net_profit": 56108.91,
+      "roi": 7.64,
+      "win_rate": 55.56,
+      "events": 9,
+      "avg_bet": 81562.24,
+      "median_bet": 81177.34
+    },
+    "NBA|Totals (O/U)": {
+      "net_profit": 261720.02,
+      "roi": 54.89,
+      "win_rate": 68.42,
+      "events": 19,
+      "avg_bet": 25097.43,
+      "median_bet": 25000.0
+    }
+  },
+  "price_stats": {
+    "Favorite (60-80c)": {
+      "net_profit": 83620.52,
+      "roi": 51.7,
+      "win_rate": 100.0,
+      "events": 2
+    },
+    "Flip (40-60c)": {
+      "net_profit": 283932.58,
+      "roi": 42.38,
+      "win_rate": 66.67,
+      "events": 21
+    },
+    "Longshot (0-20c)": {
+      "net_profit": -98011.95,
+      "roi": -100.01,
+      "win_rate": 0.0,
+      "events": 3
+    },
+    "Safe (80-100c)": {
+      "net_profit": 48287.77,
+      "roi": 17.18,
+      "win_rate": 100.0,
+      "events": 2
+    }
+  },
+  "side_stats": {
+    "Specific Selection": {
+      "net_profit": 317828.93,
+      "roi": 26.25,
+      "positions": 28
+    }
+  },
+  "monthly_pnl": {
+    "2026-03": 317828.93
+  },
+  "top_wins": [
+    {
+      "title": "Magic vs. Raptors",
+      "slug": "nba-orl-tor-2026-03-29",
+      "eventSlug": "nba-orl-tor-2026-03-29",
+      "sport_type": "NBA",
+      "outcome": "Raptors",
+      "conditionId": "0xef54425dc6d1727e47330841ae0f1a21ad050896ff88fc13a297c3d84e4aa25a",
+      "total_pnl": 103393.68,
+      "total_cost": 112009.83,
+      "avg_price": 0.52,
+      "status": "closed"
+    },
+    {
+      "title": "Jazz vs. Suns: O/U 231.5",
+      "slug": "nba-uta-phx-2026-03-28-total-231pt5",
+      "eventSlug": "nba-uta-phx-2026-03-28",
+      "sport_type": "NBA",
+      "outcome": "Over",
+      "conditionId": "0x4e59c9750856c3f9bf00a8ff384bedd8fb5e488d8229709706a0c4b0d1598d9c",
+      "total_pnl": 53449.73,
+      "total_cost": 56719.01,
+      "avg_price": 0.5148,
+      "status": "closed"
+    },
+    {
+      "title": "Nuggets vs. Suns",
+      "slug": "nba-den-phx-2026-03-24",
+      "eventSlug": "nba-den-phx-2026-03-24",
+      "sport_type": "NBA",
+      "outcome": "Nuggets",
+      "conditionId": "0xbd4c47f29092f81f777211bb56e17a6658e80992fb87db766f679160be3241c3",
+      "total_pnl": 51320.52,
+      "total_cost": 109056.12,
+      "avg_price": 0.68,
+      "status": "closed"
+    },
+    {
+      "title": "Kings vs. Hawks: O/U 236.5",
+      "slug": "nba-sac-atl-2026-03-28-total-236pt5",
+      "eventSlug": "nba-sac-atl-2026-03-28",
+      "sport_type": "NBA",
+      "outcome": "Under",
+      "conditionId": "0xdbb2735bb1526c6a3fd6e56188809fac801d151d6687e81268b69ea5915913b8",
+      "total_pnl": 39424.5,
+      "total_cost": 42049.47,
+      "avg_price": 0.5161,
+      "status": "closed"
+    },
+    {
+      "title": "Hawks vs. Celtics: O/U 225.5",
+      "slug": "nba-atl-bos-2026-03-27-total-225pt5",
+      "eventSlug": "nba-atl-bos-2026-03-27",
+      "sport_type": "NBA",
+      "outcome": "Under",
+      "conditionId": "0x2c4f5450e2ca10df334c80e5f25174548c1448819352851136fc8ad2866d518f",
+      "total_pnl": 38413.52,
+      "total_cost": 39981.42,
+      "avg_price": 0.51,
+      "status": "closed"
+    }
+  ],
+  "top_losses": [
+    {
+      "title": "Pistons vs. Timberwolves",
+      "slug": "nba-det-min-2026-03-28",
+      "eventSlug": "nba-det-min-2026-03-28",
+      "sport_type": "NBA",
+      "outcome": "Timberwolves",
+      "conditionId": "0x17dafc4d9c1128c17f936e35f6772d02c0eb2f637b883b95f8dc891740d2d6cc",
+      "total_pnl": -81181.12,
+      "total_cost": 81177.34,
+      "avg_price": 0.4502,
+      "status": "closed"
+    },
+    {
+      "title": "Warriors vs. Nuggets",
+      "slug": "nba-gsw-den-2026-03-29",
+      "eventSlug": "nba-gsw-den-2026-03-29",
+      "sport_type": "NBA",
+      "outcome": "Warriors",
+      "conditionId": "0xc41ada612461b7090d8b19086cc4c2060e16f7eaeb985aeee089f4fe2c12de7a",
+      "total_pnl": -39100.0,
+      "total_cost": 39100.0,
+      "avg_price": 0.17,
+      "status": "open"
+    },
+    {
+      "title": "Kings vs. Magic",
+      "slug": "nba-sac-orl-2026-03-26",
+      "eventSlug": "nba-sac-orl-2026-03-26",
+      "sport_type": "NBA",
+      "outcome": "Kings",
+      "conditionId": "0xa5ce8b5f517edb201d50dd020a358f8e3662097d7b406ed7ae87ea0a7bab7f1e",
+      "total_pnl": -36507.54,
+      "total_cost": 36496.21,
+      "avg_price": 0.1095,
+      "status": "closed"
+    },
+    {
+      "title": "Warriors vs. Nuggets: O/U 236.5",
+      "slug": "nba-gsw-den-2026-03-29-total-236pt5",
+      "eventSlug": "nba-gsw-den-2026-03-29",
+      "sport_type": "NBA",
+      "outcome": "Over",
+      "conditionId": "0xf2ffdabe06486f27f5f2cfd47630bf26ff64fd31ac317ef1a83275bbd3bfff73",
+      "total_pnl": -33417.93,
+      "total_cost": 33417.93,
+      "avg_price": 0.52,
+      "status": "open"
+    },
+    {
+      "title": "Clippers vs. Pacers: O/U 238.5",
+      "slug": "nba-lac-ind-2026-03-27-total-238pt5",
+      "eventSlug": "nba-lac-ind-2026-03-27",
+      "sport_type": "NBA",
+      "outcome": "Over",
+      "conditionId": "0xebcab75ed53f495010a6be6979afad690e877e562f2e231df413c28c2163c54f",
+      "total_pnl": -25000.0,
+      "total_cost": 25000.0,
+      "avg_price": 0.5,
+      "status": "closed"
+    }
+  ],
+  "top_sport": "NBA",
+  "best_price_bucket": "Flip (40-60c)",
+  "best_market": "Totals (O/U)",
+  "quality_score": 98,
+  "tier": "S-Tier",
+  "tags": [
+    "\u2b50\u2b50\u2b50 S-Tier",
+    "\ud83c\udfc0 NBA Expert",
+    "\ud83d\udc8e Consistent Grinder",
+    "\ud83d\udc0b Mega Whale",
+    "\ud83d\udcca O/U Specialist"
+  ],
+  "tail_guide": "How to Tail 0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6 [S-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   NBA \u2014 26.2% ROI, 28 markets, +$317,829\n\n\ud83d\udcc8 Stick to Moneylines (7.6% ROI over 9 markets)\n\ud83c\udfaf Best price zone: Flip (40-60c) (42.4% ROI, 21 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 100% of edge from 'Specific' side \u2014 copy that side only\n\u26a1 Typical market stake ~$33,200 (median per market) \u2014 alert at 3\u00d7 for high conviction",
+  "do_not_tail_sports": [],
+  "auto_tail_sports": [
+    "NBA"
+  ],
+  "do_not_tail_market_types": [],
+  "do_not_tail_sides": [],
+  "score_breakdown": {
+    "sharpe_score": 30,
+    "roi_score": 25,
+    "wr_score": 15,
+    "cons_score": 8.3,
+    "vol_score": 4.5,
+    "base_score": 82.9,
+    "flip_bonus": 15,
+    "leakage_penalty": 0,
+    "midzone_roi": 42.4,
+    "directional_roi": 26.25,
+    "roi_dashboard": 33.34,
+    "roi_for_quality": 26.25,
+    "hedge_risk_frac": 0.0,
+    "hedge_profit_share": 0.0,
+    "markets_traded": 28,
+    "median_market_stake": 33200.49,
+    "mean_market_stake": 43246.83,
+    "pnl_sum_check_ok": true
+  }
+}

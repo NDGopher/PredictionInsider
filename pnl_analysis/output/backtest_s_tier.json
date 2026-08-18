@@ -1,0 +1,260 @@
+{
+  "generated_at": "2026-08-18T00:51:19.496763+00:00",
+  "params": {
+    "min_quality": 70,
+    "lane_roi": 5.0,
+    "lane_events": 8,
+    "conviction_x": 2.0,
+    "moneyline_only": false,
+    "unit_stake_usd": 100.0
+  },
+  "traders_included": 4,
+  "portfolio": {
+    "copy_all_closed": {
+      "events": 3084,
+      "wins": 2015,
+      "losses": 664,
+      "win_rate": 75.21,
+      "pnl": 20368702.32,
+      "risked": 188449707.17,
+      "roi": 10.81,
+      "unit_pnl": 17874.15,
+      "avg_stake": 61105.61
+    },
+    "copy_high_grade": {
+      "events": 481,
+      "wins": 339,
+      "losses": 126,
+      "win_rate": 72.9,
+      "pnl": 17599994.01,
+      "risked": 115548229.25,
+      "roi": 15.23,
+      "unit_pnl": 3237.34,
+      "avg_stake": 240225.01
+    },
+    "roi_lift_pts": 4.42,
+    "equal_trader_high_grade_unit_pnl": 3237.34,
+    "equal_trader_count": 4
+  },
+  "by_sport": {
+    "NBA": {
+      "events": 131,
+      "wins": 79,
+      "losses": 49,
+      "win_rate": 61.72,
+      "pnl": 3542110.2,
+      "risked": 39689081.31,
+      "roi": 8.92,
+      "unit_pnl": -939.01,
+      "avg_stake": 302970.09
+    },
+    "NFL": {
+      "events": 46,
+      "wins": 35,
+      "losses": 11,
+      "win_rate": 76.09,
+      "pnl": 2010804.82,
+      "risked": 13670665.98,
+      "roi": 14.71,
+      "unit_pnl": 509.24,
+      "avg_stake": 297188.39
+    },
+    "NHL": {
+      "events": 71,
+      "wins": 50,
+      "losses": 10,
+      "win_rate": 83.33,
+      "pnl": 2805504.88,
+      "risked": 14069961.59,
+      "roi": 19.94,
+      "unit_pnl": 1205.66,
+      "avg_stake": 198168.47
+    },
+    "OTHER": {
+      "events": 167,
+      "wins": 112,
+      "losses": 53,
+      "win_rate": 67.88,
+      "pnl": 5974311.85,
+      "risked": 36701231.0,
+      "roi": 16.28,
+      "unit_pnl": 322.99,
+      "avg_stake": 219767.85
+    },
+    "SOCCER (LaLiga)": {
+      "events": 18,
+      "wins": 18,
+      "losses": 0,
+      "win_rate": 100.0,
+      "pnl": 226233.09,
+      "risked": 759959.07,
+      "roi": 29.77,
+      "unit_pnl": 360.74,
+      "avg_stake": 42219.95
+    },
+    "SOCCER (Other)": {
+      "events": 39,
+      "wins": 36,
+      "losses": 3,
+      "win_rate": 92.31,
+      "pnl": 2506349.36,
+      "risked": 9233291.39,
+      "roi": 27.14,
+      "unit_pnl": 1275.95,
+      "avg_stake": 236751.06
+    },
+    "SOCCER (UCL)": {
+      "events": 9,
+      "wins": 9,
+      "losses": 0,
+      "win_rate": 100.0,
+      "pnl": 534679.81,
+      "risked": 1424038.91,
+      "roi": 37.55,
+      "unit_pnl": 501.78,
+      "avg_stake": 158226.55
+    }
+  },
+  "traders": [
+    {
+      "username": "HedgeMaster88",
+      "wallet": "0x036c159d5a348058a81066a76b89f35926d4178d",
+      "tier": "S-Tier",
+      "quality_score": 80,
+      "winning_lanes": [
+        "OTHER",
+        "SOCCER (LaLiga)",
+        "SOCCER (Other)",
+        "SOCCER (UCL)"
+      ],
+      "median_stake": 12230.88,
+      "baseline": {
+        "events": 121,
+        "wins": 118,
+        "losses": 1,
+        "win_rate": 99.16,
+        "pnl": 2639126.85,
+        "risked": 6329834.61,
+        "roi": 41.69,
+        "unit_pnl": 5623.54,
+        "avg_stake": 52312.68
+      },
+      "high_grade": {
+        "events": 49,
+        "wins": 49,
+        "losses": 0,
+        "win_rate": 100.0,
+        "pnl": 2173820.71,
+        "risked": 5290886.2,
+        "roi": 41.09,
+        "unit_pnl": 2312.13,
+        "avg_stake": 107977.27
+      },
+      "roi_lift_pts": -0.6
+    },
+    {
+      "username": "DLEK",
+      "wallet": "0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c",
+      "tier": "S-Tier",
+      "quality_score": 77,
+      "winning_lanes": [
+        "NFL",
+        "OTHER"
+      ],
+      "median_stake": 9199.19,
+      "baseline": {
+        "events": 709,
+        "wins": 524,
+        "losses": 160,
+        "win_rate": 76.61,
+        "pnl": 4950882.99,
+        "risked": 19735408.51,
+        "roi": 25.09,
+        "unit_pnl": 17788.78,
+        "avg_stake": 27835.56
+      },
+      "high_grade": {
+        "events": 16,
+        "wins": 11,
+        "losses": 3,
+        "win_rate": 78.57,
+        "pnl": 115339.64,
+        "risked": 886994.83,
+        "roi": 13.0,
+        "unit_pnl": 282.86,
+        "avg_stake": 55437.18
+      },
+      "roi_lift_pts": -12.09
+    },
+    {
+      "username": "kch123",
+      "wallet": "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee",
+      "tier": "S-Tier",
+      "quality_score": 74,
+      "winning_lanes": [
+        "NBA",
+        "NFL",
+        "NHL",
+        "OTHER",
+        "SOCCER (Other)"
+      ],
+      "median_stake": 43246.16,
+      "baseline": {
+        "events": 1019,
+        "wins": 537,
+        "losses": 377,
+        "win_rate": 58.75,
+        "pnl": 11919094.28,
+        "risked": 131296472.2,
+        "roi": 9.08,
+        "unit_pnl": -11971.38,
+        "avg_stake": 128848.35
+      },
+      "high_grade": {
+        "events": 405,
+        "wins": 268,
+        "losses": 123,
+        "win_rate": 68.54,
+        "pnl": 15303220.1,
+        "risked": 109231965.69,
+        "roi": 14.01,
+        "unit_pnl": 569.56,
+        "avg_stake": 269708.56
+      },
+      "roi_lift_pts": 4.93
+    },
+    {
+      "username": "fkgggg2",
+      "wallet": "0x52ecea7b3159f09db589e4f4ee64872fd0bba6f3",
+      "tier": "S-Tier",
+      "quality_score": 72,
+      "winning_lanes": [
+        "SOCCER (LaLiga)"
+      ],
+      "median_stake": 3671.05,
+      "baseline": {
+        "events": 1235,
+        "wins": 836,
+        "losses": 126,
+        "win_rate": 86.9,
+        "pnl": 859598.2,
+        "risked": 31087991.85,
+        "roi": 2.77,
+        "unit_pnl": 6433.21,
+        "avg_stake": 25172.46
+      },
+      "high_grade": {
+        "events": 11,
+        "wins": 11,
+        "losses": 0,
+        "win_rate": 100.0,
+        "pnl": 7613.56,
+        "risked": 138382.53,
+        "roi": 5.5,
+        "unit_pnl": 72.79,
+        "avg_stake": 12580.23
+      },
+      "roi_lift_pts": 2.73
+    }
+  ]
+}

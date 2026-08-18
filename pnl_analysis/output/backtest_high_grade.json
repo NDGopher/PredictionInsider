@@ -1,0 +1,804 @@
+{
+  "generated_at": "2026-08-18T01:10:49.210641+00:00",
+  "params": {
+    "min_quality": 50,
+    "lane_roi": 5.0,
+    "lane_events": 8,
+    "conviction_x": 2.0,
+    "moneyline_only": false,
+    "unit_stake_usd": 100.0
+  },
+  "traders_included": 18,
+  "portfolio": {
+    "copy_all_closed": {
+      "events": 34390,
+      "wins": 19786,
+      "losses": 11737,
+      "win_rate": 62.77,
+      "pnl": 42328838.91,
+      "risked": 340276398.43,
+      "roi": 12.44,
+      "unit_pnl": 896076.81,
+      "avg_stake": 9894.63
+    },
+    "copy_high_grade": {
+      "events": 5553,
+      "wins": 3788,
+      "losses": 1658,
+      "win_rate": 69.56,
+      "pnl": 30630460.79,
+      "risked": 161683161.73,
+      "roi": 18.94,
+      "unit_pnl": 21916.83,
+      "avg_stake": 29116.36
+    },
+    "roi_lift_pts": 6.5,
+    "equal_trader_high_grade_unit_pnl": 21916.83,
+    "equal_trader_count": 18
+  },
+  "by_sport": {
+    "ESPORTS": {
+      "events": 151,
+      "wins": 102,
+      "losses": 44,
+      "win_rate": 69.86,
+      "pnl": 158794.3,
+      "risked": 1099602.68,
+      "roi": 14.44,
+      "unit_pnl": 2007.67,
+      "avg_stake": 7282.14
+    },
+    "MLB": {
+      "events": 147,
+      "wins": 131,
+      "losses": 12,
+      "win_rate": 91.61,
+      "pnl": 54784.39,
+      "risked": 167053.81,
+      "roi": 32.79,
+      "unit_pnl": -182.02,
+      "avg_stake": 1136.42
+    },
+    "NBA": {
+      "events": 602,
+      "wins": 371,
+      "losses": 228,
+      "win_rate": 61.94,
+      "pnl": 4409457.83,
+      "risked": 43858196.77,
+      "roi": 10.05,
+      "unit_pnl": -2984.24,
+      "avg_stake": 72854.15
+    },
+    "NFL": {
+      "events": 639,
+      "wins": 449,
+      "losses": 190,
+      "win_rate": 70.27,
+      "pnl": 3719526.1,
+      "risked": 21232397.89,
+      "roi": 17.52,
+      "unit_pnl": 391.25,
+      "avg_stake": 33227.54
+    },
+    "NHL": {
+      "events": 507,
+      "wins": 308,
+      "losses": 157,
+      "win_rate": 66.24,
+      "pnl": 3240495.69,
+      "risked": 15450599.38,
+      "roi": 20.97,
+      "unit_pnl": 3024.95,
+      "avg_stake": 30474.55
+    },
+    "OTHER": {
+      "events": 2672,
+      "wins": 1852,
+      "losses": 794,
+      "win_rate": 69.99,
+      "pnl": 9747997.02,
+      "risked": 48949008.6,
+      "roi": 19.91,
+      "unit_pnl": 14973.38,
+      "avg_stake": 18319.24
+    },
+    "SOCCER (EPL)": {
+      "events": 77,
+      "wins": 40,
+      "losses": 36,
+      "win_rate": 52.63,
+      "pnl": 354384.61,
+      "risked": 2893173.44,
+      "roi": 12.25,
+      "unit_pnl": -1030.3,
+      "avg_stake": 37573.68
+    },
+    "SOCCER (LaLiga)": {
+      "events": 65,
+      "wins": 37,
+      "losses": 15,
+      "win_rate": 71.15,
+      "pnl": 737325.05,
+      "risked": 3319029.75,
+      "roi": 22.22,
+      "unit_pnl": 724.28,
+      "avg_stake": 51062.0
+    },
+    "SOCCER (Other)": {
+      "events": 424,
+      "wins": 304,
+      "losses": 120,
+      "win_rate": 71.7,
+      "pnl": 7282364.76,
+      "risked": 18063709.31,
+      "roi": 40.31,
+      "unit_pnl": 3873.3,
+      "avg_stake": 42603.09
+    },
+    "SOCCER (UCL)": {
+      "events": 53,
+      "wins": 31,
+      "losses": 9,
+      "win_rate": 77.5,
+      "pnl": 918676.9,
+      "risked": 6580011.91,
+      "roi": 13.96,
+      "unit_pnl": 1121.37,
+      "avg_stake": 124151.17
+    },
+    "TENNIS": {
+      "events": 211,
+      "wins": 159,
+      "losses": 52,
+      "win_rate": 75.36,
+      "pnl": 6382.25,
+      "risked": 69136.07,
+      "roi": 9.23,
+      "unit_pnl": -57.14,
+      "avg_stake": 327.66
+    },
+    "WNBA": {
+      "events": 5,
+      "wins": 4,
+      "losses": 1,
+      "win_rate": 80.0,
+      "pnl": 271.88,
+      "risked": 1242.12,
+      "roi": 21.89,
+      "unit_pnl": 54.31,
+      "avg_stake": 248.42
+    }
+  },
+  "traders": [
+    {
+      "username": "0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6",
+      "wallet": "0xcb6ed9332a8fd1b930893c705dd234f37aa248e6",
+      "tier": "S-Tier",
+      "quality_score": 98,
+      "winning_lanes": [
+        "NBA"
+      ],
+      "median_stake": 33200.49,
+      "baseline": {
+        "events": 21,
+        "wins": 15,
+        "losses": 6,
+        "win_rate": 71.43,
+        "pnl": 403714.51,
+        "risked": 1125025.75,
+        "roi": 35.88,
+        "unit_pnl": 585.97,
+        "avg_stake": 53572.65
+      },
+      "high_grade": {
+        "events": 5,
+        "wins": 4,
+        "losses": 1,
+        "win_rate": 80.0,
+        "pnl": 121820.86,
+        "risked": 583359.56,
+        "roi": 20.88,
+        "unit_pnl": 74.24,
+        "avg_stake": 116671.91
+      },
+      "roi_lift_pts": -15.0
+    },
+    {
+      "username": "HedgeMaster88",
+      "wallet": "0x036c159d5a348058a81066a76b89f35926d4178d",
+      "tier": "S-Tier",
+      "quality_score": 80,
+      "winning_lanes": [
+        "OTHER",
+        "SOCCER (LaLiga)",
+        "SOCCER (Other)",
+        "SOCCER (UCL)"
+      ],
+      "median_stake": 12230.88,
+      "baseline": {
+        "events": 121,
+        "wins": 118,
+        "losses": 1,
+        "win_rate": 99.16,
+        "pnl": 2639126.85,
+        "risked": 6329834.61,
+        "roi": 41.69,
+        "unit_pnl": 5623.54,
+        "avg_stake": 52312.68
+      },
+      "high_grade": {
+        "events": 49,
+        "wins": 49,
+        "losses": 0,
+        "win_rate": 100.0,
+        "pnl": 2173820.71,
+        "risked": 5290886.2,
+        "roi": 41.09,
+        "unit_pnl": 2312.13,
+        "avg_stake": 107977.27
+      },
+      "roi_lift_pts": -0.6
+    },
+    {
+      "username": "DLEK",
+      "wallet": "0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c",
+      "tier": "S-Tier",
+      "quality_score": 77,
+      "winning_lanes": [
+        "NFL",
+        "OTHER"
+      ],
+      "median_stake": 9199.19,
+      "baseline": {
+        "events": 709,
+        "wins": 524,
+        "losses": 160,
+        "win_rate": 76.61,
+        "pnl": 4950882.99,
+        "risked": 19735408.51,
+        "roi": 25.09,
+        "unit_pnl": 17788.78,
+        "avg_stake": 27835.56
+      },
+      "high_grade": {
+        "events": 16,
+        "wins": 11,
+        "losses": 3,
+        "win_rate": 78.57,
+        "pnl": 115339.64,
+        "risked": 886994.83,
+        "roi": 13.0,
+        "unit_pnl": 282.86,
+        "avg_stake": 55437.18
+      },
+      "roi_lift_pts": -12.09
+    },
+    {
+      "username": "kch123",
+      "wallet": "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee",
+      "tier": "S-Tier",
+      "quality_score": 74,
+      "winning_lanes": [
+        "NBA",
+        "NFL",
+        "NHL",
+        "OTHER",
+        "SOCCER (Other)"
+      ],
+      "median_stake": 43246.16,
+      "baseline": {
+        "events": 1019,
+        "wins": 537,
+        "losses": 377,
+        "win_rate": 58.75,
+        "pnl": 11919094.28,
+        "risked": 131296472.2,
+        "roi": 9.08,
+        "unit_pnl": -11971.38,
+        "avg_stake": 128848.35
+      },
+      "high_grade": {
+        "events": 405,
+        "wins": 268,
+        "losses": 123,
+        "win_rate": 68.54,
+        "pnl": 15303220.1,
+        "risked": 109231965.69,
+        "roi": 14.01,
+        "unit_pnl": 569.56,
+        "avg_stake": 269708.56
+      },
+      "roi_lift_pts": 4.93
+    },
+    {
+      "username": "fkgggg2",
+      "wallet": "0x52ecea7b3159f09db589e4f4ee64872fd0bba6f3",
+      "tier": "S-Tier",
+      "quality_score": 72,
+      "winning_lanes": [
+        "SOCCER (LaLiga)"
+      ],
+      "median_stake": 3671.05,
+      "baseline": {
+        "events": 1235,
+        "wins": 836,
+        "losses": 126,
+        "win_rate": 86.9,
+        "pnl": 859598.2,
+        "risked": 31087991.85,
+        "roi": 2.77,
+        "unit_pnl": 6433.21,
+        "avg_stake": 25172.46
+      },
+      "high_grade": {
+        "events": 11,
+        "wins": 11,
+        "losses": 0,
+        "win_rate": 100.0,
+        "pnl": 7613.56,
+        "risked": 138382.53,
+        "roi": 5.5,
+        "unit_pnl": 72.79,
+        "avg_stake": 12580.23
+      },
+      "roi_lift_pts": 2.73
+    },
+    {
+      "username": "WTSA",
+      "wallet": "0x04d5524a0a5af2eca6e39e03defc261d42fe66d8",
+      "tier": "S-Tier",
+      "quality_score": 72,
+      "winning_lanes": [
+        "SOCCER (Other)"
+      ],
+      "median_stake": 27764.04,
+      "baseline": {
+        "events": 61,
+        "wins": 61,
+        "losses": 0,
+        "win_rate": 100.0,
+        "pnl": 3271932.56,
+        "risked": 3386080.67,
+        "roi": 96.63,
+        "unit_pnl": 6312.97,
+        "avg_stake": 55509.52
+      },
+      "high_grade": {
+        "events": 20,
+        "wins": 20,
+        "losses": 0,
+        "win_rate": 100.0,
+        "pnl": 2001047.89,
+        "risked": 2149336.99,
+        "roi": 93.1,
+        "unit_pnl": 1842.05,
+        "avg_stake": 107466.85
+      },
+      "roi_lift_pts": -3.53
+    },
+    {
+      "username": "geniusMC",
+      "wallet": "0x0b9cae2b0dfe7a71c413e0604eaac1c352f87e44",
+      "tier": "A-Tier",
+      "quality_score": 65,
+      "winning_lanes": [
+        "NFL",
+        "OTHER",
+        "SOCCER (EPL)",
+        "SOCCER (LaLiga)",
+        "SOCCER (Other)",
+        "SOCCER (UCL)"
+      ],
+      "median_stake": 3692.02,
+      "baseline": {
+        "events": 302,
+        "wins": 203,
+        "losses": 84,
+        "win_rate": 70.73,
+        "pnl": 3280213.42,
+        "risked": 36288296.66,
+        "roi": 9.04,
+        "unit_pnl": 1170.21,
+        "avg_stake": 120159.92
+      },
+      "high_grade": {
+        "events": 119,
+        "wins": 83,
+        "losses": 32,
+        "win_rate": 72.17,
+        "pnl": 3629572.97,
+        "risked": 27957889.28,
+        "roi": 12.98,
+        "unit_pnl": 1241.88,
+        "avg_stake": 234940.25
+      },
+      "roi_lift_pts": 3.94
+    },
+    {
+      "username": "Vetch",
+      "wallet": "0x9c82c60829df081d593055ee5fa288870c051f13",
+      "tier": "A-Tier",
+      "quality_score": 63,
+      "winning_lanes": [
+        "ESPORTS",
+        "NBA",
+        "NHL",
+        "OTHER"
+      ],
+      "median_stake": 3071.59,
+      "baseline": {
+        "events": 460,
+        "wins": 254,
+        "losses": 162,
+        "win_rate": 61.06,
+        "pnl": 199419.9,
+        "risked": 3471233.13,
+        "roi": 5.74,
+        "unit_pnl": -71.21,
+        "avg_stake": 7546.16
+      },
+      "high_grade": {
+        "events": 134,
+        "wins": 94,
+        "losses": 34,
+        "win_rate": 73.44,
+        "pnl": 224299.28,
+        "risked": 2336501.32,
+        "roi": 9.6,
+        "unit_pnl": 979.4,
+        "avg_stake": 17436.58
+      },
+      "roi_lift_pts": 3.86
+    },
+    {
+      "username": "RN1",
+      "wallet": "0x2005d16a84ceefa912d4e380cd32e7ff827875ea",
+      "tier": "A-Tier",
+      "quality_score": 62,
+      "winning_lanes": [
+        "WNBA"
+      ],
+      "median_stake": 54.07,
+      "baseline": {
+        "events": 9175,
+        "wins": 4666,
+        "losses": 3306,
+        "win_rate": 58.53,
+        "pnl": 469359.14,
+        "risked": 55740701.32,
+        "roi": 0.84,
+        "unit_pnl": 647105.54,
+        "avg_stake": 6075.28
+      },
+      "high_grade": {
+        "events": 5,
+        "wins": 4,
+        "losses": 1,
+        "win_rate": 80.0,
+        "pnl": 271.88,
+        "risked": 1242.12,
+        "roi": 21.89,
+        "unit_pnl": 54.31,
+        "avg_stake": 248.42
+      },
+      "roi_lift_pts": 21.05
+    },
+    {
+      "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+      "wallet": "0x8a3ab8120807bd64a3de48695110e390fa2ceb9a",
+      "tier": "A-Tier",
+      "quality_score": 61,
+      "winning_lanes": [
+        "NBA",
+        "OTHER"
+      ],
+      "median_stake": 4855.49,
+      "baseline": {
+        "events": 385,
+        "wins": 229,
+        "losses": 156,
+        "win_rate": 59.48,
+        "pnl": 848184.87,
+        "risked": 4292092.78,
+        "roi": 19.76,
+        "unit_pnl": 6131.42,
+        "avg_stake": 11148.29
+      },
+      "high_grade": {
+        "events": 93,
+        "wins": 59,
+        "losses": 34,
+        "win_rate": 63.44,
+        "pnl": 770217.94,
+        "risked": 2893611.14,
+        "roi": 26.62,
+        "unit_pnl": 2315.25,
+        "avg_stake": 31114.1
+      },
+      "roi_lift_pts": 6.86
+    },
+    {
+      "username": "Capman",
+      "wallet": "0xc5b5bbd42624a8f0c8dfa90221913007d8c77e80",
+      "tier": "A-Tier",
+      "quality_score": 60,
+      "winning_lanes": [
+        "MLB",
+        "NBA",
+        "NFL",
+        "OTHER",
+        "SOCCER (EPL)",
+        "SOCCER (Other)",
+        "TENNIS"
+      ],
+      "median_stake": 14.98,
+      "baseline": {
+        "events": 5341,
+        "wins": 3492,
+        "losses": 1847,
+        "win_rate": 65.41,
+        "pnl": 87826.7,
+        "risked": 1075247.72,
+        "roi": 8.17,
+        "unit_pnl": -37323.27,
+        "avg_stake": 201.32
+      },
+      "high_grade": {
+        "events": 1917,
+        "wins": 1335,
+        "losses": 582,
+        "win_rate": 69.64,
+        "pnl": 82566.15,
+        "risked": 849829.35,
+        "roi": 9.72,
+        "unit_pnl": -9964.01,
+        "avg_stake": 443.31
+      },
+      "roi_lift_pts": 1.55
+    },
+    {
+      "username": "Andromeda1",
+      "wallet": "0x39932ca2b7a1b8ab6cbf0b8f7419261b950ccded",
+      "tier": "A-Tier",
+      "quality_score": 57,
+      "winning_lanes": [
+        "MLB",
+        "NBA",
+        "NFL"
+      ],
+      "median_stake": 712.77,
+      "baseline": {
+        "events": 1217,
+        "wins": 754,
+        "losses": 170,
+        "win_rate": 81.6,
+        "pnl": 1403959.04,
+        "risked": 13478475.92,
+        "roi": 10.42,
+        "unit_pnl": 16384.67,
+        "avg_stake": 11075.17
+      },
+      "high_grade": {
+        "events": 32,
+        "wins": 22,
+        "losses": 6,
+        "win_rate": 78.57,
+        "pnl": 184245.71,
+        "risked": 589847.52,
+        "roi": 31.24,
+        "unit_pnl": 292.29,
+        "avg_stake": 18432.73
+      },
+      "roi_lift_pts": 20.82
+    },
+    {
+      "username": "Qpkwks",
+      "wallet": "0x9ee8bbc36d378af72e5f6b8e2ea2eb67c05a89de",
+      "tier": "A-Tier",
+      "quality_score": 57,
+      "winning_lanes": [
+        "SOCCER (Other)"
+      ],
+      "median_stake": 90091.02,
+      "baseline": {
+        "events": 25,
+        "wins": 21,
+        "losses": 4,
+        "win_rate": 84.0,
+        "pnl": 5080240.5,
+        "risked": 4526555.35,
+        "roi": 112.23,
+        "unit_pnl": 2565.76,
+        "avg_stake": 181062.21
+      },
+      "high_grade": {
+        "events": 4,
+        "wins": 4,
+        "losses": 0,
+        "win_rate": 100.0,
+        "pnl": 1868112.78,
+        "risked": 1223481.75,
+        "roi": 152.69,
+        "unit_pnl": 678.28,
+        "avg_stake": 305870.44
+      },
+      "roi_lift_pts": 40.46
+    },
+    {
+      "username": "RandomPunter",
+      "wallet": "0xf588b19afe63e1aba00f125f91e3e3b0fdc62b81",
+      "tier": "A-Tier",
+      "quality_score": 56,
+      "winning_lanes": [
+        "ESPORTS",
+        "MLB",
+        "OTHER",
+        "SOCCER (Other)"
+      ],
+      "median_stake": 19.5,
+      "baseline": {
+        "events": 2368,
+        "wins": 1261,
+        "losses": 1101,
+        "win_rate": 53.39,
+        "pnl": 45832.32,
+        "risked": 777865.89,
+        "roi": 5.89,
+        "unit_pnl": 165148.18,
+        "avg_stake": 328.49
+      },
+      "high_grade": {
+        "events": 896,
+        "wins": 552,
+        "losses": 342,
+        "win_rate": 61.74,
+        "pnl": 38623.77,
+        "risked": 448788.19,
+        "roi": 8.61,
+        "unit_pnl": -1891.15,
+        "avg_stake": 500.88
+      },
+      "roi_lift_pts": 2.72
+    },
+    {
+      "username": "JhonAlexanderHinestroza",
+      "wallet": "0x44c58184f89a5c2f699dc8943009cb3d75a08d45",
+      "tier": "A-Tier",
+      "quality_score": 54,
+      "winning_lanes": [
+        "NFL",
+        "SOCCER (LaLiga)",
+        "SOCCER (UCL)"
+      ],
+      "median_stake": 2501.07,
+      "baseline": {
+        "events": 1312,
+        "wins": 530,
+        "losses": 186,
+        "win_rate": 74.02,
+        "pnl": 880522.79,
+        "risked": 10564068.81,
+        "roi": 8.34,
+        "unit_pnl": 22707.43,
+        "avg_stake": 8051.88
+      },
+      "high_grade": {
+        "events": 62,
+        "wins": 24,
+        "losses": 13,
+        "win_rate": 64.86,
+        "pnl": 172225.79,
+        "risked": 1338020.12,
+        "roi": 12.87,
+        "unit_pnl": 620.16,
+        "avg_stake": 21580.97
+      },
+      "roi_lift_pts": 4.53
+    },
+    {
+      "username": "JPMorgan101",
+      "wallet": "0xb6d6e99d3bfe055874a04279f659f009fd57be17",
+      "tier": "A-Tier",
+      "quality_score": 54,
+      "winning_lanes": [
+        "NHL",
+        "OTHER",
+        "SOCCER (LaLiga)"
+      ],
+      "median_stake": 584.97,
+      "baseline": {
+        "events": 167,
+        "wins": 121,
+        "losses": 45,
+        "win_rate": 72.89,
+        "pnl": 5554068.94,
+        "risked": 5894990.26,
+        "roi": 94.22,
+        "unit_pnl": 6646.76,
+        "avg_stake": 35299.34
+      },
+      "high_grade": {
+        "events": 26,
+        "wins": 21,
+        "losses": 5,
+        "win_rate": 80.77,
+        "pnl": 3659062.95,
+        "risked": 3447617.16,
+        "roi": 106.13,
+        "unit_pnl": 1714.72,
+        "avg_stake": 132600.66
+      },
+      "roi_lift_pts": 11.91
+    },
+    {
+      "username": "bigmoneyloser00",
+      "wallet": "0xdbb9b3616f733e19278d1ca6f3207a8344b5ed8d",
+      "tier": "A-Tier",
+      "quality_score": 52,
+      "winning_lanes": [
+        "ESPORTS",
+        "NFL"
+      ],
+      "median_stake": 396.88,
+      "baseline": {
+        "events": 6443,
+        "wins": 3701,
+        "losses": 2741,
+        "win_rate": 57.45,
+        "pnl": 226846.99,
+        "risked": 8228992.02,
+        "roi": 2.76,
+        "unit_pnl": -11715.77,
+        "avg_stake": 1277.2
+      },
+      "high_grade": {
+        "events": 361,
+        "wins": 229,
+        "losses": 132,
+        "win_rate": 63.43,
+        "pnl": 127221.23,
+        "risked": 1164856.27,
+        "roi": 10.92,
+        "unit_pnl": 1844.93,
+        "avg_stake": 3226.75
+      },
+      "roi_lift_pts": 8.16
+    },
+    {
+      "username": "BoomLaLa",
+      "wallet": "0xe40172522c7c64afa2d052ddae6c92cd0f417b88",
+      "tier": "A-Tier",
+      "quality_score": 52,
+      "winning_lanes": [
+        "NFL",
+        "NHL",
+        "OTHER"
+      ],
+      "median_stake": 51.65,
+      "baseline": {
+        "events": 4029,
+        "wins": 2463,
+        "losses": 1265,
+        "win_rate": 66.07,
+        "pnl": 208014.92,
+        "risked": 2977064.99,
+        "roi": 6.99,
+        "unit_pnl": 52554.0,
+        "avg_stake": 738.91
+      },
+      "high_grade": {
+        "events": 1398,
+        "wins": 998,
+        "losses": 350,
+        "win_rate": 74.04,
+        "pnl": 151177.59,
+        "risked": 1150551.7,
+        "roi": 13.14,
+        "unit_pnl": 18877.14,
+        "avg_stake": 823.0
+      },
+      "roi_lift_pts": 6.15
+    }
+  ]
+}

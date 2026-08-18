@@ -1,0 +1,326 @@
+{
+  "wallet": "0x04d5524a0a5af2eca6e39e03defc261d42fe66d8",
+  "username": "WTSA",
+  "total_profit": 3297124.79,
+  "raw_realized_pnl": 3297124.79,
+  "total_risked": 5711717.18,
+  "overall_roi": 57.73,
+  "win_rate": 54.2,
+  "avg_bet_size": 42596.33,
+  "median_market_stake": 27764.04,
+  "mean_market_stake": 42596.33,
+  "markets_traded": 131,
+  "total_events": 104,
+  "pseudo_sharpe": 5.28,
+  "profitable_days": 18,
+  "total_days": 28,
+  "hedge_count": 2,
+  "hedge_risk": 131598.25,
+  "hedge_profit": 53117.48,
+  "bond_count": 0,
+  "bond_risk": 0.0,
+  "bond_profit": 0.0,
+  "open_count": 51,
+  "open_risk": 2926641.27,
+  "open_value": 57265.46,
+  "open_pnl": -1637172.12,
+  "sport_stats": {
+    "OTHER": {
+      "net_profit": 51294.54,
+      "roi": 4.86,
+      "win_rate": 48.28,
+      "events": 29,
+      "avg_bet": 36430.25,
+      "median_bet": 27670.24
+    },
+    "SOCCER (Other)": {
+      "net_profit": 1055939.98,
+      "roi": 23.34,
+      "win_rate": 55.88,
+      "events": 102,
+      "avg_bet": 44349.43,
+      "median_bet": 28138.23
+    }
+  },
+  "market_stats": {
+    "Moneyline / Match": {
+      "net_profit": 941187.28,
+      "roi": 21.36,
+      "win_rate": 54.22,
+      "events": 83,
+      "avg_bet": 53094.22,
+      "median_bet": 39002.57
+    },
+    "Spread": {
+      "net_profit": 130609.1,
+      "roi": 66.58,
+      "win_rate": 69.23,
+      "events": 13,
+      "avg_bet": 15090.39,
+      "median_bet": 10758.45
+    },
+    "Totals (O/U)": {
+      "net_profit": 35438.13,
+      "roi": 3.63,
+      "win_rate": 48.57,
+      "events": 35,
+      "avg_bet": 27917.81,
+      "median_bet": 26171.94
+    }
+  },
+  "sport_market_stats": {
+    "Other|Moneyline / Match": {
+      "net_profit": 84674.32,
+      "roi": 10.76,
+      "win_rate": 45.0,
+      "events": 20,
+      "avg_bet": 39335.92,
+      "median_bet": 30416.54
+    },
+    "Other|Spread": {
+      "net_profit": -11899.08,
+      "roi": -14.71,
+      "win_rate": 66.67,
+      "events": 3,
+      "avg_bet": 26963.06,
+      "median_bet": 24243.14
+    },
+    "Other|Totals (O/U)": {
+      "net_profit": -21480.7,
+      "roi": -11.37,
+      "win_rate": 50.0,
+      "events": 6,
+      "avg_bet": 31478.25,
+      "median_bet": 26921.09
+    },
+    "Soccer|Moneyline / Match": {
+      "net_profit": 856512.96,
+      "roi": 23.66,
+      "win_rate": 57.14,
+      "events": 63,
+      "avg_bet": 57461.94,
+      "median_bet": 40501.25
+    },
+    "Soccer|Spread": {
+      "net_profit": 142508.18,
+      "roi": 123.61,
+      "win_rate": 70.0,
+      "events": 10,
+      "avg_bet": 11528.59,
+      "median_bet": 8762.07
+    },
+    "Soccer|Totals (O/U)": {
+      "net_profit": 56918.83,
+      "roi": 7.22,
+      "win_rate": 48.28,
+      "events": 29,
+      "avg_bet": 27181.16,
+      "median_bet": 25632.0
+    }
+  },
+  "price_stats": {
+    "Favorite (60-80c)": {
+      "net_profit": 125896.2,
+      "roi": 12.43,
+      "win_rate": 69.57,
+      "events": 23
+    },
+    "Flip (40-60c)": {
+      "net_profit": 1010111.38,
+      "roi": 25.38,
+      "win_rate": 60.81,
+      "events": 74
+    },
+    "Underdog (20-40c)": {
+      "net_profit": -28773.08,
+      "roi": -4.9,
+      "win_rate": 29.41,
+      "events": 34
+    }
+  },
+  "side_stats": {
+    "No": {
+      "net_profit": 363168.04,
+      "roi": 19.87,
+      "positions": 33
+    },
+    "Specific Selection": {
+      "net_profit": 166047.23,
+      "roi": 14.15,
+      "positions": 48
+    },
+    "Yes": {
+      "net_profit": 578019.24,
+      "roi": 22.42,
+      "positions": 50
+    }
+  },
+  "monthly_pnl": {
+    "2026-07": 283489.72,
+    "2026-08": 813393.07,
+    "2026-10": 10351.72
+  },
+  "top_wins": [
+    {
+      "title": "Will Philadelphia Union win on 2026-08-16?",
+      "slug": "mls-nyc-phi-2026-08-16-phi",
+      "eventSlug": "mls-nyc-phi-2026-08-16",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "Yes",
+      "conditionId": "0x0c7f195e61ce9cd18f12effd69b90ad7c16d4ca15632496be9fc404d43932ae8",
+      "total_pnl": 250741.92,
+      "total_cost": 177296.85,
+      "avg_price": 0.4142,
+      "status": "closed"
+    },
+    {
+      "title": "Will Vancouver Whitecaps FC win on 2026-08-16?",
+      "slug": "mls-sea-vwh-2026-08-16-vwh",
+      "eventSlug": "mls-sea-vwh-2026-08-16",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "Yes",
+      "conditionId": "0xa604e351f37ce95f9574dd2e5ba3d52d35c4f42030341b29e425997c01f0a371",
+      "total_pnl": 169296.89,
+      "total_cost": 184882.63,
+      "avg_price": 0.522,
+      "status": "closed"
+    },
+    {
+      "title": "Will Inter Miami CF win on 2026-07-25?",
+      "slug": "mls-mim-mia-2026-07-25-mia",
+      "eventSlug": "mls-mim-mia-2026-07-25",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "Yes",
+      "conditionId": "0x0748b9720c527bf36e2f5a9e72fc5308a7bad2d27c287fe92513e77c9f5cc2ac",
+      "total_pnl": 157319.67,
+      "total_cost": 142649.43,
+      "avg_price": 0.4755,
+      "status": "closed"
+    },
+    {
+      "title": "Will CF Am\u00e9rica win on 2026-08-13?",
+      "slug": "lec-ame-aus-2026-08-13-ame",
+      "eventSlug": "lec-ame-aus-2026-08-13",
+      "sport_type": "OTHER",
+      "outcome": "No",
+      "conditionId": "0x258b7478bbc5bd518ed41dc5c52fc493945125753cda05801abd93f5bc3142ad",
+      "total_pnl": 120433.71,
+      "total_cost": 129549.69,
+      "avg_price": 0.5182,
+      "status": "closed"
+    },
+    {
+      "title": "Will CF Cruz Azul win on 2026-08-09?",
+      "slug": "lec-caz-nyc-2026-08-09-caz",
+      "eventSlug": "lec-caz-nyc-2026-08-09",
+      "sport_type": "OTHER",
+      "outcome": "Yes",
+      "conditionId": "0x2c3c26cfb8d5fe44e7c280740b00e49c0d6fc485132c7eb8755f4ff4b4d9c527",
+      "total_pnl": 120343.45,
+      "total_cost": 102773.17,
+      "avg_price": 0.4606,
+      "status": "closed"
+    }
+  ],
+  "top_losses": [
+    {
+      "title": "Will St. Louis City SC win on 2026-08-01?",
+      "slug": "mls-stl-rsl-2026-08-01-stl",
+      "eventSlug": "mls-stl-rsl-2026-08-01",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "Yes",
+      "conditionId": "0xbc5131b0660246ffe7039191f89c356facfbe2984e3021f97db7e48d9b4a8e40",
+      "total_pnl": -144283.04,
+      "total_cost": 141783.31,
+      "avg_price": 0.5063,
+      "status": "open"
+    },
+    {
+      "title": "Will CF Am\u00e9rica win on 2026-08-09?",
+      "slug": "lec-ame-por-2026-08-09-ame",
+      "eventSlug": "lec-ame-por-2026-08-09",
+      "sport_type": "OTHER",
+      "outcome": "No",
+      "conditionId": "0xfe4a7a48d2f0098f0fb7fb84ec7a25706825d34ab578bbb1969b0825b2553bb3",
+      "total_pnl": -137447.56,
+      "total_cost": 136851.88,
+      "avg_price": 0.608,
+      "status": "open"
+    },
+    {
+      "title": "Will SC Corinthians Paulista win on 2026-08-16?",
+      "slug": "bra-cor1-cru-2026-08-16-cor1",
+      "eventSlug": "bra-cor1-cru-2026-08-16",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "Yes",
+      "conditionId": "0x2d450374eb7b5b2d0d54b1c200ca938fc813b42317505fc1f9618576f13d912b",
+      "total_pnl": -128560.96,
+      "total_cost": 126289.68,
+      "avg_price": 0.4894,
+      "status": "open"
+    },
+    {
+      "title": "Will Cruzeiro EC win on 2026-07-26?",
+      "slug": "bra-cru-bot-2026-07-26-cru",
+      "eventSlug": "bra-cru-bot-2026-07-26",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "Yes",
+      "conditionId": "0x9d10b897459695e100c9b3c1b5a59b424ea4117bea7f709768fab040b475018e",
+      "total_pnl": -121620.16,
+      "total_cost": 120993.15,
+      "avg_price": 0.5482,
+      "status": "open"
+    },
+    {
+      "title": "Will CA Rosario Central win on 2026-07-28?",
+      "slug": "arg-ros-rac-2026-07-28-ros",
+      "eventSlug": "arg-ros-rac-2026-07-28",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "Yes",
+      "conditionId": "0x97ba9f480a26cb1e7fb2d4bb8e603637c9a0b677f119b1aaf0afe19e1cbfa3a5",
+      "total_pnl": -108395.39,
+      "total_cost": 106269.93,
+      "avg_price": 0.4701,
+      "status": "open"
+    }
+  ],
+  "top_sport": "SOCCER (Other)",
+  "best_price_bucket": "Flip (40-60c)",
+  "best_market": "Moneyline / Match",
+  "quality_score": 72,
+  "tier": "S-Tier",
+  "tags": [
+    "\u2b50\u2b50\u2b50 S-Tier",
+    "\u26bd Global Soccer",
+    "\ud83d\udcc8 Steady Performer",
+    "\ud83d\udc0b Mega Whale",
+    "\ud83d\udcc8 Moneyline Pro"
+  ],
+  "tail_guide": "How to Tail WTSA [S-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   SOCCER (Other) \u2014 23.3% ROI, 102 markets, +$1,055,940\n\n\ud83d\udcc8 Stick to Moneylines (21.4% ROI over 83 markets)\n\ud83c\udfaf Best price zone: Flip (40-60c) (25.4% ROI, 74 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\u26a1 Typical market stake ~$27,764 (median per market) \u2014 alert at 3\u00d7 for high conviction\n   (Mean $42,596 \u2014 some very large markets; size to the median unless you match their whale plays)",
+  "do_not_tail_sports": [],
+  "auto_tail_sports": [
+    "SOCCER (Other)"
+  ],
+  "do_not_tail_market_types": [],
+  "do_not_tail_sides": [],
+  "score_breakdown": {
+    "sharpe_score": 19.8,
+    "roi_score": 25,
+    "wr_score": 6.2,
+    "cons_score": 6.4,
+    "vol_score": 5,
+    "base_score": 62.4,
+    "flip_bonus": 10,
+    "leakage_penalty": 0,
+    "midzone_roi": 10.2,
+    "directional_roi": 19.84,
+    "roi_dashboard": 57.73,
+    "roi_for_quality": 19.84,
+    "hedge_risk_frac": 0.023,
+    "hedge_profit_share": 0.016,
+    "markets_traded": 131,
+    "median_market_stake": 27764.04,
+    "mean_market_stake": 42596.33,
+    "pnl_sum_check_ok": true
+  }
+}

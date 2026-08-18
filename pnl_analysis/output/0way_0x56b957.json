@@ -1,0 +1,395 @@
+{
+  "wallet": "0x56b957b03305378167aba6c163941d4b582979a2",
+  "username": "0way",
+  "total_profit": 175562.02,
+  "raw_realized_pnl": 175562.02,
+  "total_risked": 382066.4,
+  "overall_roi": 45.95,
+  "win_rate": 36.67,
+  "avg_bet_size": 6154.79,
+  "median_market_stake": 2464.2,
+  "mean_market_stake": 6154.79,
+  "markets_traded": 61,
+  "total_events": 55,
+  "pseudo_sharpe": -0.47,
+  "profitable_days": 8,
+  "total_days": 17,
+  "hedge_count": 2,
+  "hedge_risk": 6624.2,
+  "hedge_profit": 252.65,
+  "bond_count": 0,
+  "bond_risk": 0.0,
+  "bond_profit": 0.0,
+  "open_count": 33,
+  "open_risk": 191376.05,
+  "open_value": 0.0,
+  "open_pnl": -181068.78,
+  "sport_stats": {
+    "ESPORTS": {
+      "net_profit": 15590.18,
+      "roi": 13.26,
+      "win_rate": 32.5,
+      "events": 41,
+      "avg_bet": 2868.48,
+      "median_bet": 1425.0
+    },
+    "MLB": {
+      "net_profit": -10260.6,
+      "roi": -13.69,
+      "win_rate": 40.0,
+      "events": 5,
+      "avg_bet": 14985.84,
+      "median_bet": 8536.33
+    },
+    "OTHER": {
+      "net_profit": -20388.18,
+      "roi": -28.13,
+      "win_rate": 45.45,
+      "events": 11,
+      "avg_bet": 6589.82,
+      "median_bet": 4750.8
+    },
+    "SOCCER (LaLiga)": {
+      "net_profit": -980.01,
+      "roi": -1.02,
+      "win_rate": 50.0,
+      "events": 2,
+      "avg_bet": 47989.99,
+      "median_bet": 47989.99
+    },
+    "SOCCER (Other)": {
+      "net_profit": 5440.91,
+      "roi": 37.69,
+      "win_rate": 50.0,
+      "events": 2,
+      "avg_bet": 7218.69,
+      "median_bet": 7218.69
+    }
+  },
+  "market_stats": {
+    "Futures": {
+      "net_profit": 7021.38,
+      "roi": 116.29,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 6037.64,
+      "median_bet": 6037.64
+    },
+    "Moneyline / Match": {
+      "net_profit": -39520.5,
+      "roi": -18.98,
+      "win_rate": 28.95,
+      "events": 39,
+      "avg_bet": 5339.31,
+      "median_bet": 1949.6
+    },
+    "Spread": {
+      "net_profit": 16578.16,
+      "roi": 31.18,
+      "win_rate": 41.67,
+      "events": 12,
+      "avg_bet": 4431.08,
+      "median_bet": 2695.04
+    },
+    "Totals (O/U)": {
+      "net_profit": 5323.26,
+      "roi": 4.93,
+      "win_rate": 55.56,
+      "events": 9,
+      "avg_bet": 11999.82,
+      "median_bet": 8536.33
+    }
+  },
+  "sport_market_stats": {
+    "MLB|Spread": {
+      "net_profit": 8092.01,
+      "roi": 127.27,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 6358.01,
+      "median_bet": 6358.01
+    },
+    "MLB|Totals (O/U)": {
+      "net_profit": -18352.61,
+      "roi": -26.76,
+      "win_rate": 25.0,
+      "events": 4,
+      "avg_bet": 17142.8,
+      "median_bet": 15268.17
+    },
+    "Other|Moneyline / Match": {
+      "net_profit": -33429.34,
+      "roi": -75.0,
+      "win_rate": 37.5,
+      "events": 8,
+      "avg_bet": 5571.88,
+      "median_bet": 1909.45
+    },
+    "Other|Totals (O/U)": {
+      "net_profit": 13041.15,
+      "roi": 46.72,
+      "win_rate": 66.67,
+      "events": 3,
+      "avg_bet": 9304.33,
+      "median_bet": 5041.18
+    },
+    "Soccer|Moneyline / Match": {
+      "net_profit": -4866.14,
+      "roi": -4.88,
+      "win_rate": 33.33,
+      "events": 3,
+      "avg_bet": 33248.45,
+      "median_bet": 42780.0
+    },
+    "Soccer|Totals (O/U)": {
+      "net_profit": 9327.05,
+      "roi": 87.4,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 10672.01,
+      "median_bet": 10672.01
+    },
+    "eSports|Futures": {
+      "net_profit": 7021.38,
+      "roi": 116.29,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 6037.64,
+      "median_bet": 6037.64
+    },
+    "eSports|Moneyline / Match": {
+      "net_profit": -1225.02,
+      "roi": -1.92,
+      "win_rate": 25.93,
+      "events": 28,
+      "avg_bet": 2282.6,
+      "median_bet": 1143.84
+    },
+    "eSports|Spread": {
+      "net_profit": 8486.15,
+      "roi": 18.13,
+      "win_rate": 36.36,
+      "events": 11,
+      "avg_bet": 4255.91,
+      "median_bet": 2050.0
+    },
+    "eSports|Totals (O/U)": {
+      "net_profit": 1307.67,
+      "roi": 155.28,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 842.15,
+      "median_bet": 842.15
+    }
+  },
+  "price_stats": {
+    "Favorite (60-80c)": {
+      "net_profit": -36725.38,
+      "roi": -49.75,
+      "win_rate": 28.57,
+      "events": 7
+    },
+    "Flip (40-60c)": {
+      "net_profit": 80561.59,
+      "roi": 39.18,
+      "win_rate": 48.15,
+      "events": 27
+    },
+    "Longshot (0-20c)": {
+      "net_profit": -7800.33,
+      "roi": -104.21,
+      "win_rate": 0.0,
+      "events": 3
+    },
+    "Underdog (20-40c)": {
+      "net_profit": -46633.57,
+      "roi": -52.68,
+      "win_rate": 30.43,
+      "events": 24
+    }
+  },
+  "side_stats": {
+    "No": {
+      "net_profit": -25012.09,
+      "roi": -19.14,
+      "positions": 9
+    },
+    "Specific Selection": {
+      "net_profit": 14401.25,
+      "roi": 6.08,
+      "positions": 51
+    },
+    "Yes": {
+      "net_profit": 13.15,
+      "roi": 0.17,
+      "positions": 1
+    }
+  },
+  "monthly_pnl": {
+    "2026-07": -4463.28,
+    "2026-08": -6134.41
+  },
+  "top_wins": [
+    {
+      "title": "Will RC Deportivo A Coru\u00f1a win on 2026-08-17?",
+      "slug": "lal-dep-elc-2026-08-17-dep",
+      "eventSlug": "lal-dep-elc-2026-08-17",
+      "sport_type": "SOCCER (LaLiga)",
+      "outcome": "No",
+      "conditionId": "0xd702d3b8523d0a3b23e5f4f4c0e98673923cf53181382ea190b721a0861e22a0",
+      "total_pnl": 41799.99,
+      "total_cost": 53199.98,
+      "avg_price": 0.56,
+      "status": "closed"
+    },
+    {
+      "title": "Baltimore Orioles vs. Texas Rangers: O/U 8.5",
+      "slug": "mlb-bal-tex-2026-08-09-total-8pt5",
+      "eventSlug": "mlb-bal-tex-2026-08-09",
+      "sport_type": "MLB",
+      "outcome": "Over",
+      "conditionId": "0xec9f203fb790af280c22e40432e2631b2bb39984771b01b721c4daf9f02bd97a",
+      "total_pnl": 28000.0,
+      "total_cost": 22000.0,
+      "avg_price": 0.44,
+      "status": "closed"
+    },
+    {
+      "title": "Game Handicap: BLG (-1.5) vs JD Gaming (+1.5)",
+      "slug": "lol-jdg-blg-2026-08-01-game-handicap-home-1pt5",
+      "eventSlug": "lol-jdg-blg-2026-08-01",
+      "sport_type": "ESPORTS",
+      "outcome": "Bilibili Gaming",
+      "conditionId": "0xe215734e2b86ce6b2150fc08e7698a9596effcd0379079012b24a6ab6bcbc921",
+      "total_pnl": 21236.06,
+      "total_cost": 17565.98,
+      "avg_price": 0.4523,
+      "status": "closed"
+    },
+    {
+      "title": "LoL: Gen.G vs Dplus KIA (BO3) - LCK Round 3-4 Legend Group",
+      "slug": "lol-gen-dk-2026-08-01",
+      "eventSlug": "lol-gen-dk-2026-08-01",
+      "sport_type": "ESPORTS",
+      "outcome": "Dplus KIA",
+      "conditionId": "0x11f36a8b804d73ffe7d4a56e5c787fb1dbfc4bda0a34d6e2af364aa7057351fe",
+      "total_pnl": 13306.03,
+      "total_cost": 8569.22,
+      "avg_price": 0.3917,
+      "status": "closed"
+    },
+    {
+      "title": "O/U 2.5 Rounds",
+      "slug": "ufc-dar3-yad-2026-08-08-totals-2pt5",
+      "eventSlug": "ufc-dar3-yad-2026-08-08",
+      "sport_type": "OTHER",
+      "outcome": "Under",
+      "conditionId": "0xa36560b941d90c2f4fcd44595ffd720670a37464d495c0fe01d4da4d45755e06",
+      "total_pnl": 10120.94,
+      "total_cost": 18121.02,
+      "avg_price": 0.6416,
+      "status": "closed"
+    }
+  ],
+  "top_losses": [
+    {
+      "title": "Will Sevilla FC win on 2026-08-15?",
+      "slug": "lal-sev-ray-2026-08-15-sev",
+      "eventSlug": "lal-sev-ray-2026-08-15",
+      "sport_type": "SOCCER (LaLiga)",
+      "outcome": "No",
+      "conditionId": "0x6e85ebf42f91335846aeb1296f81e64292e62e8cff0152f5b602803ed7c3fb34",
+      "total_pnl": -42780.0,
+      "total_cost": 42780.0,
+      "avg_price": 0.62,
+      "status": "open"
+    },
+    {
+      "title": "Los Angeles Angels vs. Miami Marlins: O/U 8.5",
+      "slug": "mlb-laa-mia-2026-08-08-total-8pt5",
+      "eventSlug": "mlb-laa-mia-2026-08-08",
+      "sport_type": "MLB",
+      "outcome": "Over",
+      "conditionId": "0xbbeedbb81fed14a00091f0aae6cb7e2a154d983e3bbea67cf6deb36a682fff13",
+      "total_pnl": -31106.27,
+      "total_cost": 31106.27,
+      "avg_price": 0.3927,
+      "status": "open"
+    },
+    {
+      "title": "Will Paris Saint-Germain win on 2026-08-12?",
+      "slug": "usc-psg-av-2026-08-12-psg",
+      "eventSlug": "usc-psg-av-2026-08-12",
+      "sport_type": "OTHER",
+      "outcome": "No",
+      "conditionId": "0xa010c8e7ab644ca49a8c7d015bd80d6524e2d822fec6077e1f1019327507c65b",
+      "total_pnl": -24579.04,
+      "total_cost": 24579.04,
+      "avg_price": 0.41,
+      "status": "open"
+    },
+    {
+      "title": "Baltimore Orioles vs. Texas Rangers: O/U 8.5",
+      "slug": "mlb-bal-tex-2026-08-07-total-8pt5",
+      "eventSlug": "mlb-bal-tex-2026-08-07",
+      "sport_type": "MLB",
+      "outcome": "Over",
+      "conditionId": "0x6342362e268b827512651771c37d3e4e2b9427de5c8d4106d89cd6808d3a525b",
+      "total_pnl": -8141.06,
+      "total_cost": 8536.33,
+      "avg_price": 0.3711,
+      "status": "open"
+    },
+    {
+      "title": "Map Handicap: TS (-2.5) vs MOUZ (+2.5)",
+      "slug": "cs2-ts7-mouz-2026-08-02-map-handicap-away-2pt5",
+      "eventSlug": "cs2-ts7-mouz-2026-08-02",
+      "sport_type": "ESPORTS",
+      "outcome": "Spirit",
+      "conditionId": "0xc1596bcaa186fac0eeee7992e63ed155072cf69ee66b1b50bf0e466a6889f138",
+      "total_pnl": -7692.96,
+      "total_cost": 7440.0,
+      "avg_price": 0.32,
+      "status": "open"
+    }
+  ],
+  "top_sport": "ESPORTS",
+  "best_price_bucket": "Flip (40-60c)",
+  "best_market": "Spread",
+  "quality_score": 4,
+  "tier": "C-Tier",
+  "tags": [
+    "\u2b50 C-Tier",
+    "\ud83c\udfae Esports Analyst",
+    "\ud83d\udc0b Big Bettor"
+  ],
+  "tail_guide": "How to Tail 0way [C-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   ESPORTS \u2014 13.3% ROI, 41 markets, +$15,590\n\n\ud83d\udd34 DO NOT TAIL:\n   OTHER \u2014 ROI -28.1%, $-20,388\n\n\ud83c\udfaf Best price zone: Flip (40-60c) (39.2% ROI, 27 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\u26a1 Typical market stake ~$2,464 (median per market) \u2014 alert at 3\u00d7 for high conviction\n   (Mean $6,155 \u2014 some very large markets; size to the median unless you match their whale plays)",
+  "do_not_tail_sports": [
+    "OTHER"
+  ],
+  "auto_tail_sports": [
+    "ESPORTS"
+  ],
+  "do_not_tail_market_types": [],
+  "do_not_tail_sides": [],
+  "score_breakdown": {
+    "sharpe_score": 0,
+    "roi_score": 0,
+    "wr_score": 0,
+    "cons_score": 4.7,
+    "vol_score": 4.2,
+    "base_score": 8.9,
+    "flip_bonus": 0,
+    "leakage_penalty": 5,
+    "midzone_roi": -6.8,
+    "directional_roi": -2.82,
+    "roi_dashboard": 45.95,
+    "roi_for_quality": -2.82,
+    "hedge_risk_frac": 0.017,
+    "hedge_profit_share": 0.001,
+    "markets_traded": 61,
+    "median_market_stake": 2464.2,
+    "mean_market_stake": 6154.79,
+    "pnl_sum_check_ok": true
+  }
+}

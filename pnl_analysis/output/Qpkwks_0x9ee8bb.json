@@ -1,0 +1,307 @@
+{
+  "wallet": "0x9ee8bbc36d378af72e5f6b8e2ea2eb67c05a89de",
+  "username": "Qpkwks",
+  "total_profit": 5631506.31,
+  "raw_realized_pnl": 5631506.31,
+  "total_risked": 9264746.01,
+  "overall_roi": 60.78,
+  "win_rate": 40.68,
+  "avg_bet_size": 142164.08,
+  "median_market_stake": 90091.02,
+  "mean_market_stake": 142164.08,
+  "markets_traded": 59,
+  "total_events": 52,
+  "pseudo_sharpe": 2.11,
+  "profitable_days": 14,
+  "total_days": 28,
+  "hedge_count": 8,
+  "hedge_risk": 877065.08,
+  "hedge_profit": 574602.39,
+  "bond_count": 0,
+  "bond_risk": 0.0,
+  "bond_profit": 0.0,
+  "open_count": 29,
+  "open_risk": 3931244.25,
+  "open_value": 0.0,
+  "open_pnl": -3758919.96,
+  "sport_stats": {
+    "MLB": {
+      "net_profit": -10694.15,
+      "roi": -103.38,
+      "win_rate": 0.0,
+      "events": 2,
+      "avg_bet": 5172.14,
+      "median_bet": 5172.14
+    },
+    "OTHER": {
+      "net_profit": -185868.64,
+      "roi": -3.07,
+      "win_rate": 33.33,
+      "events": 42,
+      "avg_bet": 144141.92,
+      "median_bet": 93658.44
+    },
+    "SOCCER (LaLiga)": {
+      "net_profit": 44997.2,
+      "roi": 71.7,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 62754.86,
+      "median_bet": 62754.86
+    },
+    "SOCCER (Other)": {
+      "net_profit": 1347343.92,
+      "roi": 59.6,
+      "win_rate": 64.29,
+      "events": 14,
+      "avg_bet": 161472.95,
+      "median_bet": 92247.1
+    }
+  },
+  "market_stats": {
+    "Moneyline / Match": {
+      "net_profit": 1195778.33,
+      "roi": 14.26,
+      "win_rate": 40.68,
+      "events": 59,
+      "avg_bet": 142164.08,
+      "median_bet": 90091.02
+    }
+  },
+  "sport_market_stats": {
+    "MLB|Moneyline / Match": {
+      "net_profit": -10694.15,
+      "roi": -103.38,
+      "win_rate": 0.0,
+      "events": 2,
+      "avg_bet": 5172.14,
+      "median_bet": 5172.14
+    },
+    "Other|Moneyline / Match": {
+      "net_profit": -185868.64,
+      "roi": -3.07,
+      "win_rate": 33.33,
+      "events": 42,
+      "avg_bet": 144141.92,
+      "median_bet": 93658.44
+    },
+    "Soccer|Moneyline / Match": {
+      "net_profit": 1392341.12,
+      "roi": 59.93,
+      "win_rate": 66.67,
+      "events": 15,
+      "avg_bet": 154891.75,
+      "median_bet": 76249.98
+    }
+  },
+  "price_stats": {
+    "Favorite (60-80c)": {
+      "net_profit": 291527.22,
+      "roi": 28.13,
+      "win_rate": 70.0,
+      "events": 10
+    },
+    "Flip (40-60c)": {
+      "net_profit": 1151632.15,
+      "roi": 35.84,
+      "win_rate": 57.89,
+      "events": 19
+    },
+    "Longshot (0-20c)": {
+      "net_profit": -234004.97,
+      "roi": -67.88,
+      "win_rate": 12.5,
+      "events": 8
+    },
+    "Underdog (20-40c)": {
+      "net_profit": -13376.07,
+      "roi": -0.35,
+      "win_rate": 22.73,
+      "events": 22
+    }
+  },
+  "side_stats": {
+    "No": {
+      "net_profit": 1039750.31,
+      "roi": 12.54,
+      "positions": 53
+    },
+    "Specific Selection": {
+      "net_profit": -10725.76,
+      "roi": -103.38,
+      "positions": 3
+    },
+    "Yes": {
+      "net_profit": 166753.78,
+      "roi": 201.82,
+      "positions": 3
+    }
+  },
+  "monthly_pnl": {
+    "2026-06": 338569.67,
+    "2026-07": 822905.61,
+    "2026-08": 34303.05
+  },
+  "top_wins": [
+    {
+      "title": "Will England win on 2026-06-23?",
+      "slug": "fifwc-eng-gha-2026-06-23-eng",
+      "eventSlug": "fifwc-eng-gha-2026-06-23",
+      "sport_type": "OTHER",
+      "outcome": "No",
+      "conditionId": "0xff1ec56e0e47033727e33deab740896fbf1c6bb8a2b0068efdba3d900c7ba7a2",
+      "total_pnl": 1130467.42,
+      "total_cost": 353502.95,
+      "avg_price": 0.2382,
+      "status": "closed"
+    },
+    {
+      "title": "Will Argentina win on 2026-07-03?",
+      "slug": "fifwc-arg-cvi-2026-07-03-arg",
+      "eventSlug": "fifwc-arg-cvi-2026-07-03",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "No",
+      "conditionId": "0xb81d9a63be774f9c3db1b96af4d0e869128643a29c6eb922c0d8a20137880120",
+      "total_pnl": 781445.24,
+      "total_cost": 211765.17,
+      "avg_price": 0.2132,
+      "status": "closed"
+    },
+    {
+      "title": "Will Belgium win on 2026-06-21?",
+      "slug": "fifwc-bel-irn-2026-06-21-bel",
+      "eventSlug": "fifwc-bel-irn-2026-06-21",
+      "sport_type": "OTHER",
+      "outcome": "No",
+      "conditionId": "0xebb200cb08bbe89c2523a345947d083a992e27cc479cf1b5568407751e026d2c",
+      "total_pnl": 667120.6,
+      "total_cost": 351883.62,
+      "avg_price": 0.3453,
+      "status": "closed"
+    },
+    {
+      "title": "Will Brazil win on 2026-07-05?",
+      "slug": "fifwc-bra-nor-2026-07-05-bra",
+      "eventSlug": "fifwc-bra-nor-2026-07-05",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "No",
+      "conditionId": "0x2a0e8ce7c309ec8015c4c721dec574ff100b0512ef412a54bb733dc5bef740dc",
+      "total_pnl": 650503.77,
+      "total_cost": 546399.42,
+      "avg_price": 0.4565,
+      "status": "closed"
+    },
+    {
+      "title": "Will Belgium win on 2026-07-01?",
+      "slug": "fifwc-bel-sen-2026-07-01-bel",
+      "eventSlug": "fifwc-bel-sen-2026-07-01",
+      "sport_type": "OTHER",
+      "outcome": "No",
+      "conditionId": "0x9c183f63913cee589ec7a8d584fb7743a541f724edc047837c053c027bdf9074",
+      "total_pnl": 519140.08,
+      "total_cost": 569440.48,
+      "avg_price": 0.5231,
+      "status": "closed"
+    }
+  ],
+  "top_losses": [
+    {
+      "title": "Will France win on 2026-06-30?",
+      "slug": "fifwc-fra-swe-2026-06-30-fra",
+      "eventSlug": "fifwc-fra-swe-2026-06-30",
+      "sport_type": "OTHER",
+      "outcome": "No",
+      "conditionId": "0x378f7b5c668014d9f6c42c305ec83902f3c8f6c770b336363aed0076ce6ce1c9",
+      "total_pnl": -554460.91,
+      "total_cost": 549362.47,
+      "avg_price": 0.2374,
+      "status": "open"
+    },
+    {
+      "title": "Will Argentina win on 2026-07-07?",
+      "slug": "fifwc-arg-egy-2026-07-07-arg",
+      "eventSlug": "fifwc-arg-egy-2026-07-07",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "No",
+      "conditionId": "0xa7b5b123f9fd38f83fbe19773a5d04e38208b370ca66be27b9688155e7b5c60a",
+      "total_pnl": -508884.77,
+      "total_cost": 508298.74,
+      "avg_price": 0.3106,
+      "status": "open"
+    },
+    {
+      "title": "Will Spain win on 2026-07-06?",
+      "slug": "fifwc-prt-esp-2026-07-06-esp",
+      "eventSlug": "fifwc-prt-esp-2026-07-06",
+      "sport_type": "OTHER",
+      "outcome": "No",
+      "conditionId": "0xb8c4eb2bc36fb256ac730f0d1d05cf5ff6649a7d8d5ed779544dfa068da1cd18",
+      "total_pnl": -388150.29,
+      "total_cost": 388107.97,
+      "avg_price": 0.5043,
+      "status": "closed"
+    },
+    {
+      "title": "Will France win on 2026-07-09?",
+      "slug": "fifwc-fra-mar-2026-07-09-fra",
+      "eventSlug": "fifwc-fra-mar-2026-07-09",
+      "sport_type": "OTHER",
+      "outcome": "No",
+      "conditionId": "0xc09537a0976d0927901432859fbb6dfe5d23d1d69bb4e8355253e7b142a44e83",
+      "total_pnl": -348595.12,
+      "total_cost": 346445.94,
+      "avg_price": 0.3818,
+      "status": "open"
+    },
+    {
+      "title": "Will Morocco win on 2026-06-24?",
+      "slug": "fifwc-mar-hai-2026-06-24-mar",
+      "eventSlug": "fifwc-mar-hai-2026-06-24",
+      "sport_type": "OTHER",
+      "outcome": "No",
+      "conditionId": "0x649bd3dc845f647aa8c9a739ad8de245b853224961afd01127de0071c13f84b3",
+      "total_pnl": -298856.3,
+      "total_cost": 297810.4,
+      "avg_price": 0.3397,
+      "status": "open"
+    }
+  ],
+  "top_sport": "SOCCER (Other)",
+  "best_price_bucket": "Flip (40-60c)",
+  "best_market": "Moneyline / Match",
+  "quality_score": 57,
+  "tier": "A-Tier",
+  "tags": [
+    "\u2b50\u2b50 A-Tier",
+    "\u274c No-Contract Fader",
+    "\ud83d\udc0b Mega Whale",
+    "\ud83d\udcc8 Moneyline Pro"
+  ],
+  "tail_guide": "How to Tail Qpkwks [A-Tier]\n\n\u2705 FOLLOW on:\n   SOCCER (Other) \u2014 59.6% ROI, 14 mkts, +$1,347,344\n\n\ud83d\udd34 DO NOT TAIL:\n   OTHER \u2014 ROI -3.1%, $-185,869\n\n\ud83d\udcc8 Stick to Moneylines (14.3% ROI over 59 markets)\n\ud83c\udfaf Best price zone: Flip (40-60c) (35.8% ROI, 19 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 87% of edge from 'No' side \u2014 copy that side only\n\u26a1 Typical market stake ~$90,091 (median per market) \u2014 alert at 3\u00d7 for high conviction\n   (Mean $142,164 \u2014 some very large markets; size to the median unless you match their whale plays)",
+  "do_not_tail_sports": [
+    "OTHER"
+  ],
+  "auto_tail_sports": [],
+  "do_not_tail_market_types": [],
+  "do_not_tail_sides": [],
+  "score_breakdown": {
+    "sharpe_score": 7.9,
+    "roi_score": 23.8,
+    "wr_score": 0,
+    "cons_score": 5.0,
+    "vol_score": 5,
+    "base_score": 41.7,
+    "flip_bonus": 15,
+    "leakage_penalty": 0,
+    "midzone_roi": 17.7,
+    "directional_roi": 14.26,
+    "roi_dashboard": 60.78,
+    "roi_for_quality": 14.26,
+    "hedge_risk_frac": 0.095,
+    "hedge_profit_share": 0.102,
+    "markets_traded": 59,
+    "median_market_stake": 90091.02,
+    "mean_market_stake": 142164.08,
+    "pnl_sum_check_ok": true
+  }
+}

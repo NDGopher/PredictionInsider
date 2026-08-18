@@ -142,6 +142,7 @@ def main() -> int:
     parser.add_argument("--lane-events", type=int, default=8, help="Min events in that sport lane")
     parser.add_argument("--conviction-x", type=float, default=2.0, help="Stake vs median market stake")
     parser.add_argument("--moneyline-only", action="store_true", help="Skip spreads/totals/futures")
+    parser.add_argument("--output", type=str, default="", help="Output JSON filename under pnl_analysis/output/")
     args = parser.parse_args()
 
     roster = roster_traders()
@@ -250,7 +251,8 @@ def main() -> int:
         "by_sport": by_sport,
         "traders": traders_out,
     }
-    out_path = OUTPUT_DIR / "backtest_high_grade.json"
+    out_name = args.output.strip() or "backtest_high_grade.json"
+    out_path = OUTPUT_DIR / out_name
     out_path.write_text(json.dumps(report, indent=2, default=str), encoding="utf-8")
 
     print("\n" + "=" * 88)
