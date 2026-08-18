@@ -67,6 +67,7 @@ export const SIGNAL_KICK_WALLETS = new Set<string>([
   "0x52ecea7b3159f09db589e4f4ee64872fd0bba6f3", // fkgggg2 — 1.9% volume grinder
   "0xc49fe658479db29e1a2fefebf0735f657dca9e05", // iDropMyHotdog — 1.1% on 2.4k markets
   "0xafd492974cd531aae7786210438ae46b42047e61", // TheArena — −0.8% hold-to-res at volume
+  "0x39932ca2b7a1b8ab6cbf0b8f7419261b950ccded", // Andromeda1 — stale, last dated 2026-07-19
 ]);
 
 export const CURATED_TRADERS: { wallet: string; username: string; url?: string }[] = [
@@ -301,6 +302,71 @@ export const TRADER_CATEGORY_FILTERS: Record<string, {
     autoTail:  ["Dota2"],
     doNotTail: ["NBA", "NHL", "NFL", "UFC/MMA", "College Sports", "Soccer", "UCL", "Tennis",
                 "Valorant", "CS2", "LoL", "Politics", "Finance/Crypto", "Other"],
+  },
+  "0x0346afae2603313d2bbee96b628536c8cbe352a5": { // GoalLineGhost — KEEP soccer/other sharp (50% hold-to-res, 84% WR, median ~$1.3k)
+    // 2026-08-18 full-open: Soccer ML +60%, Soccer Total +55%, Soccer Spread +67%. Almost no NBA/NFL.
+    // Concentrates the 2+ Q50 moneyline book (~34%). Count the vote on soccer/other; mute everything else.
+    autoTail:  ["Soccer", "Other"],
+    doNotTail: ["NBA", "NFL", "NHL", "MLB", "Tennis", "eSports", "CS2", "Valorant", "LoL", "Dota2", "College Sports", "Politics", "UFC/MMA", "Finance/Crypto"],
+  },
+  "0xfe787d2da716d60e8acff57fb87eb13cd4d10319": { // ferrariChampions2026 — KEEP hedge-heavy (14% hold-to-res, last 60d +27%, median ~$4k)
+    // Experts: Soccer ML +26%, Soccer Total +24%, MLB ML/Total/Spread, Tennis ML +10%, Other ML +26%.
+    // Bleed: NBA Total −14.5% (n=316), Other Spread −12%, NHL ML −11%.
+    autoTail:  ["Soccer", "Tennis", "MLB", "Other"],
+    doNotTail: ["NHL", "NFL", "College Sports", "Politics", "Finance/Crypto"],
+  },
+  "0x04d5524a0a5af2eca6e39e03defc261d42fe66d8": { // WTSA — KEEP soccer ML only (20% hold-to-res, n=128, active)
+    autoTail:  ["Soccer"],
+    doNotTail: ["NBA", "NFL", "NHL", "MLB", "Tennis", "eSports", "College Sports", "Politics", "Other", "UFC/MMA"],
+  },
+  "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87": { // 0xE30E — KEEP tennis ML (last 60d +13%)
+    autoTail:  ["Tennis"],
+    doNotTail: ["NBA", "NFL", "NHL", "MLB", "Soccer", "UCL", "eSports", "College Sports", "Politics", "Other", "UFC/MMA"],
+  },
+  "0x8a3ab8120807bd64a3de48695110e390fa2ceb9a": { // 0x8a3aB812 — KEEP NBA spreads / other ML; last 30d faded
+    autoTail:  ["NBA", "Other"],
+    doNotTail: ["Soccer", "UCL", "eSports", "NFL", "NHL", "Politics", "College Sports"],
+  },
+  "0xec981ed70ae69c5cbcac08c1ba063e734f6bafcd": { // 0xheavy888 — KEEP esports maps/ML (+21%); MLB totals bleed
+    autoTail:  ["eSports", "CS2", "Valorant", "LoL", "Dota2", "CoD"],
+    doNotTail: ["NBA", "NFL", "NHL", "MLB", "Tennis", "College Sports", "Politics", "Other", "UFC/MMA"],
+  },
+  "0xe40172522c7c64afa2d052ddae6c92cd0f417b88": { // BoomLaLa — KEEP but last 60d flat; spreads bleed MLB/NBA/Soccer
+    autoTail:             ["NHL", "Soccer", "MLB"],
+    doNotTail:            ["NFL", "Politics", "eSports", "Tennis", "College Sports"],
+    doNotTailMarketTypes: ["spread"],
+  },
+  "0x58f8f1138be2192696378629fc9aa23c7910dc70": { // bloodmaster — KEEP esports; 92.6% WR / 4% ROI is grinder-adjacent
+    autoTail:  ["eSports", "CS2", "Valorant", "LoL"],
+    doNotTail: ["NBA", "NFL", "NHL", "MLB", "Soccer", "Tennis", "College Sports", "Politics", "Other", "UFC/MMA"],
+  },
+  "0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c": { // DLEK — KEEP NBA totals / WNBA; last dated 2026-07-29, lumpy
+    autoTail:  ["NBA", "Other"],
+    doNotTail: ["Soccer", "UCL", "NHL", "Tennis", "eSports", "Politics", "College Sports"],
+  },
+  "0x25867077c891354137bbaf7fde12eec6949cc893": { // TTdes — KEEP soccer ML (+26%); NHL volume is weaker
+    autoTail:  ["Soccer", "NHL"],
+    doNotTail: ["Politics", "MLB", "NFL", "eSports", "College Sports"],
+  },
+  "0x57cd939930fd119067ca9dc42b22b3e15708a0fb": { // Supah9ga — KEEP soccer ML; last 60d n=6, do not size as a primary
+    autoTail:  ["Soccer", "eSports"],
+    doNotTail: ["NBA", "Tennis", "Politics", "College Sports"],
+  },
+  "0xc660ae71765d0d9eaf5fa8328c1c959841d2bd28": { // TutiFromFactsOfLife — TIGHTEN NFL only; overall −2%
+    autoTail:  ["NFL"],
+    doNotTail: ["NBA", "NHL", "MLB", "Soccer", "UCL", "eSports", "Tennis", "College Sports", "Politics", "Other"],
+    doNotTailMarketTypes: ["total"],
+  },
+  "0xe72bb501df5306c75c89383d48a1e81073fbb0a0": { // norrisfan — TIGHTEN soccer only; last 90d negative
+    autoTail:  ["Soccer"],
+    doNotTail: ["NBA", "NHL", "MLB", "eSports", "Tennis", "College Sports", "Politics", "Other", "NFL"],
+    doNotTailMarketTypes: ["spread"],
+    doNotTailTitleKeywords: ["draw"],
+  },
+  "0x44c58184f89a5c2f699dc8943009cb3d75a08d45": { // JhonAlexanderHinestroza — TIGHTEN soccer ML; spreads bleed
+    autoTail:             ["Soccer"],
+    doNotTail:            ["NBA", "NFL", "NHL", "MLB", "eSports", "Tennis", "Politics", "College Sports"],
+    doNotTailMarketTypes: ["spread", "total"],
   },
 };
 

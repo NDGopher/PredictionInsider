@@ -74,6 +74,122 @@ export function loadTraderHealthFile(): TraderHealthFile | null {
   return readJsonFile<TraderHealthFile>("pnl_analysis/output/trader_health.json");
 }
 
+export interface ResearchStat {
+  n?: number;
+  wins?: number;
+  win_rate?: number;
+  roi?: number;
+  sharpe_daily_roi?: number;
+  max_dd?: number;
+  first?: string | null;
+  last?: string | null;
+  expectancy?: number;
+  implied_wr?: number;
+  edge?: number;
+  profit_factor?: number;
+}
+
+export interface ResearchBook {
+  id: string;
+  name?: string;
+  n?: number;
+  their_entry_vwap?: ResearchStat;
+  ask_at_alert_join_max?: ResearchStat;
+  ask_plus_2c?: ResearchStat;
+  ask_plus_5c?: ResearchStat;
+  concentration?: {
+    top_primary?: string;
+    primary_share?: number;
+    n_primaries?: number;
+    mention_share?: Record<string, number>;
+  };
+}
+
+export interface ResearchClv {
+  n?: number;
+  n_with_close_line?: number;
+  coverage?: number;
+  clob_ask_coverage?: number;
+  realized_roi?: number;
+  expected_clv_roi?: number | null;
+  avg_clv_cents?: number | null;
+}
+
+export interface RobustResearchFile {
+  generated_at?: string;
+  as_of?: string;
+  method?: string;
+  universe?: {
+    max_resolved_date?: string | null;
+    n_2plus?: number;
+    health_counts?: Record<string, number>;
+  };
+  freshness?: {
+    health_as_of?: string;
+    consensus_last_play?: string | null;
+    stale_traders?: string[];
+    steady_traders?: string[];
+    lane_only?: string[];
+  };
+  what_to_tail?: Array<{ title?: string; why?: string; strategy_id?: string | null }>;
+  books?: ResearchBook[];
+  leave_one_out?: Array<{
+    dropped?: string;
+    n_remaining?: number;
+    ask_plus_2c?: ResearchStat;
+    concentration?: { top_primary?: string; primary_share?: number };
+  }>;
+  pairs?: Array<{
+    pair?: string;
+    n?: number;
+    roi_ask_2c?: number;
+    wr?: number;
+    sharpe?: number;
+    last?: string | null;
+  }>;
+  triples?: Array<{
+    triple?: string;
+    n?: number;
+    roi_ask_2c?: number;
+    wr?: number;
+    last?: string | null;
+  }>;
+  clv?: Record<string, ResearchClv>;
+  roster?: Array<{
+    username?: string;
+    wallet?: string;
+    action?: string;
+    max_date?: string;
+    steady_grade?: string;
+    steady_reason?: string;
+    median_cost?: number;
+    last_90d?: ResearchStat;
+    curve?: { sharpe?: number; max_dd_pct?: number; worst_month_roi?: number };
+    lanes?: {
+      experts?: Array<{ sport?: string; submarket?: string; n?: number; roi?: number }>;
+      bleeds?: Array<{ sport?: string; submarket?: string; n?: number; roi?: number }>;
+    };
+  }>;
+  discovery?: {
+    generated_at?: string;
+    recommended?: Array<{
+      username?: string;
+      wallet?: string;
+      best_pnl?: number;
+      sample_hold_roi?: number;
+      sample_roi?: number;
+      closed_only_bias?: number;
+      windows?: string[];
+      screen_score?: number;
+    }>;
+    error?: string;
+  };
+}
+
+export function loadRobustResearchFile(): RobustResearchFile | null {
+  return readJsonFile<RobustResearchFile>("pnl_analysis/output/robust_research.json");
+}
+
 function textHaystack(signal: Signal): string {
   return [
     signal.marketQuestion,

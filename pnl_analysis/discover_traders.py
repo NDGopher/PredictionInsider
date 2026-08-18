@@ -142,16 +142,13 @@ def merge_windows(rows: list[dict]) -> list[dict]:
     return merged
 
 
-def sample_closed_pnl(wallet: str, pages: int = 4) -> dict:
-    """Quick screen: a few closed-position pages. Not a full grade."""
-    pnl = 0.0
-    cost = 0.0
-    n = 0
+def _fetch_pages(endpoint: str, wallet: str, pages: int, limit: int) -> list[dict]:
+    rows: list[dict] = []
     for page in range(pages):
         try:
             resp = requests.get(
-                f"{DATA_API}/closed-positions",
-                params={"user": wallet, "limit": 50, "offset": page * 50},
+                f"{DATA_API}/{endpoint}",
+                params={"user": wallet, "limit": limit, "offset": page * limit},
                 timeout=45,
             )
         except requests.RequestException:
@@ -164,21 +161,48 @@ def sample_closed_pnl(wallet: str, pages: int = 4) -> dict:
             break
         if not isinstance(data, list) or not data:
             break
-        for row in data:
-            if not isinstance(row, dict):
-                continue
-            try:
-                rpnl = float(row.get("realizedPnl") or 0)
-                bought = float(row.get("totalBought") or 0)
-                avg = float(row.get("avgPrice") or 0)
-            except (TypeError, ValueError):
-                continue
-            pnl += rpnl
-            cost += bought * avg
-            n += 1
+        rows.extend([r for r in data if isinstance(r, dict)])
         time.sleep(SLEEP_SEC)
-        if len(data) < 50:
+        if len(data) < limit:
             break
+    return rows
+
+
+def _row_cost(row: dict) -> float:
+    try:
+        bought = float(row.get("totalBought") or 0)
+        avg = float(row.get("avgPrice") or 0)
+        initial = float(row.get("initialValue") or 0)
+    except (TypeError, ValueError):
+        return 0.0
+    cost = bought * avg
+    return cost if cost > 0 else initial
+
+
+def _is_resolved(row: dict) -> bool:
+    try:
+        cur = float(row.get("curPrice") or 0)
+    except (TypeError, ValueError):
+        cur = 0.0
+    redeem = str(row.get("redeemable") or "").strip().lower() in ("true", "1", "yes")
+    return cur >= 0.99 or cur <= 0.01 or redeem
+
+
+def sample_closed_pnl(wallet: str, pages: int = 4) -> dict:
+    """Quick screen: a few closed-position pages. Not a full grade."""
+    closed = _fetch_pages("closed-positions", wallet, pages, 50)
+    pnl = 0.0
+    cost = 0.0
+    n = 0
+    for row in closed:
+        try:
+            rpnl = float(row.get("realizedPnl") or 0)
+        except (TypeError, ValueError):
+            rpnl = 0.0
+        c = _row_cost(row)
+        pnl += rpnl
+        cost += c
+        n += 1
     roi = (pnl / cost * 100) if cost > 0 else 0.0
     return {
         "sample_closed_rows": n,
@@ -188,15 +212,75 @@ def sample_closed_pnl(wallet: str, pages: int = 4) -> dict:
     }
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Discover new Polymarket sports traders")
-    parser.add_argument("--max-new", type=int, default=12, help="Max new wallets to recommend")
-    parser.add_argument("--min-pnl", type=float, default=20_000, help="Min leaderboard PnL (USD)")
-    parser.add_argument("--min-vol", type=float, default=50_000, help="Min leaderboard volume (USD)")
-    parser.add_argument("--sample-pages", type=int, default=4, help="Closed-position pages for screening")
-    parser.add_argument("--write-extra", action="store_true", help="Write pnl_analysis/extra_traders.json")
-    args = parser.parse_args()
+def sample_honest_book(wallet: str, closed_pages: int = 4, open_pages: int = 3) -> dict:
+    """Closed pages plus price-resolved open rows so winners-only samples cannot fake a KEEP.
 
+    Still a screen, not a full unique open-book grade. Full-open is required before tailing.
+    """
+    closed = _fetch_pages("closed-positions", wallet, closed_pages, 50)
+    opened = _fetch_pages("positions", wallet, open_pages, 100)
+    dash_pnl = 0.0
+    dash_cost = 0.0
+    hold_pnl = 0.0
+    hold_cost = 0.0
+    wins = 0
+    n_res = 0
+    n_open_res = 0
+    seen: set[str] = set()
+    for src, rows in (("closed", closed), ("open", opened)):
+        for row in rows:
+            asset = str(row.get("asset") or row.get("id") or "")
+            key = asset or f"{row.get('conditionId')}|{row.get('outcome')}"
+            if key in seen:
+                continue
+            seen.add(key)
+            if not _is_resolved(row):
+                continue
+            n_res += 1
+            if src == "open":
+                n_open_res += 1
+            cost = _row_cost(row)
+            if cost < 25:
+                continue
+            try:
+                realized = float(row.get("realizedPnl") or 0)
+                cash = float(row.get("cashPnl") or 0)
+                cur = float(row.get("curPrice") or 0)
+                avg = float(row.get("avgPrice") or 0) or 0.5
+            except (TypeError, ValueError):
+                continue
+            dash_pnl += realized + cash
+            dash_cost += cost
+            won = cur >= 0.99
+            entry = min(max(avg, 0.02), 0.98)
+            hp = cost * (1.0 / entry - 1.0) if won else -cost
+            hold_pnl += hp
+            hold_cost += cost
+            if won:
+                wins += 1
+    dash_roi = (dash_pnl / dash_cost * 100) if dash_cost > 0 else 0.0
+    hold_roi = (hold_pnl / hold_cost * 100) if hold_cost > 0 else 0.0
+    wr = (wins / n_res * 100) if n_res else 0.0
+    closed_only = sample_closed_pnl(wallet, pages=closed_pages)
+    return {
+        **closed_only,
+        "sample_resolved_n": n_res,
+        "sample_open_resolved": n_open_res,
+        "sample_dash_roi": round(dash_roi, 2),
+        "sample_hold_roi": round(hold_roi, 2),
+        "sample_hold_wr": round(wr, 1),
+        "closed_only_bias": round(closed_only["sample_roi"] - hold_roi, 1),
+    }
+
+
+def scan_new_traders(
+    *,
+    max_new: int = 12,
+    min_pnl: float = 20_000,
+    min_vol: float = 50_000,
+    sample_pages: int = 4,
+) -> dict:
+    """Sports leaderboard scan with honest closed+open screening. Writes discovered_candidates.json."""
     known = load_known_wallets()
     print(f"Known tracked wallets: {len(known)}")
 
@@ -211,7 +295,7 @@ def main() -> int:
     new_rows = [
         r
         for r in merged
-        if r["wallet"] not in known and r["best_pnl"] >= args.min_pnl and r["vol"] >= args.min_vol
+        if r["wallet"] not in known and r["best_pnl"] >= min_pnl and r["vol"] >= min_vol
     ]
     already = [r for r in merged if r["wallet"] in known]
 
@@ -220,17 +304,23 @@ def main() -> int:
     print(f"New passing PnL/vol gates: {len(new_rows)}")
 
     scored: list[dict] = []
-    for i, row in enumerate(new_rows[: max(args.max_new, 1)], 1):
-        print(f"[{i}/{min(len(new_rows), args.max_new)}] sampling {row['username']} {row['wallet'][:10]}…")
-        sample = sample_closed_pnl(row["wallet"], pages=max(1, args.sample_pages))
+    for i, row in enumerate(new_rows[: max(max_new, 1)], 1):
+        print(f"[{i}/{min(len(new_rows), max_new)}] sampling {row['username']} {row['wallet'][:10]}…")
+        sample = sample_honest_book(row["wallet"], closed_pages=max(1, sample_pages), open_pages=3)
         entry = {**row, **sample}
-        # Prefer directional-looking sports grinders: recent windows + sample ROI not insane MM-like.
         recency_pts = 20 * entry["recency"]
         pnl_pts = min(40.0, max(0.0, entry["best_pnl"] / 25_000))
-        roi_pts = min(30.0, max(0.0, entry["sample_roi"]))
-        # Very high sample ROI with tiny n is noisy; require some depth.
-        if entry["sample_closed_rows"] < 15:
+        hold_roi = float(entry.get("sample_hold_roi") or entry.get("sample_roi") or 0)
+        roi_pts = min(30.0, max(0.0, hold_roi))
+        if entry.get("sample_resolved_n", entry.get("sample_closed_rows", 0)) < 15:
             roi_pts *= 0.4
+        # Closed-only samples that collapse once open losers are included are fake KEEP names.
+        bias = float(entry.get("closed_only_bias") or 0)
+        if bias >= 15:
+            roi_pts *= 0.3
+        wr = float(entry.get("sample_hold_wr") or 0)
+        if wr >= 94 and hold_roi < 8:
+            roi_pts = 0
         entry["screen_score"] = round(recency_pts + pnl_pts + roi_pts, 1)
         scored.append(entry)
 
@@ -239,8 +329,12 @@ def main() -> int:
     recommended = [
         r
         for r in scored
-        if r["sample_closed_rows"] >= 8 and r["sample_roi"] >= 2.0 and r["screen_score"] >= 25
-    ][: args.max_new]
+        if r.get("sample_resolved_n", r.get("sample_closed_rows", 0)) >= 12
+        and float(r.get("sample_hold_roi") or r.get("sample_roi") or 0) >= 3.0
+        and float(r.get("sample_hold_wr") or 0) < 94
+        and r["screen_score"] >= 25
+        and float(r.get("closed_only_bias") or 0) < 25
+    ][: max_new]
 
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -264,10 +358,35 @@ def main() -> int:
     for r in recommended:
         print(
             f"  {r['username']:<28} Qscreen={r['screen_score']:>5}  "
-            f"LB PnL=${r['best_pnl']:>10,.0f}  sample ROI={r['sample_roi']:>6.1f}%  "
+            f"LB PnL=${r['best_pnl']:>10,.0f}  hold ROI={r.get('sample_hold_roi', r['sample_roi']):>6.1f}%  "
+            f"closed ROI={r['sample_roi']:>6.1f}%  bias={r.get('closed_only_bias', 0):+.0f}  "
             f"windows={','.join(r['windows'])}"
         )
 
+    missing_csv = []
+    for w, u in ALL_TRADERS:
+        if not csv_path_for(w, u).exists():
+            missing_csv.append(u)
+    if missing_csv:
+        print(f"\nCurated traders still missing CSV (need full fetch): {', '.join(missing_csv)}")
+    return payload
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Discover new Polymarket sports traders")
+    parser.add_argument("--max-new", type=int, default=12, help="Max new wallets to recommend")
+    parser.add_argument("--min-pnl", type=float, default=20_000, help="Min leaderboard PnL (USD)")
+    parser.add_argument("--min-vol", type=float, default=50_000, help="Min leaderboard volume (USD)")
+    parser.add_argument("--sample-pages", type=int, default=4, help="Closed-position pages for screening")
+    parser.add_argument("--write-extra", action="store_true", help="Write pnl_analysis/extra_traders.json")
+    args = parser.parse_args()
+    payload = scan_new_traders(
+        max_new=args.max_new,
+        min_pnl=args.min_pnl,
+        min_vol=args.min_vol,
+        sample_pages=args.sample_pages,
+    )
+    recommended = payload.get("recommended") or []
     if args.write_extra:
         existing: list[dict] = []
         if EXTRA_PATH.exists():
@@ -289,7 +408,9 @@ def main() -> int:
                     "source": "sports_leaderboard",
                     "notes": (
                         f"screen={r['screen_score']} pnl={r['best_pnl']:.0f} "
-                        f"sample_roi={r['sample_roi']:.1f}% windows={','.join(r['windows'])}"
+                        f"hold_roi={r.get('sample_hold_roi', r.get('sample_roi')):.1f}% "
+                        f"closed_bias={r.get('closed_only_bias', 0):+.0f} "
+                        f"windows={','.join(r['windows'])}"
                     ),
                 }
             )
@@ -297,13 +418,6 @@ def main() -> int:
             added += 1
         EXTRA_PATH.write_text(json.dumps(existing, indent=2), encoding="utf-8")
         print(f"Wrote {EXTRA_PATH} (+{added} new, {len(existing)} total)")
-
-    missing_csv = []
-    for w, u in ALL_TRADERS:
-        if not csv_path_for(w, u).exists():
-            missing_csv.append(u)
-    if missing_csv:
-        print(f"\nCurated traders still missing CSV (need full fetch): {', '.join(missing_csv)}")
     return 0
 
 

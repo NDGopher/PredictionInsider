@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/select";
 import {
   Activity, AlertTriangle, BarChart2, CheckCircle2, ExternalLink,
-  Flame, Target, TrendingUp, Users,
+  Flame, LineChart, Target, TrendingUp, Users,
 } from "lucide-react";
 import type { Signal, SignalsResponse } from "@shared/schema";
 
@@ -80,6 +80,85 @@ interface HealthRow {
   quality_proxy?: number;
 }
 
+interface ResearchStat {
+  n?: number;
+  win_rate?: number;
+  roi?: number;
+  sharpe_daily_roi?: number;
+  max_dd?: number;
+  last?: string | null;
+  implied_wr?: number;
+  edge?: number;
+}
+
+interface ResearchBook {
+  id: string;
+  name?: string;
+  their_entry_vwap?: ResearchStat;
+  ask_at_alert_join_max?: ResearchStat;
+  ask_plus_2c?: ResearchStat;
+  concentration?: {
+    top_primary?: string;
+    primary_share?: number;
+    mention_share?: Record<string, number>;
+  };
+}
+
+interface RobustResearch {
+  generated_at?: string;
+  as_of?: string;
+  method?: string;
+  universe?: { max_resolved_date?: string | null };
+  freshness?: {
+    consensus_last_play?: string | null;
+    stale_traders?: string[];
+    steady_traders?: string[];
+    lane_only?: string[];
+  };
+  what_to_tail?: Array<{ title?: string; why?: string; strategy_id?: string | null }>;
+  books?: ResearchBook[];
+  leave_one_out?: Array<{
+    dropped?: string;
+    n_remaining?: number;
+    ask_plus_2c?: ResearchStat;
+    concentration?: { top_primary?: string; primary_share?: number };
+  }>;
+  pairs?: Array<{ pair?: string; n?: number; roi_ask_2c?: number; wr?: number; sharpe?: number; last?: string | null }>;
+  clv?: Record<string, {
+    n?: number;
+    coverage?: number;
+    clob_ask_coverage?: number;
+    realized_roi?: number;
+    expected_clv_roi?: number | null;
+    avg_clv_cents?: number | null;
+  }>;
+  roster?: Array<{
+    username?: string;
+    action?: string;
+    max_date?: string;
+    steady_grade?: string;
+    steady_reason?: string;
+    median_cost?: number;
+    last_90d?: ResearchStat;
+    curve?: { sharpe?: number; max_dd_pct?: number };
+    lanes?: {
+      experts?: Array<{ sport?: string; submarket?: string; n?: number; roi?: number }>;
+      bleeds?: Array<{ sport?: string; submarket?: string; n?: number; roi?: number }>;
+    };
+  }>;
+  discovery?: {
+    recommended?: Array<{
+      username?: string;
+      best_pnl?: number;
+      sample_hold_roi?: number;
+      sample_roi?: number;
+      closed_only_bias?: number;
+      windows?: string[];
+    }>;
+    error?: string;
+  };
+}
+
 interface TailStrategiesResponse {
   generatedAt: string | null;
   asOf: string | null;
@@ -90,6 +169,7 @@ interface TailStrategiesResponse {
   strategies: StrategyCard[];
   selectedId: string | null;
   livePlays: Array<Signal & { submarket?: string; playLabel?: string }>;
+  research?: RobustResearch | null;
   health: {
     generatedAt?: string;
     counts?: Record<string, number>;
@@ -121,7 +201,16 @@ function actionBadge(action: string) {
   const map: Record<string, string> = {
     KEEP: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
     TIGHTEN: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+    STEADY: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+    LANE_ONLY: "bg-amber-500/15 text-amber-400 border-amber-500/30",
     OVERLAY: "bg-sky-500/15 text-sky-400 border-sky-500/30",
+    VOLATILE: "bg-orange-500/15 text-orange-400 border-orange-500/30",
+    STALE: "bg-muted text-muted-foreground",
+    THIN: "bg-muted text-muted-foreground",
+    FADED: "bg-red-500/15 text-red-400 border-red-500/30",
+    GRINDER: "bg-red-500/15 text-red-400 border-red-500/30",
+    UNTAILABLE: "bg-red-500/15 text-red-400 border-red-500/30",
+    SKIP: "bg-red-500/15 text-red-400 border-red-500/30",
     WATCH: "bg-muted text-muted-foreground",
     KICK: "bg-red-500/15 text-red-400 border-red-500/30",
   };
@@ -187,7 +276,7 @@ function Stat({ label, value, className }: { label: string; value: string; class
 
 export default function Strategies() {
   const [id, setId] = useState<string>("favorites_60_80");
-  const [tab, setTab] = useState<"plays" | "history" | "roster">("plays");
+  const [tab, setTab] = useState<"plays" | "history" | "roster" | "research">("plays");
 
   const { data, isLoading } = useQuery<TailStrategiesResponse>({
     queryKey: ["/api/tail-strategies", id],
@@ -220,6 +309,7 @@ export default function Strategies() {
 
   const stats = selected?.join_max_plus_2c;
   const healthRows = data?.health?.traders || [];
+  const research = data?.research;
 
   if (isLoading && !data) {
     return (
@@ -235,11 +325,12 @@ export default function Strategies() {
     <div className="p-4 md:p-6 space-y-4 max-w-[1400px] mx-auto">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
         <div>
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Walk-forward · hold-to-resolution</div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Walk-forward · hold-to-resolution · dual fill · CLV</div>
           <h1 className="text-xl font-semibold tracking-tight">Tail Strategies</h1>
           <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-            Historical returns from the honest backtest (join_max + 2¢). Live plays refresh every 30s from /api/signals.
-            Last resolved game in the book: {data?.universe?.max_resolved_date || "—"}. As of {data?.asOf || "—"}.
+            Historical returns from the honest backtest. Their entry = trader VWAP; live fill = later entry (join_max) + 2¢.
+            Last resolved game: {data?.research?.freshness?.consensus_last_play || data?.universe?.max_resolved_date || "—"}.
+            Research as of {data?.research?.as_of || data?.asOf || "—"}.
           </p>
         </div>
         <Select value={selected?.id || id} onValueChange={setId}>
@@ -287,7 +378,7 @@ export default function Strategies() {
       )}
 
       <div className="flex gap-2">
-        {(["plays", "history", "roster"] as const).map((t) => (
+        {(["plays", "history", "roster", "research"] as const).map((t) => (
           <button
             key={t}
             type="button"
@@ -295,7 +386,7 @@ export default function Strategies() {
             className={`text-sm px-3 py-1.5 rounded-md border ${tab === t ? "bg-primary text-primary-foreground" : "bg-card"}`}
             data-testid={`tab-${t}`}
           >
-            {t === "plays" ? "Plays worth taking" : t === "history" ? "Historical tape" : "Roster re-grade"}
+            {t === "plays" ? "Plays worth taking" : t === "history" ? "Historical tape" : t === "roster" ? "Roster re-grade" : "Research"}
           </button>
         ))}
       </div>
@@ -465,6 +556,254 @@ export default function Strategies() {
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {tab === "research" && (
+        <div className="space-y-4">
+          {!research && (
+            <Card>
+              <CardContent className="p-6 text-sm text-muted-foreground">
+                Research report not generated yet. Run `npm run backtest:research`.
+              </CardContent>
+            </Card>
+          )}
+          {research && (
+            <>
+              <Card>
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Target className="w-4 h-4" /> What to tail
+                    <span className="text-xs text-muted-foreground font-normal">
+                      last play {research.freshness?.consensus_last_play || "—"} · as of {research.as_of}
+                    </span>
+                  </div>
+                  {(research.freshness?.stale_traders || []).length > 0 && (
+                    <p className="text-xs text-amber-400">
+                      Stale (no dated event in 21d): {(research.freshness?.stale_traders || []).join(", ")}
+                    </p>
+                  )}
+                  <ol className="space-y-2 list-decimal pl-5 text-sm">
+                    {(research.what_to_tail || []).map((item) => (
+                      <li key={item.title}>
+                        <span className="font-medium">{item.title}</span>
+                        <div className="text-xs text-muted-foreground">{item.why}</div>
+                      </li>
+                    ))}
+                  </ol>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <BarChart2 className="w-4 h-4" /> Dual fill — their entry vs ask at alert
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    VWAP is the price they got. Join_max is the later voter (when a 2+ alert can fire). Live tailing uses join_max + 2¢.
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead className="text-muted-foreground text-left">
+                        <tr>
+                          <th className="py-1 pr-2">Book</th>
+                          <th className="py-1 pr-2">n</th>
+                          <th className="py-1 pr-2">Their VWAP</th>
+                          <th className="py-1 pr-2">Ask (join)</th>
+                          <th className="py-1 pr-2">Ask+2¢</th>
+                          <th className="py-1 pr-2">WR</th>
+                          <th className="py-1">Concentration</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(research.books || []).map((b) => (
+                          <tr key={b.id} className="border-t border-border/60">
+                            <td className="py-1.5 pr-2 font-medium">{b.name || b.id}</td>
+                            <td className="py-1.5 pr-2 tabular-nums">{b.ask_plus_2c?.n}</td>
+                            <td className={`py-1.5 pr-2 tabular-nums ${roiClass(b.their_entry_vwap?.roi)}`}>{b.their_entry_vwap?.roi}%</td>
+                            <td className={`py-1.5 pr-2 tabular-nums ${roiClass(b.ask_at_alert_join_max?.roi)}`}>{b.ask_at_alert_join_max?.roi}%</td>
+                            <td className={`py-1.5 pr-2 tabular-nums ${roiClass(b.ask_plus_2c?.roi)}`}>{b.ask_plus_2c?.roi}%</td>
+                            <td className="py-1.5 pr-2 tabular-nums">{b.ask_plus_2c?.win_rate}%</td>
+                            <td className="py-1.5 text-muted-foreground">
+                              {b.concentration?.top_primary} {Math.round((b.concentration?.primary_share || 0) * 100)}%
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="grid lg:grid-cols-2 gap-4">
+                <Card>
+                  <CardContent className="p-4 space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <LineChart className="w-4 h-4" /> CLV vs realized
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Expected ROI from close line / fill − 1. Realized is hold-to-res at the same fill.
+                    </p>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead className="text-muted-foreground text-left">
+                          <tr>
+                            <th className="py-1 pr-2">Book</th>
+                            <th className="py-1 pr-2">n</th>
+                            <th className="py-1 pr-2">Realized</th>
+                            <th className="py-1 pr-2">Expected</th>
+                            <th className="py-1">CLV</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {([
+                            ["q50_moneyline", "2+ Q50 ML"],
+                            ["favorites_60_80", "Favorites 60–80¢"],
+                            ["soccer_ml_no_cannae", "Soccer ML no Cannae"],
+                          ] as const).map(([key, label]) => {
+                            const c = research.clv?.[key];
+                            return (
+                              <tr key={key} className="border-t border-border/60">
+                                <td className="py-1.5 pr-2">{label}</td>
+                                <td className="py-1.5 pr-2 tabular-nums">{c?.n ?? "—"}</td>
+                                <td className={`py-1.5 pr-2 tabular-nums ${roiClass(c?.realized_roi)}`}>{c?.realized_roi ?? "—"}%</td>
+                                <td className={`py-1.5 pr-2 tabular-nums ${roiClass(c?.expected_clv_roi ?? undefined)}`}>{c?.expected_clv_roi ?? "—"}%</td>
+                                <td className="py-1.5 tabular-nums">{c?.avg_clv_cents ?? "—"}¢</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4 space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <Users className="w-4 h-4" /> Leave-one-out (Q50 moneyline)
+                    </div>
+                    <div className="space-y-1.5">
+                      {(research.leave_one_out || []).map((row) => (
+                        <div key={row.dropped} className="flex justify-between text-xs gap-2">
+                          <span>Drop {row.dropped}</span>
+                          <span className={`tabular-nums ${roiClass(row.ask_plus_2c?.roi)}`}>
+                            n={row.n_remaining} · {row.ask_plus_2c?.roi}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card>
+                <CardContent className="p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium">Pairs that print (Q50 moneyline)</div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead className="text-muted-foreground text-left">
+                        <tr>
+                          <th className="py-1 pr-2">Pair</th>
+                          <th className="py-1 pr-2">n</th>
+                          <th className="py-1 pr-2">Ask+2¢ ROI</th>
+                          <th className="py-1 pr-2">WR</th>
+                          <th className="py-1">Last</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(research.pairs || []).slice(0, 12).map((p) => (
+                          <tr key={p.pair} className="border-t border-border/60">
+                            <td className="py-1.5 pr-2">{p.pair}</td>
+                            <td className="py-1.5 pr-2 tabular-nums">{p.n}</td>
+                            <td className={`py-1.5 pr-2 tabular-nums ${roiClass(p.roi_ask_2c)}`}>{p.roi_ask_2c}%</td>
+                            <td className="py-1.5 pr-2 tabular-nums">{p.wr}%</td>
+                            <td className="py-1.5">{p.last}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium">Steady winners vs everyone else</div>
+                  <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
+                    <table className="w-full text-xs">
+                      <thead className="text-muted-foreground text-left">
+                        <tr>
+                          <th className="py-1 pr-2">Trader</th>
+                          <th className="py-1 pr-2">Grade</th>
+                          <th className="py-1 pr-2">Last</th>
+                          <th className="py-1 pr-2">90d</th>
+                          <th className="py-1 pr-2">Sharpe</th>
+                          <th className="py-1">Why</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(research.roster || []).filter((t) => t.steady_grade !== "SKIP").map((t) => (
+                          <tr key={t.username} className="border-t border-border/60 align-top">
+                            <td className="py-1.5 pr-2 font-medium whitespace-nowrap">{t.username}</td>
+                            <td className="py-1.5 pr-2"><Badge className={actionBadge(t.steady_grade || "")}>{t.steady_grade}</Badge></td>
+                            <td className="py-1.5 pr-2 whitespace-nowrap">{t.max_date}</td>
+                            <td className={`py-1.5 pr-2 tabular-nums ${roiClass(t.last_90d?.roi)}`}>{t.last_90d?.roi}%</td>
+                            <td className="py-1.5 pr-2 tabular-nums">{t.curve?.sharpe}</td>
+                            <td className="py-1.5 text-muted-foreground">{t.steady_reason}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4 space-y-3">
+                  <div className="text-sm font-medium">Expert lanes — weight these, ignore bleeds</div>
+                  <div className="grid md:grid-cols-2 gap-3">
+                    {(research.roster || [])
+                      .filter((t) => (t.lanes?.experts?.length || 0) > 0 && !["SKIP", "STALE", "GRINDER", "UNTAILABLE"].includes(t.steady_grade || ""))
+                      .map((t) => (
+                        <div key={t.username} className="text-xs border border-border/60 rounded-md p-2">
+                          <div className="font-medium mb-1">{t.username}</div>
+                          <div className="text-emerald-400">
+                            {(t.lanes?.experts || []).slice(0, 4).map((e) => `${e.sport}/${e.submarket} ${e.roi}%`).join(" · ")}
+                          </div>
+                          {(t.lanes?.bleeds || []).length > 0 && (
+                            <div className="text-red-400 mt-1">
+                              Bleed: {(t.lanes?.bleeds || []).slice(0, 3).map((e) => `${e.sport}/${e.submarket} ${e.roi}%`).join(" · ")}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4 space-y-2">
+                  <div className="text-sm font-medium">Off-list names (honest closed+open screen)</div>
+                  {(research.discovery?.recommended || []).length === 0 ? (
+                    <p className="text-xs text-muted-foreground">
+                      {research.discovery?.error || "No new sports-leaderboard wallets passed the honest screen. Full-open grade still required before tailing."}
+                    </p>
+                  ) : (
+                    <div className="space-y-1">
+                      {(research.discovery?.recommended || []).map((r) => (
+                        <div key={r.username} className="flex justify-between text-xs gap-2">
+                          <span>{r.username}</span>
+                          <span className="tabular-nums text-muted-foreground">
+                            hold {r.sample_hold_roi}% · closed {r.sample_roi}% · bias {r.closed_only_bias}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </>
+          )}
         </div>
       )}
 
