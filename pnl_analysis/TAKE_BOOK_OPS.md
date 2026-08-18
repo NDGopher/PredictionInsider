@@ -1,6 +1,19 @@
 # Take-book ops (recommended plays)
 
-Home page = the take book. Fill **VWAP + 2¢**, **$100 flat** (or 1% of a $10k bank). Hold to resolution. Do not auto-bet.
+Home page = the take book. **The end.** Fill **VWAP + 2¢**, **$100 flat** (or 1% of a $10k bank). Hold to resolution.
+
+## Product
+
+| Channel | Role |
+|---------|------|
+| `/` Take these | Live TAKEs + near-misses, 30s poll, rolling 30/60/90d ROI, pause banner, roster proposals |
+| Telegram | 1–2 pings a day with Q / rel / sport ROI / fill cap / Polymarket link. Share the chat. |
+| `/bets` | Paper + human fills. TAKEs also auto-paper-log at $100 when the signals cache refreshes. |
+| `/strategies` | Lab only. Skip books, Ghost warning, not the live take list. |
+
+**Do not wire an unsupervised Polymarket auto-bettor.** This tape was used to pick the rule (not a holdout). Same-night overlap can be 12 tickets. Fills move. A bot with your private key in this repo is the wrong failure mode. Take the Telegram ping, size $100, cap the day at ~50% of bank, log it in My Bets.
+
+If you later want execution: paper first (already auto-logged), then a **separate signer** with a hard daily loss cap — not inside the signals process.
 
 ## What fires a TAKE
 
@@ -14,27 +27,14 @@ Single-name copy of the 12 Polydata-matched sports books when, at the time of th
 
 Rebuild filters: `npm run backtest:asof`
 
-## Frontend
-
-- `/` — **Take these** (`TakeBookFeed`). Polls `/api/take-plays` every 30s.
-- `/strategies` — research / skip books.
-- `/bets` — track fills you actually take.
-- `/ranks` — roster vs Polydata.
-
-## Telegram (yes) vs auto-bettor (no)
-
-**Telegram: use it.** ~1 play per calendar day. Set:
+## Telegram
 
 ```
 TELEGRAM_BOT_TOKEN=...
 TELEGRAM_CHAT_ID=...
 ```
 
-Create a bot with @BotFather, `/start` it, get chat id from `@userinfobot` or the API. The server posts a new TAKE when `/api/signals` refreshes (deduped by signal id). Share that chat with whoever should see the book.
-
-**Do not wire an unsupervised Polymarket auto-bettor.** This tape was used to pick the rule (not a holdout). Same-night overlap can be 12 tickets. Fills move. A bot with your private key in this repo is the wrong failure mode. Take the Telegram ping, size $100 (or 1% of bank), cap the day at ~50% of bank, log it in My Bets.
-
-If you later want execution, do **paper first** (auto-log to `tracked_bets` at $100, no CLOB), then a separate signer with a hard daily loss cap — not inside the signals process.
+Create a bot with @BotFather, `/start` it, get chat id from `@userinfobot`. The server posts a new TAKE when `/api/signals` refreshes (deduped by signal id). Daily health digest fires once per calendar day from `take_book_daily.py`.
 
 ## Stay fluid without overfitting
 
@@ -64,4 +64,10 @@ Do **not** retune Q, rel, or sport thresholds because last week was cold. The pa
 
 Rolling take book is **GO**: last 30d n=32, **+14.7%** after 2¢; last 60d n=66, **+17.6%**. No drop proposals.
 
-Open CSVs after dropping already-resolved games: **0 live TAKEs**. Near-misses are DLEK politics (Q 52), Vetch 90¢ nos (outside 10–88¢), and soccer under 2×. The website live feed (positions + recent trades) is fresher than CSVs — that is what `/api/take-plays` shows once `npm run dev` is up.
+Open books after dropping already-resolved / dated-stale games: **0 live TAKEs**. Closest:
+
+- DLEK Kane Ballon d'Or Yes — only miss is Q 52
+- DLEK politics (House / Newsom) — Q 52 and not a sports lane
+- Vetch 90¢ nos (China/Japan, Putin) — outside 10–88¢
+- DLEK Poilievre / NY Liberty — Q 52 and tiny size
+- Cincinnati Medvedev and July MLS tickets dropped off (stale or no longer open)

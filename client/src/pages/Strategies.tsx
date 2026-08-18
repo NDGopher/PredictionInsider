@@ -353,8 +353,8 @@ export default function Strategies() {
     <div className="p-4 md:p-6 space-y-4 max-w-[1400px] mx-auto">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
         <div>
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Recommended plays · $100/play · hold to resolution</div>
-          <h1 className="text-xl font-semibold tracking-tight">Take these</h1>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Research · skip books · Ghost is not the take list</div>
+          <h1 className="text-xl font-semibold tracking-tight">Strategy lab</h1>
           <p className="text-xs text-amber-400 mt-1 max-w-2xl">
             GoalLineGhost public tape is ~52% WR and about −$1.1M PnL. The old 98% / +$52M book was a closed-positions sort bug. Do not copy that cluster. Take single-name as-of copy of Polydata-matched sports books only.
           </p>

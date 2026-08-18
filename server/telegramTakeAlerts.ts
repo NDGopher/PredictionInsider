@@ -34,12 +34,16 @@ function formatPlay(p: AnnotatedTakePlay, paused: boolean): string {
   const fill = Math.round(p.fillPlus2c * 100);
   const live = Math.round(p.currentPrice * 100);
   const entry = Math.round(p.avgEntryPrice * 100);
+  const sportRoi = p.sportRoi == null ? "n/a" : `${p.sportRoi.toFixed(0)}%`;
   const lines = [
-    paused ? "⏸ TAKE BOOK PAUSED — paper only" : "🟢 TAKE BOOK",
-    `${p.playLabel}`,
+    paused ? "⏸ TAKE BOOK PAUSED — paper only, do not fill" : "🟢 TAKE",
+    p.playLabel,
+    `Sport ${p.sport || "—"} · ${p.submarket} · ${p.side}`,
     `Trader: ${p.traders.join(", ") || "—"}`,
-    `As-of Q ${Math.round(p.q)} · ${p.rel.toFixed(1)}× own median · sport ROI ${p.sportRoi == null ? "n/a" : p.sportRoi.toFixed(0) + "%"}`,
-    `Their entry ${entry}¢ · live ${live}¢ · fill up to ${fill}¢ (+2¢) · hold to res`,
+    `As-of Q ${Math.round(p.q)} · ${p.rel.toFixed(1)}× own median · sport ROI ${sportRoi}`,
+    `Their VWAP ${entry}¢ · live ${live}¢ · pay up to ${fill}¢ (VWAP + 2¢)`,
+    "Stake $100 flat · hold to resolution · skip NFL · do not chase past 88¢",
+    "Human fill. No auto-bet. Log the ticket in My Bets after you take it.",
     p.url || "",
   ];
   return lines.filter((l) => l.length > 0).join("\n");
@@ -87,10 +91,12 @@ export async function notifyTakePlays(
       skipped += 1;
       continue;
     }
-    if (configured) {
-      const ok = await sendTelegram(formatPlay(p, paused));
-      if (!ok) continue;
+    if (!configured) {
+      skipped += 1;
+      continue;
     }
+    const ok = await sendTelegram(formatPlay(p, paused));
+    if (!ok) continue;
     sentIds.add(p.id);
     sent += 1;
   }

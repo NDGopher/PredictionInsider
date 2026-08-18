@@ -16,6 +16,7 @@ import {
 import type { SignalsResponse, LeaderboardResponse, MarketsResponse, Signal } from "@shared/schema";
 import GameScorePanel from "@/components/GameScorePanel";
 import TakeBookFeed from "@/components/TakeBookFeed";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const BET_KEY = "pi_bets";
 
@@ -779,7 +780,7 @@ export default function Dashboard() {
         <div>
           <h1 className="text-xl font-bold tracking-tight">Take these</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Q60 + sport expert + 2× size, no NFL. Fill VWAP + 2¢. Hold to resolution. Everything else is research.
+            Recommended plays only. Q60 + sport expert + 2× size, no NFL. Fill VWAP + 2¢. Hold to resolution. Telegram — not an auto-bettor.
           </p>
         </div>
         <Button
@@ -795,6 +796,15 @@ export default function Dashboard() {
       </div>
 
       <TakeBookFeed />
+
+      <Collapsible defaultOpen={false} className="space-y-6">
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground px-0" data-testid="button-research-tape">
+            Research tape (not the take book) — live alerts, old signal firehose
+            <ChevronDown className="w-3.5 h-3.5" />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-6">
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -1353,6 +1363,8 @@ export default function Dashboard() {
           </div>
         </CardContent>
       </Card>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 }

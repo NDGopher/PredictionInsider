@@ -19,8 +19,9 @@ import {
   signalMatchesStrategy,
   type TailStrategyFilters,
 } from "./tailStrategies";
-import { collectTakePlays, loadTakeHealthFile, takeStrategyCard } from "./takePlays";
+import { collectTakePlays, loadTakeHealthFile, mapCsvOpenRows, takeStrategyCard } from "./takePlays";
 import { notifyTakePlays } from "./telegramTakeAlerts";
+import { paperLogTakePlays } from "./paperTakeBets";
 import type { Signal, SignalsResponse } from "@shared/schema";
 
 const elitePool = new Pool({
@@ -5304,6 +5305,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         void notifyTakePlays(take.live, { paused: take.paused }).catch((err: unknown) =>
           console.warn("[telegram] take alert:", err),
         );
+        void paperLogTakePlays(take.live, { paused: take.paused }).catch((err: unknown) =>
+          console.warn("[paper-take] log:", err),
+        );
       }
 
       // ── SSE push: broadcast new high-confidence signals to connected clients ──
@@ -6168,8 +6172,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         paperLive: bundle.paused ? bundle.live : [],
         near: bundle.near,
         csvOpen: {
-          live: health?.live_open || [],
-          near: health?.near_open || [],
+          live: mapCsvOpenRows(health?.live_open || []),
+          near: mapCsvOpenRows(health?.near_open || []),
         },
         signalsFetchedAt: cached?.fetchedAt || null,
         telegramConfigured: Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID),

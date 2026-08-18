@@ -126,3 +126,54 @@ export function collectTakePlays(signals: Signal[]): {
 export function takePlaysFromCache(cached: SignalsResponse | null): ReturnType<typeof collectTakePlays> {
   return collectTakePlays(cached?.signals || []);
 }
+
+function num(v: unknown, fallback = 0): number {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+/** Drop CSV rows whose title still has a kickoff date more than 12h in the past. */
+export function titleLooksStale(title: string, nowMs = Date.now()): boolean {
+  const m = title.match(/(20\d{2})-(\d{2})-(\d{2})/);
+  if (!m) return false;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  const dt = Date.UTC(y, mo - 1, d);
+  if (!Number.isFinite(dt)) return false;
+  return dt < nowMs - 12 * 60 * 60 * 1000;
+}
+
+export function mapCsvOpenRow(row: Record<string, unknown>): AnnotatedTakePlay {
+  const misses = Array.isArray(row.misses) ? row.misses.map(String) : [];
+  const title = String(row.title || row.play || "");
+  const slug = row.slug ? String(row.slug) : undefined;
+  const username = row.username ? String(row.username) : "";
+  return {
+    id: `csv-${String(row.wallet || username)}-${slug || title}-${String(row.side || "")}`,
+    marketQuestion: title,
+    slug,
+    side: String(row.side || ""),
+    sport: row.sport ? String(row.sport) : undefined,
+    submarket: String(row.submarket || ""),
+    playLabel: String(row.play || title),
+    currentPrice: num(row.live),
+    avgEntryPrice: num(row.entry),
+    fillPlus2c: num(row.fill_plus_2c),
+    confidence: num(row.q),
+    q: num(row.q),
+    rel: num(row.rel),
+    sportRoi: row.sport_roi == null || row.sport_roi === "" ? null : num(row.sport_roi),
+    traders: username ? [username] : [],
+    misses,
+    url: row.url ? String(row.url) : undefined,
+    take: misses.length === 0,
+    close: misses.length > 0 && misses.length <= 2,
+  };
+}
+
+export function mapCsvOpenRows(rows: Array<Record<string, unknown>>): AnnotatedTakePlay[] {
+  return rows
+    .map(mapCsvOpenRow)
+    .filter((p) => !titleLooksStale(p.marketQuestion) && !titleLooksStale(p.slug || ""));
+}

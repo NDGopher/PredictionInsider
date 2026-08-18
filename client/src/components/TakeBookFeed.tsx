@@ -1,8 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ExternalLink, Flame, PauseCircle, Radio } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { BookmarkPlus, ExternalLink, Flame, PauseCircle, Radio } from "lucide-react";
 import { Link } from "wouter";
 
 interface TakePlay {
@@ -53,8 +54,64 @@ function cents(p: number): string {
   return `${Math.round(p * 100)}¢`;
 }
 
+function playKey(p: TakePlay): string {
+  return `${(p.slug || p.marketQuestion).toLowerCase()}|${p.side.toLowerCase()}`;
+}
+
+function mergePlays(primary: TakePlay[], extra: TakePlay[]): TakePlay[] {
+  const seen = new Set(primary.map(playKey));
+  const out = [...primary];
+  for (const p of extra) {
+    const k = playKey(p);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(p);
+  }
+  return out;
+}
+
+async function logPaperTicket(play: TakePlay): Promise<void> {
+  const body = {
+    id: `take-paper-${play.id}`,
+    marketQuestion: play.marketQuestion,
+    outcomeLabel: play.playLabel,
+    side: play.side,
+    slug: play.slug,
+    entryPrice: play.fillPlus2c,
+    betAmount: 100,
+    betDate: Date.now(),
+    status: "open",
+    book: "paper",
+    polymarketPrice: play.currentPrice,
+    sport: play.sport,
+    notes: `TAKE $100 · Q ${Math.round(play.q)} · ${play.rel.toFixed(1)}× · ${play.traders.join(", ")} · fill ≤ ${cents(play.fillPlus2c)} · human, no auto-bet`,
+  };
+  const res = await fetch("/api/bets", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error(`Could not log paper ticket (${res.status})`);
+  }
+}
+
 function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const href = play.url || (play.slug ? `https://polymarket.com/event/${play.slug}` : undefined);
+
+  async function onPaper(): Promise<void> {
+    try {
+      await logPaperTicket(play);
+      await queryClient.invalidateQueries({ queryKey: ["/api/bets"] });
+      toast({ title: "Paper $100 logged", description: `${play.side} · fill ≤ ${cents(play.fillPlus2c)} · My Bets` });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "log failed";
+      toast({ title: "Could not log paper ticket", description: msg, variant: "destructive" });
+    }
+  }
+
   return (
     <Card data-testid={take ? "card-take-play" : "card-near-play"}>
       <CardContent className="p-4 space-y-2">
@@ -76,14 +133,22 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
         )}
         {take && (
           <div className="text-xs text-muted-foreground">
-            Pay up to live + 2¢, hold to resolution, $100 flat (or 1% of bank). Do not chase after 88¢.
+            Pay up to live + 2¢, hold to resolution, $100 flat (or 1% of bank). Do not chase after 88¢. Human fill — no auto-bet.
           </div>
         )}
-        {href && (
-          <a href={href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-primary">
-            Polymarket <ExternalLink className="w-3 h-3" />
-          </a>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {href && (
+            <a href={href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-primary">
+              Polymarket <ExternalLink className="w-3 h-3" />
+            </a>
+          )}
+          {take && (
+            <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => void onPaper()}>
+              <BookmarkPlus className="w-3 h-3" />
+              Log $100 paper
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
@@ -96,10 +161,11 @@ export default function TakeBookFeed() {
     refetchInterval: 30_000,
   });
 
-  const live = data?.live || [];
-  const near = data?.near || [];
-  const csvLive = data?.csvOpen?.live || [];
+  const live = mergePlays(data?.live || [], data?.csvOpen?.live || []);
+  const near = mergePlays(data?.near || [], data?.csvOpen?.near || []);
   const w30 = data?.health?.windows?.last_30d;
+  const w60 = data?.health?.windows?.last_60d;
+  const w90 = data?.health?.windows?.last_90d;
   const bt = data?.backtest;
 
   return (
@@ -125,7 +191,13 @@ export default function TakeBookFeed() {
             <Badge className="gap-1"><Radio className="w-3 h-3" /> Live copy ON</Badge>
           )}
           {w30?.n ? (
-            <Badge variant="outline">30d {w30.n} plays · {w30.roi_2c}% ROI</Badge>
+            <Badge variant="outline">30d {w30.n} · {w30.roi_2c}% ROI</Badge>
+          ) : null}
+          {w60?.n ? (
+            <Badge variant="outline">60d {w60.n} · {w60.roi_2c}% ROI</Badge>
+          ) : null}
+          {w90?.n ? (
+            <Badge variant="outline">90d {w90.n} · {w90.roi_2c}% ROI</Badge>
           ) : null}
           {data?.telegramConfigured ? (
             <Badge variant="outline">Telegram on</Badge>
@@ -133,6 +205,7 @@ export default function TakeBookFeed() {
             <Badge variant="outline">Telegram off — set TELEGRAM_BOT_TOKEN</Badge>
           )}
           <Button size="sm" variant="outline" onClick={() => refetch()}>Refresh</Button>
+          <Link href="/bets" className="text-xs text-primary">My Bets →</Link>
           <Link href="/strategies" className="text-xs text-primary">Research →</Link>
         </div>
       </div>
@@ -150,9 +223,7 @@ export default function TakeBookFeed() {
         <Card>
           <CardContent className="p-6 text-sm text-muted-foreground space-y-1">
             <div>No live take-book tickets right now. That is the point — ~1 play per calendar day, not a firehose.</div>
-            {csvLive.length > 0 && (
-              <div>CSV still shows {csvLive.length} unmatched open rows on the 12 books (often stale prices). Trust this live feed over the CSV.</div>
-            )}
+            <div>Telegram pings when one prints. Size $100 (or 1% of bank). Do not auto-bet.</div>
           </CardContent>
         </Card>
       )}

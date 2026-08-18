@@ -12,7 +12,11 @@ Writes pnl_analysis/output/take_health.json
 from __future__ import annotations
 
 import json
+import os
+import re
 import sys
+import urllib.error
+import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -53,6 +57,67 @@ PLAYS = OUTPUT_DIR / "asof_fullbook_plays.csv"
 TRUSTED = OUTPUT_DIR / "trusted_full_books.json"
 OUT = OUTPUT_DIR / "take_health.json"
 OPEN_OUT = OUTPUT_DIR / "take_open_scan.json"
+HEALTH_SENT = OUTPUT_DIR / "telegram_take_health_sent.json"
+TITLE_DATE = re.compile(r"(20\d{2})-(\d{2})-(\d{2})")
+
+
+def title_is_stale(title: str, now: datetime) -> bool:
+    m = TITLE_DATE.search(title or "")
+    if not m:
+        return False
+    try:
+        dt = datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)), tzinfo=timezone.utc)
+    except ValueError:
+        return False
+    return dt < now - timedelta(hours=12)
+
+
+def send_health_telegram(payload: dict) -> None:
+    token = os.environ.get("TELEGRAM_BOT_TOKEN") or ""
+    chat = os.environ.get("TELEGRAM_CHAT_ID") or ""
+    if not token or not chat:
+        return
+    as_of = str(payload.get("as_of") or "")
+    try:
+        prev = json.loads(HEALTH_SENT.read_text(encoding="utf-8")) if HEALTH_SENT.exists() else {}
+    except json.JSONDecodeError:
+        prev = {}
+    if prev.get("as_of") == as_of:
+        return
+    w30 = payload.get("windows", {}).get("last_30d") or {}
+    w60 = payload.get("windows", {}).get("last_60d") or {}
+    status = str(payload.get("status") or "go").upper()
+    live_n = len(payload.get("live_open") or [])
+    near_n = len(payload.get("near_open") or [])
+    drops = payload.get("propose_drop") or []
+    pause = payload.get("pause_reason")
+    lines = [
+        f"📊 Take-book {as_of} · {status}",
+        f"30d n={w30.get('n')} · WR {w30.get('win_rate')}% · ROI {w30.get('roi_2c')}% after 2¢",
+        f"60d n={w60.get('n')} · ROI {w60.get('roi_2c')}%",
+        f"CSV live TAKEs: {live_n} · near: {near_n}",
+        f"Drop proposals: {len(drops)} (never auto-applied)",
+        "Human fill $100. No auto-bet. Do not retune Q/rel from a cold week.",
+    ]
+    if pause:
+        lines.insert(1, f"⏸ {pause}")
+    text = "\n".join(lines)
+    body = json.dumps({"chat_id": chat, "text": text}).encode("utf-8")
+    req = urllib.request.Request(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        data=body,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            if resp.status >= 300:
+                print(f"telegram health digest HTTP {resp.status}", file=sys.stderr)
+                return
+    except (urllib.error.URLError, TimeoutError) as err:
+        print(f"telegram health digest failed: {err}", file=sys.stderr)
+        return
+    HEALTH_SENT.write_text(json.dumps({"as_of": as_of}, indent=2), encoding="utf-8")
 
 
 def load_trusted() -> list[dict]:
@@ -143,6 +208,8 @@ def scan_open(trusted: list[dict]) -> tuple[list[dict], list[dict]]:
             subm = str(grp["submarket"].iloc[0])
             title = str(grp["title"].iloc[0] or "")
             slug = str(grp["slug"].iloc[0] or grp["eventSlug"].iloc[0] or "")
+            if title_is_stale(title, now) or title_is_stale(slug, now):
+                continue
             sport_roi = float(sport_roi_map.get(sport, roi))
             lane_ok = sport in sport_roi_map and sport_roi >= MIN_LANE_ROI
             rel = (cost / median) if median > 0 else 1.0
@@ -268,6 +335,7 @@ def main() -> int:
     for r in close[:12]:
         print(f"  NEAR {r['username']:<20} {', '.join(r['misses'])}  {r['play'][:70]}")
     print(f"Wrote {OUT}")
+    send_health_telegram(payload)
     return 0
 
 
