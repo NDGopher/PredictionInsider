@@ -35,6 +35,10 @@ async function ensureColumns(db: Pool): Promise<void> {
     ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS actual_price NUMERIC;
     ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS token_id TEXT;
     ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS take_cap NUMERIC;
+    ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS close_price NUMERIC;
+    ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS event_start_ms BIGINT;
+    ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS kickoff_sent BOOLEAN NOT NULL DEFAULT FALSE;
+    ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS user_id TEXT;
   `);
   schemaReady = true;
 }
@@ -118,4 +122,95 @@ export async function cancelUnfilledTake(paperId: string, reason: string): Promi
     console.warn(`[paper-take] cancel failed for ${paperId}: ${msg}`);
     return false;
   }
+}
+
+export interface FollowedTake {
+  id: string;
+  marketQuestion: string;
+  playLabel: string;
+  side: string;
+  slug: string | null;
+  conditionId: string | null;
+  tokenId: string | null;
+  alertPrice: number;
+  actualPrice: number | null;
+  closePrice: number | null;
+  takeCap: number | null;
+  eventStartMs: number | null;
+  kickoffSent: boolean;
+  betAmount: number;
+  sport: string | null;
+}
+
+function numOrNull(v: unknown): number | null {
+  if (v == null) return null;
+  const n = typeof v === "number" ? v : parseFloat(String(v));
+  return Number.isFinite(n) ? n : null;
+}
+
+export async function listFollowedTakes(): Promise<FollowedTake[]> {
+  const db = getPool();
+  if (!db) return [];
+  await ensureColumns(db);
+  const { rows } = await db.query(
+    `SELECT id, market_question, outcome_label, side, slug, condition_id, token_id,
+            alert_price, actual_price, close_price, take_cap, event_start_ms,
+            kickoff_sent, bet_amount, sport, entry_price
+     FROM tracked_bets
+     WHERE status = 'open' AND id LIKE 'take-paper-%'
+     ORDER BY bet_date ASC`,
+  );
+  return rows.map((r) => ({
+    id: String(r.id),
+    marketQuestion: String(r.market_question || ""),
+    playLabel: String(r.outcome_label || r.market_question || ""),
+    side: String(r.side || "YES"),
+    slug: r.slug ? String(r.slug) : null,
+    conditionId: r.condition_id ? String(r.condition_id) : null,
+    tokenId: r.token_id ? String(r.token_id) : null,
+    alertPrice: numOrNull(r.alert_price) ?? numOrNull(r.entry_price) ?? 0,
+    actualPrice: numOrNull(r.actual_price),
+    closePrice: numOrNull(r.close_price),
+    takeCap: numOrNull(r.take_cap),
+    eventStartMs: r.event_start_ms != null ? Number(r.event_start_ms) : null,
+    kickoffSent: Boolean(r.kickoff_sent),
+    betAmount: numOrNull(r.bet_amount) ?? 100,
+    sport: r.sport ? String(r.sport) : null,
+  }));
+}
+
+export async function markKickoff(
+  id: string,
+  closePrice: number,
+  eventStartMs: number | null,
+): Promise<void> {
+  const db = getPool();
+  if (!db) return;
+  await ensureColumns(db);
+  await db.query(
+    `UPDATE tracked_bets SET
+       close_price = $2,
+       event_start_ms = COALESCE($3, event_start_ms),
+       kickoff_sent = TRUE
+     WHERE id = $1`,
+    [id, closePrice, eventStartMs],
+  );
+}
+
+export async function markSettled(
+  id: string,
+  opts: { won: boolean; resolvedPrice: number; pnl: number },
+): Promise<void> {
+  const db = getPool();
+  if (!db) return;
+  await ensureColumns(db);
+  await db.query(
+    `UPDATE tracked_bets SET
+       status = $2,
+       resolved_price = $3,
+       resolved_date = $4,
+       pnl = $5
+     WHERE id = $1 AND status = 'open'`,
+    [id, opts.won ? "won" : "lost", opts.resolvedPrice, Date.now(), opts.pnl],
+  );
 }

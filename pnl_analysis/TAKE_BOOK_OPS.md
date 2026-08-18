@@ -1,10 +1,8 @@
 # Take-book ops (recommended plays)
 
-Home page = the take book. **The end.** Fill **the live ask**, never more than **VWAP + 2¢**. Hold to resolution. Telegram and the home page show **take cap + live ask** in decimal (1/price) and American. If the ask leaves 10–88¢ or runs through the cap, the play is deleted from the feed and Telegram.
+Home page = the take book. Fill **the live ask**, never more than **VWAP + 2¢**. Hold to resolution.
 
-An alert auto-papers a $100 ticket **at the current ask**. Type the cents you actually paid in My Bets / on the card. Auto-bettor can wait.
-
-## Product
+The Node process **pings itself** every 30–60s so Telegram still fires with no browser open.
 
 ## Product
 
@@ -31,14 +29,28 @@ Single-name copy of the 12 Polydata-matched sports books when, at the time of th
 
 Rebuild filters: `npm run backtest:asof`
 
-## Telegram
+## Telegram group (you + a friend)
 
-```
-TELEGRAM_BOT_TOKEN=...
-TELEGRAM_CHAT_ID=...
-```
+One bot, one group, two humans.
 
-The server posts a TAKE when the book prints (deduped). The same Telegram message is **edited** when the live ask moves ≥0.5¢. If the ask leaves 10–88¢ or runs through VWAP+2¢, that message is **deleted** and a short DROPPED ping is sent. Paper tickets with no actual fill are cancelled.
+1. @BotFather → new bot → `TELEGRAM_BOT_TOKEN`
+2. Create a group, add the bot, send a message in the group
+3. Open `https://api.telegram.org/bot<TOKEN>/getUpdates` and copy `chat.id` (negative, like `-100…`) into `TELEGRAM_CHAT_ID`
+4. Optional: BotFather → /setprivacy → Disable so the bot stays happy in the group
+
+The group gets:
+
+| When | Message |
+|------|---------|
+| TAKE prints | 🟢 live ask + take cap (decimal + American). Paper $100 at the ask. |
+| Ask moves ≥0.5¢ | same message edited |
+| Ask runs / leaves 10–88¢ before kickoff | ❌ DROPPED, paper cancelled if you didn’t type a fill |
+| Event starts | ⏰ KICKOFF — close vs alert + CLV |
+| Market settles | ✅ WON or ❌ LOST vs the paper $100 |
+
+Logins / per-user auto-trade come later (`user_id` is already on `tracked_bets`). For now everyone sees the same group tape; you log what you personally took in My Bets.
+
+Keepalive (no cron required): `/api/signals?refresh=1` every 60s, `/api/take-plays` every 30s, kickoff/grade every 60s.
 
 ## Stay fluid without overfitting
 

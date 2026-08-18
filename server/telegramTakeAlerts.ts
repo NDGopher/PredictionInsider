@@ -108,6 +108,14 @@ async function deleteMessage(messageId: number): Promise<boolean> {
   return r.ok;
 }
 
+export async function sendTelegramText(text: string): Promise<number | null> {
+  return sendMessage(text);
+}
+
+export function isUnfillableReason(reason: string): boolean {
+  return /ask|outside|locked|resolved|no live ask|cap/i.test(reason);
+}
+
 export function telegramConfigured(): boolean {
   return Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID);
 }
@@ -170,24 +178,27 @@ export async function syncTakeBookAlerts(
   }
 
   if (canDrop) {
-  for (const id of Object.keys(active.plays)) {
-    if (liveIds.has(id)) continue;
-    const prev = active.plays[id];
-    const liveRow = bundle.near.find((p) => p.id === id);
-    const reason = liveRow?.invalidReason || liveRow?.misses[0] || "left the take book";
-    if (configured && prev.messageId > 0) {
-      const deleted = await deleteMessage(prev.messageId);
-      if (!deleted) {
-        await editMessage(prev.messageId, formatKill(prev, reason));
+    for (const id of Object.keys(active.plays)) {
+      if (liveIds.has(id)) continue;
+      const prev = active.plays[id];
+      const liveRow = bundle.near.find((p) => p.id === id);
+      const reason = liveRow?.invalidReason || liveRow?.misses[0] || "left the take book";
+      const unfillable = isUnfillableReason(reason);
+      if (unfillable) {
+        if (configured && prev.messageId > 0) {
+          const deleted = await deleteMessage(prev.messageId);
+          if (!deleted) {
+            await editMessage(prev.messageId, formatKill(prev, reason));
+          }
+          await sendMessage(formatKill(prev, reason));
+        }
+        if (onDrop) {
+          await onDrop(prev.paperId, reason);
+        }
       }
-      await sendMessage(formatKill(prev, reason));
+      delete active.plays[id];
+      dropped += 1;
     }
-    if (onDrop) {
-      await onDrop(prev.paperId, reason);
-    }
-    delete active.plays[id];
-    dropped += 1;
-  }
   }
 
   saveActive(active);

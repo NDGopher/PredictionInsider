@@ -3527,8 +3527,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const minQuality = req.query.minQuality != null ? parseInt(String(req.query.minQuality), 10) : undefined;
       const tierFilter = (req.query.tier as string)?.toUpperCase(); // HIGH | MED | SINGLE
       const hasFilter = minConfidence != null || minQuality != null || (tierFilter && ["HIGH", "MED", "SINGLE"].includes(tierFilter));
+      const forceRefresh = req.query.refresh === "1" || req.query.refresh === "true";
       const cKey = hasFilter ? null : `signals-elite-v59-vip-premium-${sportsOnly ? "sp" : "all"}`;
-      const hit  = cKey ? getCache<unknown>(cKey) : null;
+      const hit  = !forceRefresh && cKey ? getCache<unknown>(cKey) : null;
       if (hit) { res.json(hit); return; }
 
       const now = Date.now();
@@ -5995,6 +5996,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS actual_price NUMERIC;
     ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS token_id TEXT;
     ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS take_cap NUMERIC;
+    ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS close_price NUMERIC;
+    ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS event_start_ms BIGINT;
+    ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS kickoff_sent BOOLEAN NOT NULL DEFAULT FALSE;
+    ALTER TABLE tracked_bets ADD COLUMN IF NOT EXISTS user_id TEXT;
   `).catch(e => console.error("[Bets] Table init error:", e?.message ?? e));
 
   app.get("/api/bets", async (_req, res) => {

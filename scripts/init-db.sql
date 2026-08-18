@@ -126,5 +126,9 @@ CREATE TABLE IF NOT EXISTS tracked_bets (
   actual_price NUMERIC,
   token_id TEXT,
   take_cap NUMERIC,
+  close_price NUMERIC,
+  event_start_ms BIGINT,
+  kickoff_sent BOOLEAN NOT NULL DEFAULT FALSE,
+  user_id TEXT,
   created_at BIGINT DEFAULT (extract(epoch from now()) * 1000)::BIGINT
 );

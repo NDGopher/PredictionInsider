@@ -99,5 +99,6 @@ app.use((req, res, next) => {
   httpServer.listen(port, host, () => {
     log(`serving on ${host}:${port}`);
     import("./scheduledPipeline").then((m) => m.runScheduledPipelineIfNeeded());
+    import("./takeBookLiveLoop").then((m) => m.startTakeBookLiveLoop());
   });
 })();
