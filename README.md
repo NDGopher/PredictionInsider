@@ -29,11 +29,15 @@ Elite Polymarket trader tracking system. Monitors 42 curated wallets in `CURATED
 
 ## Local Development Setup
 
+The live **Take these** home page, Telegram pings, and paper tickets live on pull request branch `cursor/trader-refresh-backtest-51c7` until it is merged to `main`. Clone that branch (or check it out after clone).
+
 ### 1. Clone the repo
 
 ```bash
 git clone https://github.com/NDGopher/PredictionInsider.git
 cd PredictionInsider
+git fetch origin
+git checkout cursor/trader-refresh-backtest-51c7
 ```
 
 ### 2. Install Node dependencies
@@ -46,10 +50,10 @@ npm install
 
 ```bash
 # Using pip
-pip install pandas requests openpyxl python-docx
+pip install -r pnl_analysis/requirements.txt
 
 # Or using uv (faster)
-uv pip install pandas requests openpyxl python-docx
+uv pip install -r pnl_analysis/requirements.txt
 ```
 
 ### 4. Set up PostgreSQL
@@ -82,11 +86,16 @@ NODE_ENV=development
 # Defaults to http://localhost:5000 if not set
 BACKEND_URL=http://localhost:5000
 
+# Optional — Telegram group pager (you + a friend). Bot token from @BotFather.
+# Chat id is negative (e.g. -100…) from getUpdates after you message the group.
+# TELEGRAM_BOT_TOKEN=
+# TELEGRAM_CHAT_ID=
+
 # Optional — for Firecrawl CLI (web scraping / API docs). See "Firecrawl CLI" below.
 # FIRECRAWL_API_KEY=fc-xxxx
 ```
 
-> The `DATABASE_URL` is the only required secret. Everything else has a default.
+> `DATABASE_URL` is required. Telegram is optional but needed if you want TAKE / kickoff / won-lost pings without keeping a browser open.
 
 ### Authorizing Firecrawl CLI (optional)
 
@@ -129,13 +138,29 @@ npm run db:init
 
 Avoid `npm run db:push` unless you have added real Drizzle table definitions — it can propose dropping `elite_*` tables.
 
-### 7. Start the development server
+### 7. Ingest trader scores (first run)
+
+Without this, the dashboard has empty profiles and TAKE scoring has nothing to copy.
+
+```bash
+npm run daily-pipeline
+```
+
+That is incremental Polymarket fetch + ingest, then `take_book_daily.py` (pause banner / drop proposals). First run can take a while. Skip only if you already have ingested CSVs in this checkout.
+
+### 8. Start the development server (leave it running)
 
 ```bash
 npm run dev
 ```
 
-The app runs at **http://localhost:5000** — both the API and the frontend are served from the same port.
+Open **http://127.0.0.1:5000**. API and UI share that port. Windows binds to `127.0.0.1`; Linux/Mac bind `0.0.0.0`.
+
+Leave this process up. It pings itself so Telegram still fires with no browser: `/api/signals?refresh=1` every 60s, `/api/take-plays` every 30s, kickoff/grade every 60s. Logs should include `[take-live] keepalive on`.
+
+**Windows shortcut:** Docker Desktop running, then `start-prediction-insider.bat` (or `npm run setup:local` then `npm run dev`).
+
+Do **not** run `npm run db:push` for routine setup — it can propose dropping `elite_*` tables. Use `npm run db:init` only.
 
 ---
 
