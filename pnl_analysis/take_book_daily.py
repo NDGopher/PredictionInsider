@@ -301,8 +301,26 @@ def main() -> int:
     now = pd.Timestamp(datetime.now(timezone.utc))
     trusted = load_trusted()
     if not PLAYS.exists():
-        print(f"Missing {PLAYS}; run asof_fullbook_backtest.py first")
-        return 1
+        print(
+            f"[warn] Missing {PLAYS}; skip take-book health. "
+            "Run asof_fullbook_backtest.py when you want rolling take ROI. "
+            "Ranks and copy list still rebuild."
+        )
+        stub = {
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "as_of": datetime.now(timezone.utc).date().isoformat(),
+            "status": "skipped",
+            "pause_reason": "missing asof_fullbook_plays.csv",
+            "windows": {},
+            "by_trader": [],
+            "propose_drop": [],
+            "propose_add": [],
+            "live_open": [],
+            "near_open": [],
+        }
+        OUT.write_text(json.dumps(stub, indent=2, default=str), encoding="utf-8")
+        OPEN_OUT.write_text(json.dumps({"live": [], "near": []}, indent=2, default=str), encoding="utf-8")
+        return 0
     df = pd.read_csv(PLAYS)
     df["end_dt"] = pd.to_datetime(df["end_dt"], utc=True)
     df["won"] = df["won"].astype(str).str.lower().isin(["true", "1", "yes"])

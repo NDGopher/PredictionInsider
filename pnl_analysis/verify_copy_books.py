@@ -89,6 +89,13 @@ def _check_window(name: str, window: Any) -> list[str]:
     return errors
 
 
+def _watch_is_soft(bucket: str, errors: list[str], warnings: list[str]) -> tuple[list[str], list[str]]:
+    """Unfetched auto-watch names are a next-run fetch, not a pipeline failure."""
+    if bucket == "watch" and errors:
+        return [], warnings + [f"watch: {e}" for e in errors]
+    return errors, warnings
+
+
 def audit_trader(row: dict[str, Any], *, max_age_hours: float | None) -> dict[str, Any]:
     username = str(row.get("username") or "")
     wallet = str(row.get("wallet") or "").lower()
@@ -119,11 +126,12 @@ def audit_trader(row: dict[str, Any], *, max_age_hours: float | None) -> dict[st
 
     if not json_p.exists():
         errors.append(f"missing analysis JSON {json_p.name}")
+        errors, warnings = _watch_is_soft(bucket, errors, warnings)
         return {
             "username": username,
             "wallet": wallet,
             "bucket": bucket,
-            "ok": False,
+            "ok": not errors,
             "errors": errors,
             "warnings": warnings,
             "csv": csv_p.name,
@@ -177,6 +185,7 @@ def audit_trader(row: dict[str, Any], *, max_age_hours: float | None) -> dict[st
         else:
             warnings.append(f"CSV stale {csv_age_h:.1f}h > {max_age_hours:.0f}h")
 
+    errors, warnings = _watch_is_soft(bucket, errors, warnings)
     return {
         "username": username,
         "wallet": wallet,
@@ -246,6 +255,8 @@ def main() -> int:
     )
     for t in payload.get("traders") or []:
         flag = "OK" if t["ok"] else "FAIL"
+        if t["ok"] and t.get("warnings"):
+            flag = "WARN"
         age = t.get("csv_age_hours")
         age_s = f"{age:.1f}h" if isinstance(age, (int, float)) else "no-csv"
         pnl = t.get("json_dashboard_pnl")

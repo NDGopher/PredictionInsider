@@ -66,8 +66,6 @@ RATE_LIMIT_HTTP = (429, 502, 503)
 MAX_RETRIES_PER_PAGE = 8
 PAGE_SLEEP_SEC = 0.35
 MIN_PREV_CLOSED_TO_GUARD = 80
-# Daily overlay: 16 pages × 50 = 800 newest closed. Unique history stays on disk.
-LIGHT_CLOSED_PAGES = 16
 ANALYSIS_COLLAPSE_MIN_PREV_EVENTS = 120
 ANALYSIS_COLLAPSE_MAX_NEW_EVENTS_RATIO = 0.2
 ANALYSIS_COLLAPSE_MAX_NEW_QS = 20
@@ -958,7 +956,7 @@ def main():
     if ANALYZE_ONLY:
         mode = "analyze-only"
     elif INCREMENTAL:
-        mode = "deep unique overlay" if DEEP_INCREMENTAL else "light incremental (newest closed + open)"
+        mode = "deep unique overlay" if DEEP_INCREMENTAL else "since-last-fetch overlay + current opens"
     elif STALE_DAYS:
         mode = f"fetch (stale>{STALE_DAYS:.0f}d)"
     else:
