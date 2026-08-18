@@ -383,9 +383,12 @@ def load_trader_markets(csv_path: Path, username: str, wallet: str) -> pd.DataFr
             df[col] = np.nan
     for col in ("avgPrice", "totalBought", "realizedPnl", "cashPnl", "curPrice", "initialValue"):
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)
-    # Include unredeemed settled tokens (status=open, curPrice 0 or 1). Closed-only
-    # is win-biased because winners redeem and losers sit in /positions.
-    resolved = (df["curPrice"] >= 0.99) | (df["curPrice"] <= 0.01)
+    price_res = (df["curPrice"] >= 0.99) | (df["curPrice"] <= 0.01)
+    if "redeemable" in df.columns:
+        redeem_res = df["redeemable"].astype(str).str.lower().isin(["true", "1", "yes"])
+        resolved = price_res | redeem_res
+    else:
+        resolved = price_res
     df = df[resolved].copy()
     if df.empty:
         return df

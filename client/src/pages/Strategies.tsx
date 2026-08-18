@@ -74,6 +74,7 @@ interface HealthRow {
   reason: string;
   overall?: StratStats;
   last_90d?: StratStats;
+  last_60d?: StratStats;
   last_30d?: StratStats;
   max_date?: string;
   quality_proxy?: number;
@@ -97,6 +98,7 @@ interface TailStrategiesResponse {
       reason?: string;
       overall?: StratStats;
       last_90d?: StratStats;
+      last_60d?: StratStats;
       last_30d?: StratStats;
       may_aug_2026?: StratStats;
       max_date?: string;
@@ -414,6 +416,7 @@ export default function Strategies() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-1">
                   <Stat label="Full ROI" value={`${data.health.cannae.overall?.roi ?? 0}%`} className={roiClass(data.health.cannae.overall?.roi)} />
                   <Stat label="Last 90d" value={`${data.health.cannae.last_90d?.roi ?? 0}%`} className={roiClass(data.health.cannae.last_90d?.roi)} />
+                  <Stat label="Last 60d" value={`${data.health.cannae.last_60d?.roi ?? 0}%`} className={roiClass(data.health.cannae.last_60d?.roi)} />
                   <Stat label="Last 30d" value={`${data.health.cannae.last_30d?.roi ?? 0}%`} className={roiClass(data.health.cannae.last_30d?.roi)} />
                   <Stat label="Last dated play" value={data.health.cannae.max_date || "—"} className="text-sm" />
                 </div>
@@ -439,6 +442,7 @@ export default function Strategies() {
                       <th className="py-1 pr-2">n</th>
                       <th className="py-1 pr-2">ROI</th>
                       <th className="py-1 pr-2">90d</th>
+                      <th className="py-1 pr-2">60d</th>
                       <th className="py-1 pr-2">Last</th>
                       <th className="py-1">Why</th>
                     </tr>
@@ -451,6 +455,7 @@ export default function Strategies() {
                         <td className="py-1.5 pr-2 tabular-nums">{t.overall?.n}</td>
                         <td className={`py-1.5 pr-2 tabular-nums ${roiClass(t.overall?.roi)}`}>{t.overall?.roi}%</td>
                         <td className={`py-1.5 pr-2 tabular-nums ${roiClass(t.last_90d?.roi)}`}>{t.last_90d?.roi}% ({t.last_90d?.n})</td>
+                        <td className={`py-1.5 pr-2 tabular-nums ${roiClass(t.last_60d?.roi)}`}>{t.last_60d?.roi}% ({t.last_60d?.n})</td>
                         <td className="py-1.5 pr-2 whitespace-nowrap">{t.max_date}</td>
                         <td className="py-1.5 text-muted-foreground">{t.reason}</td>
                       </tr>

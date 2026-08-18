@@ -43,8 +43,8 @@ function setCache(key: string, data: unknown, ttlMs: number) {
 }
 /** Drop elite signals cache so the next GET /api/signals recomputes (e.g. after fresh live trades). */
 function invalidateEliteSignalsCache() {
-  delete cache["signals-elite-v57-vip-premium-sp"];
-  delete cache["signals-elite-v57-vip-premium-all"];
+  delete cache["signals-elite-v58-vip-premium-sp"];
+  delete cache["signals-elite-v58-vip-premium-all"];
 }
 const seenSignalIds = new Set<string>();
 
@@ -2895,6 +2895,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           csvOpenCount:         t.open_count,
           csvOpenRisk:          t.open_risk,
           csvOpenPnl:           t.open_pnl,
+          csvDashboardPnl:      t.dashboard_pnl ?? t.total_profit,
+          csvLast30d:           t.last_30d,
+          csvLast60d:           t.last_60d,
+          csvLast90d:           t.last_90d,
+          csvLastEventDate:     t.last_event_date,
+          csvPossiblyQuit:      Boolean(t.possibly_quit),
           csvTopSport:          t.top_sport,
           csvBestPriceBucket:   t.best_price_bucket,
           csvBestMarketType:    t.best_market,
@@ -3487,7 +3493,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const minQuality = req.query.minQuality != null ? parseInt(String(req.query.minQuality), 10) : undefined;
       const tierFilter = (req.query.tier as string)?.toUpperCase(); // HIGH | MED | SINGLE
       const hasFilter = minConfidence != null || minQuality != null || (tierFilter && ["HIGH", "MED", "SINGLE"].includes(tierFilter));
-      const cKey = hasFilter ? null : `signals-elite-v57-vip-premium-${sportsOnly ? "sp" : "all"}`;
+      const cKey = hasFilter ? null : `signals-elite-v58-vip-premium-${sportsOnly ? "sp" : "all"}`;
       const hit  = cKey ? getCache<unknown>(cKey) : null;
       if (hit) { res.json(hit); return; }
 
@@ -6054,7 +6060,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         strategies.find((s) => s.recommended) ||
         strategies[0] ||
         null;
-      const cached = getCache<SignalsResponse>("signals-elite-v57-vip-premium-sp");
+      const cached = getCache<SignalsResponse>("signals-elite-v58-vip-premium-sp");
       const filters: TailStrategyFilters | undefined = selected?.filters;
       const livePlays = (cached?.signals && filters)
         ? cached.signals
@@ -6086,6 +6092,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                     reason: (health.cannae as { reason?: string }).reason,
                     overall: (health.cannae as { overall?: unknown }).overall,
                     last_90d: (health.cannae as { last_90d?: unknown }).last_90d,
+                    last_60d: (health.cannae as { last_60d?: unknown }).last_60d,
                     last_30d: (health.cannae as { last_30d?: unknown }).last_30d,
                     may_aug_2026: (health.cannae as { may_aug_2026?: unknown }).may_aug_2026,
                     max_date: (health.cannae as { max_date?: string }).max_date,
@@ -6101,6 +6108,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
                 reason: String(t.reason ?? ""),
                 overall: t.overall,
                 last_90d: t.last_90d,
+                last_60d: t.last_60d,
                 last_30d: t.last_30d,
                 max_date: t.max_date,
                 quality_proxy: t.quality_proxy,

@@ -50,8 +50,13 @@ def parse_ymd(y: int, m: int, d: int) -> datetime | None:
         return None
 
 
-def parse_event_date(row: Any) -> datetime | None:
-    """Best-effort event date: endDate, slug/title YYYY-MM-DD, then unix timestamp."""
+def parse_event_date(row: Any, *, allow_timestamp: bool = False) -> datetime | None:
+    """Event date from endDate or slug/title. Timestamp is opt-in only.
+
+    Redeemed winners get a fresh `timestamp` (fill/redeem time) while unredeemed
+    losers often have none. Using timestamp for last-Nd windows therefore looks
+    like 100% winners. Never use it for recency / grading windows.
+    """
     end_raw = row.get("endDate") if hasattr(row, "get") else None
     if end_raw is not None and str(end_raw).strip() not in ("", "nan", "None", "NaT"):
         dt = pd.to_datetime(end_raw, errors="coerce", utc=True)
@@ -74,6 +79,8 @@ def parse_event_date(row: Any) -> datetime | None:
                     if parsed:
                         return parsed
 
+    if not allow_timestamp:
+        return None
     ts = row.get("timestamp") if hasattr(row, "get") else None
     if ts is None or str(ts).strip() in ("", "nan", "None"):
         return None
@@ -97,6 +104,14 @@ def is_price_resolved(cur_price: float, lo: float = 0.01, hi: float = 0.99) -> b
     except (TypeError, ValueError):
         return False
     return p <= lo or p >= hi
+
+
+def is_redeemable_flag(val: Any) -> bool:
+    if isinstance(val, bool):
+        return val
+    if val is None:
+        return False
+    return str(val).strip().lower() in ("true", "1", "yes")
 
 
 def classify_submarket(row: Any) -> str:
@@ -157,12 +172,25 @@ def attach_event_dates(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def mark_resolved(df: pd.DataFrame) -> pd.DataFrame:
+    """curPrice 0/1 OR redeemable=true counts as settled, regardless of status."""
     out = df.copy()
     if "curPrice" not in out.columns:
         out["curPrice"] = np.nan
     out["curPrice"] = pd.to_numeric(out["curPrice"], errors="coerce")
-    out["is_resolved"] = out["curPrice"].apply(lambda p: is_price_resolved(float(p) if pd.notna(p) else 0.5))
+    price_res = out["curPrice"].apply(lambda p: is_price_resolved(float(p) if pd.notna(p) else 0.5))
+    if "redeemable" in out.columns:
+        red = out["redeemable"].map(is_redeemable_flag)
+        out["is_resolved"] = price_res | red.fillna(False)
+    else:
+        out["is_resolved"] = price_res
     return out
+
+
+def dashboard_pnl(df: pd.DataFrame) -> pd.Series:
+    """Polymarket profile PnL: realizedPnl + cashPnl (includes unredeemed losers)."""
+    realized = pd.to_numeric(df.get("realizedPnl", 0), errors="coerce").fillna(0.0)
+    cash = pd.to_numeric(df.get("cashPnl", 0), errors="coerce").fillna(0.0)
+    return realized + cash
 
 
 def cost_basis(df: pd.DataFrame) -> pd.Series:

@@ -41,6 +41,7 @@ export const SIGNAL_KICK_WALLETS = new Set<string>([
   "0x68146921df11eab44296dc4e58025ca84741a9e7", // LynxTitan — last 90d −92% hold-to-res (n=222)
   "0x0b9cae2b0dfe7a71c413e0604eaac1c352f87e44", // geniusMC — last 90d −21%
   "0x53ecc53e7a69aad0e6dda60264cc2e363092df91", // 0x53eCc53E7 — last 90d −49.5% (n=186); do not tail until recovered
+  "0x5268527977f700f9bf9b6d5cd843859e4e70135d", // HomeRunHazard — 97% WR / ~1% ROI on $124M; favorite grinder, impossible to tail
 ]);
 
 export const CURATED_TRADERS: { wallet: string; username: string; url?: string }[] = [

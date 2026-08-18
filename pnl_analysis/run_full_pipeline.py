@@ -94,14 +94,18 @@ parser.add_argument("--incremental", action="store_true",
                     help="Fetch only recent activity (2 pages closed + 1 open), merge into existing CSV, then re-analyze all. Use for daily runs.")
 parser.add_argument("--skip-if-rows-over", type=int, default=0,
                     help="Skip re-fetch for traders whose CSV already has more than N rows (use existing CSV, still analyze). 0 = disabled. Use 250000 to avoid re-fetching whales in batch.")
+parser.add_argument("--full-open", action="store_true",
+                    help="Paginate the entire /positions book (limit 500) and merge into existing CSVs. Skips the confirmed MM wallet. Implies incremental merge (never replaces closed history).")
 args, _ = parser.parse_known_args()
 
 ANALYZE_ONLY  = args.analyze_only
 INGEST        = args.ingest
 STALE_DAYS    = args.stale_days
-INCREMENTAL   = getattr(args, "incremental", False)
+FULL_OPEN     = bool(getattr(args, "full_open", False))
+INCREMENTAL   = bool(getattr(args, "incremental", False) or FULL_OPEN)
 SKIP_IF_ROWS_OVER = getattr(args, "skip_if_rows_over", 0)
 FILTER_NAMES  = set(n.strip() for n in args.traders.split(",") if n.strip())
+MM_WALLET     = "0xd9e0aaca471f489be338fd0f91a26e8669a805f2"
 # Optional extra wallets (leaderboard discoveries). Same schema as ALL_TRADERS rows.
 EXTRA_TRADERS_PATH = Path(__file__).resolve().parent / "extra_traders.json"
 
@@ -266,26 +270,28 @@ def _get_json_list_with_retry(url: str, params: dict, label: str):
     return None
 
 
-def fetch_positions(address, endpoint, max_pages=None):
-    """Fetch positions. If max_pages is set (e.g. 2), stop after that many pages (for incremental)."""
+def fetch_positions(address, endpoint, max_pages=None, page_limit=None):
+    """Fetch positions. Open books support limit=500; closed-positions max is 50."""
+    if page_limit is None:
+        page_limit = 500 if endpoint == "positions" else 50
     base_url = f"https://data-api.polymarket.com/{endpoint}"
-    params   = {"user": address, "limit": 50, "offset": 0}
+    params   = {"user": address, "limit": page_limit, "offset": 0}
     all_data = []
     page     = 0
 
     while True:
         if max_pages is not None and page >= max_pages:
             break
-        label = f"{endpoint} offset={params['offset']}"
+        label = f"{endpoint} offset={params['offset']} limit={page_limit}"
         data = _get_json_list_with_retry(base_url, params, label)
         if data is None:
             break
         if not data:
             break
         all_data.extend(data)
-        if len(data) < 50:
+        if len(data) < page_limit:
             break
-        params["offset"] += 50
+        params["offset"] += page_limit
         page += 1
         time.sleep(PAGE_SLEEP_SEC)
 
@@ -323,10 +329,33 @@ def _position_dedupe_key(df: pd.DataFrame):
     return None
 
 
+def _merge_position_frames(existing: pd.DataFrame, new_df: pd.DataFrame) -> pd.DataFrame:
+    """Overlay newest API rows onto existing CSV without dropping unmatched history."""
+    if new_df is None or new_df.empty:
+        return existing
+    if existing is None or existing.empty:
+        combined = new_df.copy()
+    else:
+        combined = pd.concat([existing, new_df], ignore_index=True)
+    use_key = _position_dedupe_key(combined)
+    if isinstance(use_key, list):
+        if all(c in combined.columns for c in use_key):
+            combined = combined.drop_duplicates(subset=use_key, keep="last")
+    elif use_key and use_key in combined.columns:
+        combined = combined.drop_duplicates(subset=[use_key], keep="last")
+    for col in ["realizedPnl", "cashPnl", "currentValue", "initialValue"]:
+        if col in combined.columns:
+            combined[col] = pd.to_numeric(combined[col], errors="coerce").fillna(0)
+        else:
+            combined[col] = 0.0
+    combined["total_position_pnl"] = combined["realizedPnl"] + combined["cashPnl"]
+    return combined
+
+
 def fetch_recent_and_merge(address, username):
     """
-    Incremental: fetch recent closed (up to 60 pages) + open (80 pages, or full
-    open book when the CSV already has 800+ open rows). Overlay onto existing CSV.
+    Incremental: fetch recent closed (up to 80 pages) + the full open book
+    (unless this is the confirmed MM wallet). Overlay onto existing CSV.
     Rows with the same position id (or asset on older CSVs) keep the newest API copy.
     Returns path to updated CSV or None if no existing CSV.
     """
@@ -344,15 +373,17 @@ def fetch_recent_and_merge(address, username):
         return collect_and_save(address, username)
 
     prev_closed, prev_open = _csv_closed_open_counts(csv_path)
-    # Whales leave thousands of settled losers in /positions. Incremental 20 open
-    # pages never pulled May–Aug unredeemed rows, which froze last-20 tapes in April.
-    closed_pages = 60
-    open_pages: int | None = 80
-    if prev_open >= 800 and address.lower() != "0xd9e0aaca471f489be338fd0f91a26e8669a805f2":
-        open_pages = None
-        print(f"    🔄 Incremental: {closed_pages} closed pages + FULL open ({prev_open:,} existing open)…")
+    closed_pages = 80
+    is_mm = address.lower() == MM_WALLET
+    # Always pull the full /positions book except the endless MM wallet.
+    # Partial open pages left May–Aug unredeemed losers out of last-60d windows.
+    open_pages: int | None
+    if is_mm:
+        open_pages = 2
+        print(f"    🔄 Incremental: {closed_pages} closed pages + {open_pages} open (MM skip full book)…")
     else:
-        print(f"    🔄 Incremental fetch ({closed_pages} closed + {open_pages} open pages)…")
+        open_pages = None
+        print(f"    🔄 Full-open merge: {closed_pages} closed pages + ALL open ({prev_open:,} existing open)…")
     df_closed = fetch_positions(address, "closed-positions", max_pages=closed_pages)
     time.sleep(PAGE_SLEEP_SEC)
     df_open = fetch_positions(address, "positions", max_pages=open_pages)
@@ -364,41 +395,52 @@ def fetch_recent_and_merge(address, username):
             "merge may miss new closed rows this run (rate limit?)."
         )
 
-    df_closed["status"] = "closed"
-    df_open["status"]   = "open"
+    if not df_closed.empty:
+        df_closed = df_closed.copy()
+        df_closed["status"] = "closed"
+    if not df_open.empty:
+        df_open = df_open.copy()
+        df_open["status"] = "open"
     new_df = pd.concat([df_closed, df_open], ignore_index=True)
     if new_df.empty:
         return csv_path
-    # Historical CSVs often lack `id`; keep a stable key so old rows do not duplicate.
-    use_key = merge_key if merge_key != "id" else (_position_dedupe_key(new_df) or merge_key)
     n_before = len(existing)
-    combined = pd.concat([existing, new_df], ignore_index=True)
-    if isinstance(use_key, list):
-        if all(c in combined.columns for c in use_key):
-            combined = combined.drop_duplicates(subset=use_key, keep="last")
-    elif use_key and use_key in combined.columns:
-        combined = combined.drop_duplicates(subset=[use_key], keep="last")
-    for col in ["realizedPnl", "cashPnl", "currentValue", "initialValue"]:
-        if col in combined.columns:
-            combined[col] = pd.to_numeric(combined[col], errors="coerce").fillna(0)
-    if "total_position_pnl" not in combined.columns:
-        combined["total_position_pnl"] = combined.get("realizedPnl", 0) + combined.get("cashPnl", 0)
+    combined = _merge_position_frames(existing, new_df)
     combined.to_csv(csv_path, index=False, quoting=csv_module.QUOTE_ALL)
     n_after = len(combined)
-    print(f"    📄 Incremental merge -> {csv_path.name} ({n_before:,} -> {n_after:,} rows)")
+    n_open = int((combined["status"].astype(str).str.lower() == "open").sum()) if "status" in combined.columns else 0
+    print(f"    📄 Incremental merge -> {csv_path.name} ({n_before:,} -> {n_after:,} rows, {n_open:,} open)")
     return csv_path
 
 
 def collect_and_save(address, username):
     csv_path = csv_path_for(address, username)
     prev_closed, prev_open = _csv_closed_open_counts(csv_path)
+    existing = None
+    if csv_path.exists():
+        try:
+            existing = pd.read_csv(csv_path, low_memory=False)
+        except Exception as e:
+            print(f"    ⚠️  Could not read existing CSV for merge: {e}")
+            existing = None
 
+    is_mm = address.lower() == MM_WALLET
     df_closed = fetch_positions(address, "closed-positions")
     time.sleep(PAGE_SLEEP_SEC)
-    df_open   = fetch_positions(address, "positions")
+    df_open = fetch_positions(address, "positions", max_pages=(2 if is_mm else None))
 
     # Do not replace a deep closed history with open-only data (typical after 429 on page 0).
     if df_closed.empty and not df_open.empty and prev_closed >= MIN_PREV_CLOSED_TO_GUARD:
+        if existing is not None and not existing.empty:
+            print(
+                f"    [GUARD] Merging open-only fetch onto existing CSV ({prev_closed:,} closed kept)."
+            )
+            df_open = df_open.copy()
+            df_open["status"] = "open"
+            combined = _merge_position_frames(existing, df_open)
+            combined.to_csv(csv_path, index=False, quoting=csv_module.QUOTE_ALL)
+            print(f"    📄 CSV merged ({len(combined):,} rows)")
+            return csv_path
         print(
             f"    [GUARD] Keeping existing CSV: API returned 0 closed rows but file had {prev_closed:,} closed "
             f"({len(df_open):,} open only — likely rate limit / partial fetch)."
@@ -410,26 +452,24 @@ def collect_and_save(address, username):
         )
         return csv_path
 
-    df_closed["status"] = "closed"
-    df_open["status"]   = "open"
-    df = pd.concat([df_closed, df_open], ignore_index=True)
-
-    if df.empty:
-        print(f"    ⚠️  No data returned.")
+    if not df_closed.empty:
+        df_closed = df_closed.copy()
+        df_closed["status"] = "closed"
+    if not df_open.empty:
+        df_open = df_open.copy()
+        df_open["status"] = "open"
+    new_df = pd.concat([df_closed, df_open], ignore_index=True)
+    if new_df.empty:
+        print("    ⚠️  No data returned.")
         return None
 
-    if "id" in df.columns:
-        df = df.drop_duplicates(subset=["id"])
-
-    for col in ["realizedPnl", "cashPnl", "currentValue", "initialValue"]:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
-        else:
-            df[col] = 0.0
-
-    df["total_position_pnl"] = df["realizedPnl"] + df["cashPnl"]
+    if existing is not None and not existing.empty:
+        df = _merge_position_frames(existing, new_df)
+        print(f"    📄 CSV merged ({len(existing):,} -> {len(df):,} rows, {len(df_closed):,} closed fetched + {len(df_open):,} open)")
+    else:
+        df = _merge_position_frames(pd.DataFrame(), new_df)
+        print(f"    📄 CSV saved ({len(df):,} rows, {len(df_closed):,} closed + {len(df_open):,} open)")
     df.to_csv(csv_path, index=False, quoting=csv_module.QUOTE_ALL)
-    print(f"    📄 CSV saved ({len(df):,} rows, {len(df_closed):,} closed + {len(df_open):,} open)")
     return csv_path
 
 
@@ -448,12 +488,15 @@ def process_trader(address, username):
     # ── Decide whether to fetch or use existing CSV ──────────────
     if not ANALYZE_ONLY:
         if INCREMENTAL:
-            # Fetch only recent activity and merge into existing CSV; skip if no CSV
-            merged = fetch_recent_and_merge(address, username)
-            if merged is None:
-                print(f"    ⚠️  No existing CSV — skipping fetch (run full pipeline once)")
-                return None
-            # Fall through to analyze (csv_path is already updated)
+            if address.lower() == MM_WALLET:
+                print("    [skip] Confirmed MM wallet — not fetching the endless open book; analyzing existing CSV")
+            else:
+                merged = fetch_recent_and_merge(address, username)
+                if merged is None:
+                    print("    ⚠️  No existing CSV — full fetch (closed + open)")
+                    result = collect_and_save(address, username)
+                    if result is None:
+                        return None
         else:
             age = csv_age_days(address, username)
             rows = csv_row_count(address, username) if SKIP_IF_ROWS_OVER else 0

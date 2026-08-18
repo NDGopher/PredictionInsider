@@ -9,7 +9,10 @@ import numpy as np
 import json
 import csv as csv_module
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+from position_utils import attach_event_dates, dashboard_pnl, is_redeemable_flag
 
 # ================================================================
 # CLASSIFIERS  (exact logic from Gemini's framework)
@@ -73,21 +76,29 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
             df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
         else:
             df[col] = 0.0
-    # Unredeemed losers stay status=open with curPrice 0/1. Treat them as closed so
-    # cost basis uses shares×avgPrice (same as redeemed winners) instead of initialValue.
+    # Unredeemed losers stay status=open with curPrice 0/1 (or redeemable=true).
+    # Treat them as closed so cost basis uses shares×avgPrice instead of initialValue.
     if "curPrice" in df.columns:
         df["curPrice"] = pd.to_numeric(df["curPrice"], errors="coerce").fillna(0)
         settled = (df["curPrice"] <= 0.01) | (df["curPrice"] >= 0.99)
+        if "redeemable" in df.columns:
+            settled = settled | df["redeemable"].map(is_redeemable_flag).fillna(False)
         if "status" not in df.columns:
             df["status"] = np.where(settled, "closed", "open")
         else:
             df.loc[settled, "status"] = "closed"
+    else:
+        settled = pd.Series(False, index=df.index)
 
     if "total_position_pnl" not in df.columns:
-        df["total_position_pnl"] = df["realizedPnl"] + df["cashPnl"]
+        df["total_position_pnl"] = dashboard_pnl(df)
+    else:
+        df["total_position_pnl"] = pd.to_numeric(df["total_position_pnl"], errors="coerce").fillna(0)
 
-    # True PNL: raw sum(realizedPnl) — matches Polymarket display; not used in analysis
+    # Redeemed-only realized (win-biased if losers sit unredeemed). Keep for diagnostics.
     raw_realized_pnl = float(df["realizedPnl"].sum())
+    # Profile / last-Nd PnL: realized + cash (includes unredeemed settled losers).
+    dashboard_pnl_total = float(df["total_position_pnl"].sum())
 
     # Grouping ID (event-level; matches polyhistory ANALYSISCODE / Cannae.py)
     df["grouping_id"] = df["eventSlug"].fillna(df.get("slug", ""))
@@ -112,8 +123,51 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
     )
     total_risked_dashboard = float(event_agg_all["calculated_cost"].sum())
     roi_dashboard = (
+        (dashboard_pnl_total / total_risked_dashboard * 100) if total_risked_dashboard > 0 else 0.0
+    )
+    roi_redeemed_only = (
         (raw_realized_pnl / total_risked_dashboard * 100) if total_risked_dashboard > 0 else 0.0
     )
+
+    # Recency windows dated from endDate/slug/title — never fill/redeem timestamp.
+    dated = attach_event_dates(df)
+    now_utc = datetime.now(timezone.utc)
+    horizon = now_utc + timedelta(days=1)
+
+    def _window_stats(days: int) -> dict:
+        cutoff = now_utc - timedelta(days=days)
+        mask = dated["event_dt"].notna() & (dated["event_dt"] >= cutoff) & (dated["event_dt"] <= horizon)
+        sub = dated.loc[mask]
+        n = int(len(sub))
+        pnl = float(sub["total_position_pnl"].sum()) if n else 0.0
+        cost = float(sub["calculated_cost"].sum()) if n else 0.0
+        wins = int(((sub["curPrice"] >= 0.99) if "curPrice" in sub.columns else sub["total_position_pnl"] > 0).sum()) if n else 0
+        return {
+            "n": n,
+            "pnl": round(pnl, 2),
+            "cost": round(cost, 2),
+            "roi": round((pnl / cost * 100.0) if cost > 0 else 0.0, 2),
+            "wins": wins,
+            "win_rate": round((wins / n * 100.0) if n else 0.0, 1),
+            "first": str(sub["event_dt"].min())[:10] if n else None,
+            "last": str(sub["event_dt"].max())[:10] if n else None,
+        }
+
+    last_30d = _window_stats(30)
+    last_60d = _window_stats(60)
+    last_90d = _window_stats(90)
+    dated_ok = dated["event_dt"].notna()
+    last_event = str(dated.loc[dated_ok, "event_dt"].max())[:10] if dated_ok.any() else None
+    days_since_last = None
+    if dated_ok.any():
+        try:
+            last_event_dt = pd.Timestamp(dated.loc[dated_ok, "event_dt"].max())
+            if last_event_dt.tzinfo is None:
+                last_event_dt = last_event_dt.tz_localize("UTC")
+            days_since_last = int((now_utc - last_event_dt.to_pydatetime()).total_seconds() // 86400)
+        except Exception:
+            days_since_last = None
+    possibly_quit = bool(days_since_last is not None and days_since_last >= 45 and last_30d["n"] == 0)
 
     # ── Perfect Hedge Filter ─────────────────────────────────────
     # Identify conditionIds where the trader simultaneously held BOTH sides
@@ -407,7 +461,9 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
     open_value  = df[df["status"] == "open"]["currentValue"].sum() if "currentValue" in df.columns else 0
     open_pnl    = open_agg["total_pnl"].sum()
 
-    # ── Monthly PnL ───────────────────────────────────────────────
+    # ── Monthly PnL (event dates, not redeem timestamps) ──────────
+    date_map = dated.groupby("grouping_id")["event_dt"].min()
+    agg["end_date"] = agg["grouping_id"].map(date_map).fillna(pd.to_datetime(agg["end_date"], errors="coerce", utc=True))
     _ed = pd.to_datetime(agg["end_date"], errors="coerce", utc=True)
     agg["month"] = _ed.dt.tz_convert(None).dt.to_period("M")
     monthly_pnl = agg.groupby("month", observed=True)["total_pnl"].sum()
@@ -490,6 +546,16 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
     quality_score = round(base_score + flip_bonus - leakage_penalty)
     quality_score = max(0, min(quality_score, 100))
 
+    # Recency / dashboard last-60d: closed-only realized PnL was win-biased.
+    recency_penalty = 0
+    if last_60d["n"] >= 15 and last_60d["roi"] <= -10:
+        recency_penalty += 20
+    elif last_60d["n"] >= 15 and last_60d["roi"] < 0:
+        recency_penalty += 10
+    if possibly_quit:
+        recency_penalty += 25
+    quality_score = max(0, min(100, quality_score - recency_penalty))
+
     if   quality_score >= 70: tier = "S-Tier"
     elif quality_score >= 50: tier = "A-Tier"
     elif quality_score >= 30: tier = "B-Tier"
@@ -560,6 +626,13 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
         tags.append("🐋 Mega Whale")
     elif mean_market_stake >= 2_000:
         tags.append("🐋 Big Bettor")
+
+    if possibly_quit:
+        tags.append("🚪 Inactive — last dated event >45d; do not tail")
+    if last_60d["n"] >= 15 and last_60d["roi"] <= -10:
+        tags.append(f"⚠️ Last 60d dashboard PnL {last_60d['roi']:.1f}% — do not copy recent form")
+    if recency_penalty:
+        tags.append(f"Recency penalty −{recency_penalty} Q")
 
     ml_stat = market_stats.get("Moneyline / Match", {})
     if ml_stat.get("events", 0) >= 20 and ml_stat.get("roi", 0) > 10:
@@ -634,10 +707,18 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
         "username": username,
 
         # Summary metrics
-        "total_profit":       round(raw_realized_pnl, 2),   # display = Polymarket-matching realized PNL
-        "raw_realized_pnl":   round(raw_realized_pnl, 2),   # Polymarket-matching true PNL (display only)
-        "total_risked":       round(total_risked_dashboard, 2),  # dashboard-match (polyhistory) for ROI denominator
-        "overall_roi":      round(roi_dashboard, 2),        # ROI = raw_realized_pnl / total_risked (accurate CSV ROIs)
+        "total_profit":       round(dashboard_pnl_total, 2),  # profile PnL = realized + cash
+        "raw_realized_pnl":   round(raw_realized_pnl, 2),     # redeemed-only (win-biased if losers sit open)
+        "dashboard_pnl":      round(dashboard_pnl_total, 2),
+        "total_risked":       round(total_risked_dashboard, 2),
+        "overall_roi":      round(roi_dashboard, 2),        # dashboard PnL / total risked
+        "redeemed_only_roi": round(roi_redeemed_only, 2),
+        "last_30d":         last_30d,
+        "last_60d":         last_60d,
+        "last_90d":         last_90d,
+        "last_event_date":  last_event,
+        "days_since_last_event": days_since_last,
+        "possibly_quit":    possibly_quit,
         "win_rate":         round(win_rate, 2),
         "avg_bet_size":     avg_bet_size,
         "median_market_stake": round(median_market_stake, 2),
@@ -704,6 +785,10 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
             "midzone_roi":      round(midzone_roi, 1),
             "directional_roi":  round(directional_overall_roi, 2),
             "roi_dashboard":    round(roi_dashboard, 2),
+            "roi_redeemed_only": round(roi_redeemed_only, 2),
+            "last_60d_roi":     last_60d["roi"],
+            "last_60d_pnl":     last_60d["pnl"],
+            "recency_penalty":  recency_penalty,
             "roi_for_quality":  round(roi_for_quality, 2),
             "hedge_risk_frac":  round(hedge_risk_frac, 3),
             "hedge_profit_share": round(hedge_share, 3),
