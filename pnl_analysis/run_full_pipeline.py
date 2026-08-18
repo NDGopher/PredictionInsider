@@ -310,10 +310,23 @@ def _csv_closed_open_counts(csv_path: Path) -> tuple[int, int]:
             return (0, 0)
 
 
+def _position_dedupe_key(df: pd.DataFrame):
+    """Prefer API `id`; older CSVs only have `asset` / condition+outcome."""
+    if df is None or df.empty:
+        return None
+    if "id" in df.columns and df["id"].notna().any():
+        return "id"
+    if "asset" in df.columns:
+        return "asset"
+    if "conditionId" in df.columns and "outcome" in df.columns:
+        return ["conditionId", "outcome"]
+    return None
+
+
 def fetch_recent_and_merge(address, username):
     """
     Incremental: fetch recent closed (up to 40 pages) + open (up to 20 pages), overlay onto existing CSV.
-    Rows with the same position id keep the newest API copy (accurate PnL when Polymarket updates fields).
+    Rows with the same position id (or asset on older CSVs) keep the newest API copy.
     Returns path to updated CSV or None if no existing CSV.
     """
     csv_path = csv_path_for(address, username)
@@ -324,12 +337,14 @@ def fetch_recent_and_merge(address, username):
     except Exception as e:
         print(f"    ⚠️  Could not read existing CSV: {e}")
         return None
-    id_col = "id" if "id" in existing.columns else None
-    if id_col is None:
-        return csv_path  # no id column, skip merge
+    merge_key = _position_dedupe_key(existing)
+    if merge_key is None:
+        print("    ⚠️  CSV has no id/asset/conditionId key — cannot incremental-merge, running full fetch")
+        return collect_and_save(address, username)
 
     prev_closed, _prev_open = _csv_closed_open_counts(csv_path)
     # Up to ~2000 closed + ~1000 open (40 + 20 pages) — fast, avoids 50k+ full fetch
+    print("    🔄 Incremental fetch (recent closed + open pages)…")
     df_closed = fetch_positions(address, "closed-positions", max_pages=40)
     time.sleep(PAGE_SLEEP_SEC)
     df_open  = fetch_positions(address, "positions", max_pages=20)
@@ -346,13 +361,15 @@ def fetch_recent_and_merge(address, username):
     new_df = pd.concat([df_closed, df_open], ignore_index=True)
     if new_df.empty:
         return csv_path
-    if id_col in new_df.columns:
-        new_df = new_df.drop_duplicates(subset=["id"], keep="last")
+    # Historical CSVs often lack `id`; keep a stable key so old rows do not duplicate.
+    use_key = merge_key if merge_key != "id" else (_position_dedupe_key(new_df) or merge_key)
     n_before = len(existing)
-    # Overlay recent API pages onto full history: newest row wins per id (PnL/status updates).
     combined = pd.concat([existing, new_df], ignore_index=True)
-    if "id" in combined.columns:
-        combined = combined.drop_duplicates(subset=["id"], keep="last")
+    if isinstance(use_key, list):
+        if all(c in combined.columns for c in use_key):
+            combined = combined.drop_duplicates(subset=use_key, keep="last")
+    elif use_key and use_key in combined.columns:
+        combined = combined.drop_duplicates(subset=[use_key], keep="last")
     for col in ["realizedPnl", "cashPnl", "currentValue", "initialValue"]:
         if col in combined.columns:
             combined[col] = pd.to_numeric(combined[col], errors="coerce").fillna(0)
