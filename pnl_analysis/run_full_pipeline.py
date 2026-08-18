@@ -271,16 +271,26 @@ def _get_json_list_with_retry(url: str, params: dict, label: str):
 
 
 def fetch_positions(address, endpoint, max_pages=None, page_limit=None):
-    """Fetch positions. Open books support limit=500; closed-positions max is 50."""
+    """Fetch positions. Open books support limit=500; closed-positions max is 50.
+
+    The /positions API keeps returning a full last page after the unique book is
+    exhausted (Cannae wrapped at ~10,500 assets and would paginate forever).
+    Stop when a page adds no new `asset` keys, and cap open rows.
+    """
     if page_limit is None:
         page_limit = 500 if endpoint == "positions" else 50
     base_url = f"https://data-api.polymarket.com/{endpoint}"
     params   = {"user": address, "limit": page_limit, "offset": 0}
     all_data = []
+    seen: set = set()
     page     = 0
+    max_open_rows = 40_000
 
     while True:
         if max_pages is not None and page >= max_pages:
+            break
+        if endpoint == "positions" and len(all_data) >= max_open_rows:
+            print(f"    [cap] {endpoint} stopped at {len(all_data):,} unique rows")
             break
         label = f"{endpoint} offset={params['offset']} limit={page_limit}"
         data = _get_json_list_with_retry(base_url, params, label)
@@ -288,7 +298,21 @@ def fetch_positions(address, endpoint, max_pages=None, page_limit=None):
             break
         if not data:
             break
-        all_data.extend(data)
+        new_n = 0
+        for row in data:
+            if not isinstance(row, dict):
+                continue
+            key = row.get("asset") or row.get("id")
+            if not key:
+                key = (row.get("conditionId"), row.get("outcome"))
+            if key in seen:
+                continue
+            seen.add(key)
+            all_data.append(row)
+            new_n += 1
+        if new_n == 0:
+            print(f"    [wrap] {endpoint} offset={params['offset']} — 0 new assets, unique={len(all_data):,}")
+            break
         if len(data) < page_limit:
             break
         params["offset"] += page_limit
@@ -317,13 +341,13 @@ def _csv_closed_open_counts(csv_path: Path) -> tuple[int, int]:
 
 
 def _position_dedupe_key(df: pd.DataFrame):
-    """Prefer API `id`; older CSVs only have `asset` / condition+outcome."""
+    """Prefer `asset`. The positions API has no `id`; null ids would collapse every open row."""
     if df is None or df.empty:
         return None
-    if "id" in df.columns and df["id"].notna().any():
-        return "id"
-    if "asset" in df.columns:
+    if "asset" in df.columns and df["asset"].notna().any():
         return "asset"
+    if "id" in df.columns and df["id"].notna().sum() > 1:
+        return "id"
     if "conditionId" in df.columns and "outcome" in df.columns:
         return ["conditionId", "outcome"]
     return None
