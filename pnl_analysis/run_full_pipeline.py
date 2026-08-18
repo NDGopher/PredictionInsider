@@ -734,7 +734,9 @@ def main():
             failed.append(username)
 
     # ── Rebuild master JSON (merges new results with any pre-existing JSONs) ─
-    allowed = {w.lower() for w, _ in traders}
+    # Always rebuild master from the full roster so `--traders` subset runs
+    # do not drop everyone else from _all_analysis.json.
+    allowed = {w.lower() for w, _ in roster_traders()}
     all_results = rebuild_master_json(allowed)
 
     # ── Print leaderboard ─────────────────────────────────────────
