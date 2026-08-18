@@ -214,7 +214,10 @@ class ExpandingBook:
         self.costs.append(cost)
 
     def median_stake(self) -> float:
-        return float(np.median(self.costs)) if self.costs else 0.0
+        # Ignore dust so a $5k play is not a fake 50× vs an $80 median of mill-bets.
+        big = [c for c in self.costs if c >= 200.0]
+        src = big if len(big) >= 10 else self.costs
+        return float(np.median(src)) if src else 0.0
 
     def overall_roi(self) -> float:
         return (self.pnl / self.cost * 100.0) if self.cost > 0 else 0.0
@@ -735,7 +738,8 @@ def main() -> int:
             grade, _ = compute_confidence(
                 avg_roi, consensus_pct, 0.0, avg_net, n_dom, avg_q, n_ctr, rel
             )
-            names = ",".join(sorted({v["username"] for v in voters})[:6])
+            names = ",".join(sorted({v["username"] for v in voters})[:8])
+            primary = max(voters, key=lambda v: v["cost"])["username"]
             rows.append({
                 "filter_mode": tag,
                 "conditionId": c["conditionId"],
@@ -753,7 +757,7 @@ def main() -> int:
                 "avg_q": round(avg_q, 1),
                 "min_q": min_q,
                 "avg_roi": round(avg_roi, 2),
-                "rel_size": round(rel, 2),
+                "rel_size": round(min(rel, 20.0), 2),
                 "vwap": round(float(np.clip(vwap, 0.02, 0.98)), 4),
                 "join_max": round(float(np.clip(join_max, 0.02, 0.98)), 4),
                 "grade": grade,
@@ -762,6 +766,7 @@ def main() -> int:
                 "n_rel2": n_rel2,
                 "lane_frac": round(lane_frac, 2),
                 "traders": names,
+                "primary": primary,
                 "price_band": price_bucket(vwap),
             })
 
@@ -829,6 +834,10 @@ def main() -> int:
         (filt["n_traders"] >= 3) & (filt["min_q"] >= 50) & (filt["n_counters"] == 0))
     add("filt_2q50_size2k_live", filt,
         live_px & (filt["min_q"] >= 50) & (filt["total_size"] >= 2000))
+    no_cannae = ~filt["traders"].astype(str).str.contains("Cannae", na=False)
+    add("filt_2plus_any_no_cannae", filt, m_ge2(filt) & no_cannae)
+    add("filt_2plus_live_no_cannae", filt, live_px & no_cannae)
+    add("filt_2plus_grade70_no_cannae", filt, m_ge2(filt) & (filt["grade"] >= 70) & no_cannae)
 
     # Grade bands for calibration
     add("band_grade_90", filt, m_ge2(filt) & (filt["grade"] >= 90))
@@ -856,7 +865,7 @@ def main() -> int:
                 key = f"{fill_name}_{int(slip*100)}c"
                 block[key] = stats
                 table_rows.append({"strategy": name, "fill": fill_name, "slip": f"{int(slip*100)}c", **stats})
-                if stats["n"] >= 20 and fill_name == "vwap" and slip in (0.0, 0.02):
+                if stats["n"] >= 20 and fill_name == "join" and slip in (0.0, 0.02):
                     print(
                         f"{name:<38} {fill_name:>8} {int(slip*100):>3}c {stats['n']:>5} "
                         f"{stats['win_rate']:>5.1f}% {stats['implied_wr']:>5.1f} "
@@ -866,75 +875,90 @@ def main() -> int:
                     )
         by_strategy[name] = block
 
-    # Pick best: honest fill = vwap+2c, require n>=80, days>=60, +2c ROI>0, edge>0,
-    # both years non-negative when n>=25. Rank by vwap+2c ROI then Sharpe then n.
-    def robustness_ok(name: str, df: pd.DataFrame, mask: pd.Series) -> tuple[bool, dict]:
+    # Honest production pick: fill at join_max+2c (cannot trade until the later
+    # wallet is in). Reject thin price slices, single-year books, Cannae-only books.
+    ALLOW_BEST = {
+        "raw_2plus_any", "filt_2plus_any", "filt_2plus_no_counter",
+        "filt_2plus_live_10_90", "filt_2plus_grade60", "filt_2plus_grade70",
+        "filt_2plus_q35", "filt_2plus_q50", "filt_2plus_sports_q50",
+        "filt_2plus_moneyline_q50", "filt_2plus_q50_size1k",
+        "filt_2plus_any_no_cannae", "filt_2plus_live_no_cannae",
+        "filt_2plus_grade70_no_cannae", "filt_3plus_any",
+        "filt_2plus_fav_60_80", "filt_2plus_flip_40_60",
+    }
+
+    def pack_strategy(df: pd.DataFrame, mask: pd.Series) -> dict:
         sub = df.loc[mask]
-        s2 = summarize(sub, "vwap", 0.02)
-        s0 = summarize(sub, "vwap", 0.0)
-        sj = summarize(sub, "join_max", 0.02)
-        years = year_split(sub, "vwap", 0.02)
-        year_ok = True
-        for y, ys in years.items():
-            if ys["n"] >= 25 and ys["roi"] < -2:
-                year_ok = False
-        ok = (
-            s2["n"] >= 80
-            and s2["days"] >= 60
-            and s2["roi"] > 0
-            and s2["edge"] > 0
-            and s0["edge"] > 0
-            and year_ok
-        )
-        return ok, {"s0": s0, "s2": s2, "sjoin2": sj, "years": years}
+        return {
+            "s0": summarize(sub, "vwap", 0.0),
+            "s2": summarize(sub, "vwap", 0.02),
+            "sjoin0": summarize(sub, "join_max", 0.0),
+            "sjoin2": summarize(sub, "join_max", 0.02),
+            "sjoin5": summarize(sub, "join_max", 0.05),
+            "years": year_split(sub, "join_max", 0.02),
+            "primary_share": float(sub["primary"].value_counts(normalize=True).iloc[0]) if len(sub) else 1.0,
+            "n_primaries": int(sub["primary"].nunique()) if len(sub) else 0,
+            "top_primary": str(sub["primary"].value_counts().index[0]) if len(sub) else "",
+        }
 
     ranked = []
-    for name, df, mask in strategies:
-        if name.startswith("band_"):
-            continue
-        ok, pack = robustness_ok(name, df, mask)
-        if not ok:
-            continue
-        ranked.append((pack["s2"]["roi"], pack["s2"]["sharpe_daily_roi"], pack["s2"]["n"], name, df, mask, pack))
-    ranked.sort(reverse=True)
-
     print("\n" + "=" * 128)
-    print("ROBUST candidates (n≥80, ≥60 days, +2¢ VWAP ROI>0 and edge>0, no year < −2%):")
-    for roi, shp, n, name, *_ in ranked[:15]:
-        print(f"  {name:<42} ROI@2c={roi:6.2f}%  Sharpe={shp:5.2f}  n={n}")
+    print("Production candidates (join_max+2c, n≥200, ≥8 primaries, no wallet >50% of book):")
+    for name, df, mask in strategies:
+        if name not in ALLOW_BEST:
+            continue
+        pack = pack_strategy(df, mask)
+        sj = pack["sjoin2"]
+        years = pack["years"]
+        y25 = years.get("2025") or {"n": 0, "roi": 0}
+        y26 = years.get("2026") or {"n": 0, "roi": 0}
+        ok = (
+            sj["n"] >= 200
+            and sj["days"] >= 90
+            and sj["roi"] > 0
+            and sj["edge"] > 0
+            and pack["primary_share"] <= 0.50
+            and pack["n_primaries"] >= 8
+            and y26.get("n", 0) >= 80
+            and (y25.get("n", 0) < 25 or y25.get("roi", 0) >= 0)
+        )
+        flag = "OK " if ok else "   "
+        print(
+            f"  {flag}{name:<36} n={sj['n']:<5} WR={sj['win_rate']:5.1f}% "
+            f"impl={sj['implied_wr']:5.1f} ROI={sj['roi']:6.1f}% "
+            f"prim={pack['top_primary'][:16]:<16} {pack['primary_share']*100:4.0f}%"
+        )
+        if ok:
+            ranked.append((sj["roi"], sj["sharpe_daily_roi"], sj["n"], name, df, mask, pack))
+    ranked.sort(reverse=True)
 
     if ranked:
         _roi, _shp, _n, best_name, best_df, best_mask, best_pack = ranked[0]
     else:
-        # Fallback: highest +2c ROI with n>=50 even if robustness fails
-        fallback = []
-        for name, df, mask in strategies:
-            if name.startswith("band_"):
-                continue
-            s2 = summarize(df.loc[mask], "vwap", 0.02)
-            if s2["n"] >= 50:
-                fallback.append((s2["roi"], s2["sharpe_daily_roi"], s2["n"], name, df, mask, {
-                    "s0": summarize(df.loc[mask], "vwap", 0.0),
-                    "s2": s2,
-                    "sjoin2": summarize(df.loc[mask], "join_max", 0.02),
-                    "years": year_split(df.loc[mask], "vwap", 0.02),
-                }))
-        fallback.sort(reverse=True)
-        if not fallback:
-            print("No strategy produced 50+ trades.")
-            return 1
-        _roi, _shp, _n, best_name, best_df, best_mask, best_pack = fallback[0]
-        print(f"\nNo fully robust book; falling back to largest +2c ROI with n≥50: {best_name}")
+        print("\nNo book passed the production filter; using filt_2plus_live_10_90.")
+        best_name, best_df, best_mask = "filt_2plus_live_10_90", filt, live_px
+        best_pack = pack_strategy(best_df, best_mask)
 
     best_sub = best_df.loc[best_mask].sort_values("end_dt")
     print(f"\nBEST STRATEGY: {best_name}")
-    for label, st in (("their VWAP", best_pack["s0"]), ("VWAP +2c", best_pack["s2"]), ("join_max +2c", best_pack["sjoin2"])):
+    print(
+        f"  concentration: primary={best_pack.get('top_primary')} "
+        f"{best_pack.get('primary_share', 0)*100:.0f}% of book, "
+        f"{best_pack.get('n_primaries')} distinct primaries"
+    )
+    for label, st in (
+        ("their VWAP", best_pack["s0"]),
+        ("VWAP +2c", best_pack["s2"]),
+        ("join_max (later entry)", best_pack.get("sjoin0") or best_pack["sjoin2"]),
+        ("join_max +2c  <-- use this", best_pack["sjoin2"]),
+        ("join_max +5c", best_pack.get("sjoin5") or best_pack["sjoin2"]),
+    ):
         print(
-            f"  {label:<16} n={st['n']} WR={st['win_rate']:.1f}% implied={st['implied_wr']:.1f}% "
+            f"  {label:<28} n={st['n']} WR={st['win_rate']:.1f}% implied={st['implied_wr']:.1f}% "
             f"edge={st['edge']:+.1f} ROI={st['roi']:.1f}% PF={st['profit_factor']:.2f} "
             f"Sharpe={st['sharpe_daily_roi']:.2f} DD={st['max_dd']:.0f} Exp=${st['expectancy']:.2f}"
         )
-    print("  by year @ VWAP+2c:")
+    print("  by year @ join_max+2c:")
     for y, ys in sorted(best_pack["years"].items()):
         print(f"    {y}: n={ys['n']} WR={ys['win_rate']:.1f}% ROI={ys['roi']:.1f}% edge={ys['edge']:+.1f}")
 
@@ -942,20 +966,23 @@ def main() -> int:
     by_sport = {}
     for sport, grp in best_sub.groupby("sport_type"):
         by_sport[str(sport)] = {
-            "0c": summarize(grp, "vwap", 0.0),
-            "2c": summarize(grp, "vwap", 0.02),
+            "vwap_0c": summarize(grp, "vwap", 0.0),
+            "join_2c": summarize(grp, "join_max", 0.02),
         }
     by_band = {}
     for band, grp in best_sub.groupby("price_band"):
         by_band[str(band)] = {
-            "0c": summarize(grp, "vwap", 0.0),
-            "2c": summarize(grp, "vwap", 0.02),
+            "vwap_0c": summarize(grp, "vwap", 0.0),
+            "join_2c": summarize(grp, "join_max", 0.02),
         }
+
+    filt_out = OUTPUT_DIR / "walkforward_consensus_filtered_2plus.csv"
+    filt[m_ge2(filt)].to_csv(filt_out, index=False)
 
     last20 = best_sub.sort_values("end_dt", ascending=False).head(20)
     last20_out = []
     for r in last20.itertuples(index=False):
-        fill = min(max(float(r.vwap) + 0.02, 0.02), 0.98)
+        fill = min(max(float(r.join_max) + 0.02, 0.02), 0.98)
         pnl = STAKE * (1.0 / fill - 1.0) if bool(r.won) else -STAKE
         last20_out.append({
             "end": r.end_dt.isoformat(),
@@ -970,9 +997,10 @@ def main() -> int:
             "avg_q": float(r.avg_q),
             "min_q": int(r.min_q),
             "rel_size": float(r.rel_size),
+            "primary": getattr(r, "primary", ""),
             "their_vwap": float(r.vwap),
             "join_max": float(r.join_max),
-            "fill_vwap_plus_2c": round(fill, 4),
+            "fill_join_plus_2c": round(fill, 4),
             "resolved": "WIN" if bool(r.won) else "LOSS",
             "unit_pnl_at_2c": round(pnl, 2),
             "total_size": float(r.total_size),
@@ -992,7 +1020,7 @@ def main() -> int:
         if band.empty:
             calibration.append({"band": label, "n": 0})
             continue
-        st = summarize(band, "vwap", 0.02)
+        st = summarize(band, "join_max", 0.02)
         calibration.append({"band": label, **st})
 
     report = {
@@ -1032,17 +1060,19 @@ def main() -> int:
             "clusters": int(len(clusters)),
             "filtered_2plus": int((m_ge2(filt)).sum()),
         },
-        "calibration_2plus_filtered_vwap_2c": calibration,
+        "calibration_2plus_filtered_join_2c": calibration,
         "strategies": by_strategy,
         "robust_ranked": [
             {
                 "strategy": name,
-                "roi_vwap_2c": pack["s2"]["roi"],
-                "sharpe": pack["s2"]["sharpe_daily_roi"],
-                "n": pack["s2"]["n"],
-                "edge": pack["s2"]["edge"],
-                "win_rate": pack["s2"]["win_rate"],
-                "implied": pack["s2"]["implied_wr"],
+                "roi_join_2c": pack["sjoin2"]["roi"],
+                "sharpe": pack["sjoin2"]["sharpe_daily_roi"],
+                "n": pack["sjoin2"]["n"],
+                "edge": pack["sjoin2"]["edge"],
+                "win_rate": pack["sjoin2"]["win_rate"],
+                "implied": pack["sjoin2"]["implied_wr"],
+                "primary_share": pack.get("primary_share"),
+                "top_primary": pack.get("top_primary"),
                 "years": pack["years"],
             }
             for _, _, _, name, _, _, pack in ranked[:12]
@@ -1051,8 +1081,15 @@ def main() -> int:
         "best_stats": {
             "their_vwap": best_pack["s0"],
             "vwap_plus_2c": best_pack["s2"],
+            "join_max": best_pack.get("sjoin0"),
             "join_max_plus_2c": best_pack["sjoin2"],
-            "years_vwap_2c": best_pack["years"],
+            "join_max_plus_5c": best_pack.get("sjoin5"),
+            "years_join_2c": best_pack["years"],
+            "concentration": {
+                "top_primary": best_pack.get("top_primary"),
+                "primary_share": best_pack.get("primary_share"),
+                "n_primaries": best_pack.get("n_primaries"),
+            },
             "by_sport": by_sport,
             "by_price_band": by_band,
         },
@@ -1069,8 +1106,8 @@ def main() -> int:
     for p in last20_out:
         print(
             f"  {p['end'][:10]}  {p['resolved']:<4}  {p['side']:<3}  "
-            f"vwap={p['their_vwap']:.3f} +2c={p['fill_vwap_plus_2c']:.3f}  "
-            f"g={p['grade']} q={p['avg_q']:.0f} n={p['n_traders']}  "
+            f"vwap={p['their_vwap']:.3f} join+2c={p.get('fill_join_plus_2c', p.get('fill_vwap_plus_2c', 0)):.3f}  "
+            f"g={p['grade']} q={p['avg_q']:.0f} n={p['n_traders']} {p.get('traders','')[:40]}  "
             f"{p['title'][:70]}"
         )
     return 0
