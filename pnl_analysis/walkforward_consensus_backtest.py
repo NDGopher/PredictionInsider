@@ -220,11 +220,12 @@ class ExpandingBook:
     losses: int = 0
     sports: dict[str, Lane] = field(default_factory=lambda: defaultdict(Lane))
     markets: dict[str, Lane] = field(default_factory=lambda: defaultdict(Lane))
+    submarkets: dict[str, Lane] = field(default_factory=lambda: defaultdict(Lane))
     buckets: dict[str, Lane] = field(default_factory=lambda: defaultdict(Lane))
     daily: dict[object, float] = field(default_factory=dict)
     costs: list[float] = field(default_factory=list)
 
-    def update(self, *, pnl: float, cost: float, won: bool, sport: str, market: str, entry: float, day) -> None:
+    def update(self, *, pnl: float, cost: float, won: bool, sport: str, market: str, submarket: str, entry: float, day) -> None:
         self.n += 1
         self.pnl += pnl
         self.cost += cost
@@ -235,6 +236,7 @@ class ExpandingBook:
         for store, key in (
             (self.sports, sport),
             (self.markets, market),
+            (self.submarkets, f"{sport}|{submarket}"),
             (self.buckets, price_bucket(entry)),
         ):
             lane = store[key]
@@ -327,6 +329,8 @@ class ExpandingBook:
 
     def snapshot(self, end_dt: datetime) -> dict:
         sport_roi = {k: v.roi() for k, v in self.sports.items() if v.n >= MIN_LANE_N}
+        sport_n = {k: v.n for k, v in self.sports.items() if v.n >= MIN_LANE_N}
+        sub_roi = {k: v.roi() for k, v in self.submarkets.items() if v.n >= MIN_LANE_N}
         return {
             "end_dt": end_dt,
             "q": self.quality_score(),
@@ -335,6 +339,8 @@ class ExpandingBook:
             "wr": round(self.win_rate(), 2),
             "median": self.median_stake(),
             "sport_roi": sport_roi,
+            "sport_n": sport_n,
+            "sub_roi": sub_roi,
         }
 
 
@@ -488,6 +494,7 @@ def build_snapshots(markets: pd.DataFrame) -> list[dict]:
             won=bool(row.won),
             sport=str(row.sport_type),
             market=str(row.market_type),
+            submarket=str(getattr(row, "submarket", None) or row.market_type),
             entry=float(row.entry_price),
             day=row.end_dt.date(),
         )
@@ -661,9 +668,47 @@ def plays_payload(sub: pd.DataFrame, n: int = 20) -> list[dict]:
     return out
 
 
+def load_trusted_wallets(path: Path | None) -> set[str] | None:
+    """Optional allow-list from polydata_elites.json / trusted_full_books.json."""
+    if path is None or not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as e:
+        print(f"[warn] trusted file {path}: {e}")
+        return None
+    rows = data.get("trusted") or data.get("traders") or data
+    out: set[str] = set()
+    if isinstance(rows, list):
+        for row in rows:
+            if isinstance(row, dict):
+                w = str(row.get("wallet") or "").lower()
+                if w.startswith("0x"):
+                    out.add(w)
+            elif isinstance(row, str) and row.lower().startswith("0x"):
+                out.add(row.lower())
+    print(f"Trusted allow-list: {len(out)} wallets from {path}")
+    return out
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main() -> int:
+    import argparse
+    parser = argparse.ArgumentParser(description="Walk-forward consensus tailing backtest")
+    parser.add_argument(
+        "--trusted-file",
+        default="",
+        help="JSON with trusted[].wallet — only those full books are used",
+    )
+    parser.add_argument(
+        "--skip-product",
+        action="store_true",
+        help="Do not rewrite tail_strategies.json / recommended plays",
+    )
+    args = parser.parse_args()
+    trusted = load_trusted_wallets(Path(args.trusted_file)) if args.trusted_file else None
+
     filters = load_category_filters()
     aliases = load_aliases()
     skip_wallets = load_skip_wallets()
@@ -676,7 +721,9 @@ def main() -> int:
         w = wallet.lower()
         if w in MARKET_MAKERS:
             continue
-        if w in skip_wallets:
+        if trusted is not None and w not in trusted:
+            continue
+        if trusted is None and w in skip_wallets:
             print(f"  skip {username}: kicked/quit/un-tailable")
             continue
         # Collapse known aliases onto the canonical wallet id for consensus counting
@@ -755,11 +802,20 @@ def main() -> int:
             median = float(snap["median"]) if snap and snap["median"] else 0.0
             roi = float(snap["roi"]) if snap else 0.0
             sport_roi = 0.0
+            sub_roi = 0.0
             lane_ok = False
+            sub_ok = False
             if snap:
                 sport_roi = float(snap["sport_roi"].get(str(r.sport_type), roi))
                 lane = snap["sport_roi"].get(str(r.sport_type))
                 lane_ok = lane is not None and lane >= MIN_LANE_ROI
+                sub_key = f"{r.sport_type}|{getattr(r, 'submarket', r.market_type)}"
+                sub_lane = (snap.get("sub_roi") or {}).get(sub_key)
+                if sub_lane is not None:
+                    sub_roi = float(sub_lane)
+                    sub_ok = sub_lane >= MIN_LANE_ROI
+                else:
+                    sub_roi = sport_roi
             rel = (float(r.cost) / median) if median > 0 else 1.0
             blocked = trader_blocked(
                 filters, str(r.wallet), str(r.sport_type), str(r.market_type),
@@ -774,7 +830,9 @@ def main() -> int:
                 "n_prior": n_prior,
                 "roi": roi,
                 "sport_roi": sport_roi,
+                "sub_roi": sub_roi,
                 "lane_ok": lane_ok,
+                "sub_ok": sub_ok,
                 "rel": rel,
                 "blocked": blocked,
                 "warm": n_prior >= WARMUP,
@@ -844,6 +902,7 @@ def main() -> int:
             risk = sum(v["cost"] for v in voters) or 1.0
             avg_q = sum(v["q"] * v["cost"] for v in voters) / risk
             avg_roi = sum(v["sport_roi"] * v["cost"] for v in voters) / risk
+            avg_sub_roi = sum(v.get("sub_roi", v["sport_roi"]) * v["cost"] for v in voters) / risk
             avg_net = risk / n_dom
             rel = sum(v["rel"] * v["cost"] for v in voters) / risk
             vwap = sum(v["entry"] * v["cost"] for v in voters) / risk
@@ -877,6 +936,7 @@ def main() -> int:
                 "avg_q": round(avg_q, 1),
                 "min_q": min_q,
                 "avg_roi": round(avg_roi, 2),
+                "avg_sub_roi": round(avg_sub_roi, 2),
                 "rel_size": round(min(rel, 20.0), 2),
                 "vwap": round(float(np.clip(vwap, 0.02, 0.98)), 4),
                 "join_max": round(float(np.clip(join_max, 0.02, 0.98)), 4),
@@ -921,6 +981,11 @@ def main() -> int:
     add("filt_2plus_q50_size1k", filt, m_ge2(filt) & (filt["min_q"] >= 50) & (filt["total_size"] >= 1000))
     add("filt_2plus_q50_rel2", filt, m_ge2(filt) & (filt["min_q"] >= 50) & (filt["n_rel2"] >= 1))
     add("filt_2plus_q50_lane", filt, m_ge2(filt) & (filt["min_q"] >= 50) & (filt["lane_frac"] >= 0.5))
+    add("filt_2plus_asof_sport_expert", filt, m_ge2(filt) & (filt["lane_frac"] >= 1.0) & (filt["avg_roi"] >= 8))
+    add("filt_2plus_asof_sub_expert", filt, m_ge2(filt) & (filt["avg_sub_roi"] >= 8) & (filt["lane_frac"] >= 0.5))
+    add("filt_2plus_asof_rel2", filt, m_ge2(filt) & (filt["rel_size"] >= 2.0))
+    add("filt_2plus_asof_q40_rel2_lane", filt,
+        m_ge2(filt) & (filt["min_q"] >= 40) & (filt["rel_size"] >= 2.0) & (filt["lane_frac"] >= 0.5))
     add("filt_2plus_grade60", filt, m_ge2(filt) & (filt["grade"] >= 60))
     add("filt_2plus_grade70", filt, m_ge2(filt) & (filt["grade"] >= 70))
     add("filt_2plus_grade80", filt, m_ge2(filt) & (filt["grade"] >= 80))
@@ -933,6 +998,10 @@ def main() -> int:
     # Price bands (live 10–90, drop stale >88)
     live_px = m_ge2(filt) & (filt["vwap"] >= LIVE_LO) & (filt["vwap"] <= LIVE_HI) & (filt["vwap"] <= STALE_ENTRY)
     add("filt_2plus_live_10_90", filt, live_px)
+    add("filt_2plus_live_asof_experts", filt,
+        live_px & (filt["min_q"] >= 40) & (filt["lane_frac"] >= 0.5) & (filt["avg_sub_roi"] >= 5))
+    add("filt_2plus_live_asof_size", filt,
+        live_px & (filt["rel_size"] >= 2.0) & (filt["min_q"] >= 35))
     add("filt_2plus_longshot_0_20", filt, m_ge2(filt) & (filt["vwap"] < 0.20))
     add("filt_2plus_underdog_20_40", filt, m_ge2(filt) & (filt["vwap"] >= 0.20) & (filt["vwap"] < 0.40))
     add("filt_2plus_flip_40_60", filt, m_ge2(filt) & (filt["vwap"] >= 0.40) & (filt["vwap"] < 0.60))
@@ -1381,11 +1450,14 @@ def main() -> int:
         },
     }
     tail_path = OUTPUT_DIR / "tail_strategies.json"
-    tail_path.write_text(json.dumps(tail_payload, indent=2, default=str), encoding="utf-8")
-    rec_script = Path(__file__).resolve().parent / "write_recommended_plays.py"
-    rec_rc = subprocess.run([sys.executable, str(rec_script)], check=False)
-    if rec_rc.returncode != 0:
-        print(f"recommended plays rewrite failed rc={rec_rc.returncode}")
+    if not args.skip_product:
+        tail_path.write_text(json.dumps(tail_payload, indent=2, default=str), encoding="utf-8")
+        rec_script = Path(__file__).resolve().parent / "write_recommended_plays.py"
+        rec_rc = subprocess.run([sys.executable, str(rec_script)], check=False)
+        if rec_rc.returncode != 0:
+            print(f"recommended plays rewrite failed rc={rec_rc.returncode}")
+    else:
+        print("Skipping tail_strategies.json rewrite (--skip-product)")
 
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),

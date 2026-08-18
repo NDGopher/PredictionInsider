@@ -68,6 +68,9 @@ interface StrategyCard {
     skipSports: string[];
     marketTypes?: string[];
     sportIncludes?: string[];
+    allowUsernames?: string[];
+    minRelBetSize?: number;
+    minSportRoi?: number;
   };
 }
 
@@ -353,10 +356,10 @@ export default function Strategies() {
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Recommended plays · $100/play · hold to resolution</div>
           <h1 className="text-xl font-semibold tracking-tight">Take these</h1>
           <p className="text-xs text-amber-400 mt-1 max-w-2xl">
-            GoalLineGhost public tape is ~52% WR and about −$1.1M PnL on the same wallet. Our old 98% / +$52M book was a closed-positions sort bug (winners first, 10k cap). Do not copy that cluster.
+            GoalLineGhost public tape is ~52% WR and about −$1.1M PnL. The old 98% / +$52M book was a closed-positions sort bug. Do not copy that cluster. Take single-name as-of copy of Polydata-matched sports books only.
           </p>
           <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-            Copy-all is {data?.copyAll?.roi ?? "—"}% ROI. Fill at the later voter’s price + 2¢.
+            Copy-all of the matched 12 is {data?.copyAll?.roi ?? "—"}% ROI after +2¢. Fill at their VWAP + 2¢ and hold to resolution — do not wait for a second voter.
             Last resolved game: {data?.research?.freshness?.consensus_last_play || data?.universe?.max_resolved_date || "—"}.
           </p>
         </div>
@@ -482,7 +485,7 @@ export default function Strategies() {
           {livePlays.length === 0 && (
             <Card>
               <CardContent className="p-6 text-sm text-muted-foreground">
-                No live 2+ plays currently match this filter. That is expected on quiet slates — do not force a trade.
+                No live plays currently match this filter. Single-name as-of copy only fires when a matched book is Q60+, expert in the sport, and sizing ≥2× their median.
               </CardContent>
             </Card>
           )}
@@ -682,7 +685,7 @@ export default function Strategies() {
                     <BarChart2 className="w-4 h-4" /> Dual fill — their entry vs ask at alert
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    VWAP is the price they got. Join_max is the later voter (when a 2+ alert can fire). Live tailing uses join_max + 2¢.
+                    VWAP is the price they got. Fill is VWAP + 2¢ on single-name as-of copy. Join_max (later voter) only applies to the retired 2+ Ghost tape — do not use it.
                   </p>
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">

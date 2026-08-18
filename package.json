@@ -25,9 +25,11 @@
     "backtest:consensus": "python pnl_analysis/walkforward_consensus_backtest.py",
     "backtest:health": "python pnl_analysis/trader_health_review.py",
     "backtest:research": "python pnl_analysis/robust_tail_research.py --clv --discover",
-    "backtest:recommended": "python pnl_analysis/write_recommended_plays.py",
+    "backtest:recommended": "python pnl_analysis/asof_fullbook_backtest.py --write-product",
     "backtest:verify": "python pnl_analysis/verify_public_ranks.py",
-    "backtest:ranks": "python pnl_analysis/build_insider_ranks.py"
+    "backtest:ranks": "python pnl_analysis/build_insider_ranks.py",
+    "backtest:asof": "python pnl_analysis/asof_fullbook_backtest.py --write-product",
+    "backtest:elites": "python pnl_analysis/discover_polydata_elites.py"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

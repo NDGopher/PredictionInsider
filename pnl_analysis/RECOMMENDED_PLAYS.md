@@ -2,6 +2,10 @@
 
 As of **2026-08-18**.
 
+**Current take list:** see [`FULL_BOOK_STRATEGIES.md`](./FULL_BOOK_STRATEGIES.md). Copy is single-name **as-of** (prior Q ≥ 60, sport expert, ≥2× own median, no NFL) on 12 Polydata-matched sports books. Fill VWAP + 2¢, hold to resolution. Copy-all of those 12 is **−6.1%** after 2¢ — do not unfilter.
+
+The 98% Ghost 2+ book below is a data bug. Do not take it.
+
 ## Stop: the 98% Ghost book was a data bug
 
 You were right not to believe it.

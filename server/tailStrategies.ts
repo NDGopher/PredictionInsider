@@ -10,9 +10,13 @@ export interface TailStrategyFilters {
   priceHi: number;
   excludeUsernames: string[];
   requireUsernames?: string[];
+  /** If set, only these wallets/usernames count toward minTraders (single-name as-of copy). */
+  allowUsernames?: string[];
   skipSports: string[];
   marketTypes?: string[];
   sportIncludes?: string[];
+  minRelBetSize?: number;
+  minSportRoi?: number;
 }
 
 export interface TailStrategyCard {
@@ -353,12 +357,18 @@ function marketAllowed(signal: Signal, types: string[] | undefined): boolean {
 
 export function signalMatchesStrategy(signal: Signal, filters: TailStrategyFilters): boolean {
   const exclude = new Set((filters.excludeUsernames || []).map((n) => n.toLowerCase()));
+  const allow = (filters.allowUsernames || []).map((n) => n.toLowerCase()).filter((n) => n.length > 0);
+  const allowSet = new Set(allow);
   const traders = (signal.traders || []).filter((t) => {
     const name = (t.name || "").toLowerCase();
     const addr = (t.address || "").toLowerCase();
     if (exclude.has(name)) return false;
     for (const ex of exclude) {
       if (addr.includes(ex) || name.includes(ex)) return false;
+    }
+    if (allowSet.size > 0) {
+      const allowed = allowSet.has(name) || allow.some((a) => addr.includes(a) || name.includes(a));
+      if (!allowed) return false;
     }
     return true;
   });
@@ -371,10 +381,23 @@ export function signalMatchesStrategy(signal: Signal, filters: TailStrategyFilte
     if (!required.every((name) => names.has(name))) return false;
   }
   if ((filters.minGrade || 0) > 0 && signal.confidence < (filters.minGrade || 0)) return false;
-  const q = signal.avgQuality ?? 0;
+  const q = Math.max(
+    signal.avgQuality ?? 0,
+    ...traders.map((t) => t.qualityScore ?? 0),
+  );
   if ((filters.minQ || 0) > 0 && q < (filters.minQ || 0)) return false;
   const px = signal.currentPrice || signal.avgEntryPrice;
   if (px < filters.priceLo || px > filters.priceHi) return false;
+  if ((filters.minRelBetSize || 0) > 0 && (signal.relBetSize ?? 0) < (filters.minRelBetSize || 0)) {
+    return false;
+  }
+  if ((filters.minSportRoi || 0) > 0) {
+    const sportRoi = Math.max(
+      signal.insiderSportsROI ?? Number.NEGATIVE_INFINITY,
+      ...traders.map((t) => t.sportRoi ?? Number.NEGATIVE_INFINITY),
+    );
+    if (!Number.isFinite(sportRoi) || sportRoi < (filters.minSportRoi || 0)) return false;
+  }
   if (sportSkipped(signal.sport || signal.category, filters.skipSports || [])) return false;
   if (!sportIncluded(signal.sport || signal.category, filters.sportIncludes)) return false;
   if (!marketAllowed(signal, filters.marketTypes)) return false;

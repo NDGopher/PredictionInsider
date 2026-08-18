@@ -411,7 +411,17 @@ def walk_trader(df: pd.DataFrame) -> pd.DataFrame:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Walk-forward tailing backtest (no look-ahead)")
-    parser.parse_args()
+    parser.add_argument("--trusted-file", default="", help="JSON with trusted[].wallet allow-list")
+    args = parser.parse_args()
+    trusted: set[str] | None = None
+    if args.trusted_file:
+        raw = json.loads(Path(args.trusted_file).read_text(encoding="utf-8"))
+        trusted = {
+            str(r.get("wallet") or "").lower()
+            for r in (raw.get("trusted") or [])
+            if str(r.get("wallet") or "").lower().startswith("0x")
+        }
+        print(f"Trusted allow-list: {len(trusted)} wallets")
 
     roster = roster_traders()
     chunks = []
@@ -419,6 +429,8 @@ def main() -> int:
     print("-" * 96)
 
     for wallet, username in roster:
+        if trusted is not None and wallet.lower() not in trusted:
+            continue
         csv_p = csv_path_for(wallet, username)
         if not csv_p.exists():
             continue
@@ -475,6 +487,11 @@ def main() -> int:
         ("grade70_no_other_sport", (g["play_grade"] >= 70) & (g["sport_type"] != "OTHER")),
         ("grade80_lane", (g["play_grade"] >= 80) & g["lane_ok"]),
         ("grade70_rel3x", (g["play_grade"] >= 70) & (g["rel_size"] >= 3)),
+        ("asof_lane_rel2", g["lane_ok"] & (g["rel_size"] >= 2) & (g["trader_n"] >= WARMUP_EVENTS)),
+        ("asof_q60_lane", (g["trader_q"] >= 60) & g["lane_ok"]),
+        ("asof_q60_lane_rel2", (g["trader_q"] >= 60) & g["lane_ok"] & (g["rel_size"] >= 2)),
+        ("asof_q70_rel2", (g["trader_q"] >= 70) & (g["rel_size"] >= 2)),
+        ("asof_moneyline_lane", g["lane_ok"] & (g["market_type"] == "Moneyline / Match") & (g["entry_price"] >= 0.20) & (g["entry_price"] <= 0.80)),
     ]
 
     table_rows = []

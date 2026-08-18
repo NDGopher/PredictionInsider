@@ -122,6 +122,12 @@ def write_markdown(payload: dict) -> str:
 
 
 def main() -> int:
+    print(
+        "Refusing to rewrite tail_strategies.json from the 2+ Ghost tape. "
+        "That book used winner-sorted closed-positions. "
+        "Run: python pnl_analysis/asof_fullbook_backtest.py --write-product"
+    )
+    return 1
     if not CSV.exists():
         print(f"Missing {CSV}; run npm run backtest:consensus first")
         return 1
