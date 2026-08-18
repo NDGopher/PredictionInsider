@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-18T17:13:40.978398+00:00",
+  "generated_at": "2026-08-18T17:53:13.330192+00:00",
   "method": "Live copy = Polydata-matched, joinable (40\u201312k closed, WR 48\u201375, median <$15k), HOT/WARM. Skip = 100k+ Polydata trades, 50k+ CSV rows, MM, kicked grinders. Bench = matched but stale/cold \u2014 keep full books, do not fire live. Futures are not a copy lane (n=5, \u221237% after 2\u00a2).",
   "rules": {
     "pd_trades_bot": 100000,
@@ -67,14 +67,31 @@
     }
   ],
   "counts": {
-    "live": 5,
+    "live": 6,
     "bench": 9,
     "watch": 12,
     "kicked": 0,
-    "skip": 37,
+    "skip": 36,
     "reference": 2
   },
   "live": [
+    {
+      "username": "Supah9ga",
+      "wallet": "0x57cd939930fd119067ca9dc42b22b3e15708a0fb",
+      "bucket": "live",
+      "take_book": true,
+      "matched": true,
+      "joinable": true,
+      "recency": "HOT",
+      "closed": 659,
+      "rows": 685,
+      "pd_trades": 16148,
+      "win_rate": 52.23,
+      "median_stake": 5550.0,
+      "last_event_date": "2026-08-15",
+      "reasons": [],
+      "refresh": true
+    },
     {
       "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
       "wallet": "0x8a3ab8120807bd64a3de48695110e390fa2ceb9a",
@@ -84,28 +101,11 @@
       "joinable": true,
       "recency": "HOT",
       "closed": 423,
-      "rows": 464,
+      "rows": 469,
       "pd_trades": 3187,
-      "win_rate": 54.01,
-      "median_stake": 4855.49,
+      "win_rate": 53.86,
+      "median_stake": 4838.34,
       "last_event_date": "2026-08-19",
-      "reasons": [],
-      "refresh": true
-    },
-    {
-      "username": "Supah9ga",
-      "wallet": "0x57cd939930fd119067ca9dc42b22b3e15708a0fb",
-      "bucket": "live",
-      "take_book": true,
-      "matched": true,
-      "joinable": true,
-      "recency": "HOT",
-      "closed": 549,
-      "rows": 550,
-      "pd_trades": 16148,
-      "win_rate": 52.32,
-      "median_stake": 10964.8,
-      "last_event_date": "2026-08-15",
       "reasons": [],
       "refresh": true
     },
@@ -117,29 +117,29 @@
       "matched": true,
       "joinable": true,
       "recency": "HOT",
-      "closed": 899,
-      "rows": 1259,
+      "closed": 1697,
+      "rows": 2358,
       "pd_trades": 56560,
-      "win_rate": 53.58,
-      "median_stake": 2501.07,
+      "win_rate": 51.84,
+      "median_stake": 1927.02,
       "last_event_date": "2026-08-18",
       "reasons": [],
       "refresh": true
     },
     {
-      "username": "S-Works",
-      "wallet": "0xee00ba338c59557141789b127927a55f5cc5cea1",
+      "username": "TTdes",
+      "wallet": "0x25867077c891354137bbaf7fde12eec6949cc893",
       "bucket": "live",
       "take_book": false,
       "matched": true,
       "joinable": true,
       "recency": "HOT",
-      "closed": 9506,
-      "rows": 9519,
-      "pd_trades": 99738,
-      "win_rate": 69.06,
-      "median_stake": 1701.39,
-      "last_event_date": "2026-08-15",
+      "closed": 825,
+      "rows": 1318,
+      "pd_trades": 17924,
+      "win_rate": 53.82,
+      "median_stake": 920.2,
+      "last_event_date": "2026-08-16",
       "reasons": [],
       "refresh": true
     },
@@ -155,13 +155,70 @@
       "rows": 1860,
       "pd_trades": 47660,
       "win_rate": 51.3,
-      "median_stake": 2018.1,
+      "median_stake": 2043.31,
       "last_event_date": "2026-08-13",
+      "reasons": [],
+      "refresh": true
+    },
+    {
+      "username": "0xheavy888",
+      "wallet": "0xec981ed70ae69c5cbcac08c1ba063e734f6bafcd",
+      "bucket": "live",
+      "take_book": false,
+      "matched": true,
+      "joinable": true,
+      "recency": "HOT",
+      "closed": 11346,
+      "rows": 11735,
+      "pd_trades": 99022,
+      "win_rate": 50.64,
+      "median_stake": 617.86,
+      "last_event_date": "2026-08-19",
       "reasons": [],
       "refresh": true
     }
   ],
   "bench": [
+    {
+      "username": "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+      "wallet": "0x5966db1fe50763c9e3c014d756369bad07e1f804",
+      "bucket": "bench",
+      "take_book": true,
+      "matched": true,
+      "joinable": false,
+      "recency": "DARK",
+      "closed": 123,
+      "rows": 190,
+      "pd_trades": 0,
+      "win_rate": 58.24,
+      "median_stake": 46032.55,
+      "last_event_date": "2026-07-16",
+      "reasons": [
+        "median=$46,033_unjoinable",
+        "stale_DARK"
+      ],
+      "refresh": true
+    },
+    {
+      "username": "WTSA",
+      "wallet": "0x04d5524a0a5af2eca6e39e03defc261d42fe66d8",
+      "bucket": "bench",
+      "take_book": true,
+      "matched": true,
+      "joinable": false,
+      "recency": "HOT",
+      "closed": 71,
+      "rows": 133,
+      "pd_trades": 26952,
+      "win_rate": 54.2,
+      "median_stake": 27764.04,
+      "last_event_date": "2026-08-17",
+      "reasons": [
+        "median=$27,764_unjoinable",
+        "unjoinable_keep_book"
+      ],
+      "refresh": true
+    },
     {
       "username": "DLEK",
       "wallet": "0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c",
@@ -170,12 +227,12 @@
       "matched": true,
       "joinable": true,
       "recency": "COLD",
-      "closed": 1123,
-      "rows": 1571,
+      "closed": 1165,
+      "rows": 1624,
       "pd_trades": 14092,
-      "win_rate": 55.03,
-      "median_stake": 9199.19,
-      "last_event_date": "2026-07-29",
+      "win_rate": 55.62,
+      "median_stake": 4741.82,
+      "last_event_date": "2026-07-30",
       "reasons": [
         "recency_COLD"
       ],
@@ -189,11 +246,11 @@
       "matched": true,
       "joinable": true,
       "recency": "DROP",
-      "closed": 136,
+      "closed": 137,
       "rows": 252,
       "pd_trades": 9880,
-      "win_rate": 52.99,
-      "median_stake": 12230.88,
+      "win_rate": 53.39,
+      "median_stake": 6115.44,
       "last_event_date": "2026-05-27",
       "reasons": [
         "stale_DROP"
@@ -208,33 +265,14 @@
       "matched": true,
       "joinable": true,
       "recency": "COLD",
-      "closed": 613,
-      "rows": 615,
+      "closed": 694,
+      "rows": 723,
       "pd_trades": 7239,
-      "win_rate": 60.72,
-      "median_stake": 3071.59,
+      "win_rate": 60.87,
+      "median_stake": 1724.19,
       "last_event_date": "2026-08-02",
       "reasons": [
         "recency_COLD"
-      ],
-      "refresh": true
-    },
-    {
-      "username": "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
-      "wallet": "0x5966db1fe50763c9e3c014d756369bad07e1f804",
-      "bucket": "bench",
-      "take_book": true,
-      "matched": true,
-      "joinable": true,
-      "recency": "DARK",
-      "closed": 123,
-      "rows": 190,
-      "pd_trades": 0,
-      "win_rate": 58.24,
-      "median_stake": 0.0,
-      "last_event_date": "2026-07-16",
-      "reasons": [
-        "stale_DARK"
       ],
       "refresh": true
     },
@@ -246,11 +284,11 @@
       "matched": true,
       "joinable": true,
       "recency": "DARK",
-      "closed": 2384,
-      "rows": 2393,
+      "closed": 2533,
+      "rows": 2567,
       "pd_trades": 49608,
-      "win_rate": 55.04,
-      "median_stake": 11095.15,
+      "win_rate": 54.93,
+      "median_stake": 7378.95,
       "last_event_date": "2026-07-26",
       "reasons": [
         "stale_DARK"
@@ -269,7 +307,7 @@
       "rows": 3201,
       "pd_trades": 38948,
       "win_rate": 50.15,
-      "median_stake": 1948.2,
+      "median_stake": 1935.33,
       "last_event_date": "2026-04-30",
       "reasons": [
         "stale_DROP"
@@ -284,11 +322,11 @@
       "matched": true,
       "joinable": true,
       "recency": "COLD",
-      "closed": 1263,
-      "rows": 1333,
+      "closed": 1352,
+      "rows": 1354,
       "pd_trades": 17427,
-      "win_rate": 58.88,
-      "median_stake": 879.95,
+      "win_rate": 58.16,
+      "median_stake": 450.0,
       "last_event_date": "2026-07-31",
       "reasons": [
         "recency_COLD"
@@ -303,33 +341,14 @@
       "matched": true,
       "joinable": true,
       "recency": "DARK",
-      "closed": 1768,
-      "rows": 2320,
+      "closed": 2435,
+      "rows": 3261,
       "pd_trades": 31941,
-      "win_rate": 56.88,
-      "median_stake": 712.77,
+      "win_rate": 55.72,
+      "median_stake": 437.48,
       "last_event_date": "2026-07-19",
       "reasons": [
         "stale_DARK"
-      ],
-      "refresh": true
-    },
-    {
-      "username": "TTdes",
-      "wallet": "0x25867077c891354137bbaf7fde12eec6949cc893",
-      "bucket": "bench",
-      "take_book": false,
-      "matched": true,
-      "joinable": true,
-      "recency": "HOT",
-      "closed": 723,
-      "rows": 1154,
-      "pd_trades": 17924,
-      "win_rate": 53.66,
-      "median_stake": 1546.89,
-      "last_event_date": "2026-08-16",
-      "reasons": [
-        "take_rule_negative"
       ],
       "refresh": true
     }
@@ -346,45 +365,11 @@
       "closed": 1652,
       "rows": 1731,
       "pd_trades": 0,
-      "win_rate": 56.23,
-      "median_stake": 10399.95,
+      "win_rate": 59.4,
+      "median_stake": 7364.68,
       "last_event_date": "2026-08-16",
       "reasons": [],
-      "refresh": false
-    },
-    {
-      "username": "UAEVALORANTFAN",
-      "wallet": "0xc65ca4755436f82d8eb461e65781584b8cadea39",
-      "bucket": "watch",
-      "take_book": false,
-      "matched": false,
-      "joinable": true,
-      "recency": "HOT",
-      "closed": 980,
-      "rows": 983,
-      "pd_trades": 0,
-      "win_rate": 54.12,
-      "median_stake": 6767.0,
-      "last_event_date": "2026-08-16",
-      "reasons": [],
-      "refresh": false
-    },
-    {
-      "username": "norrisfan",
-      "wallet": "0xe72bb501df5306c75c89383d48a1e81073fbb0a0",
-      "bucket": "watch",
-      "take_book": false,
-      "matched": false,
-      "joinable": true,
-      "recency": "HOT",
-      "closed": 625,
-      "rows": 639,
-      "pd_trades": 19437,
-      "win_rate": 52.73,
-      "median_stake": 2400.0,
-      "last_event_date": "2026-08-19",
-      "reasons": [],
-      "refresh": false
+      "refresh": true
     },
     {
       "username": "ShucksIt69",
@@ -394,14 +379,31 @@
       "matched": false,
       "joinable": true,
       "recency": "HOT",
-      "closed": 2197,
-      "rows": 2200,
+      "closed": 2566,
+      "rows": 2567,
       "pd_trades": 0,
-      "win_rate": 53.01,
-      "median_stake": 8096.57,
+      "win_rate": 53.19,
+      "median_stake": 5221.48,
       "last_event_date": "2026-08-16",
       "reasons": [],
-      "refresh": false
+      "refresh": true
+    },
+    {
+      "username": "UAEVALORANTFAN",
+      "wallet": "0xc65ca4755436f82d8eb461e65781584b8cadea39",
+      "bucket": "watch",
+      "take_book": false,
+      "matched": false,
+      "joinable": true,
+      "recency": "HOT",
+      "closed": 1153,
+      "rows": 1222,
+      "pd_trades": 0,
+      "win_rate": 55.25,
+      "median_stake": 3741.38,
+      "last_event_date": "2026-08-16",
+      "reasons": [],
+      "refresh": true
     },
     {
       "username": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
@@ -409,16 +411,18 @@
       "bucket": "watch",
       "take_book": false,
       "matched": false,
-      "joinable": true,
+      "joinable": false,
       "recency": "HOT",
-      "closed": 71,
-      "rows": 114,
+      "closed": 72,
+      "rows": 116,
       "pd_trades": 3766,
-      "win_rate": 57.4,
-      "median_stake": 0.0,
+      "win_rate": 55.1,
+      "median_stake": 39637.5,
       "last_event_date": "2026-08-19",
-      "reasons": [],
-      "refresh": false
+      "reasons": [
+        "median=$39,638_unjoinable"
+      ],
+      "refresh": true
     },
     {
       "username": "ShortFlutterStock",
@@ -428,31 +432,67 @@
       "matched": false,
       "joinable": true,
       "recency": "COLD",
-      "closed": 2615,
-      "rows": 3669,
+      "closed": 4461,
+      "rows": 6382,
       "pd_trades": 0,
-      "win_rate": 57.42,
-      "median_stake": 3065.83,
+      "win_rate": 57.35,
+      "median_stake": 1273.53,
       "last_event_date": "2026-08-03",
       "reasons": [],
-      "refresh": false
+      "refresh": true
     },
     {
-      "username": "0xheavy888",
-      "wallet": "0xec981ed70ae69c5cbcac08c1ba063e734f6bafcd",
+      "username": "fengdubiying",
+      "wallet": "0x17db3fcd93ba12d38382a0cade24b200185c5f6d",
       "bucket": "watch",
       "take_book": false,
-      "matched": true,
-      "joinable": false,
-      "recency": "HOT",
-      "closed": 6710,
-      "rows": 6746,
-      "pd_trades": 99022,
-      "win_rate": 47.93,
-      "median_stake": 1220.79,
-      "last_event_date": "2026-08-19",
+      "matched": false,
+      "joinable": true,
+      "recency": "DARK",
+      "closed": 97,
+      "rows": 124,
+      "pd_trades": 0,
+      "win_rate": 71.43,
+      "median_stake": 12835.09,
+      "last_event_date": "2026-07-14",
       "reasons": [],
-      "refresh": false
+      "refresh": true
+    },
+    {
+      "username": "asparagus2012",
+      "wallet": "0x476e1322d1a412fa0325527b8c3bc5e707b1396d",
+      "bucket": "watch",
+      "take_book": false,
+      "matched": false,
+      "joinable": false,
+      "recency": "DARK",
+      "closed": 15,
+      "rows": 16,
+      "pd_trades": 0,
+      "win_rate": 68.75,
+      "median_stake": 29604.0,
+      "last_event_date": "2026-07-20",
+      "reasons": [
+        "median=$29,604_unjoinable"
+      ],
+      "refresh": true
+    },
+    {
+      "username": "S-Works",
+      "wallet": "0xee00ba338c59557141789b127927a55f5cc5cea1",
+      "bucket": "watch",
+      "take_book": false,
+      "matched": false,
+      "joinable": true,
+      "recency": "HOT",
+      "closed": 10182,
+      "rows": 10188,
+      "pd_trades": 99738,
+      "win_rate": 67.69,
+      "median_stake": 1206.5,
+      "last_event_date": "2026-08-15",
+      "reasons": [],
+      "refresh": true
     },
     {
       "username": "TutiFromFactsOfLife",
@@ -469,7 +509,7 @@
       "median_stake": 7680.4,
       "last_event_date": "2026-08-16",
       "reasons": [],
-      "refresh": false
+      "refresh": true
     },
     {
       "username": "bloodmaster",
@@ -479,48 +519,14 @@
       "matched": true,
       "joinable": false,
       "recency": "HOT",
-      "closed": 2735,
-      "rows": 2736,
+      "closed": 3520,
+      "rows": 3532,
       "pd_trades": 19107,
-      "win_rate": 89.46,
-      "median_stake": 971.32,
+      "win_rate": 88.73,
+      "median_stake": 597.86,
       "last_event_date": "2026-08-18",
       "reasons": [],
-      "refresh": false
-    },
-    {
-      "username": "asparagus2012",
-      "wallet": "0x476e1322d1a412fa0325527b8c3bc5e707b1396d",
-      "bucket": "watch",
-      "take_book": false,
-      "matched": false,
-      "joinable": false,
-      "recency": "DARK",
-      "closed": 15,
-      "rows": 16,
-      "pd_trades": 0,
-      "win_rate": 73.33,
-      "median_stake": 0.0,
-      "last_event_date": "2026-07-20",
-      "reasons": [],
-      "refresh": false
-    },
-    {
-      "username": "fengdubiying",
-      "wallet": "0x17db3fcd93ba12d38382a0cade24b200185c5f6d",
-      "bucket": "watch",
-      "take_book": false,
-      "matched": false,
-      "joinable": false,
-      "recency": "DARK",
-      "closed": 97,
-      "rows": 124,
-      "pd_trades": 0,
-      "win_rate": 95.88,
-      "median_stake": 0.0,
-      "last_event_date": "2026-07-14",
-      "reasons": [],
-      "refresh": false
+      "refresh": true
     },
     {
       "username": "KeyTransporter",
@@ -533,34 +539,34 @@
       "closed": 11,
       "rows": 15,
       "pd_trades": 0,
-      "win_rate": 100.0,
-      "median_stake": 0.0,
+      "win_rate": 76.92,
+      "median_stake": 301277.24,
       "last_event_date": "2026-02-22",
+      "reasons": [
+        "median=$301,277_unjoinable"
+      ],
+      "refresh": true
+    },
+    {
+      "username": "norrisfan",
+      "wallet": "0xe72bb501df5306c75c89383d48a1e81073fbb0a0",
+      "bucket": "watch",
+      "take_book": false,
+      "matched": false,
+      "joinable": false,
+      "recency": "HOT",
+      "closed": 1295,
+      "rows": 1331,
+      "pd_trades": 19437,
+      "win_rate": 43.19,
+      "median_stake": 1770.0,
+      "last_event_date": "2026-08-19",
       "reasons": [],
-      "refresh": false
+      "refresh": true
     }
   ],
   "kicked": [],
   "skip": [
-    {
-      "username": "WTSA",
-      "wallet": "0x04d5524a0a5af2eca6e39e03defc261d42fe66d8",
-      "bucket": "skip",
-      "take_book": true,
-      "matched": true,
-      "joinable": false,
-      "recency": "HOT",
-      "closed": 71,
-      "rows": 133,
-      "pd_trades": 26952,
-      "win_rate": 54.2,
-      "median_stake": 27764.04,
-      "last_event_date": "2026-08-17",
-      "reasons": [
-        "median=$27,764_unjoinable"
-      ],
-      "refresh": false
-    },
     {
       "username": "kch123",
       "wallet": "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee",
@@ -1327,9 +1333,46 @@
   ],
   "traders": [
     {
+      "username": "Supah9ga",
+      "wallet": "0x57cd939930fd119067ca9dc42b22b3e15708a0fb",
+      "bucket": "live",
+      "take_book": true,
+      "matched": true,
+      "joinable": true,
+      "recency": "HOT",
+      "closed": 659,
+      "rows": 685,
+      "pd_trades": 16148,
+      "win_rate": 52.23,
+      "median_stake": 5550.0,
+      "last_event_date": "2026-08-15",
+      "reasons": [],
+      "refresh": true
+    },
+    {
+      "username": "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+      "wallet": "0x5966db1fe50763c9e3c014d756369bad07e1f804",
+      "bucket": "bench",
+      "take_book": true,
+      "matched": true,
+      "joinable": false,
+      "recency": "DARK",
+      "closed": 123,
+      "rows": 190,
+      "pd_trades": 0,
+      "win_rate": 58.24,
+      "median_stake": 46032.55,
+      "last_event_date": "2026-07-16",
+      "reasons": [
+        "median=$46,033_unjoinable",
+        "stale_DARK"
+      ],
+      "refresh": true
+    },
+    {
       "username": "WTSA",
       "wallet": "0x04d5524a0a5af2eca6e39e03defc261d42fe66d8",
-      "bucket": "skip",
+      "bucket": "bench",
       "take_book": true,
       "matched": true,
       "joinable": false,
@@ -1341,9 +1384,10 @@
       "median_stake": 27764.04,
       "last_event_date": "2026-08-17",
       "reasons": [
-        "median=$27,764_unjoinable"
+        "median=$27,764_unjoinable",
+        "unjoinable_keep_book"
       ],
-      "refresh": false
+      "refresh": true
     },
     {
       "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
@@ -1354,48 +1398,12 @@
       "joinable": true,
       "recency": "HOT",
       "closed": 423,
-      "rows": 464,
+      "rows": 469,
       "pd_trades": 3187,
-      "win_rate": 54.01,
-      "median_stake": 4855.49,
+      "win_rate": 53.86,
+      "median_stake": 4838.34,
       "last_event_date": "2026-08-19",
       "reasons": [],
-      "refresh": true
-    },
-    {
-      "username": "Supah9ga",
-      "wallet": "0x57cd939930fd119067ca9dc42b22b3e15708a0fb",
-      "bucket": "live",
-      "take_book": true,
-      "matched": true,
-      "joinable": true,
-      "recency": "HOT",
-      "closed": 549,
-      "rows": 550,
-      "pd_trades": 16148,
-      "win_rate": 52.32,
-      "median_stake": 10964.8,
-      "last_event_date": "2026-08-15",
-      "reasons": [],
-      "refresh": true
-    },
-    {
-      "username": "DLEK",
-      "wallet": "0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c",
-      "bucket": "bench",
-      "take_book": true,
-      "matched": true,
-      "joinable": true,
-      "recency": "COLD",
-      "closed": 1123,
-      "rows": 1571,
-      "pd_trades": 14092,
-      "win_rate": 55.03,
-      "median_stake": 9199.19,
-      "last_event_date": "2026-07-29",
-      "reasons": [
-        "recency_COLD"
-      ],
       "refresh": true
     },
     {
@@ -1419,6 +1427,25 @@
       "refresh": false
     },
     {
+      "username": "DLEK",
+      "wallet": "0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c",
+      "bucket": "bench",
+      "take_book": true,
+      "matched": true,
+      "joinable": true,
+      "recency": "COLD",
+      "closed": 1165,
+      "rows": 1624,
+      "pd_trades": 14092,
+      "win_rate": 55.62,
+      "median_stake": 4741.82,
+      "last_event_date": "2026-07-30",
+      "reasons": [
+        "recency_COLD"
+      ],
+      "refresh": true
+    },
+    {
       "username": "HedgeMaster88",
       "wallet": "0x036c159d5a348058a81066a76b89f35926d4178d",
       "bucket": "bench",
@@ -1426,11 +1453,11 @@
       "matched": true,
       "joinable": true,
       "recency": "DROP",
-      "closed": 136,
+      "closed": 137,
       "rows": 252,
       "pd_trades": 9880,
-      "win_rate": 52.99,
-      "median_stake": 12230.88,
+      "win_rate": 53.39,
+      "median_stake": 6115.44,
       "last_event_date": "2026-05-27",
       "reasons": [
         "stale_DROP"
@@ -1445,33 +1472,14 @@
       "matched": true,
       "joinable": true,
       "recency": "COLD",
-      "closed": 613,
-      "rows": 615,
+      "closed": 694,
+      "rows": 723,
       "pd_trades": 7239,
-      "win_rate": 60.72,
-      "median_stake": 3071.59,
+      "win_rate": 60.87,
+      "median_stake": 1724.19,
       "last_event_date": "2026-08-02",
       "reasons": [
         "recency_COLD"
-      ],
-      "refresh": true
-    },
-    {
-      "username": "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
-      "wallet": "0x5966db1fe50763c9e3c014d756369bad07e1f804",
-      "bucket": "bench",
-      "take_book": true,
-      "matched": true,
-      "joinable": true,
-      "recency": "DARK",
-      "closed": 123,
-      "rows": 190,
-      "pd_trades": 0,
-      "win_rate": 58.24,
-      "median_stake": 0.0,
-      "last_event_date": "2026-07-16",
-      "reasons": [
-        "stale_DARK"
       ],
       "refresh": true
     },
@@ -1502,11 +1510,11 @@
       "matched": true,
       "joinable": true,
       "recency": "DARK",
-      "closed": 2384,
-      "rows": 2393,
+      "closed": 2533,
+      "rows": 2567,
       "pd_trades": 49608,
-      "win_rate": 55.04,
-      "median_stake": 11095.15,
+      "win_rate": 54.93,
+      "median_stake": 7378.95,
       "last_event_date": "2026-07-26",
       "reasons": [
         "stale_DARK"
@@ -1525,7 +1533,7 @@
       "rows": 3201,
       "pd_trades": 38948,
       "win_rate": 50.15,
-      "median_stake": 1948.2,
+      "median_stake": 1935.33,
       "last_event_date": "2026-04-30",
       "reasons": [
         "stale_DROP"
@@ -1575,36 +1583,36 @@
       "refresh": false
     },
     {
-      "username": "JhonAlexanderHinestroza",
-      "wallet": "0x44c58184f89a5c2f699dc8943009cb3d75a08d45",
-      "bucket": "live",
+      "username": "CoryLahey",
+      "wallet": "0x5c3a1a602848565bb16165fcd460b00c3d43020b",
+      "bucket": "watch",
       "take_book": false,
-      "matched": true,
+      "matched": false,
       "joinable": true,
       "recency": "HOT",
-      "closed": 899,
-      "rows": 1259,
-      "pd_trades": 56560,
-      "win_rate": 53.58,
-      "median_stake": 2501.07,
-      "last_event_date": "2026-08-18",
+      "closed": 1652,
+      "rows": 1731,
+      "pd_trades": 0,
+      "win_rate": 59.4,
+      "median_stake": 7364.68,
+      "last_event_date": "2026-08-16",
       "reasons": [],
       "refresh": true
     },
     {
-      "username": "S-Works",
-      "wallet": "0xee00ba338c59557141789b127927a55f5cc5cea1",
-      "bucket": "live",
+      "username": "ShucksIt69",
+      "wallet": "0x84dbb7103982e3617704a2ed7d5b39691952aeeb",
+      "bucket": "watch",
       "take_book": false,
-      "matched": true,
+      "matched": false,
       "joinable": true,
       "recency": "HOT",
-      "closed": 9506,
-      "rows": 9519,
-      "pd_trades": 99738,
-      "win_rate": 69.06,
-      "median_stake": 1701.39,
-      "last_event_date": "2026-08-15",
+      "closed": 2566,
+      "rows": 2567,
+      "pd_trades": 0,
+      "win_rate": 53.19,
+      "median_stake": 5221.48,
+      "last_event_date": "2026-08-16",
       "reasons": [],
       "refresh": true
     },
@@ -1630,21 +1638,38 @@
       "refresh": false
     },
     {
-      "username": "CoryLahey",
-      "wallet": "0x5c3a1a602848565bb16165fcd460b00c3d43020b",
+      "username": "UAEVALORANTFAN",
+      "wallet": "0xc65ca4755436f82d8eb461e65781584b8cadea39",
       "bucket": "watch",
       "take_book": false,
       "matched": false,
       "joinable": true,
       "recency": "HOT",
-      "closed": 1652,
-      "rows": 1731,
+      "closed": 1153,
+      "rows": 1222,
       "pd_trades": 0,
-      "win_rate": 56.23,
-      "median_stake": 10399.95,
+      "win_rate": 55.25,
+      "median_stake": 3741.38,
       "last_event_date": "2026-08-16",
       "reasons": [],
-      "refresh": false
+      "refresh": true
+    },
+    {
+      "username": "JhonAlexanderHinestroza",
+      "wallet": "0x44c58184f89a5c2f699dc8943009cb3d75a08d45",
+      "bucket": "live",
+      "take_book": false,
+      "matched": true,
+      "joinable": true,
+      "recency": "HOT",
+      "closed": 1697,
+      "rows": 2358,
+      "pd_trades": 56560,
+      "win_rate": 51.84,
+      "median_stake": 1927.02,
+      "last_event_date": "2026-08-18",
+      "reasons": [],
+      "refresh": true
     },
     {
       "username": "GoalLineGhost",
@@ -1670,6 +1695,23 @@
       "refresh": false
     },
     {
+      "username": "TTdes",
+      "wallet": "0x25867077c891354137bbaf7fde12eec6949cc893",
+      "bucket": "live",
+      "take_book": false,
+      "matched": true,
+      "joinable": true,
+      "recency": "HOT",
+      "closed": 825,
+      "rows": 1318,
+      "pd_trades": 17924,
+      "win_rate": 53.82,
+      "median_stake": 920.2,
+      "last_event_date": "2026-08-16",
+      "reasons": [],
+      "refresh": true
+    },
+    {
       "username": "0x20D6436849F930584892730C7F96eBB2Ac763856",
       "wallet": "0x20d6436849f930584892730c7f96ebb2ac763856",
       "bucket": "live",
@@ -1681,44 +1723,27 @@
       "rows": 1860,
       "pd_trades": 47660,
       "win_rate": 51.3,
-      "median_stake": 2018.1,
+      "median_stake": 2043.31,
       "last_event_date": "2026-08-13",
       "reasons": [],
       "refresh": true
     },
     {
-      "username": "UAEVALORANTFAN",
-      "wallet": "0xc65ca4755436f82d8eb461e65781584b8cadea39",
-      "bucket": "watch",
+      "username": "0xheavy888",
+      "wallet": "0xec981ed70ae69c5cbcac08c1ba063e734f6bafcd",
+      "bucket": "live",
       "take_book": false,
-      "matched": false,
+      "matched": true,
       "joinable": true,
       "recency": "HOT",
-      "closed": 980,
-      "rows": 983,
-      "pd_trades": 0,
-      "win_rate": 54.12,
-      "median_stake": 6767.0,
-      "last_event_date": "2026-08-16",
-      "reasons": [],
-      "refresh": false
-    },
-    {
-      "username": "norrisfan",
-      "wallet": "0xe72bb501df5306c75c89383d48a1e81073fbb0a0",
-      "bucket": "watch",
-      "take_book": false,
-      "matched": false,
-      "joinable": true,
-      "recency": "HOT",
-      "closed": 625,
-      "rows": 639,
-      "pd_trades": 19437,
-      "win_rate": 52.73,
-      "median_stake": 2400.0,
+      "closed": 11346,
+      "rows": 11735,
+      "pd_trades": 99022,
+      "win_rate": 50.64,
+      "median_stake": 617.86,
       "last_event_date": "2026-08-19",
       "reasons": [],
-      "refresh": false
+      "refresh": true
     },
     {
       "username": "fkgggg2",
@@ -1740,38 +1765,23 @@
       "refresh": false
     },
     {
-      "username": "ShucksIt69",
-      "wallet": "0x84dbb7103982e3617704a2ed7d5b39691952aeeb",
-      "bucket": "watch",
-      "take_book": false,
-      "matched": false,
-      "joinable": true,
-      "recency": "HOT",
-      "closed": 2197,
-      "rows": 2200,
-      "pd_trades": 0,
-      "win_rate": 53.01,
-      "median_stake": 8096.57,
-      "last_event_date": "2026-08-16",
-      "reasons": [],
-      "refresh": false
-    },
-    {
       "username": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
       "wallet": "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87",
       "bucket": "watch",
       "take_book": false,
       "matched": false,
-      "joinable": true,
+      "joinable": false,
       "recency": "HOT",
-      "closed": 71,
-      "rows": 114,
+      "closed": 72,
+      "rows": 116,
       "pd_trades": 3766,
-      "win_rate": 57.4,
-      "median_stake": 0.0,
+      "win_rate": 55.1,
+      "median_stake": 39637.5,
       "last_event_date": "2026-08-19",
-      "reasons": [],
-      "refresh": false
+      "reasons": [
+        "median=$39,638_unjoinable"
+      ],
+      "refresh": true
     },
     {
       "username": "HomeRunHazard",
@@ -1797,6 +1807,23 @@
       "refresh": false
     },
     {
+      "username": "ShortFlutterStock",
+      "wallet": "0x13414a77a4be48988851c73dfd824d0168e70853",
+      "bucket": "watch",
+      "take_book": false,
+      "matched": false,
+      "joinable": true,
+      "recency": "COLD",
+      "closed": 4461,
+      "rows": 6382,
+      "pd_trades": 0,
+      "win_rate": 57.35,
+      "median_stake": 1273.53,
+      "last_event_date": "2026-08-03",
+      "reasons": [],
+      "refresh": true
+    },
+    {
       "username": "geniusMC",
       "wallet": "0x0b9cae2b0dfe7a71c413e0604eaac1c352f87e44",
       "bucket": "skip",
@@ -1816,21 +1843,40 @@
       "refresh": false
     },
     {
-      "username": "ShortFlutterStock",
-      "wallet": "0x13414a77a4be48988851c73dfd824d0168e70853",
+      "username": "fengdubiying",
+      "wallet": "0x17db3fcd93ba12d38382a0cade24b200185c5f6d",
       "bucket": "watch",
       "take_book": false,
       "matched": false,
       "joinable": true,
-      "recency": "COLD",
-      "closed": 2615,
-      "rows": 3669,
+      "recency": "DARK",
+      "closed": 97,
+      "rows": 124,
       "pd_trades": 0,
-      "win_rate": 57.42,
-      "median_stake": 3065.83,
-      "last_event_date": "2026-08-03",
+      "win_rate": 71.43,
+      "median_stake": 12835.09,
+      "last_event_date": "2026-07-14",
       "reasons": [],
-      "refresh": false
+      "refresh": true
+    },
+    {
+      "username": "asparagus2012",
+      "wallet": "0x476e1322d1a412fa0325527b8c3bc5e707b1396d",
+      "bucket": "watch",
+      "take_book": false,
+      "matched": false,
+      "joinable": false,
+      "recency": "DARK",
+      "closed": 15,
+      "rows": 16,
+      "pd_trades": 0,
+      "win_rate": 68.75,
+      "median_stake": 29604.0,
+      "last_event_date": "2026-07-20",
+      "reasons": [
+        "median=$29,604_unjoinable"
+      ],
+      "refresh": true
     },
     {
       "username": "Fredi9999",
@@ -1846,23 +1892,6 @@
       "win_rate": 67.0,
       "median_stake": 0.0,
       "last_event_date": null,
-      "reasons": [],
-      "refresh": false
-    },
-    {
-      "username": "0xheavy888",
-      "wallet": "0xec981ed70ae69c5cbcac08c1ba063e734f6bafcd",
-      "bucket": "watch",
-      "take_book": false,
-      "matched": true,
-      "joinable": false,
-      "recency": "HOT",
-      "closed": 6710,
-      "rows": 6746,
-      "pd_trades": 99022,
-      "win_rate": 47.93,
-      "median_stake": 1220.79,
-      "last_event_date": "2026-08-19",
       "reasons": [],
       "refresh": false
     },
@@ -1887,22 +1916,20 @@
       "refresh": false
     },
     {
-      "username": "TTdes",
-      "wallet": "0x25867077c891354137bbaf7fde12eec6949cc893",
-      "bucket": "bench",
+      "username": "S-Works",
+      "wallet": "0xee00ba338c59557141789b127927a55f5cc5cea1",
+      "bucket": "watch",
       "take_book": false,
-      "matched": true,
+      "matched": false,
       "joinable": true,
       "recency": "HOT",
-      "closed": 723,
-      "rows": 1154,
-      "pd_trades": 17924,
-      "win_rate": 53.66,
-      "median_stake": 1546.89,
-      "last_event_date": "2026-08-16",
-      "reasons": [
-        "take_rule_negative"
-      ],
+      "closed": 10182,
+      "rows": 10188,
+      "pd_trades": 99738,
+      "win_rate": 67.69,
+      "median_stake": 1206.5,
+      "last_event_date": "2026-08-15",
+      "reasons": [],
       "refresh": true
     },
     {
@@ -1913,11 +1940,11 @@
       "matched": true,
       "joinable": true,
       "recency": "COLD",
-      "closed": 1263,
-      "rows": 1333,
+      "closed": 1352,
+      "rows": 1354,
       "pd_trades": 17427,
-      "win_rate": 58.88,
-      "median_stake": 879.95,
+      "win_rate": 58.16,
+      "median_stake": 450.0,
       "last_event_date": "2026-07-31",
       "reasons": [
         "recency_COLD"
@@ -2024,25 +2051,6 @@
       "refresh": false
     },
     {
-      "username": "Andromeda1",
-      "wallet": "0x39932ca2b7a1b8ab6cbf0b8f7419261b950ccded",
-      "bucket": "bench",
-      "take_book": false,
-      "matched": true,
-      "joinable": true,
-      "recency": "DARK",
-      "closed": 1768,
-      "rows": 2320,
-      "pd_trades": 31941,
-      "win_rate": 56.88,
-      "median_stake": 712.77,
-      "last_event_date": "2026-07-19",
-      "reasons": [
-        "stale_DARK"
-      ],
-      "refresh": true
-    },
-    {
       "username": "TutiFromFactsOfLife",
       "wallet": "0xc660ae71765d0d9eaf5fa8328c1c959841d2bd28",
       "bucket": "watch",
@@ -2057,7 +2065,7 @@
       "median_stake": 7680.4,
       "last_event_date": "2026-08-16",
       "reasons": [],
-      "refresh": false
+      "refresh": true
     },
     {
       "username": "quavoo",
@@ -2082,6 +2090,23 @@
       "refresh": false
     },
     {
+      "username": "bloodmaster",
+      "wallet": "0x58f8f1138be2192696378629fc9aa23c7910dc70",
+      "bucket": "watch",
+      "take_book": false,
+      "matched": true,
+      "joinable": false,
+      "recency": "HOT",
+      "closed": 3520,
+      "rows": 3532,
+      "pd_trades": 19107,
+      "win_rate": 88.73,
+      "median_stake": 597.86,
+      "last_event_date": "2026-08-18",
+      "reasons": [],
+      "refresh": true
+    },
+    {
       "username": "Theo4",
       "wallet": "0x56687bf447db6ffa42ffe2204a05edaa20f55839",
       "bucket": "reference",
@@ -2099,21 +2124,23 @@
       "refresh": false
     },
     {
-      "username": "bloodmaster",
-      "wallet": "0x58f8f1138be2192696378629fc9aa23c7910dc70",
-      "bucket": "watch",
+      "username": "Andromeda1",
+      "wallet": "0x39932ca2b7a1b8ab6cbf0b8f7419261b950ccded",
+      "bucket": "bench",
       "take_book": false,
       "matched": true,
-      "joinable": false,
-      "recency": "HOT",
-      "closed": 2735,
-      "rows": 2736,
-      "pd_trades": 19107,
-      "win_rate": 89.46,
-      "median_stake": 971.32,
-      "last_event_date": "2026-08-18",
-      "reasons": [],
-      "refresh": false
+      "joinable": true,
+      "recency": "DARK",
+      "closed": 2435,
+      "rows": 3261,
+      "pd_trades": 31941,
+      "win_rate": 55.72,
+      "median_stake": 437.48,
+      "last_event_date": "2026-07-19",
+      "reasons": [
+        "stale_DARK"
+      ],
+      "refresh": true
     },
     {
       "username": "EIf",
@@ -2193,6 +2220,25 @@
         "closed=16639>12k"
       ],
       "refresh": false
+    },
+    {
+      "username": "KeyTransporter",
+      "wallet": "0x94f199fb7789f1aef7fff6b758d6b375100f4c7a",
+      "bucket": "watch",
+      "take_book": false,
+      "matched": false,
+      "joinable": false,
+      "recency": "DROP",
+      "closed": 11,
+      "rows": 15,
+      "pd_trades": 0,
+      "win_rate": 76.92,
+      "median_stake": 301277.24,
+      "last_event_date": "2026-02-22",
+      "reasons": [
+        "median=$301,277_unjoinable"
+      ],
+      "refresh": true
     },
     {
       "username": "Cannae",
@@ -2294,23 +2340,6 @@
       "refresh": false
     },
     {
-      "username": "asparagus2012",
-      "wallet": "0x476e1322d1a412fa0325527b8c3bc5e707b1396d",
-      "bucket": "watch",
-      "take_book": false,
-      "matched": false,
-      "joinable": false,
-      "recency": "DARK",
-      "closed": 15,
-      "rows": 16,
-      "pd_trades": 0,
-      "win_rate": 73.33,
-      "median_stake": 0.0,
-      "last_event_date": "2026-07-20",
-      "reasons": [],
-      "refresh": false
-    },
-    {
       "username": "Qpkwks",
       "wallet": "0x9ee8bbc36d378af72e5f6b8e2ea2eb67c05a89de",
       "bucket": "skip",
@@ -2369,6 +2398,23 @@
         "closed=17766>12k"
       ],
       "refresh": false
+    },
+    {
+      "username": "norrisfan",
+      "wallet": "0xe72bb501df5306c75c89383d48a1e81073fbb0a0",
+      "bucket": "watch",
+      "take_book": false,
+      "matched": false,
+      "joinable": false,
+      "recency": "HOT",
+      "closed": 1295,
+      "rows": 1331,
+      "pd_trades": 19437,
+      "win_rate": 43.19,
+      "median_stake": 1770.0,
+      "last_event_date": "2026-08-19",
+      "reasons": [],
+      "refresh": true
     },
     {
       "username": "JPMorgan101",
@@ -2492,40 +2538,6 @@
       "refresh": false
     },
     {
-      "username": "fengdubiying",
-      "wallet": "0x17db3fcd93ba12d38382a0cade24b200185c5f6d",
-      "bucket": "watch",
-      "take_book": false,
-      "matched": false,
-      "joinable": false,
-      "recency": "DARK",
-      "closed": 97,
-      "rows": 124,
-      "pd_trades": 0,
-      "win_rate": 95.88,
-      "median_stake": 0.0,
-      "last_event_date": "2026-07-14",
-      "reasons": [],
-      "refresh": false
-    },
-    {
-      "username": "KeyTransporter",
-      "wallet": "0x94f199fb7789f1aef7fff6b758d6b375100f4c7a",
-      "bucket": "watch",
-      "take_book": false,
-      "matched": false,
-      "joinable": false,
-      "recency": "DROP",
-      "closed": 11,
-      "rows": 15,
-      "pd_trades": 0,
-      "win_rate": 100.0,
-      "median_stake": 0.0,
-      "last_event_date": "2026-02-22",
-      "reasons": [],
-      "refresh": false
-    },
-    {
       "username": "LynxTitan",
       "wallet": "0x68146921df11eab44296dc4e58025ca84741a9e7",
       "bucket": "skip",
@@ -2566,32 +2578,5 @@
       ],
       "refresh": false
     }
-  ],
-  "backtest": {
-    "matched_12": {
-      "n": 518,
-      "win_rate": 69.69,
-      "roi_2c": 12.13
-    },
-    "matched_12_minus_bots": {
-      "n": 223,
-      "win_rate": 66.37,
-      "roi_2c": 7.86
-    },
-    "live_joinable": {
-      "n": 297,
-      "win_rate": 57.24,
-      "roi_2c": 9.44
-    },
-    "live_plus_bench": {
-      "n": 554,
-      "win_rate": 60.11,
-      "roi_2c": 4.83
-    },
-    "live_after_demote": {
-      "n": 282,
-      "win_rate": 58.51,
-      "roi_2c": 12.21
-    }
-  }
+  ]
 }

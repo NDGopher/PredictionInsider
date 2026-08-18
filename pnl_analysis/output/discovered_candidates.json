@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-18T12:53:45.167684+00:00",
-  "known_wallets": 58,
+  "generated_at": "2026-08-18T17:23:56.091178+00:00",
+  "known_wallets": 62,
   "leaderboard_unique": 300,
   "already_tracked_on_lb": [
     {
@@ -11,7 +11,17 @@
         "month",
         "week"
       ],
-      "pnl": 185757.89711528644
+      "pnl": 183866.30340602528
+    },
+    {
+      "wallet": "0x5268527977f700f9bf9b6d5cd843859e4e70135d",
+      "username": "HomeRunHazard",
+      "windows": [
+        "all",
+        "month",
+        "week"
+      ],
+      "pnl": 131943.33725493145
     },
     {
       "wallet": "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87",
@@ -31,27 +41,7 @@
         "month",
         "week"
       ],
-      "pnl": 100231.40565203177
-    },
-    {
-      "wallet": "0x5268527977f700f9bf9b6d5cd843859e4e70135d",
-      "username": "HomeRunHazard",
-      "windows": [
-        "all",
-        "month",
-        "week"
-      ],
-      "pnl": 98709.0220761816
-    },
-    {
-      "wallet": "0xfe787d2da716d60e8acff57fb87eb13cd4d10319",
-      "username": "ferrariChampions2026",
-      "windows": [
-        "all",
-        "month",
-        "week"
-      ],
-      "pnl": 68507.20144700678
+      "pnl": 100122.98240856687
     },
     {
       "wallet": "0xdc41c39b95453c943174f369926018f6963bdd7e",
@@ -61,17 +51,17 @@
         "month",
         "week"
       ],
-      "pnl": 48867.273729555076
+      "pnl": 83666.1973645147
     },
     {
-      "wallet": "0x0346afae2603313d2bbee96b628536c8cbe352a5",
-      "username": "GoalLineGhost",
+      "wallet": "0xfe787d2da716d60e8acff57fb87eb13cd4d10319",
+      "username": "ferrariChampions2026",
       "windows": [
         "all",
         "month",
         "week"
       ],
-      "pnl": 33896.035002204124
+      "pnl": 81644.95300687058
     },
     {
       "wallet": "0x0e604be17c231a33dc01e38a722c7fe3984e3bad",
@@ -84,6 +74,16 @@
       "pnl": 26680.573219999987
     },
     {
+      "wallet": "0x0346afae2603313d2bbee96b628536c8cbe352a5",
+      "username": "GoalLineGhost",
+      "windows": [
+        "all",
+        "month",
+        "week"
+      ],
+      "pnl": 23538.986969548278
+    },
+    {
       "wallet": "0x44c58184f89a5c2f699dc8943009cb3d75a08d45",
       "username": "JhonAlexanderHinestroza",
       "windows": [
@@ -91,7 +91,7 @@
         "month",
         "week"
       ],
-      "pnl": 8100.649775516475
+      "pnl": 8065.5549926534295
     },
     {
       "wallet": "0x53ecc53e7a69aad0e6dda60264cc2e363092df91",
@@ -101,7 +101,7 @@
         "month",
         "week"
       ],
-      "pnl": 3024.0103634761217
+      "pnl": 2931.2159246880874
     },
     {
       "wallet": "0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c",
@@ -112,15 +112,25 @@
         "week"
       ],
       "pnl": 1872.0313984057866
+    },
+    {
+      "wallet": "0xd9e0aaca471f489be338fd0f91a26e8669a805f2",
+      "username": "0xD9E0AACa471f48F91A26E8669A805f2",
+      "windows": [
+        "all",
+        "month",
+        "week"
+      ],
+      "pnl": 1583.563894672785
     }
   ],
   "new_candidates": [
     {
-      "wallet": "0x085fd7e4886bd3c491d979ea5c8052b0d3d34d1c",
-      "username": "Penisya",
-      "pnl": 46340.86696501685,
-      "vol": 181143.90090399998,
-      "rank": 12,
+      "wallet": "0x56acab44cfca2e88bb9b3406890aea7bfa0cd77e",
+      "username": "dv-pm",
+      "pnl": 28252.28759999911,
+      "vol": 90402.08,
+      "rank": 14,
       "window": "all",
       "category": "sports",
       "windows": [
@@ -128,7 +138,35 @@
         "month",
         "week"
       ],
-      "best_rank": 12,
+      "best_rank": 14,
+      "best_pnl": 28252.28759999911,
+      "recency": 2,
+      "sample_closed_rows": 200,
+      "sample_pnl": 2895804.99,
+      "sample_cost": 2908364.57,
+      "sample_roi": 99.57,
+      "sample_resolved_n": 210,
+      "sample_open_resolved": 10,
+      "sample_dash_roi": 99.67,
+      "sample_hold_roi": 101.34,
+      "sample_hold_wr": 99.0,
+      "closed_only_bias": -1.8,
+      "screen_score": 71.1
+    },
+    {
+      "wallet": "0x085fd7e4886bd3c491d979ea5c8052b0d3d34d1c",
+      "username": "Penisya",
+      "pnl": 46340.86696501685,
+      "vol": 181143.90090399998,
+      "rank": 8,
+      "window": "all",
+      "category": "sports",
+      "windows": [
+        "all",
+        "month",
+        "week"
+      ],
+      "best_rank": 8,
       "best_pnl": 46340.86696501685,
       "recency": 2,
       "sample_closed_rows": 2,
@@ -144,66 +182,10 @@
       "screen_score": 53.9
     },
     {
-      "wallet": "0xe76f0a36d05d215a69f1f84466c8922702a1d40c",
-      "username": "Kulilun",
-      "pnl": 36200.29375449434,
-      "vol": 23022.320000000003,
-      "rank": 14,
-      "window": "all",
-      "category": "sports",
-      "windows": [
-        "all",
-        "month",
-        "week"
-      ],
-      "best_rank": 14,
-      "best_pnl": 36200.29375449434,
-      "recency": 2,
-      "sample_closed_rows": 1,
-      "sample_pnl": 61576.76,
-      "sample_cost": 186791.2,
-      "sample_roi": 32.97,
-      "sample_resolved_n": 1,
-      "sample_open_resolved": 0,
-      "sample_dash_roi": 32.97,
-      "sample_hold_roi": 32.98,
-      "sample_hold_wr": 100.0,
-      "closed_only_bias": -0.0,
-      "screen_score": 53.4
-    },
-    {
-      "wallet": "0x9d3e50519d87421645a1717e60a4ba369db1986c",
-      "username": "bigoon",
-      "pnl": 29316.348414513173,
-      "vol": 106570.372924,
-      "rank": 18,
-      "window": "all",
-      "category": "sports",
-      "windows": [
-        "all",
-        "month",
-        "week"
-      ],
-      "best_rank": 18,
-      "best_pnl": 29316.348414513173,
-      "recency": 2,
-      "sample_closed_rows": 150,
-      "sample_pnl": 106674.64,
-      "sample_cost": 116308.14,
-      "sample_roi": 91.72,
-      "sample_resolved_n": 446,
-      "sample_open_resolved": 296,
-      "sample_dash_roi": 36.27,
-      "sample_hold_roi": 35.76,
-      "sample_hold_wr": 33.2,
-      "closed_only_bias": 56.0,
-      "screen_score": 50.2
-    },
-    {
-      "wallet": "0x684baa57c338c2549aec0aa3f034f695d72a8409",
-      "username": "monkeymashingkeyboard",
-      "pnl": 39068.83665569441,
-      "vol": 19192.529816,
+      "wallet": "0xdb83e85ffd22faa4009273034770f96ffc5b1e50",
+      "username": "sentrio",
+      "pnl": 30152.74649950367,
+      "vol": 235220.680771,
       "rank": 13,
       "window": "all",
       "category": "sports",
@@ -213,26 +195,54 @@
         "week"
       ],
       "best_rank": 13,
-      "best_pnl": 39068.83665569441,
+      "best_pnl": 30152.74649950367,
       "recency": 2,
-      "sample_closed_rows": 150,
-      "sample_pnl": 2099752.34,
-      "sample_cost": 2295190.84,
-      "sample_roi": 91.48,
-      "sample_resolved_n": 320,
-      "sample_open_resolved": 170,
-      "sample_dash_roi": 6.33,
-      "sample_hold_roi": 6.16,
-      "sample_hold_wr": 46.9,
-      "closed_only_bias": 85.3,
-      "screen_score": 43.4
+      "sample_closed_rows": 200,
+      "sample_pnl": 1772406.3,
+      "sample_cost": 1384752.39,
+      "sample_roi": 127.99,
+      "sample_resolved_n": 490,
+      "sample_open_resolved": 290,
+      "sample_dash_roi": 35.88,
+      "sample_hold_roi": 35.77,
+      "sample_hold_wr": 41.0,
+      "closed_only_bias": 92.2,
+      "screen_score": 50.2
+    },
+    {
+      "wallet": "0xaa7789219c17e180dcb5933099c90d885f1d15a5",
+      "username": "alaskabaked",
+      "pnl": 22210.338678233886,
+      "vol": 97394.780845,
+      "rank": 21,
+      "window": "all",
+      "category": "sports",
+      "windows": [
+        "all",
+        "month",
+        "week"
+      ],
+      "best_rank": 21,
+      "best_pnl": 22210.338678233886,
+      "recency": 2,
+      "sample_closed_rows": 200,
+      "sample_pnl": 1247953.32,
+      "sample_cost": 1701883.78,
+      "sample_roi": 73.33,
+      "sample_resolved_n": 297,
+      "sample_open_resolved": 97,
+      "sample_dash_roi": 29.64,
+      "sample_hold_roi": 32.19,
+      "sample_hold_wr": 67.3,
+      "closed_only_bias": 41.1,
+      "screen_score": 49.9
     },
     {
       "wallet": "0x927cf2bb94d15707993f954552e56c74eb6d6633",
       "username": "jarosbill",
-      "pnl": 28482.311510999964,
-      "vol": 78549.093876,
-      "rank": 20,
+      "pnl": 25830.311510999964,
+      "vol": 82449.093876,
+      "rank": 16,
       "window": "all",
       "category": "sports",
       "windows": [
@@ -240,27 +250,83 @@
         "month",
         "week"
       ],
-      "best_rank": 20,
-      "best_pnl": 28482.311510999964,
+      "best_rank": 16,
+      "best_pnl": 25830.311510999964,
       "recency": 2,
-      "sample_closed_rows": 150,
-      "sample_pnl": 704277.73,
-      "sample_cost": 1321004.92,
-      "sample_roi": 53.31,
-      "sample_resolved_n": 326,
-      "sample_open_resolved": 176,
-      "sample_dash_roi": 4.58,
-      "sample_hold_roi": 6.27,
-      "sample_hold_wr": 46.0,
-      "closed_only_bias": 47.0,
-      "screen_score": 43.0
+      "sample_closed_rows": 200,
+      "sample_pnl": 742115.28,
+      "sample_cost": 1469289.53,
+      "sample_roi": 50.51,
+      "sample_resolved_n": 377,
+      "sample_open_resolved": 177,
+      "sample_dash_roi": 5.93,
+      "sample_hold_roi": 7.69,
+      "sample_hold_wr": 53.1,
+      "closed_only_bias": 42.8,
+      "screen_score": 43.3
+    },
+    {
+      "wallet": "0x59018ff1f4300838f635386ab5e0b8b353ce63a2",
+      "username": "kamloic",
+      "pnl": 25284.21873974701,
+      "vol": 118200.625923,
+      "rank": 18,
+      "window": "all",
+      "category": "sports",
+      "windows": [
+        "all",
+        "month",
+        "week"
+      ],
+      "best_rank": 18,
+      "best_pnl": 25284.21873974701,
+      "recency": 2,
+      "sample_closed_rows": 173,
+      "sample_pnl": 258318.42,
+      "sample_cost": 393844.57,
+      "sample_roi": 65.59,
+      "sample_resolved_n": 334,
+      "sample_open_resolved": 162,
+      "sample_dash_roi": 4.97,
+      "sample_hold_roi": 5.09,
+      "sample_hold_wr": 45.2,
+      "closed_only_bias": 60.5,
+      "screen_score": 42.5
+    },
+    {
+      "wallet": "0x16bb9951a36fce71e2ef57890b786145e0ba8492",
+      "username": "SDTrading",
+      "pnl": 52215.63365000006,
+      "vol": 73946.04,
+      "rank": 7,
+      "window": "all",
+      "category": "sports",
+      "windows": [
+        "all",
+        "month",
+        "week"
+      ],
+      "best_rank": 7,
+      "best_pnl": 52215.63365000006,
+      "recency": 2,
+      "sample_closed_rows": 200,
+      "sample_pnl": 4162494.7,
+      "sample_cost": 4004084.62,
+      "sample_roi": 103.96,
+      "sample_resolved_n": 493,
+      "sample_open_resolved": 293,
+      "sample_dash_roi": -1.49,
+      "sample_hold_roi": -0.76,
+      "sample_hold_wr": 40.6,
+      "closed_only_bias": 104.7,
+      "screen_score": 42.1
     },
     {
       "wallet": "0xe954ddb021c19495f1c556f59dadbd1494821ef1",
       "username": "kingflop",
-      "pnl": 28954.05040617715,
-      "vol": 16480.056665,
-      "rank": 19,
+      "pnl": 32172.53655342215,
+      "vol": 67759.56666500002,
+      "rank": 11,
       "window": "all",
       "category": "sports",
       "windows": [
@@ -268,20 +334,20 @@
         "month",
         "week"
       ],
-      "best_rank": 19,
-      "best_pnl": 28954.05040617715,
+      "best_rank": 11,
+      "best_pnl": 32172.53655342215,
       "recency": 2,
-      "sample_closed_rows": 109,
-      "sample_pnl": 105922.17,
-      "sample_cost": 154454.79,
-      "sample_roi": 68.58,
-      "sample_resolved_n": 186,
+      "sample_closed_rows": 111,
+      "sample_pnl": 109681.99,
+      "sample_cost": 156919.75,
+      "sample_roi": 69.9,
+      "sample_resolved_n": 188,
       "sample_open_resolved": 78,
-      "sample_dash_roi": -4.04,
-      "sample_hold_roi": -3.39,
-      "sample_hold_wr": 47.3,
-      "closed_only_bias": 72.0,
-      "screen_score": 41.2
+      "sample_dash_roi": -2.6,
+      "sample_hold_roi": -1.96,
+      "sample_hold_wr": 47.9,
+      "closed_only_bias": 71.9,
+      "screen_score": 41.3
     }
   ],
   "recommended": []

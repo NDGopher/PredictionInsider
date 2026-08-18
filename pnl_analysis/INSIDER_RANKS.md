@@ -46,20 +46,20 @@ Copyable = the 12 matched sports books in `trusted_full_books.json`. Health KICK
 
 | Trader | Recency | Last | Our PnL | Our WR | PD WR | ΔWR | Accuracy | Closed |
 |--------|---------|------|--------:|-------:|------:|----:|----------|-------:|
-| WTSA | HOT | 2026-08-17 | +$1,154,833 | 54.2% | 55.0% | -0.8 | matched | 71 |
-| 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a | HOT | 2026-08-19 | +$674,530 | 54.01% | 58.0% | -4.0 | matched | 423 |
-| Supah9ga | HOT | 2026-08-15 | +$922,469 | 52.32% | 53.0% | -0.7 | matched | 549 |
-| DLEK | COLD | 2026-07-29 | +$961,550 | 55.03% | 55.0% | +0.0 | matched | 1123 |
-| kch123 | DROP | 2026-07-01 | +$12,061,185 | 58.0% | 55.0% | +3.0 | matched | 3818 |
-| HedgeMaster88 | DROP | 2026-05-27 | +$927,148 | 52.99% | 53.0% | -0.0 | matched | 136 |
-| Vetch | COLD | 2026-08-02 | +$218,154 | 60.72% | 61.0% | -0.3 | matched | 613 |
+| Supah9ga | HOT | 2026-08-15 | +$2,001,694 | 52.23% | 53.0% | -0.8 | matched | 659 |
 | 0x5966Db1fE50763C9e3C014d756369BAd07E1F804 | DARK | 2026-07-16 | +$3,458,340 | 58.24% | 62.0% | -3.8 | matched | 123 |
+| WTSA | HOT | 2026-08-17 | +$1,154,833 | 54.2% | 55.0% | -0.8 | matched | 71 |
+| 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a | HOT | 2026-08-19 | +$670,157 | 53.86% | 58.0% | -4.1 | matched | 423 |
+| kch123 | DROP | 2026-07-01 | +$12,061,185 | 58.0% | 55.0% | +3.0 | matched | 3818 |
+| DLEK | COLD | 2026-07-30 | +$1,433,484 | 55.62% | 55.0% | +0.6 | matched | 1165 |
+| HedgeMaster88 | DROP | 2026-05-27 | +$931,923 | 53.39% | 53.0% | +0.4 | matched | 137 |
+| Vetch | COLD | 2026-08-02 | +$321,367 | 60.87% | 61.0% | -0.1 | matched | 694 |
 | Capman | DROP | 2026-04-08 | +$267,281 | 55.09% | 54.0% | +1.1 | matched | 15803 |
-| ckw | DARK | 2026-07-26 | +$861,782 | 55.04% | 56.0% | -1.0 | matched | 2384 |
+| ckw | DARK | 2026-07-26 | +$839,272 | 54.93% | 56.0% | -1.1 | matched | 2533 |
 | Bienville | DROP | 2026-04-30 | +$391,645 | 50.15% | 52.0% | -1.9 | matched | 2404 |
 | tcp2 | DROP | 2026-04-16 | +$539,799 | 49.93% | 55.0% | -5.1 | matched | 20810 |
 
-**Take book (12):** WTSA, 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a, Supah9ga, DLEK, kch123, HedgeMaster88, Vetch, 0x5966Db1fE50763C9e3C014d756369BAd07E1F804, Capman, ckw, Bienville, tcp2
+**Take book (12):** Supah9ga, 0x5966Db1fE50763C9e3C014d756369BAd07E1F804, WTSA, 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a, kch123, DLEK, HedgeMaster88, Vetch, Capman, ckw, Bienville, tcp2
 
 **Kicked / do-not-copy (25):** GoalLineGhost, fkgggg2, HomeRunHazard, iDropMyHotdog, wr0ngw4yb3tt0r, xytest, 0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563, quavoo, EIf, bigmoneyloser00, TheArena, RandomPunter, 0x53eCc53E7, middleoftheocean, 0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6, redskinrick, Qpkwks, 877s8d8g89I9f8d98fd99ww2, JPMorgan101, CemeterySun, ferrariChampions2026, 9sh8f, TheMangler, LynxTitan, 0xwise
 

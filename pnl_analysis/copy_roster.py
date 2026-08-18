@@ -34,7 +34,25 @@ WR_LO = 48.0
 WR_HI = 75.0
 LIVE_RECENCY = {"HOT", "WARM"}
 
-# Always skip fetching these (MM / unfinished mega books).
+# Reasons that mean "do not fetch / do not copy" vs size that is just unjoinable.
+HARD_REASON_PREFIXES = (
+    "hard_skip",
+    "extra_kicked",
+    "lane_kicked",
+    "pd_trades=",
+    "csv_rows=",
+    "closed=",
+    "market_maker",
+    "winner_capped",
+)
+
+
+def _is_hard_skip(reasons: list[str]) -> bool:
+    for reason in reasons:
+        for prefix in HARD_REASON_PREFIXES:
+            if reason == prefix or reason.startswith(prefix):
+                return True
+    return False
 HARD_SKIP_USERNAMES = {
     "RN1",
     "swisstony",
@@ -131,27 +149,29 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
     if row.get("winner_capped"):
         reasons.append("winner_capped")
 
-    bot = bool(reasons)
+    hard = _is_hard_skip(reasons)
     joinable = (
         CLOSED_MIN <= closed <= CLOSED_MAX_COPY
         and WR_LO <= wr <= WR_HI
         and median < MEDIAN_JOIN_MAX
-        and not bot
+        and not hard
         and lane not in {"kicked", "reference"}
     )
     live = joinable and matched and recency in LIVE_RECENCY
     bench = False
-    if not live and not bot and lane not in {"kicked", "reference"}:
+    if not live and not hard and lane not in {"kicked", "reference"}:
         if take_book or (matched and CLOSED_MIN <= closed <= CLOSED_MAX_COPY and WR_LO <= wr <= WR_HI):
             bench = True
             if recency in {"DROP", "DARK"}:
                 reasons.append(f"stale_{recency}")
+            elif not joinable and median >= MEDIAN_JOIN_MAX:
+                reasons.append("unjoinable_keep_book")
             elif not matched:
                 reasons.append("unmatched_pd")
             else:
                 reasons.append(f"recency_{recency or 'UNKNOWN'}")
 
-    if bot:
+    if hard:
         bucket = "skip"
     elif live:
         bucket = "live"

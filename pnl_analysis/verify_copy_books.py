@@ -45,7 +45,7 @@ REQUIRED_KEYS = (
     "tier",
 )
 BREAKDOWN_KEYS = ("net_profit", "roi", "win_rate", "events")
-WINDOW_KEYS = ("pnl", "roi", "events")
+WINDOW_KEYS = ("pnl", "roi")
 
 
 def _f(v: Any) -> float | None:
@@ -83,8 +83,10 @@ def _check_breakdown(name: str, stats: Any, *, require_rows: bool) -> list[str]:
 def _check_window(name: str, window: Any) -> list[str]:
     if not isinstance(window, dict):
         return [f"{name} must be an object"]
-    missing = [k for k in WINDOW_KEYS if k not in window]
-    return [f"{name} missing '{k}'" for k in missing]
+    errors = [f"{name} missing '{k}'" for k in WINDOW_KEYS if k not in window]
+    if "n" not in window and "events" not in window:
+        errors.append(f"{name} missing 'n'")
+    return errors
 
 
 def audit_trader(row: dict[str, Any], *, max_age_hours: float | None) -> dict[str, Any]:

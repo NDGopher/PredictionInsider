@@ -1,36 +1,71 @@
 {
   "wallet": "0xc660ae71765d0d9eaf5fa8328c1c959841d2bd28",
   "username": "TutiFromFactsOfLife",
-  "total_profit": 10341941.69,
+  "total_profit": -590519.45,
   "raw_realized_pnl": 10341941.69,
-  "total_risked": 35577827.11,
-  "overall_roi": 29.07,
+  "dashboard_pnl": -590519.45,
+  "total_risked": 35549835.81,
+  "overall_roi": -1.66,
+  "redeemed_only_roi": 29.09,
+  "last_30d": {
+    "n": 40,
+    "pnl": -55185.37,
+    "cost": 351270.94,
+    "roi": -15.71,
+    "wins": 19,
+    "win_rate": 47.5,
+    "first": "2026-07-21",
+    "last": "2026-08-16"
+  },
+  "last_60d": {
+    "n": 152,
+    "pnl": -311267.81,
+    "cost": 3645848.94,
+    "roi": -8.54,
+    "wins": 82,
+    "win_rate": 53.9,
+    "first": "2026-06-20",
+    "last": "2026-08-16"
+  },
+  "last_90d": {
+    "n": 376,
+    "pnl": -217759.66,
+    "cost": 8585592.57,
+    "roi": -2.54,
+    "wins": 192,
+    "win_rate": 51.1,
+    "first": "2026-05-21",
+    "last": "2026-08-16"
+  },
+  "last_event_date": "2026-08-16",
+  "days_since_last_event": 2,
+  "possibly_quit": false,
   "win_rate": 50.31,
-  "avg_bet_size": 13910.92,
+  "avg_bet_size": 13847.55,
   "median_market_stake": 7680.4,
-  "mean_market_stake": 13910.92,
+  "mean_market_stake": 13847.55,
   "markets_traded": 1599,
   "total_events": 1452,
   "pseudo_sharpe": -0.48,
   "profitable_days": 123,
   "total_days": 240,
   "hedge_count": 946,
-  "hedge_risk": 13334261.04,
+  "hedge_risk": 13407596.43,
   "hedge_profit": -170250.29,
   "bond_count": 0,
   "bond_risk": 0.0,
   "bond_profit": 0.0,
-  "open_count": 741,
-  "open_risk": 11983705.17,
+  "open_count": 0,
+  "open_risk": 0.0,
   "open_value": 0.0,
-  "open_pnl": -9638931.69,
+  "open_pnl": 0.0,
   "sport_stats": {
     "MLB": {
       "net_profit": -219841.68,
-      "roi": -10.61,
+      "roi": -10.8,
       "win_rate": 56.58,
       "events": 229,
-      "avg_bet": 9045.98,
+      "avg_bet": 8888.68,
       "median_bet": 6794.61
     },
     "NBA": {
@@ -38,7 +73,7 @@
       "roi": -5.61,
       "win_rate": 45.36,
       "events": 388,
-      "avg_bet": 12837.28,
+      "avg_bet": 12828.14,
       "median_bet": 8881.27
     },
     "NFL": {
@@ -46,24 +81,24 @@
       "roi": 29.16,
       "win_rate": 56.35,
       "events": 126,
-      "avg_bet": 11246.62,
-      "median_bet": 2961.18
+      "avg_bet": 11246.44,
+      "median_bet": 2960.94
     },
     "NHL": {
       "net_profit": -9390.8,
       "roi": -0.18,
       "win_rate": 49.15,
       "events": 412,
-      "avg_bet": 12953.78,
+      "avg_bet": 12939.54,
       "median_bet": 8289.53
     },
     "OTHER": {
       "net_profit": -182463.02,
-      "roi": -3.03,
+      "roi": -3.06,
       "win_rate": 53.57,
       "events": 309,
-      "avg_bet": 19478.01,
-      "median_bet": 5507.31
+      "avg_bet": 19320.92,
+      "median_bet": 5440.98
     },
     "SOCCER (EPL)": {
       "net_profit": 42799.96,
@@ -75,27 +110,27 @@
     },
     "SOCCER (LaLiga)": {
       "net_profit": 61774.83,
-      "roi": 11.47,
+      "roi": 11.5,
       "win_rate": 47.22,
       "events": 36,
-      "avg_bet": 14963.29,
-      "median_bet": 11072.26
+      "avg_bet": 14922.22,
+      "median_bet": 11072.08
     },
     "SOCCER (Other)": {
       "net_profit": -189387.87,
-      "roi": -12.03,
+      "roi": -12.07,
       "win_rate": 43.96,
       "events": 91,
-      "avg_bet": 17306.97,
+      "avg_bet": 17242.71,
       "median_bet": 10200.0
     },
     "SOCCER (UCL)": {
       "net_profit": -13658.79,
-      "roi": -100.27,
+      "roi": -100.29,
       "win_rate": 0.0,
       "events": 1,
-      "avg_bet": 13621.35,
-      "median_bet": 13621.35
+      "avg_bet": 13618.93,
+      "median_bet": 13618.93
     },
     "TENNIS": {
       "net_profit": -43999.98,
@@ -107,20 +142,28 @@
     }
   },
   "market_stats": {
+    "Draw": {
+      "net_profit": -24248.35,
+      "roi": -3.19,
+      "win_rate": 71.43,
+      "events": 21,
+      "avg_bet": 36177.02,
+      "median_bet": 26688.0
+    },
     "Moneyline / Match": {
-      "net_profit": -443837.33,
-      "roi": -2.56,
-      "win_rate": 49.96,
-      "events": 1120,
-      "avg_bet": 15509.13,
-      "median_bet": 8807.73
+      "net_profit": -419588.98,
+      "roi": -2.54,
+      "win_rate": 49.54,
+      "events": 1099,
+      "avg_bet": 15042.8,
+      "median_bet": 8429.73
     },
     "Spread": {
       "net_profit": 161696.03,
-      "roi": 3.77,
+      "roi": 3.79,
       "win_rate": 51.08,
       "events": 417,
-      "avg_bet": 10276.89,
+      "avg_bet": 10222.09,
       "median_bet": 4482.44
     },
     "Totals (O/U)": {
@@ -135,10 +178,10 @@
   "sport_market_stats": {
     "MLB|Moneyline / Match": {
       "net_profit": -205490.92,
-      "roi": -11.43,
+      "roi": -11.67,
       "win_rate": 56.11,
       "events": 181,
-      "avg_bet": 9930.66,
+      "avg_bet": 9731.65,
       "median_bet": 7680.4
     },
     "MLB|Spread": {
@@ -159,18 +202,18 @@
     },
     "NBA|Moneyline / Match": {
       "net_profit": -132369.23,
-      "roi": -5.63,
+      "roi": -5.65,
       "win_rate": 39.13,
       "events": 161,
-      "avg_bet": 14607.1,
+      "avg_bet": 14553.32,
       "median_bet": 9900.0
     },
     "NBA|Spread": {
       "net_profit": -133017.68,
-      "roi": -5.09,
+      "roi": -5.08,
       "win_rate": 50.0,
       "events": 226,
-      "avg_bet": 11571.68,
+      "avg_bet": 11594.29,
       "median_bet": 8177.4
     },
     "NBA|Totals (O/U)": {
@@ -186,15 +229,15 @@
       "roi": 21.74,
       "win_rate": 52.78,
       "events": 36,
-      "avg_bet": 21911.22,
-      "median_bet": 13053.7
+      "avg_bet": 21910.82,
+      "median_bet": 13051.29
     },
     "NFL|Spread": {
       "net_profit": 241702.58,
       "roi": 38.47,
       "win_rate": 57.78,
       "events": 90,
-      "avg_bet": 6980.78,
+      "avg_bet": 6980.7,
       "median_bet": 2235.74
     },
     "NHL|Moneyline / Match": {
@@ -202,24 +245,32 @@
       "roi": -0.18,
       "win_rate": 49.15,
       "events": 412,
-      "avg_bet": 12953.78,
+      "avg_bet": 12939.54,
       "median_bet": 8289.53
     },
+    "Other|Draw": {
+      "net_profit": -111230.59,
+      "roi": -19.57,
+      "win_rate": 66.67,
+      "events": 18,
+      "avg_bet": 31569.49,
+      "median_bet": 24253.44
+    },
     "Other|Moneyline / Match": {
-      "net_profit": -138198.88,
-      "roi": -2.59,
-      "win_rate": 55.56,
-      "events": 235,
-      "avg_bet": 22671.2,
-      "median_bet": 7468.86
+      "net_profit": -26968.28,
+      "roi": -0.57,
+      "win_rate": 54.63,
+      "events": 217,
+      "avg_bet": 21831.45,
+      "median_bet": 6646.77
     },
     "Other|Spread": {
       "net_profit": -27300.4,
-      "roi": -4.53,
+      "roi": -4.74,
       "win_rate": 47.22,
       "events": 72,
-      "avg_bet": 8365.25,
-      "median_bet": 1428.59
+      "avg_bet": 7997.42,
+      "median_bet": 1561.87
     },
     "Other|Totals (O/U)": {
       "net_profit": -16963.74,
@@ -229,20 +280,28 @@
       "avg_bet": 44337.46,
       "median_bet": 44337.46
     },
+    "Soccer|Draw": {
+      "net_profit": 86982.24,
+      "roi": 45.43,
+      "win_rate": 100.0,
+      "events": 3,
+      "avg_bet": 63822.22,
+      "median_bet": 31255.5
+    },
     "Soccer|Moneyline / Match": {
-      "net_profit": -72234.29,
-      "roi": -4.22,
-      "win_rate": 46.24,
-      "events": 93,
-      "avg_bet": 18386.21,
-      "median_bet": 10659.54
+      "net_profit": -159216.53,
+      "roi": -10.53,
+      "win_rate": 44.44,
+      "events": 90,
+      "avg_bet": 16806.64,
+      "median_bet": 10624.47
     },
     "Soccer|Spread": {
       "net_profit": 59200.15,
-      "roi": 14.45,
+      "roi": 14.5,
       "win_rate": 46.15,
       "events": 26,
-      "avg_bet": 15757.27,
+      "avg_bet": 15700.61,
       "median_bet": 11019.96
     },
     "Soccer|Totals (O/U)": {
@@ -263,11 +322,11 @@
     },
     "UCL|Moneyline / Match": {
       "net_profit": -13658.79,
-      "roi": -100.27,
+      "roi": -100.29,
       "win_rate": 0.0,
       "events": 1,
-      "avg_bet": 13621.35,
-      "median_bet": 13621.35
+      "avg_bet": 13618.93,
+      "median_bet": 13618.93
     }
   },
   "price_stats": {
@@ -279,13 +338,13 @@
     },
     "Flip (40-60c)": {
       "net_profit": -818207.56,
-      "roi": -5.22,
+      "roi": -5.25,
       "win_rate": 51.03,
       "events": 1167
     },
     "Longshot (0-20c)": {
       "net_profit": 50579.98,
-      "roi": 50.9,
+      "roi": 51.01,
       "win_rate": 14.29,
       "events": 28
     },
@@ -297,7 +356,7 @@
     },
     "Underdog (20-40c)": {
       "net_profit": 79572.31,
-      "roi": 4.04,
+      "roi": 4.05,
       "win_rate": 33.0,
       "events": 203
     }
@@ -315,7 +374,7 @@
     },
     "Yes": {
       "net_profit": -621877.77,
-      "roi": -35.54,
+      "roi": -35.61,
       "positions": 41
     }
   },
@@ -326,8 +385,8 @@
     "2026-02": 63901.94,
     "2026-03": -3834.71,
     "2026-04": -440004.7,
-    "2026-05": -49610.93,
-    "2026-06": -336274.78,
+    "2026-05": -17345.98,
+    "2026-06": -368539.73,
     "2026-07": 136220.85,
     "2026-08": -34311.87
   },
@@ -402,9 +461,9 @@
       "outcome": "Yes",
       "conditionId": "0xe1bd581c13be7103749ca1a64d21230ed6693a162fc057d81e3d1e9237fc81f8",
       "total_pnl": -237912.44,
-      "total_cost": 237912.44,
+      "total_cost": 237897.0,
       "avg_price": 0.4005,
-      "status": "open"
+      "status": "closed"
     },
     {
       "title": "Will T\u00fcrkiye win on 2026-06-19?",
@@ -414,9 +473,9 @@
       "outcome": "Yes",
       "conditionId": "0x7bed81b0bd1cbe7cae0ad49fcf2d9e068d1ea2da49a36e638712daa55712a184",
       "total_pnl": -207794.64,
-      "total_cost": 207794.64,
+      "total_cost": 207771.66,
       "avg_price": 0.4611,
-      "status": "open"
+      "status": "closed"
     },
     {
       "title": "Will Korea Republic win on 2026-06-24?",
@@ -426,9 +485,9 @@
       "outcome": "Yes",
       "conditionId": "0x374d4c9c12e766653de985450899cf2181edf47189894bc9c870216b5c6b1d83",
       "total_pnl": -186355.28,
-      "total_cost": 186355.28,
+      "total_cost": 186335.02,
       "avg_price": 0.5517,
-      "status": "open"
+      "status": "closed"
     },
     {
       "title": "Chicago Cubs vs. Philadelphia Phillies",
@@ -438,9 +497,9 @@
       "outcome": "Chicago Cubs",
       "conditionId": "0x16621501a2ae1e17d7819545cddc6c76a97927818ed0a6ca193d6f7d5ca33335",
       "total_pnl": -183194.23,
-      "total_cost": 95560.12,
+      "total_cost": 87616.87,
       "avg_price": 0.4627,
-      "status": "open"
+      "status": "closed"
     },
     {
       "title": "Will Germany win on 2026-06-25?",
@@ -450,24 +509,25 @@
       "outcome": "Yes",
       "conditionId": "0xe690620297dfea974d20df84b4cf90460e46a26ec864353482717b90509a3c0b",
       "total_pnl": -146708.39,
-      "total_cost": 146708.39,
+      "total_cost": 146698.88,
       "avg_price": 0.5556,
-      "status": "open"
+      "status": "closed"
     }
   ],
   "top_sport": "NFL",
   "best_price_bucket": "Longshot (0-20c)",
   "best_market": "Spread",
-  "quality_score": 31,
-  "tier": "B-Tier",
+  "quality_score": 0,
+  "tier": "C-Tier",
   "tags": [
-    "\u2b50 B-Tier",
+    "\u2b50 C-Tier",
     "\u2696\ufe0f Hedge / MM-heavy \u2014 quality blends dashboard + directional ROI",
     "\ud83c\udfc8 NFL Specialist",
     "\ud83d\udc0b Mega Whale",
+    "Recency penalty \u221210 Q",
     "\u26d4 Fade NBA"
   ],
-  "tail_guide": "How to Tail TutiFromFactsOfLife [B-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   NFL \u2014 29.2% ROI, 126 markets, +$413,208\n   SOCCER (LaLiga) \u2014 11.5% ROI, 36 markets, +$61,775\n\n\ud83d\udd34 DO NOT TAIL:\n   NBA \u2014 ROI -5.6%, $-279,310\n   MLB \u2014 ROI -10.6%, $-219,842\n   SOCCER (Other) \u2014 ROI -12.0%, $-189,388\n\n\u26d4 Mute all O/U bets (-23.5% ROI)\n\ud83c\udfaf Best price zone: Longshot (0-20c) (50.9% ROI, 28 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\u26a1 Typical market stake ~$7,680 (median per market) \u2014 alert at 3\u00d7 for high conviction\n   (Mean $13,911 \u2014 some very large markets; size to the median unless you match their whale plays)",
+  "tail_guide": "How to Tail TutiFromFactsOfLife [C-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   NFL \u2014 29.2% ROI, 126 markets, +$413,208\n   SOCCER (LaLiga) \u2014 11.5% ROI, 36 markets, +$61,775\n\n\ud83d\udd34 DO NOT TAIL:\n   NBA \u2014 ROI -5.6%, $-279,310\n   MLB \u2014 ROI -10.8%, $-219,842\n   SOCCER (Other) \u2014 ROI -12.1%, $-189,388\n\n\u26d4 Mute all O/U bets (-23.5% ROI)\n\ud83c\udfaf Best price zone: Longshot (0-20c) (51.0% ROI, 28 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\u26a1 Typical market stake ~$7,680 (median per market) \u2014 alert at 3\u00d7 for high conviction\n   (Mean $13,848 \u2014 some very large markets; size to the median unless you match their whale plays)",
   "do_not_tail_sports": [
     "MLB",
     "NBA",
@@ -484,22 +544,26 @@
   "do_not_tail_sides": [],
   "score_breakdown": {
     "sharpe_score": 0,
-    "roi_score": 25,
+    "roi_score": 0,
     "wr_score": 2.3,
     "cons_score": 5.1,
     "vol_score": 5,
-    "base_score": 37.4,
+    "base_score": 12.4,
     "flip_bonus": 0,
     "leakage_penalty": 6,
     "midzone_roi": -0.6,
-    "directional_roi": -1.89,
-    "roi_dashboard": 29.07,
-    "roi_for_quality": 16.49,
-    "hedge_risk_frac": 0.375,
+    "directional_roi": -1.9,
+    "roi_dashboard": -1.66,
+    "roi_redeemed_only": 29.09,
+    "last_60d_roi": -8.54,
+    "last_60d_pnl": -311267.81,
+    "recency_penalty": 10,
+    "roi_for_quality": -1.9,
+    "hedge_risk_frac": 0.377,
     "hedge_profit_share": -0.016,
     "markets_traded": 1599,
     "median_market_stake": 7680.4,
-    "mean_market_stake": 13910.92,
+    "mean_market_stake": 13847.55,
     "pnl_sum_check_ok": true
   }
 }
