@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
+import { applyListenPort, listenHttp, pickListenPort } from "./bindPort";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -34,6 +35,10 @@ export function log(message: string, source = "express") {
 
   console.log(`${formattedTime} [${source}] ${message}`);
 }
+
+app.get("/api/healthz", (_req, res) => {
+  res.json({ ok: true, port: Number(process.env.PORT || 0) });
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -87,18 +92,25 @@ app.use((req, res, next) => {
     await setupVite(httpServer, app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || "5000", 10);
-  // On Windows, reusePort is not supported (ENOTSUP). Bind to 127.0.0.1 in dev for compatibility.
+  // Prefer PORT from .env; if that socket is taken, use the next free port.
   const host = process.platform === "win32" && process.env.NODE_ENV !== "production"
     ? "127.0.0.1"
     : "0.0.0.0";
-  httpServer.listen(port, host, () => {
-    log(`serving on ${host}:${port}`);
-    import("./scheduledPipeline").then((m) => m.runScheduledPipelineIfNeeded());
-    import("./takeBookLiveLoop").then((m) => m.startTakeBookLiveLoop());
-  });
+  let port = await pickListenPort(host);
+  for (let attempt = 0; attempt < 40; attempt++) {
+    try {
+      await listenHttp(httpServer, port, host);
+      break;
+    } catch (err: unknown) {
+      const code = err && typeof err === "object" && "code" in err ? String((err as { code?: string }).code) : "";
+      if (code !== "EADDRINUSE") throw err;
+      log(`port ${port} in use, trying ${port + 1}`);
+      port += 1;
+      if (attempt === 39) throw err;
+    }
+  }
+  const runtime = applyListenPort(port);
+  log(`serving on ${runtime.url}`);
+  import("./scheduledPipeline").then((m) => m.runScheduledPipelineIfNeeded());
+  import("./takeBookLiveLoop").then((m) => m.startTakeBookLiveLoop());
 })();

@@ -9,6 +9,7 @@ const TAKES_MS = 30_000;
 const LIFE_MS = 60_000;
 
 function baseUrl(): string {
+  if (process.env.BACKEND_URL) return process.env.BACKEND_URL.replace(/\/$/, "");
   const port = process.env.PORT || "5000";
   return `http://127.0.0.1:${port}`;
 }

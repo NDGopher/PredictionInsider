@@ -26,9 +26,7 @@ if errorlevel 1 (
   exit /b 1
 )
 
-REM Old Node on port 5000 keeps OLD DATABASE_URL - db:push works but ingest returns 500.
-call "%~dp0scripts\kill-listen-port.cmd" 5000
-
+REM Old Node on a stuck port is skipped: the server picks the next free port.
 echo.
 echo  === PredictionInsider local start ===
 echo.
@@ -147,12 +145,15 @@ if /i "%MODE%"=="smart" (
 echo [4/4] Starting API server in a NEW window, then pipeline HERE ^(ingest needs a fresh server^)...
 echo      Mode: %MODE%
 start "PredictionInsider Server" "%~dp0scripts\start-server-dev.cmd"
-echo Waiting for http://127.0.0.1:5000 ...
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\wait-http-5000.ps1"
+echo Waiting for the app (free port, not always 5000)...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\wait-http.ps1"
 if errorlevel 1 (
   echo [ERROR] Dev server did not start. Read errors in the "PredictionInsider Server" window.
   pause
   exit /b 1
+)
+if exist "%~dp0pnl_analysis\output\.runtime.json" (
+  powershell -NoProfile -Command "$j=Get-Content -Raw '%~dp0pnl_analysis\output\.runtime.json'|ConvertFrom-Json; if($j.url){ Start-Process $j.url }"
 )
 
 if defined SKIP_PIPELINE (

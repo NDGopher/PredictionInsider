@@ -1,13 +1,23 @@
 @echo off
 REM ============================================================================
-REM  RUN.bat — Simple local start (double-click)
+REM  Double-click this file.
 REM
-REM  Does: free port 5000 → Docker Postgres → SQL tables → dev server
-REM  Open: http://127.0.0.1:5000  (use this host on Windows; "localhost" can fail)
+REM  Starts Docker Postgres, creates tables, starts the website on a FREE port,
+REM  opens your browser, and runs Telegram + TAKE keepalive in the server window.
+REM  Pipeline ingest runs in the background once the server is up.
 REM
-REM  For Docker + pipeline + ingest (smart 24h):  refresh-all.bat
-REM  For more options read the header in:     start-prediction-insider.bat
+REM  Leave the "PredictionInsider Server" window open.
 REM ============================================================================
 cd /d "%~dp0"
-call "%~dp0start-prediction-insider.bat" skip
-exit /b %errorlevel%
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\launch-app.ps1"
+if errorlevel 1 (
+  echo.
+  echo Launch failed. Read the messages above.
+  pause
+  exit /b 1
+)
+echo.
+echo Browser should be open. You can close THIS window.
+echo Keep the "PredictionInsider Server" window running.
+pause
+exit /b 0

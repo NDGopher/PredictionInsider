@@ -51,7 +51,10 @@ export function runScheduledPipelineIfNeeded(): void {
       const child = spawn(command, [...prefixArgs, script, "--incremental", "--ingest"], {
         cwd: process.cwd(),
         stdio: ["ignore", "pipe", "pipe"],
-        env: { ...process.env, BACKEND_URL: process.env.BACKEND_URL || "http://127.0.0.1:5000" },
+        env: {
+          ...process.env,
+          BACKEND_URL: process.env.BACKEND_URL || `http://127.0.0.1:${process.env.PORT || "5000"}`,
+        },
       });
       let stderr = "";
       child.stderr?.on("data", (c) => { stderr += c.toString(); });

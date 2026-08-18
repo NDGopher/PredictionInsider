@@ -156,7 +156,7 @@ Open **http://127.0.0.1:5000**. API and UI share that port. Windows binds to `12
 
 Leave this process up. It pings itself so Telegram still fires with no browser: `/api/signals?refresh=1` every 60s, `/api/take-plays` every 30s, kickoff/grade every 60s. Logs should include `[take-live] keepalive on`.
 
-**Windows shortcut:** Docker Desktop running, then `start-prediction-insider.bat` (or `npm run setup:local` then `npm run dev`).
+**Windows (double-click):** `RUN.bat` — starts Docker, picks a free port, opens the browser, Telegram keepalive. Leave the **PredictionInsider Server** window open. Advanced: `start-prediction-insider.bat`.
 
 Do **not** run `npm run db:push` for routine setup — it can propose dropping `elite_*` tables. Use `npm run db:init` only.
 
