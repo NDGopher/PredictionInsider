@@ -1051,8 +1051,9 @@ def main() -> int:
     if ranked:
         _roi, _shp, _n, best_name, best_df, best_mask, best_pack = ranked[0]
     else:
-        print("\nNo book passed the production filter; using filt_2plus_live_10_90.")
-        best_name, best_df, best_mask = "filt_2plus_live_10_90", filt, live_px
+        print("\nNo book passed the production filter; using filt_2plus_fav_60_80.")
+        fav_mask = m_ge2(filt) & (filt["vwap"] >= 0.60) & (filt["vwap"] < 0.80)
+        best_name, best_df, best_mask = "filt_2plus_fav_60_80", filt, fav_mask
         best_pack = pack_strategy(best_df, best_mask)
 
     best_sub = best_df.loc[best_mask].sort_values("end_dt")
@@ -1122,11 +1123,11 @@ def main() -> int:
         st = summarize(band, "join_max", 0.02)
         calibration.append({"band": label, **st})
 
-    def strategy_card(name: str, df: pd.DataFrame, mask: pd.Series, **meta: object) -> dict:
+    def strategy_card(sid: str, df: pd.DataFrame, mask: pd.Series, **meta: object) -> dict:
         sub = df.loc[mask]
         pack = pack_strategy(df, mask)
         return {
-            "id": name,
+            "id": sid,
             "join_max_plus_2c": pack["sjoin2"],
             "join_max": pack.get("sjoin0"),
             "vwap": pack["s0"],
@@ -1155,13 +1156,34 @@ def main() -> int:
     product: list[dict] = []
     product_specs = [
         {
+            "id": "favorites_60_80",
+            "name": "Favorites 60–80¢ (2+ live)",
+            "backtest_key": "filt_2plus_fav_60_80",
+            "recommended": True,
+            "description": (
+                "After including unredeemed losers, most 2+ books go negative at join_max+2¢. "
+                "Fading longshots and sticking to 60–80¢ favorites is the only fat consensus band "
+                "that stayed positive."
+            ),
+            "filters": {
+                "minTraders": 2,
+                "minGrade": 0,
+                "minQ": 0,
+                "priceLo": 0.60,
+                "priceHi": 0.80,
+                "excludeUsernames": ["Cannae"],
+                "skipSports": ["NFL"],
+                "marketTypes": [],
+            },
+        },
+        {
             "id": "core_consensus",
             "name": "Core 2+ (no Cannae, no NFL)",
             "backtest_key": "core_2plus_live_no_cannae_no_nfl",
-            "recommended": True,
+            "recommended": False,
             "description": (
                 "2+ filtered wallets, live 10–88¢, join_max+2¢, exclude Cannae, skip NFL. "
-                "Default book to actually trade."
+                "Honest book after settled-open losers — usually flat to slightly negative. Shown for comparison."
             ),
             "filters": {
                 "minTraders": 2,
@@ -1178,8 +1200,8 @@ def main() -> int:
             "id": "grade70",
             "name": "Grade 70+ (no Cannae, no NFL)",
             "backtest_key": "core_grade70_live_no_cannae_no_nfl",
-            "recommended": True,
-            "description": "Same as Core, but only grade ≥70. Fewer trades, historically cleaner edge.",
+            "recommended": False,
+            "description": "Same as Core, but only grade ≥70. Fewer trades; still not reliably positive at join_max+2¢ after settled-open losers.",
             "filters": {
                 "minTraders": 2,
                 "minGrade": 70,

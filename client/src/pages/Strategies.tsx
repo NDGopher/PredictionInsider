@@ -184,7 +184,7 @@ function Stat({ label, value, className }: { label: string; value: string; class
 }
 
 export default function Strategies() {
-  const [id, setId] = useState<string>("core_consensus");
+  const [id, setId] = useState<string>("favorites_60_80");
   const [tab, setTab] = useState<"plays" | "history" | "roster">("plays");
 
   const { data, isLoading } = useQuery<TailStrategiesResponse>({

@@ -1,116 +1,105 @@
-# Honest walk-forward consensus backtest
+# Honest walk-forward consensus backtest (through 2026-08-18)
 
 Run: `npm run backtest:consensus`  
-Scripts/data: `walkforward_consensus_backtest.py`, `output/walkforward_consensus_backtest.json`, `output/walkforward_consensus_recommended.json`
+Health: `npm run backtest:health`  
+Frontend: **Strategies** (`/strategies`) reads `pnl_analysis/output/tail_strategies.json` and live `/api/signals`.
 
-## Why the first ROIs were fake
+## Why last 20 used to freeze in April
 
-The first tailing backtest treated `realizedPnl > 0` as a **binary $1 win** and paid `stake × (1/price − 1)`.
+Three stacked bugs, not “the market died”:
 
-Traders who **scalped a losing token** for a small profit were scored as huge underdog payouts.
+1. **Closed-only books are win-biased.** Losers stay on `/positions` with `status=open` and `curPrice` 0 or 1 until the wallet redeems. Winners get redeemed and show up as closed.
+2. Incremental ingest only pulled **20 open pages** (~1,000 rows). Cannae/RN1/CemeterySun have thousands of unredeemed settled rows, so May–August never merged.
+3. Many of those rows have **null `endDate`**. We now parse `20XX-MM-DD` from slug/title and drop still-future markets.
 
-Per-row check (hold-to-resolution using `curPrice` 0 or 1):
+Copy-all hold-to-res **including settled-open**, dates through today:
 
-| Book | Fake (PnL>0 as $1 win) | Real (token settled at $1) |
-|------|------------------------|----------------------------|
-| All closed rows | ~77% ROI | **~13%** (ungrouped) |
-| Underdogs &lt;45¢ | **~196% ROI** | **~1%** |
-| Directional markets, hedges stripped | — | **3.7% ROI**, 58.2% WR vs 53.0% implied |
+| Book | n | WR | Implied | ROI |
+|------|--:|---:|--------:|----:|
+| Previous closed-only copy-all | 267,698 | 58.2% | 53.0% | **+3.7%** |
+| **Now (through 2026-08-19 horizon)** | 327,025 | 54.1% | 51.9% | **−2.9%** |
 
-That 95% “underdog 70+” number was the scalp bug, not an edge.
+That is the honest baseline. Consensus does **not** print 20–50% after this fix.
 
-## Method (no look-ahead)
+## Cannae — still include?
 
-- **Win** = this wallet’s token `curPrice ≥ 0.99`. **Loss** = `≤ 0.01`. Mids skipped (didn’t hold to resolution).
-- **Play** = `conditionId` + side (not eventSlug blends of ML/spread/total).
-- **Hedges** (both Yes and No on the same market) and 95¢+ NO bonds stripped.
-- **Trader Q / lane ROI / median stake** use only that trader’s markets with `endDate ≤ this market’s endDate − 1 day`.
-- Voter must already have **20 resolved markets** and **≥ $200** on this side.
-- **Category `doNotTail`** lists from `eliteAnalysis.ts` applied in filtered books.
-- **$100/play**. Fills: dollar-weighted **VWAP** (their price) vs **join_max** (worse member entry — you cannot confirm consensus until the later wallet is in) plus **+1/2/5¢**.
+**Overlay only. Do not use as a 2+ voter.**
 
-Copy-all (every directional hold-to-res market, no consensus): **n=267,698, WR 58.2%, implied 53.0%, ROI 3.7%**. That is the sane baseline.
+Honest hold-to-res (settled-open included, dated through **2026-08-16**):
 
-## Multi-trader results (join_max + 2¢)
+| Window | n | WR | ROI |
+|--------|--:|---:|----:|
+| Full (Jan 7 → Aug 16) | 14,602 | 53.8% | **+27.1%** |
+| Last 90d | 385 | 87.3% | **+56.0%** |
+| Last 30d | 34 | 76.5% | **+50.3%** |
+| May–Aug dated | 571 | 87.9% | **+63.8%** |
 
-| Strategy | n | WR | Implied | Edge | ROI | 2025 ROI | 2026 ROI |
-|----------|--:|---:|--------:|-----:|----:|---------:|---------:|
-| 2+ filtered (includes Cannae) | 1,367 | 83.7% | 66.7% | +17.0 | 29.0% | +0.8% | **+39.9%** |
-| 2+ **without Cannae** | 756 | 70.5% | 66.1% | +4.4 | **2.5%** | +0.8% | +3.0% |
-| 2+ live 10–88¢, no Cannae | 619 | 70.0% | 64.6% | +5.4 | **8.4%** | +3.4% | +12.1% |
-| Grade ≥70, no Cannae | 298 | 79.5% | 68.7% | +10.8 | **19.4%** | +11.2% | +21.5% |
-| Grade ≥70 + min Q≥35, 10–88¢, no Cannae | 113 | 78.8% | 65.0% | +13.8 | 24.4% | n=19 | n=94 |
-| NFL consensus (inside 2+ no Cannae) | 32 | 28.1% | — | — | **−68%** | — | — |
+He did **not** go −50% on hold-to-resolution. What changed:
 
-Leave-one-out: **Cannae is the 2026 soccer-NO mirage**. He is a Q=100 domestic-soccer fader. Pairing him with RN1 / CemeterySun / Jhon produces 90%+ WR books that did not exist in 2025 (2+ without him is +0.8% in 2025).
+- **Volume collapsed** after April (~60 markets/day Jan–Apr vs a thin May–Aug book).
+- Live UI is full of **unredeemed losers** that never hit `closed-positions`.
+- Leave-one-out still shows he **inflates 2+ soccer-NO clusters**. Core 2+ with him looks great and is not a stable edge.
 
-Price buckets (2+ filtered, still includes Cannae — do not trade these as standalone edges):
+Live filters: soccer only, mute UCL / NBA / NFL / NHL / spreads / totals / draws / **YES**.
 
-- Longshot 0–20¢: **negative**
-- 20–40¢: high WR vs implied but small n and Cannae-heavy
-- 40–60¢ / 60–80¢: look great only with Cannae in the cluster
-- 80–88¢: ~7% ROI at join+2¢ (favorite grind)
+## Roster re-grade (hold-to-res)
 
-## Best strategy to actually tail
+See `TRADER_HEALTH_REPORT.md` and the Strategies → Roster tab.
 
-**Core (what I would run):**
+**Kicked from live `/api/signals`:**
 
-1. **2+ tracked wallets** on the same `conditionId` + side after `doNotTail` filters  
-2. **Live price 10–88¢** (same band as `/api/signals`)  
-3. **Fill at join_max + 2¢** (worse of their entries, plus slippage)  
-4. **Exclude Cannae** from the voter set (treat his soccer NO as a separate, concentrated overlay if you insist)  
-5. **Do not tail NFL consensus** (−68% in this roster)  
-6. Optional tightening: **grade ≥ 70** (drops n 619 → 298, lifts join+2¢ ROI 8.4% → 19.4%, 2025 still positive)
+| Trader | Why |
+|--------|-----|
+| **LynxTitan** | Last 90d **−92%** (n=222) |
+| **geniusMC** | Last 90d **−21%** (n=35) |
+| **0x53eCc53E7** | Last 90d **−49.5%** (n=186) |
 
-Do **not** run “Q≥50 and $1k” or “20–60¢ Q50” — those are Cannae 2026.
+**Keep (examples):** RN1, BoomLaLa, TheArena, S-Works, 0xheavy888, WTSA, Qpkwks, 0p0jogggg, CemeterySun (CSV still maxes 2026-04-30 — needs full-open refresh).
 
-Expected core book if you skip the grade-70 cut: **~5–12% ROI** after 2¢, ~70% WR at ~65¢ implied. That matches copy-all’s 4% plus a small consensus lift, not a 50–95% machine.
+**Tighten:** CoryLahey (spreads already muted), TutiFromFactsOfLife (−2% full / −7.6% 90d), 0x2c3350 (high-volume slightly negative — he is 13% of the favorites book, size down).
 
-## Last 20 plays (grade ≥70, min Q≥35 at T, 10–88¢, no Cannae)
+**Watch:** kch123 last 90d −39% on only 33 plays (volume died); JPMorgan101 last 90d −27.5%; 0xCb6Ed933 n=28 last play March.
 
-Fill = join_max + 2¢. $100/play.
+**New candidates (sports LB rank 2–4):** HomeRunHazard fetched: **~1% ROI on $124M** (96.9% WR moneylines) — favorite/bond grinder, **do not tail**. ferrariChampions2026 / wr0ngw4yb3tt0r still fetching; closed-sample ~97% ROI is the win-bias artifact.
 
-| Date | Res | Side | Their VWAP | Join+2¢ | Grade | Min Q | Traders | Market |
-|------|-----|------|------------|---------|------:|------:|---------|--------|
-| 2026-04-13 | WIN | No | 0.879 | 0.901 | 98 | 38 | BoomLaLa, CoryLahey, Supah9ga | Scheffler Masters |
-| 2026-04-13 | WIN | No | 0.683 | 0.740 | 93 | 42 | CoryLahey, Supah9ga | Cameron Young Masters |
-| 2026-04-12 | WIN | Yes | 0.637 | 0.854 | 92 | 58 | Avarice31, CemeterySun | Chicago Fire |
-| 2026-04-12 | WIN | No | 0.687 | 0.720 | 70 | 55 | RN1, TTdes | Real Betis |
-| 2026-04-12 | WIN | Yes | 0.724 | 0.980 | 99 | 55 | CemeterySun, RN1 | Bologna |
-| 2026-04-12 | WIN | No | 0.781 | 0.874 | 100 | 55 | Andromeda1, RN1 | NEC |
-| 2026-04-12 | WIN | Yes | 0.574 | 0.726 | 100 | 55 | CemeterySun, RN1 | Sunderland |
-| 2026-04-12 | WIN | No | 0.627 | 0.670 | 91 | 55 | CemeterySun, RN1 | KFUM Oslo |
-| 2026-04-11 | WIN | No | 0.599 | 0.743 | 83 | 45 | CoryLahey, RN1 | Dortmund |
-| 2026-04-11 | WIN | No | 0.767 | 0.789 | 77 | 55 | CemeterySun, RN1 | Atalanta |
-| 2026-04-11 | WIN | No | 0.763 | 0.955 | 92 | 64 | Avarice31, CemeterySun | FC Cincinnati |
-| 2026-04-11 | WIN | No | 0.530 | 0.568 | 92 | 56 | CemeterySun, Supah9ga | Bodø/Glimt |
-| 2026-04-09 | WIN | No | 0.847 | 0.915 | 86 | 54 | JhonAlexanderHinestroza, RN1 | Nottingham Forest |
-| 2026-04-07 | WIN | No | 0.681 | 0.850 | 87 | 54 | RN1, Supah9ga | Aalesunds |
-| 2026-04-07 | WIN | No | 0.800 | 0.820 | 76 | 35 | CemeterySun, S-Works | Sporting CP |
-| 2026-04-06 | WIN | No | 0.701 | 0.783 | 82 | 54 | CemeterySun, RN1, Supah9ga | Villarreal |
-| 2026-04-05 | WIN | No | 0.640 | 0.660 | 100 | 38 | CoryLahey, norrisfan | Osasuna |
-| 2026-04-05 | WIN | No | 0.466 | 0.510 | 94 | 44 | Andromeda1, CoryLahey, RN1 | Al Fateh |
-| 2026-04-05 | WIN | No | 0.423 | 0.494 | 92 | 53 | CemeterySun, RN1 | Grêmio |
-| 2026-04-04 | **LOSS** | No | 0.506 | 0.560 | 100 | 36 | CoryLahey, S-Works, norrisfan | Barcelona |
+## Strategy ROI @ join_max + 2¢ (what you actually pay)
 
-CSV snapshots end in mid-April 2026 for a lot of soccer; the pipeline refresh has later rows for some wallets (last no-Cannae grade-70 print also has Aug 2026 MLS fades). Re-run after the next full ingest to refresh this tape.
+$100/play. Last resolved play in the universe: **2026-08-17/19**.
 
-## Live / upcoming (local `/api/signals` at run time)
+| Strategy | n | WR | Implied | ROI | Trades/day | Last play |
+|----------|--:|---:|--------:|----:|-----------:|-----------|
+| **Favorites 60–80¢ (recommended)** | 399 | 77.4% | 74.7% | **+4.0%** | **2.08** | 2026-08-16 |
+| Core 2+ no Cannae, no NFL, 10–88¢ | 1,220 | 56.5% | 60.2% | **−8.6%** | **4.15** | 2026-08-17 |
+| Grade 70+ same filters | 638 | 59.1% | 61.2% | −4.9% | 2.79 | 2026-08-17 |
+| Moneyline only | 1,050 | 55.3% | 59.0% | −8.2% | 3.89 | 2026-08-17 |
+| 2+ live including Cannae | 1,440 | 56.5% | 59.8% | −7.9% | 4.74 | 2026-08-17 |
+| Soccer 2+ no Cannae | 859 | 57.2% | — | −6.0% | 3.78 | 2026-08-17 |
 
-Only **one** 2+ sports signal was live:
+Favorites 60–80¢ years @ join+2¢: 2025 **−1.3%** (n=129), 2026 **+6.5%** (n=269). Not a 2025-stable machine — size modestly.
 
-| Grade | Q | n | Side | Live px | Entry | Traders | Market | Rec |
-|------:|--:|--:|------|--------:|------:|---------|--------|-----|
-| 82 | 57 | 2 | NO | 0.47 | 0.44 | 0x20D643…, RN1 | Red Sox vs Yankees | **CAUTION** — slug is `mlb-bos-nyy-2026-06-06` but `endDate` is 2026-09-05. Looks like a stale/rescheduled book. Do not tail until the game date is real. |
-| 42 | 99 | 1 | YES | 0.48 | 0.48 | RN1 | Eala vs Anisimova | PASS (single trader) |
-| 37–38 | — | 1 | — | — | — | singles | tennis / CS2 | PASS |
+VWAP (their price, you cannot actually get this until the later wallet is in): favorites **+12.2%**. Join+5¢ is ~flat.
 
-**Recommendation right now:** no clean 2+ play to take. The Sox/Yankees NO is the only cluster that matches the rule, and the date metadata is not trustworthy.
+### Sport × submarket (favorites 60–80¢)
 
-## Caveats that still apply
+| Sport | Submarket | n | WR | ROI | /day | Last |
+|-------|-----------|--:|---:|----:|-----:|------|
+| Soccer | Moneyline | 262 | 74.4% | +1.4% | 1.93 | 2026-08-16 |
+| Other | Moneyline | 52 | 78.8% | +6.4% | 1.30 | 2026-08-12 |
+| Soccer | Draw | 32 | 84.4% | +10.2% | 1.10 | 2026-07-15 |
+| Other | Draw | 21 | 76.2% | +0.7% | 1.17 | 2026-07-07 |
 
-- Roster is chosen with hindsight (these 50 wallets are the ones we track). Walk-forward Q is honest **given that roster**.
-- CSVs have no true entry timestamp; join_max is a proxy for “later/worse fill.”
-- We cannot see whether they still held at our hypothetical entry (live product requires a current position).
-- Overlapping same-day slates can still leak a little even with the 1-day lag.
-- $100 flat ≠ sizing to their stake.
+Longshots 0–20¢: **−67%**. NFL moneyline consensus inside the wide book: still terrible. Spreads/totals almost never make 2+ after `doNotTail` (n=0 in those product filters).
+
+## What to trade
+
+1. **Default:** 2+ wallets, **60–80¢**, join_max+2¢, skip NFL. ~**2 plays/day**, ~**+4% ROI** after slippage.
+2. Do **not** run “core 10–88¢ no Cannae” expecting the old +8–19% — that was closed-only + Cannae mirage.
+3. Cannae soccer overlay is optional and concentrated; never let him create a 2+ by himself pairing with RN1/CemeterySun.
+4. Live plays: Strategies page, polls `/api/signals` every 30s, labeled **title · side · sport · submarket**.
+
+## Method
+
+- Win iff `curPrice ≥ 0.99`, including `status=open`.
+- Event date from `endDate` or slug/title `YYYY-MM-DD`; drop dates after tomorrow.
+- Play = `conditionId` + side. Walk-forward Q uses only markets dated ≥1 day earlier.
+- 20 warmup, ≥$200, category filters, $100 flat.
