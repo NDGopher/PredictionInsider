@@ -38,15 +38,18 @@ One bot, one group, two humans.
 3. Open `https://api.telegram.org/bot<TOKEN>/getUpdates` and copy `chat.id` (negative, like `-100…`) into `TELEGRAM_CHAT_ID`
 4. Optional: BotFather → /setprivacy → Disable so the bot stays happy in the group
 
+Make the bot a **group admin** with **Pin Messages** (group → Administrators → add the bot → Pin messages on).
+
 The group gets:
 
 | When | Message |
 |------|---------|
-| TAKE prints | 🟢 live ask + take cap (decimal + American). Paper $100 at the ask. |
-| Ask moves ≥0.5¢ | same message edited |
-| Ask runs / leaves 10–88¢ before kickoff | ❌ DROPPED, paper cancelled if you didn’t type a fill |
-| Event starts | ⏰ KICKOFF — close vs alert + CLV |
-| Market settles | ✅ WON or ❌ LOST vs the paper $100 |
+| Always | One **pinned** tape: live count, open paper, last results, 30d/60d ROI |
+| TAKE prints | 🟢 live card (ask + cap). Deleted when you can no longer fill it. |
+| Ask moves ≥0.5¢ | same live card edited |
+| Ask runs / leaves 10–88¢ before kickoff | live card deleted; ❌ DROPPED posted; pin updated; paper cancelled if no actual fill |
+| Event starts | live card deleted; ⏰ KICKOFF + CLV; pin updated |
+| Market settles | that lifecycle message becomes ✅ WON or ❌ LOST; pin updated |
 
 Logins / per-user auto-trade come later (`user_id` is already on `tracked_bets`). For now everyone sees the same group tape; you log what you personally took in My Bets.
 

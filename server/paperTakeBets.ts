@@ -197,6 +197,55 @@ export async function markKickoff(
   );
 }
 
+export interface TakeTapeRow {
+  id: string;
+  playLabel: string;
+  status: string;
+  alertPrice: number;
+  closePrice: number | null;
+  pnl: number | null;
+  sport: string | null;
+  kickoffSent: boolean;
+  betDate: number | null;
+  resolvedDate: number | null;
+}
+
+export async function listTakeTape(): Promise<{ open: TakeTapeRow[]; recent: TakeTapeRow[] }> {
+  const db = getPool();
+  if (!db) return { open: [], recent: [] };
+  await ensureColumns(db);
+  try {
+    const { rows } = await db.query(
+      `SELECT id, outcome_label, market_question, status, alert_price, entry_price,
+              close_price, pnl, sport, kickoff_sent, bet_date, resolved_date
+       FROM tracked_bets
+       WHERE id LIKE 'take-paper-%'
+       ORDER BY COALESCE(resolved_date, bet_date) DESC NULLS LAST
+       LIMIT 40`,
+    );
+    const mapped: TakeTapeRow[] = rows.map((r) => ({
+      id: String(r.id),
+      playLabel: String(r.outcome_label || r.market_question || ""),
+      status: String(r.status || "open"),
+      alertPrice: numOrNull(r.alert_price) ?? numOrNull(r.entry_price) ?? 0,
+      closePrice: numOrNull(r.close_price),
+      pnl: numOrNull(r.pnl),
+      sport: r.sport ? String(r.sport) : null,
+      kickoffSent: Boolean(r.kickoff_sent),
+      betDate: r.bet_date != null ? Number(r.bet_date) : null,
+      resolvedDate: r.resolved_date != null ? Number(r.resolved_date) : null,
+    }));
+    return {
+      open: mapped.filter((r) => r.status === "open"),
+      recent: mapped.filter((r) => r.status !== "open").slice(0, 15),
+    };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn(`[paper-take] list tape: ${msg}`);
+    return { open: [], recent: [] };
+  }
+}
+
 export async function markSettled(
   id: string,
   opts: { won: boolean; resolvedPrice: number; pnl: number },

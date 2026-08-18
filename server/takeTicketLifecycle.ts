@@ -9,7 +9,12 @@ import {
   markSettled,
   type FollowedTake,
 } from "./paperTakeBets";
-import { sendTelegramText, telegramConfigured } from "./telegramTakeAlerts";
+import {
+  postTakeLifecycle,
+  refreshPinnedTakeBoard,
+  removeLiveTakeCard,
+  telegramConfigured,
+} from "./telegramTakeAlerts";
 
 const GAMMA = "https://gamma-api.polymarket.com";
 
@@ -136,17 +141,21 @@ export async function runTakeTicketLifecycle(): Promise<void> {
           closePx = close;
           await markKickoff(row.id, close, startMs);
           if (tg) {
+            await removeLiveTakeCard(row.id);
             const header = started && !res.resolved ? "⏰ KICKOFF — close vs alert" : "⏰ CLOSE LINE — vs alert";
-            await sendTelegramText(
+            await postTakeLifecycle(
+              row.id,
               [
                 header,
                 row.playLabel || row.marketQuestion,
                 line("Alert ask", row.alertPrice),
                 line("Close    ", close),
                 clvCents(row.alertPrice, close),
-                "Paper $100 at the alert ask. Hold to resolution.",
+                "No longer fillable. Paper $100 at the alert ask. Hold to resolution.",
+                "Pinned tape updated.",
               ].join("\n"),
             );
+            await refreshPinnedTakeBoard([]);
           }
         } else if (res.resolved) {
           await markKickoff(row.id, row.alertPrice, startMs);
@@ -162,17 +171,24 @@ export async function runTakeTicketLifecycle(): Promise<void> {
       const settlePx = tokenPrice(prices, row.side) ?? (won ? 1 : 0);
       await markSettled(row.id, { won, resolvedPrice: settlePx, pnl });
       if (tg) {
-        const title = won ? `✅ WON  $${(row.betAmount || 100).toFixed(0)} → ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}` : `❌ LOST  $${(row.betAmount || 100).toFixed(0)} → −$${(row.betAmount || 100).toFixed(0)}`;
-        await sendTelegramText(
+        await removeLiveTakeCard(row.id);
+        const title = won
+          ? `✅ WON  $${(row.betAmount || 100).toFixed(0)} → ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`
+          : `❌ LOST  $${(row.betAmount || 100).toFixed(0)} → −$${(row.betAmount || 100).toFixed(0)}`;
+        await postTakeLifecycle(
+          row.id,
           [
             title,
             row.playLabel || row.marketQuestion,
             line("Alert ask", row.alertPrice),
             closePx != null ? line("Close    ", closePx) : "",
-            `Settle ${won ? "Yes" : "No"} token → ${settlePx.toFixed(3)}`,
+            closePx != null && row.alertPrice > 0 ? clvCents(row.alertPrice, closePx) : "",
+            `Settle ${won ? "1.00" : "0.00"} on this side`,
             "Paper ticket. Type your real fill in My Bets if you took it.",
+            "Pinned tape updated.",
           ].filter(Boolean).join("\n"),
         );
+        await refreshPinnedTakeBoard([]);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
