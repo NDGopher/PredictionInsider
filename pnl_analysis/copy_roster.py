@@ -38,6 +38,8 @@ LIVE_MIN_ROI = 5.0
 LIVE_MIN_EVENTS = 40
 LIVE_MAX_LAST60_ROI = -5.0
 LIVE_MIN_LAST60_N = 20
+# One print in 30d is HOT recency, not a live book (Supah9ga n=1, −$4k).
+LIVE_MIN_LAST30_N = 8
 
 # Reasons that mean "do not fetch / do not copy" vs size that is just unjoinable.
 HARD_REASON_PREFIXES = (
@@ -143,6 +145,10 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
         last_60_n = int(our.get("last_60d_n") or 0)
     except (TypeError, ValueError):
         last_60_n = 0
+    try:
+        last_30_n = int(our.get("last_30d_n") or 0)
+    except (TypeError, ValueError):
+        last_30_n = 0
     matched = bool(acc.get("matched") or lane == "take_book")
     take_book = bool(row.get("take_book") or lane == "take_book")
     extra = extra_status.get(wallet, "")
@@ -188,6 +194,9 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
         live = False
     if live and last_60_n >= LIVE_MIN_LAST60_N and last_60_roi is not None and last_60_roi < LIVE_MAX_LAST60_ROI:
         reasons.append(f"last60d_roi={last_60_roi}%_n={last_60_n}")
+        live = False
+    if live and last_30_n < LIVE_MIN_LAST30_N:
+        reasons.append(f"quiet_30d_n={last_30_n}<{LIVE_MIN_LAST30_N}")
         live = False
     bench = False
     # Discovery watch stays watch (fetch + screen). Do not auto-bench onto the copy list.
@@ -269,9 +278,10 @@ def build_universe() -> dict[str, Any]:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "method": (
             "Live copy = Polydata-matched, joinable (40–12k closed, WR 48–75, median <$15k), "
-            "HOT/WARM, unique-book ROI ≥5%, ≥40 events. extra_traders status=watch never auto-live. "
+            "HOT/WARM, unique-book ROI ≥5%, ≥40 events, ≥8 settled prints in 30d. "
+            "extra_traders status=watch never auto-live. "
             "Skip = 100k+ Polydata trades, 50k+ CSV rows, MM, kicked grinders, no CSV. "
-            "Bench = matched but stale/cold or unique ROI too low — keep full books, do not fire live. "
+            "Bench = take-book 12 who are stale, quiet, whale-sized, or unique ROI too low. "
             "Futures are not a copy lane (n=5, −37% after 2¢)."
         ),
         "rules": {
@@ -284,6 +294,7 @@ def build_universe() -> dict[str, Any]:
             "live_recency": sorted(LIVE_RECENCY),
             "live_min_roi": LIVE_MIN_ROI,
             "live_min_events": LIVE_MIN_EVENTS,
+            "live_min_last30_n": LIVE_MIN_LAST30_N,
         },
         "take_book_matched": [{"username": t.get("username"), "wallet": str(t.get("wallet") or "").lower()} for t in take],
         "counts": {k: len(v) for k, v in buckets.items()},

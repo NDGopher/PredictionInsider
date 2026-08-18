@@ -19,6 +19,7 @@ def _row(**overrides: object) -> dict:
             "events": 200,
             "last_60d_roi": 8.0,
             "last_60d_n": 40,
+            "last_30d_n": 20,
         },
         "book": {"closed": 400, "rows": 420},
         "polydata": {"trades": 5000},
@@ -89,6 +90,14 @@ def test_extra_watch_no_csv_still_refresh() -> None:
     assert out["refresh"] is True
 
 
+def test_quiet_30d_benches_take_book() -> None:
+    row = _row()
+    row["our"] = {**row["our"], "last_30d_n": 1}  # type: ignore[dict-item]
+    out = classify_trader(row, {})
+    assert out["bucket"] == "bench", out
+    assert any("quiet_30d" in r for r in out["reasons"])
+
+
 if __name__ == "__main__":
     tests = [
         test_live_ok,
@@ -97,6 +106,7 @@ if __name__ == "__main__":
         test_mentionmarket_hard_skip,
         test_no_csv_roster_skipped,
         test_extra_watch_no_csv_still_refresh,
+        test_quiet_30d_benches_take_book,
     ]
     for fn in tests:
         fn()

@@ -58,6 +58,7 @@ INSIDER_WEIGHTS = {
 MM_WALLETS = {
     "0xd9e0aaca471f489be338fd0c91a26e8669a805f2",
     "0xd9e0aaca471f489be338fd0f91a26e8669a805f2",
+    "0x2005d16a84ceefa912d4e380cd32e7ff827875ea",  # RN1 — 3.3M fills
 }
 GRINDER_WR = 94.0
 UNTAILABLE_MEDIAN = 50_000.0
@@ -457,6 +458,8 @@ def score_trader(
         days_since_i = int(days_since) if days_since is not None else None
     except (TypeError, ValueError):
         days_since_i = None
+    if days_since_i is not None and days_since_i < 0:
+        days_since_i = 0
     last_event_early = a.get("last_event_date") or h.get("max_date") or book.get("last_end_date")
     if days_since_i is None and last_event_early:
         try:
@@ -466,7 +469,18 @@ def score_trader(
             pass
     recency_band = str(h.get("recency_band") or recency_from_days(days_since_i)[0])
     live_weight = float(h.get("live_weight") if h.get("live_weight") is not None else recency_from_days(days_since_i)[1])
-    market_maker = wallet.lower() in MM_WALLETS
+    pd_trades = int(pd_early.get("trades") or 0)
+    try:
+        tpd = float(pd_early.get("trades_per_day") or 0)
+    except (TypeError, ValueError):
+        tpd = 0.0
+    bot_class = str(pd_early.get("bot_class") or "").upper()
+    market_maker = (
+        wallet.lower() in MM_WALLETS
+        or pd_trades >= 100_000
+        or tpd >= 400
+        or bot_class == "BOT"
+    )
     untailable = bool(h.get("untailable") or market_maker)
     winner_capped = bool(book.get("winner_capped"))
     health_action = str(h.get("action") or "") or None
@@ -591,6 +605,7 @@ def score_trader(
         "on_roster": on_roster,
         "lane": lane,
         "take_book": on_take,
+        "copy_bucket": None,
         "score_source": score_source,
         "insider_score": insider,
         "badge": badge,
@@ -836,6 +851,20 @@ def main() -> int:
     for i, t in enumerate(traders, 1):
         t["insider_rank"] = i
 
+    copy_buckets: dict[str, str] = {}
+    uni_path = OUTPUT_DIR / "copy_universe.json"
+    if uni_path.exists():
+        try:
+            uni = json.loads(uni_path.read_text(encoding="utf-8"))
+            for key in ("live", "bench", "watch", "kicked", "skip"):
+                for row in uni.get(key) or []:
+                    if isinstance(row, dict) and row.get("wallet"):
+                        copy_buckets[str(row["wallet"]).lower()] = key
+        except Exception:
+            copy_buckets = {}
+    for t in traders:
+        t["copy_bucket"] = copy_buckets.get(str(t.get("wallet") or "").lower())
+
     sports = [t for t in traders if t.get("polydata", {}).get("sports_rank")]
     sports.sort(key=lambda t: t["polydata"]["sports_rank"] or 9_999)
     lane_counts = {
@@ -850,10 +879,10 @@ def main() -> int:
         "generated_at": AS_OF.isoformat(),
         "as_of": AS_OF.date().isoformat(),
         "method": (
-            "Insider Score from our full closed+open CSVs. Copyable = the 12 take-book "
-            "sports books in trusted_full_books.json. Polydata HTML profiles are a "
-            "calibration reference (Smart Score, WR, PF, Sharpe/Sortino/HHI/Kelly, sports rank). "
-            "Not used as product PnL."
+            "Insider Score from our full closed+open CSVs. Take-book 12 is the "
+            "historical as-of backtest set (Capman, kch123…). Live copy is the "
+            "$100 joinable subset (unique ROI ≥5%, ≥8 prints in 30d, median <$15k). "
+            "Polydata Smart Score / 3M-fill bots (RN1) are not $100 copy."
         ),
         "weights": INSIDER_WEIGHTS,
         "polydata_weights": POLYDATA_SMART_SCORE_WEIGHTS,
@@ -866,6 +895,8 @@ def main() -> int:
             "watch": lane_counts["watch"],
             "kicked": lane_counts["kicked"],
             "reference": lane_counts["reference"],
+            "live_copy": sum(1 for t in traders if t.get("copy_bucket") == "live"),
+            "bench": sum(1 for t in traders if t.get("copy_bucket") == "bench"),
             "polydata_ok": sum(1 for t in traders if t.get("polydata", {}).get("ok")),
             "accuracy_matched": matched,
             "winner_capped": sum(1 for t in traders if t.get("winner_capped")),
