@@ -47,12 +47,12 @@ KICK_NOTE_RE = re.compile(r"\bKICK\b|do not tail|not a copy", re.I)
 
 # Same mix as Polydata Smart Score, with our two custom slots.
 INSIDER_WEIGHTS = {
-    "pnl_consistency": 0.25,
-    "wr_quality": 0.20,
-    "risk": 0.20,
-    "diversification": 0.15,
-    "recency": 0.10,       # Polydata "timing & execution"
-    "copyability": 0.10,   # Polydata "bot penalty" — we score joinability instead
+    "pnl_consistency": 0.22,
+    "wr_quality": 0.18,
+    "risk": 0.18,
+    "diversification": 0.08,
+    "recency": 0.22,       # Stale take-book names must not outrank HOT copyables
+    "copyability": 0.12,   # Joinable size + not a grinder
 }
 
 MM_WALLETS = {
@@ -510,9 +510,16 @@ def score_trader(
     )
     copyable = lane == "take_book"
     if copyable:
-        copy_s = max(copy_s, 80.0)
         take_reason = str((take_row or {}).get("reason") or "").strip()
-        copy_note = take_reason or "On the live take book (12 matched sports books)."
+        if recency_band in {"DROP", "DARK"}:
+            copy_s = min(copy_s, 22.0)
+            copy_note = (
+                take_reason
+                or "Historical take-book name, but too quiet to tail live."
+            )
+        else:
+            copy_s = max(copy_s, 80.0)
+            copy_note = take_reason or "On the live take book (matched sports books)."
         if health_action and health_action.upper() in BLOCK_COPY_ACTIONS:
             copy_note += (
                 f" Health still flags {health_action} on hold-to-res — "
@@ -687,7 +694,9 @@ def write_markdown(payload: dict[str, Any]) -> None:
         "Polydata Smart Score mix: PnL consistency 25%, WR quality 20%, risk 20%, "
         "diversification 15%, timing 10%, bot penalty 10%.",
         "",
-        "Our mix: same first four slots, then **recency 10%** and **copyability 10%**.",
+        "Our mix: PnL consistency 22%, WR 18%, risk 18%, diversification 8%, "
+        "**recency 22%**, **copyability 12%**. DROP/DARK take-book names stay in "
+        "the archive filter — they do not get a live copyability boost.",
         "",
         "## Polydata Sports ranks (scraped profiles)",
         "",

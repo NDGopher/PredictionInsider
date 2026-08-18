@@ -280,12 +280,24 @@ def collect_plays(trusted: list[dict], extra_books: list[dict] | None = None) ->
         u = str(t.get("username") or "")
         if w:
             allow[w] = u or allow.get(w, w[:10])
-    rows: list[dict] = []
-    print(f"Hold-to-res as-of copy  wallets={len(allow)}  stake=${STAKE:.0f}")
+    pairs: list[tuple[str, str]] = []
+    seen: set[str] = set()
     for wallet, username in roster_traders():
         w = wallet.lower()
-        if w not in allow:
+        if w not in allow or w in seen:
             continue
+        pairs.append((wallet, username))
+        seen.add(w)
+    for t in extra_books or []:
+        w = str(t.get("wallet") or "").lower()
+        u = str(t.get("username") or "") or allow.get(w, w[:10])
+        if w in allow and w not in seen:
+            pairs.append((w, u))
+            seen.add(w)
+    rows: list[dict] = []
+    print(f"Hold-to-res as-of copy  wallets={len(allow)}  stake=${STAKE:.0f}")
+    for wallet, username in pairs:
+        w = wallet.lower()
         csv_p = csv_path_for(wallet, username)
         if not csv_p.exists():
             continue

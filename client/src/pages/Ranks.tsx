@@ -132,7 +132,7 @@ interface InsiderRanksResponse {
 }
 
 type SortKey = "insider" | "sports" | "our_pnl" | "smart" | "last";
-type FilterKey = "take_book" | "watch" | "kicked" | "roster" | "all";
+type FilterKey = "hot" | "take_book" | "watch" | "kicked" | "roster" | "all";
 
 function money(v: number | null | undefined): string {
   if (v === null || v === undefined) return "—";
@@ -266,7 +266,7 @@ function WindowCell({ label, w }: { label: string; w?: RankWindow | null }) {
 
 export default function Ranks() {
   const [sortBy, setSortBy] = useState<SortKey>("insider");
-  const [filter, setFilter] = useState<FilterKey>("take_book");
+  const [filter, setFilter] = useState<FilterKey>("hot");
   const [open, setOpen] = useState<string | null>(null);
 
   const { data, isLoading, error, dataUpdatedAt } = useQuery<InsiderRanksResponse>({
@@ -282,6 +282,14 @@ export default function Ranks() {
 
   const rows = useMemo(() => {
     let list = [...(data?.traders || [])];
+    if (filter === "hot") {
+      list = list.filter(
+        (t) =>
+          (t.recency_band === "HOT" || t.recency_band === "WARM") &&
+          t.lane !== "kicked" &&
+          t.lane !== "reference",
+      );
+    }
     if (filter === "take_book") list = list.filter((t) => t.lane === "take_book" || t.copyable);
     if (filter === "watch") list = list.filter((t) => t.lane === "watch");
     if (filter === "kicked") list = list.filter((t) => t.lane === "kicked");
@@ -315,8 +323,9 @@ export default function Ranks() {
           Insider Ranks
         </h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Default view is the live <span className="text-foreground">take book</span> — the 12 matched sports books Take these copies.
-          Kicked names stay under Kicked so you can see what we removed. Elite Traders is retired; this is the roster.
+          Default view is <span className="text-foreground">Hot now</span> — traders who printed in the last two weeks.
+          The old matched 12 still live under Take book (Capman / tcp2 / kch123 are history, not live copy).
+          Kicked stays visible so you can see grinders we removed. Elite Traders is retired.
         </p>
         <p className="text-[11px] text-muted-foreground mt-1" data-testid="ranks-freshness">
           Built {freshness(data?.generatedAt)} · as of {data?.asOf || "—"}
@@ -375,6 +384,7 @@ export default function Ranks() {
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs text-muted-foreground">Show:</span>
         {([
+          ["hot", "Hot now"],
           ["take_book", "Take book"],
           ["watch", "Watch"],
           ["kicked", "Kicked"],
