@@ -30,6 +30,7 @@ MAX_OFFSET = 75  # 4 pages
 MIN_VOL = 400_000.0
 MIN_PNL = 80_000.0
 MIN_PNL_VOL = 0.05  # 5% — below this is usually a bonder/grinder/MM
+MAX_AUTO_WATCH = 12  # month sports only; ALL-time is report-only
 
 
 def fetch_board(time_period: str, category: str) -> list[dict[str, Any]]:
@@ -113,8 +114,8 @@ def screen_row(
     }
 
 
-def upsert_watch(survivors: list[dict[str, Any]]) -> int:
-    """Add new sports-board survivors as watch. Never overwrite kicked/take_book."""
+def upsert_watch(survivors: list[dict[str, Any]], known: dict[str, str]) -> int:
+    """Add new month-sports survivors as watch. Never overwrite kicked/take_book."""
     existing: list[dict[str, Any]] = []
     if EXTRA_TRADERS_PATH.exists():
         try:
@@ -127,12 +128,18 @@ def upsert_watch(survivors: list[dict[str, Any]]) -> int:
     by_w = {str(r.get("wallet") or "").lower(): r for r in existing if r.get("wallet")}
     added = 0
     new_rows: list[dict[str, Any]] = []
-    for row in survivors:
+    eligible = [
+        row for row in survivors
+        if row.get("window") == "month"
+        and row.get("category") == "sports"
+        and not row.get("on_roster")
+        and str(row.get("wallet") or "").lower() not in known
+        and str(row.get("wallet") or "").lower() not in by_w
+    ]
+    for row in eligible[:MAX_AUTO_WATCH]:
         w = str(row.get("wallet") or "").lower()
         u = str(row.get("username") or "").strip()
         if not w.startswith("0x") or not u:
-            continue
-        if w in by_w:
             continue
         rec = {
             "wallet": w,
@@ -171,7 +178,8 @@ def main() -> int:
     survivors: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
     seen_surv: set[str] = set()
-    # Week volume is smaller; yearly (ALL) needs a higher PnL floor so grinders stay out.
+    # Week volume is smaller. ALL-time is scored for the report but never auto-watched
+    # (crypto/politics whales print 40%+ PnL/vol on that board).
     windows = (
         ("week_sports", MIN_VOL * 0.35, MIN_PNL * 0.35),
         ("month_sports", MIN_VOL, MIN_PNL),
@@ -189,7 +197,7 @@ def main() -> int:
             seen_surv.add(w)
             survivors.append(entry)
 
-    added = upsert_watch(survivors)
+    added = upsert_watch(survivors, known)
     month_surv = [r for r in survivors if r.get("window") == "month"]
     month_skip = [r for r in skipped if r.get("window") == "month" and r.get("category") == "sports"]
 
@@ -199,10 +207,16 @@ def main() -> int:
         "method": (
             "Polydata.org leaderboard API (same as the public week/month/all UI). "
             "Sports boards: keep PnL/vol >= 5%. Sub-5% is usually a favorite/bond "
-            "grinder (ferrari, HomeRunHazard, RN1, swisstony). New survivors are "
-            "appended to extra_traders.json as watch — never auto-live."
+            "grinder (ferrari, HomeRunHazard, RN1, swisstony). Up to 12 new "
+            "month-sports survivors are appended to extra_traders.json as watch — "
+            "never auto-live. ALL-time is report-only."
         ),
-        "gates": {"min_vol": MIN_VOL, "min_pnl": MIN_PNL, "min_pnl_vol": MIN_PNL_VOL},
+        "gates": {
+            "min_vol": MIN_VOL,
+            "min_pnl": MIN_PNL,
+            "min_pnl_vol": MIN_PNL_VOL,
+            "max_auto_watch": MAX_AUTO_WATCH,
+        },
         "counts": {k: len(v) for k, v in boards.items()},
         "watch_added": added,
         "sports_survivors": survivors,
