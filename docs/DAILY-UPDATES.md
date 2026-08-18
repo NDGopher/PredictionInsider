@@ -10,7 +10,7 @@ To keep **PNL, trader scores, and signals** accurate, run the pipeline at least 
 
 ## Quick run (recommended for daily)
 
-- **Incremental:** For each trader with an existing CSV, fetches **recent closed and open pages** from the API, **overlays** them onto the full CSV (same position `id` keeps the newest row for accurate PnL), then **re-analyzes** and **ingests**. Much faster than a full re-fetch.
+- **Incremental:** Overlay the **newest ~800 closed positions** plus the current open book onto the unique CSV already on disk (dedupe by position id — no duplicates, no full-history re-download). Thin/new books still get the winner+loser+recent repair overlay. Then re-analyze, ingest, and rebuild ranks/copy list. `db:init` only creates SQL tables and takes seconds.
 
 ```bash
 npm run daily-pipeline
