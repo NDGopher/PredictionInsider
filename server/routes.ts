@@ -6194,10 +6194,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const cached = getCache<SignalsResponse>("signals-elite-v59-vip-premium-sp");
       const bundle = collectTakePlays(cached?.signals || []);
       await enrichTakePlaysWithBook(bundle);
-      const hasTape = (cached?.signals?.length || 0) > 0;
-      if (hasTape) {
-        void enqueueTakeBookSync(bundle);
-      }
+      void enqueueTakeBookSync(bundle);
       const stats = card?.join_max_plus_2c || {};
       res.json({
         generatedAt: file?.generated_at || null,

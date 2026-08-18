@@ -1,7 +1,9 @@
 import "dotenv/config";
+import { exec } from "child_process";
 import express, { type Request, Response, NextFunction } from "express";
 import { applyListenPort, listenHttp, pickListenPort } from "./bindPort";
 import { registerRoutes } from "./routes";
+import { logTelegramStartup } from "./telegramTakeAlerts";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 
@@ -111,6 +113,15 @@ app.use((req, res, next) => {
   }
   const runtime = applyListenPort(port);
   log(`serving on ${runtime.url}`);
+  log(`OPEN THIS IN YOUR BROWSER → ${runtime.url}`);
+  logTelegramStartup();
+  if (
+    process.platform === "win32"
+    && process.env.NODE_ENV !== "production"
+    && process.env.PI_NO_BROWSER !== "1"
+  ) {
+    exec(`cmd /c start "" "${runtime.url}"`);
+  }
   import("./scheduledPipeline").then((m) => m.runScheduledPipelineIfNeeded());
   import("./takeBookLiveLoop").then((m) => m.startTakeBookLiveLoop());
 })();

@@ -159,9 +159,13 @@ function formatBoard(opts: {
   ].join("\n"));
 }
 
+function telegramEnv(name: "TELEGRAM_BOT_TOKEN" | "TELEGRAM_CHAT_ID"): string {
+  return (process.env[name] || "").trim().replace(/^["']|["']$/g, "");
+}
+
 async function telegramApi(method: string, body: Record<string, unknown>): Promise<TelegramApiResult> {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chat = process.env.TELEGRAM_CHAT_ID;
+  const token = telegramEnv("TELEGRAM_BOT_TOKEN");
+  const chat = telegramEnv("TELEGRAM_CHAT_ID");
   if (!token || !chat) return { ok: false };
   try {
     const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
@@ -246,7 +250,18 @@ export function isUnfillableReason(reason: string): boolean {
 }
 
 export function telegramConfigured(): boolean {
-  return Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID);
+  return Boolean(telegramEnv("TELEGRAM_BOT_TOKEN") && telegramEnv("TELEGRAM_CHAT_ID"));
+}
+
+export function logTelegramStartup(): void {
+  if (telegramConfigured()) {
+    const chat = telegramEnv("TELEGRAM_CHAT_ID");
+    console.log(`[telegram] ON — will pin the take tape in chat ${chat}`);
+    return;
+  }
+  console.warn(
+    "[telegram] OFF — the website is up, but Telegram will stay silent. In .env the TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID lines must be uncommented (no # at the start), saved, then restart the server.",
+  );
 }
 
 export async function refreshPinnedTakeBoard(live: AnnotatedTakePlay[]): Promise<void> {
