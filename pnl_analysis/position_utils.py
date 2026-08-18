@@ -29,6 +29,10 @@ MONTHS = {
 }
 MIN_YEAR = 2020
 MAX_YEAR = 2032
+CSV_STRING_COLS = (
+    "asset", "conditionId", "id", "oppositeAsset", "proxyWallet",
+    "outcome", "slug", "eventSlug", "title", "status",
+)
 
 
 def _aware(dt: datetime) -> datetime:
@@ -191,6 +195,22 @@ def dashboard_pnl(df: pd.DataFrame) -> pd.Series:
     realized = pd.to_numeric(df.get("realizedPnl", 0), errors="coerce").fillna(0.0)
     cash = pd.to_numeric(df.get("cashPnl", 0), errors="coerce").fillna(0.0)
     return realized + cash
+
+
+def read_trader_csv(path: Any, **kwargs: Any) -> pd.DataFrame:
+    """Read a positions CSV with wallet/token ids kept as strings (not float64)."""
+    dtype = {c: "string" for c in CSV_STRING_COLS}
+    df = pd.read_csv(path, low_memory=False, dtype=dtype, **kwargs)
+    return normalize_position_keys(df)
+
+
+def normalize_position_keys(df: pd.DataFrame) -> pd.DataFrame:
+    """Force asset/conditionId to strings so CSV float-ids merge with API hex/int strings."""
+    out = df.copy()
+    for col in ("asset", "conditionId", "id", "oppositeAsset", "proxyWallet"):
+        if col in out.columns:
+            out[col] = out[col].astype("string").str.strip().replace({"<NA>": pd.NA, "nan": pd.NA, "None": pd.NA})
+    return out
 
 
 def cost_basis(df: pd.DataFrame) -> pd.Series:

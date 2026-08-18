@@ -44,6 +44,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from position_utils import normalize_position_keys, read_trader_csv
 
 # Windows: avoid UnicodeEncodeError when printing emoji from analyze_trader
 if sys.platform == "win32":
@@ -356,11 +357,16 @@ def _position_dedupe_key(df: pd.DataFrame):
 def _merge_position_frames(existing: pd.DataFrame, new_df: pd.DataFrame) -> pd.DataFrame:
     """Overlay newest API rows onto existing CSV without dropping unmatched history."""
     if new_df is None or new_df.empty:
-        return existing
+        return normalize_position_keys(existing) if existing is not None else existing
+    new_df = normalize_position_keys(new_df)
     if existing is None or existing.empty:
         combined = new_df.copy()
     else:
+        existing = normalize_position_keys(existing)
         combined = pd.concat([existing, new_df], ignore_index=True)
+    # Collapse CSV-float asset ids onto API string ids via condition+outcome.
+    if "conditionId" in combined.columns and "outcome" in combined.columns:
+        combined = combined.drop_duplicates(subset=["conditionId", "outcome"], keep="last")
     use_key = _position_dedupe_key(combined)
     if isinstance(use_key, list):
         if all(c in combined.columns for c in use_key):
@@ -387,7 +393,7 @@ def fetch_recent_and_merge(address, username):
     if not csv_path.exists():
         return None
     try:
-        existing = pd.read_csv(csv_path, low_memory=False)
+        existing = read_trader_csv(csv_path)
     except Exception as e:
         print(f"    ⚠️  Could not read existing CSV: {e}")
         return None
@@ -443,7 +449,7 @@ def collect_and_save(address, username):
     existing = None
     if csv_path.exists():
         try:
-            existing = pd.read_csv(csv_path, low_memory=False)
+            existing = read_trader_csv(csv_path)
         except Exception as e:
             print(f"    ⚠️  Could not read existing CSV for merge: {e}")
             existing = None

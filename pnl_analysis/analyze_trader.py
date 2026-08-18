@@ -12,7 +12,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from position_utils import attach_event_dates, dashboard_pnl, is_redeemable_flag
+from position_utils import attach_event_dates, dashboard_pnl, is_redeemable_flag, read_trader_csv
 
 # ================================================================
 # CLASSIFIERS  (exact logic from Gemini's framework)
@@ -67,7 +67,7 @@ def price_bucket(price):
 # ================================================================
 
 def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
-    df = pd.read_csv(csv_path, low_memory=False)
+    df = read_trader_csv(csv_path)
 
     # ── Pre-process ──────────────────────────────────────────────
     money_cols = ["realizedPnl", "cashPnl", "currentValue", "initialValue", "totalBought", "avgPrice"]
@@ -156,7 +156,10 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
     last_30d = _window_stats(30)
     last_60d = _window_stats(60)
     last_90d = _window_stats(90)
-    dated_ok = dated["event_dt"].notna()
+    resolved_mask = settled.reindex(dated.index).fillna(False) if "settled" in dir() else (
+        (dated["curPrice"] <= 0.01) | (dated["curPrice"] >= 0.99)
+    )
+    dated_ok = dated["event_dt"].notna() & (dated["event_dt"] <= horizon) & resolved_mask
     last_event = str(dated.loc[dated_ok, "event_dt"].max())[:10] if dated_ok.any() else None
     days_since_last = None
     if dated_ok.any():
@@ -165,6 +168,8 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
             if last_event_dt.tzinfo is None:
                 last_event_dt = last_event_dt.tz_localize("UTC")
             days_since_last = int((now_utc - last_event_dt.to_pydatetime()).total_seconds() // 86400)
+            if days_since_last < 0:
+                days_since_last = 0
         except Exception:
             days_since_last = None
     possibly_quit = bool(days_since_last is not None and days_since_last >= 45 and last_30d["n"] == 0)

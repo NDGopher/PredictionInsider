@@ -40,6 +40,7 @@ from position_utils import (  # noqa: E402
     attach_event_dates,
     classify_submarket,
     play_label,
+    read_trader_csv,
     sport_family,
 )
 from run_full_pipeline import OUTPUT_DIR, csv_path_for, roster_traders  # noqa: E402
@@ -372,7 +373,7 @@ def compute_confidence(
 # ── Load directional resolved markets ─────────────────────────────────────────
 
 def load_trader_markets(csv_path: Path, username: str, wallet: str) -> pd.DataFrame:
-    df = pd.read_csv(csv_path, low_memory=False)
+    df = read_trader_csv(csv_path)
     need = [
         "conditionId", "avgPrice", "totalBought", "realizedPnl", "cashPnl",
         "curPrice", "title", "slug", "eventSlug", "outcome", "endDate", "status",
