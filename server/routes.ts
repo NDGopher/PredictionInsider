@@ -15,6 +15,7 @@ import {
   loadTailStrategiesFile,
   loadTraderHealthFile,
   loadRobustResearchFile,
+  loadInsiderRanksFile,
   signalMatchesStrategy,
   type TailStrategyFilters,
 } from "./tailStrategies";
@@ -6122,6 +6123,34 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     } catch (err: unknown) {
       console.error("tail-strategies error:", err);
       res.status(500).json({ error: formatApiError(err), strategies: [], livePlays: [] });
+    }
+  });
+
+  // ── GET /api/insider-ranks ────────────────────────────────────────────────
+  // Our copy-tail ranking vs Polydata sports/Smart Score (reference only).
+  app.get("/api/insider-ranks", async (_req, res) => {
+    try {
+      const file = loadInsiderRanksFile();
+      if (!file) {
+        res.status(404).json({
+          error: "insider_ranks.json not built yet. Run npm run backtest:ranks",
+          traders: [],
+        });
+        return;
+      }
+      res.json({
+        generatedAt: file.generated_at || null,
+        asOf: file.as_of || null,
+        method: file.method || null,
+        weights: file.weights || null,
+        polydataWeights: file.polydata_weights || null,
+        counts: file.counts || null,
+        polydataSportsBoard: file.polydata_sports_board || [],
+        traders: file.traders || [],
+      });
+    } catch (err: unknown) {
+      console.error("insider-ranks error:", err);
+      res.status(500).json({ error: formatApiError(err), traders: [] });
     }
   });
 

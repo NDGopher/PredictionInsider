@@ -77,6 +77,112 @@ export function loadTraderHealthFile(): TraderHealthFile | null {
   return readJsonFile<TraderHealthFile>("pnl_analysis/output/trader_health.json");
 }
 
+export interface InsiderOurMetrics {
+  dashboard_pnl?: number | null;
+  roi?: number | null;
+  win_rate?: number | null;
+  sharpe?: number | null;
+  profit_factor?: number | null;
+  median_stake?: number | null;
+  markets?: number | null;
+  events?: number | null;
+  hedge_frac?: number | null;
+  last_30d_pnl?: number | null;
+  last_30d_wr?: number | null;
+  last_90d_pnl?: number | null;
+  last_90d_wr?: number | null;
+  quality_score?: number | null;
+  tier?: string | null;
+  top_sport?: string | null;
+  last_event_date?: string | null;
+}
+
+export interface InsiderBookFlags {
+  rows?: number;
+  closed?: number;
+  open?: number;
+  realized_pos?: number;
+  realized_neg?: number;
+  sum_dash?: number;
+  profit_factor?: number | null;
+  winner_capped?: boolean;
+  book_note?: string;
+}
+
+export interface PolydataReference {
+  url?: string;
+  ok?: boolean;
+  error?: string;
+  smart_score?: number | null;
+  win_rate?: number | null;
+  pnl?: number | null;
+  trades?: number | null;
+  overall_rank?: number | null;
+  sports_rank?: number | null;
+  sports_pnl?: number | null;
+  sports_volume?: number | null;
+  profit_factor?: number | null;
+  sharpe?: number | null;
+  sortino?: number | null;
+  hhi?: number | null;
+  kelly_pct?: number | null;
+  bot_score?: number | null;
+  bot_class?: string | null;
+  trades_per_day?: number | null;
+  active_hours?: number | null;
+}
+
+export interface InsiderRankRow {
+  username: string;
+  wallet: string;
+  on_roster?: boolean;
+  score_source?: string;
+  insider_rank?: number;
+  insider_score: number;
+  badge?: string;
+  copyable?: boolean;
+  copy_note?: string;
+  recency_band?: string;
+  live_weight?: number;
+  days_since_last?: number | null;
+  our?: InsiderOurMetrics;
+  book?: InsiderBookFlags;
+  polydata?: PolydataReference;
+  pnl_vs_polydata?: { ratio?: number | null; flag?: boolean; note?: string };
+  components?: Record<string, number>;
+  health_action?: string;
+  untailable?: boolean;
+  untailable_reason?: string;
+  market_maker?: boolean;
+  winner_capped?: boolean;
+}
+
+export interface InsiderRanksFile {
+  generated_at?: string;
+  as_of?: string;
+  method?: string;
+  weights?: Record<string, number>;
+  polydata_weights?: Record<string, number>;
+  counts?: Record<string, number>;
+  polydata_sports_board?: Array<{
+    username: string;
+    wallet?: string;
+    on_roster?: boolean;
+    sports_rank?: number | null;
+    sports_pnl?: number | null;
+    smart_score?: number | null;
+    win_rate?: number | null;
+    profit_factor?: number | null;
+    insider_score?: number;
+    copyable?: boolean;
+  }>;
+  traders?: InsiderRankRow[];
+}
+
+export function loadInsiderRanksFile(): InsiderRanksFile | null {
+  return readJsonFile<InsiderRanksFile>("pnl_analysis/output/insider_ranks.json");
+}
+
 export interface ResearchStat {
   n?: number;
   wins?: number;

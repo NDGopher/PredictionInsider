@@ -11,6 +11,7 @@ import Markets from "@/pages/Markets";
 import Bets from "@/pages/Bets";
 import Elite from "@/pages/Elite";
 import Strategies from "@/pages/Strategies";
+import Ranks from "@/pages/Ranks";
 import NotFound from "@/pages/not-found";
 import { Moon, Sun, TrendingUp } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -64,6 +65,7 @@ function Router() {
       <Route path="/elite" component={Elite} />
       <Route path="/elite/:wallet" component={Elite} />
       <Route path="/strategies" component={Strategies} />
+      <Route path="/ranks" component={Ranks} />
       <Route component={NotFound} />
     </Switch>
   );
