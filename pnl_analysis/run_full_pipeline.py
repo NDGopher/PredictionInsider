@@ -402,6 +402,101 @@ def _csv_closed_open_counts(csv_path: Path) -> tuple[int, int]:
             return (0, 0)
 
 
+def _row_position_key(row: dict):
+    key = row.get("asset") or row.get("id")
+    if key:
+        return ("asset", str(key))
+    cid = row.get("conditionId")
+    out = row.get("outcome")
+    if cid and out is not None:
+        return ("cid", str(cid), str(out).strip().lower())
+    return None
+
+
+def _existing_position_keys(df: pd.DataFrame) -> set:
+    keys: set = set()
+    if df is None or df.empty:
+        return keys
+    if "asset" in df.columns:
+        for v in df["asset"].dropna().astype(str):
+            if v and v.lower() not in {"nan", "none"}:
+                keys.add(("asset", v))
+    if "id" in df.columns:
+        for v in df["id"].dropna().astype(str):
+            if v and v.lower() not in {"nan", "none"}:
+                keys.add(("asset", v))
+    if "conditionId" in df.columns and "outcome" in df.columns:
+        for cid, out in zip(df["conditionId"].astype(str), df["outcome"].astype(str)):
+            if cid and cid.lower() not in {"nan", "none"}:
+                keys.add(("cid", cid, out.strip().lower()))
+    return keys
+
+
+def fetch_closed_since_existing(address: str, known: set, max_pages: int = 80) -> pd.DataFrame:
+    """Newest closed first, stop when a page is already on disk (caught up since last fetch)."""
+    page_limit = 50
+    params = {
+        "user": address,
+        "limit": page_limit,
+        "offset": 0,
+        "sortBy": "TIMESTAMP",
+        "sortDirection": "DESC",
+    }
+    all_data: list[dict] = []
+    seen: set = set()
+    page = 0
+    caught_up = False
+    while page < max_pages:
+        label = f"closed-positions offset={params['offset']} since-last"
+        data = _get_json_list_with_retry(
+            "https://data-api.polymarket.com/closed-positions", params, label
+        )
+        if data is None or not data:
+            break
+        new_n = 0
+        page_all_known = True
+        for row in data:
+            if not isinstance(row, dict):
+                continue
+            key = _row_position_key(row)
+            if key is None or key in seen:
+                continue
+            seen.add(key)
+            if key in known or (
+                row.get("asset") and ("asset", str(row.get("asset"))) in known
+            ) or (
+                row.get("conditionId")
+                and (
+                    "cid",
+                    str(row.get("conditionId")),
+                    str(row.get("outcome") or "").strip().lower(),
+                )
+                in known
+            ):
+                continue
+            page_all_known = False
+            all_data.append(row)
+            new_n += 1
+        if page_all_known or new_n == 0:
+            caught_up = True
+            print(
+                f"    [caught-up] closed after {page + 1} page(s), "
+                f"{len(all_data):,} new since last fetch"
+            )
+            break
+        if len(data) < page_limit:
+            break
+        params["offset"] += page_limit
+        page += 1
+        time.sleep(PAGE_SLEEP_SEC)
+    if not caught_up and page >= max_pages:
+        print(
+            f"    [warn] still seeing new closed after {max_pages} pages "
+            f"({len(all_data):,} new) — book may need --deep-incremental"
+        )
+    return pd.DataFrame(all_data)
+
+
 def _position_dedupe_key(df: pd.DataFrame):
     """Prefer `asset`. The positions API has no `id`; null ids would collapse every open row."""
     if df is None or df.empty:
@@ -446,8 +541,9 @@ def _merge_position_frames(existing: pd.DataFrame, new_df: pd.DataFrame) -> pd.D
 def fetch_recent_and_merge(address, username):
     """Overlay newest activity onto an existing unique CSV. Does not re-download the book.
 
-    Daily path: TIMESTAMP DESC closed (16 pages) + one-pass open. Dedupes on asset/id.
-    Repair path (--deep-incremental): winner+loser+recent closed sorts (80 pages).
+    Daily path: newest closed until we hit rows already in the CSV, plus the
+    current open book. Dedupes on asset/id. Repair path (--deep-incremental):
+    winner+loser+recent closed sorts.
     """
     csv_path = csv_path_for(address, username)
     if not csv_path.exists():
@@ -482,15 +578,11 @@ def fetch_recent_and_merge(address, username):
             df_open = fetch_open_positions_complete(address)
     else:
         print(
-            f"    🔄 Light incremental: newest {LIGHT_CLOSED_PAGES} closed pages "
-            f"+ current open ({prev_closed:,} closed / {prev_open:,} open already on disk)"
+            f"    🔄 Since last fetch: newest closed until caught up "
+            f"+ current open ({prev_closed:,} closed / {prev_open:,} open on disk)"
         )
-        df_closed = fetch_positions(
-            address,
-            "closed-positions",
-            max_pages=LIGHT_CLOSED_PAGES,
-            extra_params={"sortBy": "TIMESTAMP", "sortDirection": "DESC"},
-        )
+        known = _existing_position_keys(existing)
+        df_closed = fetch_closed_since_existing(address, known)
         time.sleep(PAGE_SLEEP_SEC)
         if is_mm:
             df_open = fetch_positions(address, "positions", max_pages=2)
