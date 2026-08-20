@@ -101,8 +101,11 @@ Live copy is **not** the frozen Capman 12. Take these tails `copy_universe.json`
 
 ## Right now
 
-Rolling take book: **live copy is 0x8a3a + TTdes**. Last 30d those two fired **0** product TAKEs (Q/rel/price). Historical as-of tape for those names is n=28, WR 53.6%, **−1.45%** after 2¢ (TTdes n=4 at −55% drags 0x8a3a’s n=24 at +7.4%). Empty Take these tonight is honest.
+Rolling take book: **live copy is 0x8a3a + TTdes**. Product health **GO** (plays CSV rolling 30d n=60, +12.4% after 2¢ — includes bench history in the tape; live names alone still 0 fires in 30d).
 
-Hypothetical last 7d if we also tailed bench+watch: n=13, WR 77%, +20% after 2¢ — mostly HVAB tennis (watch, WR 82%). Do not auto-promote.
+**Live TAKE opens right now: 0.** Closest near-misses:
 
-Open books: **0 live TAKEs** on the current live list.
+- TTdes politics / Trump-out — Q 58 (need 60); politics lane −5%
+- 0x8a3a CS Vitality vs Spirit — Q 61 ok, but ESPORTS not yet an as-of lane for them + size only 0.3× median
+
+Empty Take these tonight is honest.

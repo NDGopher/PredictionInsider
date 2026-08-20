@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-08-18T23:18:31.617001+00:00",
+  "generated_at": "2026-08-20T21:15:50.090726+00:00",
   "strategy": "asof_live_q60_sport_rel2",
   "stake": 100.0,
   "fill": "vwap_plus_2c",
   "universe": {
-    "generated_at": "2026-08-18T23:18:31.620316+00:00",
+    "generated_at": "2026-08-20T21:15:50.092621+00:00",
     "counts": {
       "live": 2,
-      "bench": 13,
-      "watch": 25,
+      "bench": 12,
+      "watch": 23,
       "kicked": 0,
-      "skip": 40,
+      "skip": 43,
       "reference": 2
     },
     "live": [
@@ -27,14 +27,12 @@
       "ckw",
       "Bienville",
       "JhonAlexanderHinestroza",
-      "0x20D6436849F930584892730C7F96eBB2Ac763856",
       "0xheavy888",
       "JuniorB",
       "Andromeda1"
     ],
     "watch": [
       "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
-      "CoryLahey",
       "ShucksIt69",
       "SineNooneEI",
       "HongYunX",
@@ -48,7 +46,6 @@
       "S-Works",
       "musholius722",
       "SDTrading",
-      "TutiFromFactsOfLife",
       "bloodmaster",
       "ShortFlutterStock",
       "3edmond.dantes",
@@ -65,9 +62,9 @@
   "pools": [
     {
       "label": "matched_12",
-      "n": 579,
-      "win_rate": 68.22,
-      "roi_2c": 11.65,
+      "n": 577,
+      "win_rate": 68.28,
+      "roi_2c": 11.82,
       "by_trader": [
         {
           "username": "Capman",
@@ -77,15 +74,15 @@
         },
         {
           "username": "Vetch",
-          "n": 123,
-          "win_rate": 71.54,
-          "roi_2c": 12.2
+          "n": 119,
+          "win_rate": 71.43,
+          "roi_2c": 10.96
         },
         {
           "username": "Supah9ga",
-          "n": 43,
-          "win_rate": 53.49,
-          "roi_2c": 8.62
+          "n": 45,
+          "win_rate": 55.56,
+          "roi_2c": 14.27
         },
         {
           "username": "HedgeMaster88",
@@ -139,21 +136,21 @@
     },
     {
       "label": "matched_12_minus_bots",
-      "n": 296,
-      "win_rate": 63.85,
-      "roi_2c": 8.09,
+      "n": 294,
+      "win_rate": 63.95,
+      "roi_2c": 8.39,
       "by_trader": [
         {
           "username": "Vetch",
-          "n": 123,
-          "win_rate": 71.54,
-          "roi_2c": 12.2
+          "n": 119,
+          "win_rate": 71.43,
+          "roi_2c": 10.96
         },
         {
           "username": "Supah9ga",
-          "n": 43,
-          "win_rate": 53.49,
-          "roi_2c": 8.62
+          "n": 45,
+          "win_rate": 55.56,
+          "roi_2c": 14.27
         },
         {
           "username": "HedgeMaster88",
@@ -195,9 +192,9 @@
     },
     {
       "label": "live_joinable",
-      "n": 28,
-      "win_rate": 53.57,
-      "roi_2c": -1.45,
+      "n": 35,
+      "win_rate": 54.29,
+      "roi_2c": -1.78,
       "by_trader": [
         {
           "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
@@ -207,35 +204,29 @@
         },
         {
           "username": "TTdes",
-          "n": 4,
-          "win_rate": 25.0,
-          "roi_2c": -54.55
+          "n": 11,
+          "win_rate": 45.45,
+          "roi_2c": -21.82
         }
       ]
     },
     {
       "label": "live_plus_bench",
-      "n": 654,
-      "win_rate": 59.48,
-      "roi_2c": 4.69,
+      "n": 492,
+      "win_rate": 60.57,
+      "roi_2c": 6.05,
       "by_trader": [
         {
-          "username": "JhonAlexanderHinestroza",
-          "n": 146,
-          "win_rate": 57.53,
-          "roi_2c": 9.85
-        },
-        {
-          "username": "0x20D6436849F930584892730C7F96eBB2Ac763856",
-          "n": 129,
-          "win_rate": 58.14,
-          "roi_2c": 6.3
-        },
-        {
           "username": "Vetch",
-          "n": 123,
-          "win_rate": 71.54,
-          "roi_2c": 12.2
+          "n": 119,
+          "win_rate": 71.43,
+          "roi_2c": 10.96
+        },
+        {
+          "username": "JhonAlexanderHinestroza",
+          "n": 108,
+          "win_rate": 60.19,
+          "roi_2c": 19.49
         },
         {
           "username": "Andromeda1",
@@ -245,9 +236,9 @@
         },
         {
           "username": "Supah9ga",
-          "n": 43,
-          "win_rate": 53.49,
-          "roi_2c": 8.62
+          "n": 45,
+          "win_rate": 55.56,
+          "roi_2c": 14.27
         },
         {
           "username": "HedgeMaster88",
@@ -280,36 +271,30 @@
           "roi_2c": 14.5
         },
         {
+          "username": "TTdes",
+          "n": 11,
+          "win_rate": 45.45,
+          "roi_2c": -21.82
+        },
+        {
           "username": "Bienville",
           "n": 5,
           "win_rate": 80.0,
           "roi_2c": 55.35
-        },
-        {
-          "username": "TTdes",
-          "n": 4,
-          "win_rate": 25.0,
-          "roi_2c": -54.55
         }
       ]
     },
     {
       "label": "watch_candidates",
-      "n": 140,
-      "win_rate": 55.0,
-      "roi_2c": -5.82,
+      "n": 71,
+      "win_rate": 54.93,
+      "roi_2c": -13.14,
       "by_trader": [
         {
-          "username": "CoryLahey",
-          "n": 66,
-          "win_rate": 56.06,
-          "roi_2c": 1.3
-        },
-        {
           "username": "HVAB",
-          "n": 27,
-          "win_rate": 74.07,
-          "roi_2c": 9.81
+          "n": 32,
+          "win_rate": 71.88,
+          "roi_2c": 5.38
         },
         {
           "username": "UAEVALORANTFAN",
@@ -328,24 +313,6 @@
           "n": 6,
           "win_rate": 50.0,
           "roi_2c": 0.4
-        },
-        {
-          "username": "theowalcott",
-          "n": 5,
-          "win_rate": 60.0,
-          "roi_2c": 18.18
-        },
-        {
-          "username": "bigspending",
-          "n": 2,
-          "win_rate": 50.0,
-          "roi_2c": -26.07
-        },
-        {
-          "username": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
-          "n": 1,
-          "win_rate": 0.0,
-          "roi_2c": -100.0
         }
       ]
     },
@@ -389,22 +356,22 @@
     }
   ],
   "lane": {
-    "generated_at": "2026-08-18T23:18:31.617001+00:00",
+    "generated_at": "2026-08-20T21:15:50.090726+00:00",
     "rule": "asof_live_q60_sport_rel2 (Q>=60, sport ROI>=5%, rel>=2, 10-88c, no NFL, fill VWAP+2c). Futures excluded from product.",
     "all": {
-      "n": 28,
-      "win_rate": 53.57,
-      "roi_2c": -1.45
+      "n": 35,
+      "win_rate": 54.29,
+      "roi_2c": -1.78
     },
     "sports": {
-      "n": 28,
-      "win_rate": 53.57,
-      "roi_2c": -1.45
+      "n": 34,
+      "win_rate": 52.94,
+      "roi_2c": -3.52
     },
     "other": {
-      "n": 0,
-      "win_rate": 0.0,
-      "roi_2c": 0.0
+      "n": 1,
+      "win_rate": 100.0,
+      "roi_2c": 57.19
     },
     "futures_excluded": {
       "n": 7,
@@ -413,9 +380,9 @@
     },
     "by_submarket": {
       "Moneyline": {
-        "n": 12,
-        "win_rate": 50.0,
-        "roi_2c": -7.28
+        "n": 19,
+        "win_rate": 52.63,
+        "roi_2c": -5.74
       },
       "Spread": {
         "n": 16,
@@ -434,16 +401,16 @@
         "take_book": true,
         "joinable": true,
         "recency": "HOT",
-        "unique_roi": 14.95,
-        "win_rate": 53.86,
-        "median_stake": 4838.34,
-        "closed": 423,
-        "events": 430,
+        "unique_roi": 14.84,
+        "win_rate": 54.04,
+        "median_stake": 4834.8,
+        "closed": 427,
+        "events": 436,
         "last_30d_n": 119,
-        "last_30d_roi": -6.72,
-        "last_60d_n": 181,
-        "last_60d_roi": -1.28,
-        "last_event_date": "2026-08-19",
+        "last_30d_roi": -4.39,
+        "last_60d_n": 180,
+        "last_60d_roi": 1.54,
+        "last_event_date": "2026-08-21",
         "reasons": [],
         "has_csv": true
       },
@@ -454,16 +421,16 @@
         "take_book": false,
         "joinable": true,
         "recency": "HOT",
-        "unique_roi": 7.27,
-        "win_rate": 53.82,
+        "unique_roi": 7.06,
+        "win_rate": 53.64,
         "median_stake": 920.2,
-        "closed": 825,
+        "closed": 820,
         "events": 960,
-        "last_30d_n": 23,
-        "last_30d_roi": 43.04,
-        "last_60d_n": 42,
-        "last_60d_roi": 27.61,
-        "last_event_date": "2026-08-16",
+        "last_30d_n": 16,
+        "last_30d_roi": -5.82,
+        "last_60d_n": 32,
+        "last_60d_roi": 27.39,
+        "last_event_date": "2026-08-19",
         "reasons": [],
         "has_csv": true
       }
@@ -476,10 +443,10 @@
         "take_book": true,
         "joinable": true,
         "recency": "HOT",
-        "unique_roi": 21.87,
+        "unique_roi": 21.53,
         "win_rate": 52.23,
-        "median_stake": 5550.0,
-        "closed": 659,
+        "median_stake": 5550.6,
+        "closed": 658,
         "events": 592,
         "last_30d_n": 1,
         "last_30d_roi": -100.0,
@@ -504,9 +471,9 @@
         "median_stake": 27762.68,
         "closed": 71,
         "events": 104,
-        "last_30d_n": 120,
-        "last_30d_roi": 18.83,
-        "last_60d_n": 131,
+        "last_30d_n": 92,
+        "last_30d_roi": 18.93,
+        "last_60d_n": 103,
         "last_60d_roi": 20.3,
         "last_event_date": "2026-08-17",
         "reasons": [
@@ -522,14 +489,14 @@
         "take_book": true,
         "joinable": true,
         "recency": "COLD",
-        "unique_roi": 7.67,
+        "unique_roi": 7.28,
         "win_rate": 55.62,
         "median_stake": 4741.82,
-        "closed": 1165,
+        "closed": 1163,
         "events": 939,
-        "last_30d_n": 9,
-        "last_30d_roi": 133.44,
-        "last_60d_n": 41,
+        "last_30d_n": 3,
+        "last_30d_roi": 74.65,
+        "last_60d_n": 24,
         "last_60d_roi": 82.07,
         "last_event_date": "2026-07-30",
         "reasons": [
@@ -545,13 +512,13 @@
         "joinable": true,
         "recency": "COLD",
         "unique_roi": 11.24,
-        "win_rate": 60.87,
-        "median_stake": 1724.19,
-        "closed": 694,
+        "win_rate": 60.79,
+        "median_stake": 1724.42,
+        "closed": 693,
         "events": 488,
-        "last_30d_n": 57,
-        "last_30d_roi": -18.41,
-        "last_60d_n": 105,
+        "last_30d_n": 41,
+        "last_30d_roi": -19.64,
+        "last_60d_n": 85,
         "last_60d_roi": 13.53,
         "last_event_date": "2026-08-02",
         "reasons": [
@@ -573,8 +540,8 @@
         "events": 166,
         "last_30d_n": 0,
         "last_30d_roi": 0.0,
-        "last_60d_n": 27,
-        "last_60d_roi": 45.3,
+        "last_60d_n": 13,
+        "last_60d_roi": 49.51,
         "last_event_date": "2026-07-16",
         "reasons": [
           "median=$46,033_unjoinable",
@@ -592,7 +559,7 @@
         "unique_roi": 19.07,
         "win_rate": 53.39,
         "median_stake": 6115.44,
-        "closed": 137,
+        "closed": 136,
         "events": 218,
         "last_30d_n": 0,
         "last_30d_roi": 0.0,
@@ -614,7 +581,7 @@
         "unique_roi": 2.29,
         "win_rate": 54.93,
         "median_stake": 7378.95,
-        "closed": 2533,
+        "closed": 2384,
         "events": 1732,
         "last_30d_n": 1,
         "last_30d_roi": -100.0,
@@ -658,7 +625,7 @@
         "unique_roi": 1.48,
         "win_rate": 51.84,
         "median_stake": 1927.02,
-        "closed": 1697,
+        "closed": 899,
         "events": 1796,
         "last_30d_n": 281,
         "last_30d_roi": -3.69,
@@ -672,29 +639,6 @@
         "has_csv": true
       },
       {
-        "username": "0x20D6436849F930584892730C7F96eBB2Ac763856",
-        "wallet": "0x20d6436849f930584892730c7f96ebb2ac763856",
-        "bucket": "bench",
-        "take_book": false,
-        "joinable": true,
-        "recency": "HOT",
-        "unique_roi": 1.85,
-        "win_rate": 51.3,
-        "median_stake": 2043.31,
-        "closed": 1761,
-        "events": 905,
-        "last_30d_n": 58,
-        "last_30d_roi": 32.52,
-        "last_60d_n": 248,
-        "last_60d_roi": 0.61,
-        "last_event_date": "2026-08-13",
-        "reasons": [
-          "unique_roi=1.85_lt_5.0",
-          "unique_roi=1.85_bench"
-        ],
-        "has_csv": true
-      },
-      {
         "username": "0xheavy888",
         "wallet": "0xec981ed70ae69c5cbcac08c1ba063e734f6bafcd",
         "bucket": "bench",
@@ -704,7 +648,7 @@
         "unique_roi": 2.22,
         "win_rate": 50.64,
         "median_stake": 617.86,
-        "closed": 11346,
+        "closed": 6710,
         "events": 1907,
         "last_30d_n": 1834,
         "last_30d_roi": 1.3,
@@ -727,7 +671,7 @@
         "unique_roi": 4.71,
         "win_rate": 58.16,
         "median_stake": 450.0,
-        "closed": 1352,
+        "closed": 1263,
         "events": 704,
         "last_30d_n": 4,
         "last_30d_roi": -100.01,
@@ -749,7 +693,7 @@
         "unique_roi": 3.32,
         "win_rate": 55.72,
         "median_stake": 437.48,
-        "closed": 2435,
+        "closed": 1768,
         "events": 1741,
         "last_30d_n": 0,
         "last_30d_roi": 0.0,
@@ -768,12 +712,12 @@
         "wallet": "0x1b20a00709dfe648afd26b326394b5e031f83ab0",
         "bucket": "watch",
         "take_book": false,
-        "joinable": true,
+        "joinable": false,
         "recency": "HOT",
         "unique_roi": 34.66,
         "win_rate": 51.39,
         "median_stake": 12787.59,
-        "closed": 72,
+        "closed": 0,
         "events": 51,
         "last_30d_n": 51,
         "last_30d_roi": 34.66,
@@ -781,27 +725,29 @@
         "last_60d_roi": 34.66,
         "last_event_date": "2026-08-17",
         "reasons": [],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "CoryLahey",
         "wallet": "0x5c3a1a602848565bb16165fcd460b00c3d43020b",
-        "bucket": "watch",
+        "bucket": "skip",
         "take_book": false,
-        "joinable": true,
+        "joinable": false,
         "recency": "HOT",
         "unique_roi": 4.61,
         "win_rate": 59.4,
         "median_stake": 7364.68,
-        "closed": 1652,
+        "closed": 0,
         "events": 1071,
         "last_30d_n": 15,
         "last_30d_roi": 52.29,
         "last_60d_n": 380,
         "last_60d_roi": 3.19,
         "last_event_date": "2026-08-16",
-        "reasons": [],
-        "has_csv": true
+        "reasons": [
+          "no_csv_book"
+        ],
+        "has_csv": false
       },
       {
         "username": "ShucksIt69",
@@ -813,7 +759,7 @@
         "unique_roi": 4.15,
         "win_rate": 53.19,
         "median_stake": 5221.48,
-        "closed": 2566,
+        "closed": 2197,
         "events": 1072,
         "last_30d_n": 122,
         "last_30d_roi": -12.01,
@@ -830,17 +776,19 @@
         "take_book": false,
         "joinable": true,
         "recency": "HOT",
-        "unique_roi": 5.37,
-        "win_rate": 53.97,
-        "median_stake": 6838.93,
-        "closed": 1049,
-        "events": 1055,
-        "last_30d_n": 249,
-        "last_30d_roi": 10.04,
-        "last_60d_n": 348,
-        "last_60d_roi": 10.14,
-        "last_event_date": "2026-08-17",
-        "reasons": [],
+        "unique_roi": 5.01,
+        "win_rate": 53.75,
+        "median_stake": 6832.18,
+        "closed": 1052,
+        "events": 1063,
+        "last_30d_n": 196,
+        "last_30d_roi": 7.43,
+        "last_60d_n": 264,
+        "last_60d_roi": 9.33,
+        "last_event_date": "2026-08-21",
+        "reasons": [
+          "extra_watch_never_live"
+        ],
         "has_csv": true
       },
       {
@@ -855,12 +803,14 @@
         "median_stake": 3112.74,
         "closed": 200,
         "events": 261,
-        "last_30d_n": 54,
-        "last_30d_roi": 9.41,
+        "last_30d_n": 53,
+        "last_30d_roi": 23.71,
         "last_60d_n": 77,
-        "last_60d_roi": 19.82,
+        "last_60d_roi": 19.81,
         "last_event_date": "2026-08-18",
-        "reasons": [],
+        "reasons": [
+          "extra_watch_never_live"
+        ],
         "has_csv": true
       },
       {
@@ -873,7 +823,7 @@
         "unique_roi": 3.42,
         "win_rate": 55.25,
         "median_stake": 3741.38,
-        "closed": 1153,
+        "closed": 980,
         "events": 983,
         "last_30d_n": 80,
         "last_30d_roi": 33.88,
@@ -893,7 +843,7 @@
         "unique_roi": 30.26,
         "win_rate": 67.86,
         "median_stake": 7379.95,
-        "closed": 19,
+        "closed": 0,
         "events": 27,
         "last_30d_n": 27,
         "last_30d_roi": 30.26,
@@ -901,7 +851,7 @@
         "last_60d_roi": 30.26,
         "last_event_date": "2026-08-18",
         "reasons": [],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "predictionlegend",
@@ -913,7 +863,7 @@
         "unique_roi": 63.53,
         "win_rate": 50.0,
         "median_stake": 18319.79,
-        "closed": 6,
+        "closed": 0,
         "events": 11,
         "last_30d_n": 12,
         "last_30d_roi": 63.53,
@@ -923,7 +873,7 @@
         "reasons": [
           "median=$18,320_unjoinable"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
@@ -935,7 +885,7 @@
         "unique_roi": 12.47,
         "win_rate": 55.1,
         "median_stake": 39637.5,
-        "closed": 72,
+        "closed": 0,
         "events": 98,
         "last_30d_n": 28,
         "last_30d_roi": 21.93,
@@ -945,7 +895,7 @@
         "reasons": [
           "median=$39,638_unjoinable"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "theowalcott",
@@ -957,7 +907,7 @@
         "unique_roi": 13.96,
         "win_rate": 58.46,
         "median_stake": 26833.09,
-        "closed": 38,
+        "closed": 0,
         "events": 57,
         "last_30d_n": 65,
         "last_30d_roi": 13.96,
@@ -967,7 +917,7 @@
         "reasons": [
           "median=$26,833_unjoinable"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "HVAB",
@@ -976,16 +926,16 @@
         "take_book": false,
         "joinable": false,
         "recency": "HOT",
-        "unique_roi": 10.46,
-        "win_rate": 81.99,
+        "unique_roi": 10.31,
+        "win_rate": 81.84,
         "median_stake": 896.4,
-        "closed": 572,
-        "events": 386,
-        "last_30d_n": 163,
-        "last_30d_roi": 15.98,
-        "last_60d_n": 340,
-        "last_60d_roi": 13.27,
-        "last_event_date": "2026-08-19",
+        "closed": 587,
+        "events": 394,
+        "last_30d_n": 175,
+        "last_30d_roi": 14.44,
+        "last_60d_n": 338,
+        "last_60d_roi": 11.79,
+        "last_event_date": "2026-08-21",
         "reasons": [],
         "has_csv": true
       },
@@ -999,7 +949,7 @@
         "unique_roi": 77.2,
         "win_rate": 83.33,
         "median_stake": 650806.53,
-        "closed": 5,
+        "closed": 0,
         "events": 5,
         "last_30d_n": 6,
         "last_30d_roi": 77.2,
@@ -1009,7 +959,7 @@
         "reasons": [
           "median=$650,807_unjoinable"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "S-Works",
@@ -1021,7 +971,7 @@
         "unique_roi": -2.27,
         "win_rate": 67.69,
         "median_stake": 1206.5,
-        "closed": 10182,
+        "closed": 9506,
         "events": 3833,
         "last_30d_n": 106,
         "last_30d_roi": -1.47,
@@ -1041,7 +991,7 @@
         "unique_roi": 60.63,
         "win_rate": 50.0,
         "median_stake": 173567.58,
-        "closed": 2,
+        "closed": 0,
         "events": 2,
         "last_30d_n": 1,
         "last_30d_roi": 60.64,
@@ -1051,19 +1001,19 @@
         "reasons": [
           "median=$173,568_unjoinable"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "SDTrading",
         "wallet": "0x16bb9951a36fce71e2ef57890b786145e0ba8492",
         "bucket": "watch",
         "take_book": false,
-        "joinable": true,
+        "joinable": false,
         "recency": "HOT",
         "unique_roi": -0.29,
         "win_rate": 48.33,
         "median_stake": 4911.53,
-        "closed": 480,
+        "closed": 0,
         "events": 696,
         "last_30d_n": 284,
         "last_30d_roi": 13.63,
@@ -1071,27 +1021,7 @@
         "last_60d_roi": 6.85,
         "last_event_date": "2026-08-19",
         "reasons": [],
-        "has_csv": true
-      },
-      {
-        "username": "TutiFromFactsOfLife",
-        "wallet": "0xc660ae71765d0d9eaf5fa8328c1c959841d2bd28",
-        "bucket": "watch",
-        "take_book": false,
-        "joinable": true,
-        "recency": "HOT",
-        "unique_roi": -1.66,
-        "win_rate": 50.31,
-        "median_stake": 7680.4,
-        "closed": 1730,
-        "events": 1452,
-        "last_30d_n": 40,
-        "last_30d_roi": -15.71,
-        "last_60d_n": 152,
-        "last_60d_roi": -8.54,
-        "last_event_date": "2026-08-16",
-        "reasons": [],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "bloodmaster",
@@ -1103,7 +1033,7 @@
         "unique_roi": 4.32,
         "win_rate": 88.73,
         "median_stake": 597.86,
-        "closed": 3520,
+        "closed": 2735,
         "events": 1193,
         "last_30d_n": 305,
         "last_30d_roi": -0.48,
@@ -1123,7 +1053,7 @@
         "unique_roi": 1.0,
         "win_rate": 57.35,
         "median_stake": 1273.53,
-        "closed": 4461,
+        "closed": 2615,
         "events": 2124,
         "last_30d_n": 82,
         "last_30d_roi": 10.9,
@@ -1143,7 +1073,7 @@
         "unique_roi": 25.37,
         "win_rate": 50.0,
         "median_stake": 278599.5,
-        "closed": 2,
+        "closed": 0,
         "events": 4,
         "last_30d_n": 4,
         "last_30d_roi": 25.37,
@@ -1153,7 +1083,7 @@
         "reasons": [
           "median=$278,600_unjoinable"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "Sassy-Bucket",
@@ -1165,7 +1095,7 @@
         "unique_roi": -7.58,
         "win_rate": 46.91,
         "median_stake": 42941.47,
-        "closed": 631,
+        "closed": 0,
         "events": 517,
         "last_30d_n": 157,
         "last_30d_roi": 15.77,
@@ -1175,19 +1105,19 @@
         "reasons": [
           "median=$42,941_unjoinable"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "fengdubiying",
         "wallet": "0x17db3fcd93ba12d38382a0cade24b200185c5f6d",
         "bucket": "watch",
         "take_book": false,
-        "joinable": true,
+        "joinable": false,
         "recency": "DARK",
         "unique_roi": 28.15,
         "win_rate": 71.43,
         "median_stake": 12835.09,
-        "closed": 97,
+        "closed": 0,
         "events": 82,
         "last_30d_n": 0,
         "last_30d_roi": 0.0,
@@ -1195,7 +1125,7 @@
         "last_60d_roi": -102.12,
         "last_event_date": "2026-07-14",
         "reasons": [],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "asparagus2012",
@@ -1207,7 +1137,7 @@
         "unique_roi": 249.97,
         "win_rate": 68.75,
         "median_stake": 29604.0,
-        "closed": 15,
+        "closed": 0,
         "events": 9,
         "last_30d_n": 4,
         "last_30d_roi": 532.16,
@@ -1217,7 +1147,7 @@
         "reasons": [
           "median=$29,604_unjoinable"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "norrisfan",
@@ -1229,7 +1159,7 @@
         "unique_roi": -15.66,
         "win_rate": 43.19,
         "median_stake": 1770.0,
-        "closed": 1295,
+        "closed": 625,
         "events": 732,
         "last_30d_n": 127,
         "last_30d_roi": -175.4,
@@ -1249,7 +1179,7 @@
         "unique_roi": 40.56,
         "win_rate": 100.0,
         "median_stake": 99223.15,
-        "closed": 5,
+        "closed": 0,
         "events": 6,
         "last_30d_n": 2,
         "last_30d_roi": 50.71,
@@ -1259,7 +1189,7 @@
         "reasons": [
           "median=$99,223_unjoinable"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "KeyTransporter",
@@ -1271,7 +1201,7 @@
         "unique_roi": 45.71,
         "win_rate": 76.92,
         "median_stake": 301277.24,
-        "closed": 11,
+        "closed": 0,
         "events": 12,
         "last_30d_n": 0,
         "last_30d_roi": 0.0,
@@ -1281,7 +1211,7 @@
         "reasons": [
           "median=$301,277_unjoinable"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "midwicket72",
@@ -1315,10 +1245,10 @@
         "take_book": true,
         "joinable": true,
         "recency": "HOT",
-        "unique_roi": 21.87,
+        "unique_roi": 21.53,
         "win_rate": 52.23,
-        "median_stake": 5550.0,
-        "closed": 659,
+        "median_stake": 5550.6,
+        "closed": 658,
         "events": 592,
         "last_30d_n": 1,
         "last_30d_roi": -100.0,
@@ -1343,9 +1273,9 @@
         "median_stake": 27762.68,
         "closed": 71,
         "events": 104,
-        "last_30d_n": 120,
-        "last_30d_roi": 18.83,
-        "last_60d_n": 131,
+        "last_30d_n": 92,
+        "last_30d_roi": 18.93,
+        "last_60d_n": 103,
         "last_60d_roi": 20.3,
         "last_event_date": "2026-08-17",
         "reasons": [
@@ -1361,16 +1291,16 @@
         "take_book": true,
         "joinable": true,
         "recency": "HOT",
-        "unique_roi": 14.95,
-        "win_rate": 53.86,
-        "median_stake": 4838.34,
-        "closed": 423,
-        "events": 430,
+        "unique_roi": 14.84,
+        "win_rate": 54.04,
+        "median_stake": 4834.8,
+        "closed": 427,
+        "events": 436,
         "last_30d_n": 119,
-        "last_30d_roi": -6.72,
-        "last_60d_n": 181,
-        "last_60d_roi": -1.28,
-        "last_event_date": "2026-08-19",
+        "last_30d_roi": -4.39,
+        "last_60d_n": 180,
+        "last_60d_roi": 1.54,
+        "last_event_date": "2026-08-21",
         "reasons": [],
         "has_csv": true
       },
@@ -1381,14 +1311,14 @@
         "take_book": true,
         "joinable": true,
         "recency": "COLD",
-        "unique_roi": 7.67,
+        "unique_roi": 7.28,
         "win_rate": 55.62,
         "median_stake": 4741.82,
-        "closed": 1165,
+        "closed": 1163,
         "events": 939,
-        "last_30d_n": 9,
-        "last_30d_roi": 133.44,
-        "last_60d_n": 41,
+        "last_30d_n": 3,
+        "last_30d_roi": 74.65,
+        "last_60d_n": 24,
         "last_60d_roi": 82.07,
         "last_event_date": "2026-07-30",
         "reasons": [
@@ -1404,13 +1334,13 @@
         "joinable": true,
         "recency": "COLD",
         "unique_roi": 11.24,
-        "win_rate": 60.87,
-        "median_stake": 1724.19,
-        "closed": 694,
+        "win_rate": 60.79,
+        "median_stake": 1724.42,
+        "closed": 693,
         "events": 488,
-        "last_30d_n": 57,
-        "last_30d_roi": -18.41,
-        "last_60d_n": 105,
+        "last_30d_n": 41,
+        "last_30d_roi": -19.64,
+        "last_60d_n": 85,
         "last_60d_roi": 13.53,
         "last_event_date": "2026-08-02",
         "reasons": [
@@ -1432,8 +1362,8 @@
         "events": 166,
         "last_30d_n": 0,
         "last_30d_roi": 0.0,
-        "last_60d_n": 27,
-        "last_60d_roi": 45.3,
+        "last_60d_n": 13,
+        "last_60d_roi": 49.51,
         "last_event_date": "2026-07-16",
         "reasons": [
           "median=$46,033_unjoinable",
@@ -1475,7 +1405,7 @@
         "unique_roi": 19.07,
         "win_rate": 53.39,
         "median_stake": 6115.44,
-        "closed": 137,
+        "closed": 136,
         "events": 218,
         "last_30d_n": 0,
         "last_30d_roi": 0.0,
@@ -1497,7 +1427,7 @@
         "unique_roi": 2.29,
         "win_rate": 54.93,
         "median_stake": 7378.95,
-        "closed": 2533,
+        "closed": 2384,
         "events": 1732,
         "last_30d_n": 1,
         "last_30d_roi": -100.0,
@@ -1582,12 +1512,12 @@
         "wallet": "0x1b20a00709dfe648afd26b326394b5e031f83ab0",
         "bucket": "watch",
         "take_book": false,
-        "joinable": true,
+        "joinable": false,
         "recency": "HOT",
         "unique_roi": 34.66,
         "win_rate": 51.39,
         "median_stake": 12787.59,
-        "closed": 72,
+        "closed": 0,
         "events": 51,
         "last_30d_n": 51,
         "last_30d_roi": 34.66,
@@ -1595,27 +1525,29 @@
         "last_60d_roi": 34.66,
         "last_event_date": "2026-08-17",
         "reasons": [],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "CoryLahey",
         "wallet": "0x5c3a1a602848565bb16165fcd460b00c3d43020b",
-        "bucket": "watch",
+        "bucket": "skip",
         "take_book": false,
-        "joinable": true,
+        "joinable": false,
         "recency": "HOT",
         "unique_roi": 4.61,
         "win_rate": 59.4,
         "median_stake": 7364.68,
-        "closed": 1652,
+        "closed": 0,
         "events": 1071,
         "last_30d_n": 15,
         "last_30d_roi": 52.29,
         "last_60d_n": 380,
         "last_60d_roi": 3.19,
         "last_event_date": "2026-08-16",
-        "reasons": [],
-        "has_csv": true
+        "reasons": [
+          "no_csv_book"
+        ],
+        "has_csv": false
       },
       {
         "username": "ShucksIt69",
@@ -1627,33 +1559,13 @@
         "unique_roi": 4.15,
         "win_rate": 53.19,
         "median_stake": 5221.48,
-        "closed": 2566,
+        "closed": 2197,
         "events": 1072,
         "last_30d_n": 122,
         "last_30d_roi": -12.01,
         "last_60d_n": 161,
         "last_60d_roi": -3.94,
         "last_event_date": "2026-08-16",
-        "reasons": [],
-        "has_csv": true
-      },
-      {
-        "username": "SineNooneEI",
-        "wallet": "0x38337de21ff0bb0a11a40761507d51e318d633d1",
-        "bucket": "watch",
-        "take_book": false,
-        "joinable": true,
-        "recency": "HOT",
-        "unique_roi": 5.37,
-        "win_rate": 53.97,
-        "median_stake": 6838.93,
-        "closed": 1049,
-        "events": 1055,
-        "last_30d_n": 249,
-        "last_30d_roi": 10.04,
-        "last_60d_n": 348,
-        "last_60d_roi": 10.14,
-        "last_event_date": "2026-08-17",
         "reasons": [],
         "has_csv": true
       },
@@ -1676,10 +1588,32 @@
         "last_event_date": "2026-08-19",
         "reasons": [
           "hard_skip_mega_or_mm",
-          "pd_trades=3305268>=100k",
+          "pd_trades=3308996>=100k",
           "csv_rows=91866>=50k",
           "closed=90200>12k",
           "market_maker"
+        ],
+        "has_csv": true
+      },
+      {
+        "username": "SineNooneEI",
+        "wallet": "0x38337de21ff0bb0a11a40761507d51e318d633d1",
+        "bucket": "watch",
+        "take_book": false,
+        "joinable": true,
+        "recency": "HOT",
+        "unique_roi": 5.01,
+        "win_rate": 53.75,
+        "median_stake": 6832.18,
+        "closed": 1052,
+        "events": 1063,
+        "last_30d_n": 196,
+        "last_30d_roi": 7.43,
+        "last_60d_n": 264,
+        "last_60d_roi": 9.33,
+        "last_event_date": "2026-08-21",
+        "reasons": [
+          "extra_watch_never_live"
         ],
         "has_csv": true
       },
@@ -1695,12 +1629,14 @@
         "median_stake": 3112.74,
         "closed": 200,
         "events": 261,
-        "last_30d_n": 54,
-        "last_30d_roi": 9.41,
+        "last_30d_n": 53,
+        "last_30d_roi": 23.71,
         "last_60d_n": 77,
-        "last_60d_roi": 19.82,
+        "last_60d_roi": 19.81,
         "last_event_date": "2026-08-18",
-        "reasons": [],
+        "reasons": [
+          "extra_watch_never_live"
+        ],
         "has_csv": true
       },
       {
@@ -1713,7 +1649,7 @@
         "unique_roi": 3.42,
         "win_rate": 55.25,
         "median_stake": 3741.38,
-        "closed": 1153,
+        "closed": 980,
         "events": 983,
         "last_30d_n": 80,
         "last_30d_roi": 33.88,
@@ -1733,7 +1669,7 @@
         "unique_roi": 1.48,
         "win_rate": 51.84,
         "median_stake": 1927.02,
-        "closed": 1697,
+        "closed": 899,
         "events": 1796,
         "last_30d_n": 281,
         "last_30d_roi": -3.69,
@@ -1747,26 +1683,6 @@
         "has_csv": true
       },
       {
-        "username": "TTdes",
-        "wallet": "0x25867077c891354137bbaf7fde12eec6949cc893",
-        "bucket": "live",
-        "take_book": false,
-        "joinable": true,
-        "recency": "HOT",
-        "unique_roi": 7.27,
-        "win_rate": 53.82,
-        "median_stake": 920.2,
-        "closed": 825,
-        "events": 960,
-        "last_30d_n": 23,
-        "last_30d_roi": 43.04,
-        "last_60d_n": 42,
-        "last_60d_roi": 27.61,
-        "last_event_date": "2026-08-16",
-        "reasons": [],
-        "has_csv": true
-      },
-      {
         "username": "bigspending",
         "wallet": "0x86dab59a8a6e7f9947282d2117aab3429b706428",
         "bucket": "watch",
@@ -1776,7 +1692,7 @@
         "unique_roi": 30.26,
         "win_rate": 67.86,
         "median_stake": 7379.95,
-        "closed": 19,
+        "closed": 0,
         "events": 27,
         "last_30d_n": 27,
         "last_30d_roi": 30.26,
@@ -1784,7 +1700,7 @@
         "last_60d_roi": 30.26,
         "last_event_date": "2026-08-18",
         "reasons": [],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "predictionlegend",
@@ -1796,7 +1712,7 @@
         "unique_roi": 63.53,
         "win_rate": 50.0,
         "median_stake": 18319.79,
-        "closed": 6,
+        "closed": 0,
         "events": 11,
         "last_30d_n": 12,
         "last_30d_roi": 63.53,
@@ -1806,19 +1722,19 @@
         "reasons": [
           "median=$18,320_unjoinable"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "0x20D6436849F930584892730C7F96eBB2Ac763856",
         "wallet": "0x20d6436849f930584892730c7f96ebb2ac763856",
-        "bucket": "bench",
+        "bucket": "skip",
         "take_book": false,
-        "joinable": true,
+        "joinable": false,
         "recency": "HOT",
         "unique_roi": 1.85,
         "win_rate": 51.3,
         "median_stake": 2043.31,
-        "closed": 1761,
+        "closed": 0,
         "events": 905,
         "last_30d_n": 58,
         "last_30d_roi": 32.52,
@@ -1826,10 +1742,9 @@
         "last_60d_roi": 0.61,
         "last_event_date": "2026-08-13",
         "reasons": [
-          "unique_roi=1.85_lt_5.0",
-          "unique_roi=1.85_bench"
+          "no_csv_book"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "0xheavy888",
@@ -1841,7 +1756,7 @@
         "unique_roi": 2.22,
         "win_rate": 50.64,
         "median_stake": 617.86,
-        "closed": 11346,
+        "closed": 6710,
         "events": 1907,
         "last_30d_n": 1834,
         "last_30d_roi": 1.3,
@@ -1864,7 +1779,7 @@
         "unique_roi": 12.47,
         "win_rate": 55.1,
         "median_stake": 39637.5,
-        "closed": 72,
+        "closed": 0,
         "events": 98,
         "last_30d_n": 28,
         "last_30d_roi": 21.93,
@@ -1874,7 +1789,7 @@
         "reasons": [
           "median=$39,638_unjoinable"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "theowalcott",
@@ -1886,7 +1801,7 @@
         "unique_roi": 13.96,
         "win_rate": 58.46,
         "median_stake": 26833.09,
-        "closed": 38,
+        "closed": 0,
         "events": 57,
         "last_30d_n": 65,
         "last_30d_roi": 13.96,
@@ -1896,7 +1811,7 @@
         "reasons": [
           "median=$26,833_unjoinable"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "GoalLineGhost",
@@ -1908,7 +1823,7 @@
         "unique_roi": -0.73,
         "win_rate": 52.31,
         "median_stake": 420.09,
-        "closed": 20142,
+        "closed": 0,
         "events": 4704,
         "last_30d_n": 13898,
         "last_30d_roi": -1.03,
@@ -1919,11 +1834,10 @@
           "hard_skip_mega_or_mm",
           "extra_kicked",
           "lane_kicked",
-          "pd_trades=832147>=100k",
-          "closed=20142>12k",
+          "pd_trades=834141>=100k",
           "market_maker"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "HVAB",
@@ -1932,16 +1846,16 @@
         "take_book": false,
         "joinable": false,
         "recency": "HOT",
-        "unique_roi": 10.46,
-        "win_rate": 81.99,
+        "unique_roi": 10.31,
+        "win_rate": 81.84,
         "median_stake": 896.4,
-        "closed": 572,
-        "events": 386,
-        "last_30d_n": 163,
-        "last_30d_roi": 15.98,
-        "last_60d_n": 340,
-        "last_60d_roi": 13.27,
-        "last_event_date": "2026-08-19",
+        "closed": 587,
+        "events": 394,
+        "last_30d_n": 175,
+        "last_30d_roi": 14.44,
+        "last_60d_n": 338,
+        "last_60d_roi": 11.79,
+        "last_event_date": "2026-08-21",
         "reasons": [],
         "has_csv": true
       },
@@ -1968,6 +1882,26 @@
         "has_csv": true
       },
       {
+        "username": "TTdes",
+        "wallet": "0x25867077c891354137bbaf7fde12eec6949cc893",
+        "bucket": "live",
+        "take_book": false,
+        "joinable": true,
+        "recency": "HOT",
+        "unique_roi": 7.06,
+        "win_rate": 53.64,
+        "median_stake": 920.2,
+        "closed": 820,
+        "events": 960,
+        "last_30d_n": 16,
+        "last_30d_roi": -5.82,
+        "last_60d_n": 32,
+        "last_60d_roi": 27.39,
+        "last_event_date": "2026-08-19",
+        "reasons": [],
+        "has_csv": true
+      },
+      {
         "username": "sainttroplay",
         "wallet": "0x9319a045cdd0c2180e5eb7ad44374383db9a6410",
         "bucket": "watch",
@@ -1977,7 +1911,7 @@
         "unique_roi": 77.2,
         "win_rate": 83.33,
         "median_stake": 650806.53,
-        "closed": 5,
+        "closed": 0,
         "events": 5,
         "last_30d_n": 6,
         "last_30d_roi": 77.2,
@@ -1987,7 +1921,7 @@
         "reasons": [
           "median=$650,807_unjoinable"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "HomeRunHazard",
@@ -1999,7 +1933,7 @@
         "unique_roi": 0.78,
         "win_rate": 55.37,
         "median_stake": 29.16,
-        "closed": 39675,
+        "closed": 0,
         "events": 2705,
         "last_30d_n": 13576,
         "last_30d_roi": 0.92,
@@ -2010,11 +1944,10 @@
           "hard_skip_mega_or_mm",
           "extra_kicked",
           "lane_kicked",
-          "pd_trades=261267>=100k",
-          "closed=39675>12k",
+          "pd_trades=263210>=100k",
           "market_maker"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "BoomLaLa",
@@ -2051,7 +1984,7 @@
         "unique_roi": -2.27,
         "win_rate": 67.69,
         "median_stake": 1206.5,
-        "closed": 10182,
+        "closed": 9506,
         "events": 3833,
         "last_30d_n": 106,
         "last_30d_roi": -1.47,
@@ -2071,7 +2004,7 @@
         "unique_roi": 60.63,
         "win_rate": 50.0,
         "median_stake": 173567.58,
-        "closed": 2,
+        "closed": 0,
         "events": 2,
         "last_30d_n": 1,
         "last_30d_roi": 60.64,
@@ -2081,41 +2014,19 @@
         "reasons": [
           "median=$173,568_unjoinable"
         ],
-        "has_csv": true
-      },
-      {
-        "username": "xytest",
-        "wallet": "0x3471a897e56a8d3621ca79af87dae4325977f17e",
-        "bucket": "skip",
-        "take_book": false,
-        "joinable": false,
-        "recency": "HOT",
-        "unique_roi": 3.25,
-        "win_rate": 54.15,
-        "median_stake": 602.32,
-        "closed": 7508,
-        "events": 756,
-        "last_30d_n": 1050,
-        "last_30d_roi": 1.32,
-        "last_60d_n": 1984,
-        "last_60d_roi": 0.79,
-        "last_event_date": "2026-08-17",
-        "reasons": [
-          "lane_kicked"
-        ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "SDTrading",
         "wallet": "0x16bb9951a36fce71e2ef57890b786145e0ba8492",
         "bucket": "watch",
         "take_book": false,
-        "joinable": true,
+        "joinable": false,
         "recency": "HOT",
         "unique_roi": -0.29,
         "win_rate": 48.33,
         "median_stake": 4911.53,
-        "closed": 480,
+        "closed": 0,
         "events": 696,
         "last_30d_n": 284,
         "last_30d_roi": 13.63,
@@ -2123,7 +2034,7 @@
         "last_60d_roi": 6.85,
         "last_event_date": "2026-08-19",
         "reasons": [],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "iDropMyHotdog",
@@ -2135,7 +2046,7 @@
         "unique_roi": 43.01,
         "win_rate": 48.9,
         "median_stake": 3149.99,
-        "closed": 1348,
+        "closed": 0,
         "events": 2077,
         "last_30d_n": 20,
         "last_30d_roi": 22.61,
@@ -2145,27 +2056,29 @@
         "reasons": [
           "lane_kicked"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "TutiFromFactsOfLife",
         "wallet": "0xc660ae71765d0d9eaf5fa8328c1c959841d2bd28",
-        "bucket": "watch",
+        "bucket": "skip",
         "take_book": false,
-        "joinable": true,
+        "joinable": false,
         "recency": "HOT",
         "unique_roi": -1.66,
         "win_rate": 50.31,
         "median_stake": 7680.4,
-        "closed": 1730,
+        "closed": 0,
         "events": 1452,
         "last_30d_n": 40,
         "last_30d_roi": -15.71,
         "last_60d_n": 152,
         "last_60d_roi": -8.54,
         "last_event_date": "2026-08-16",
-        "reasons": [],
-        "has_csv": true
+        "reasons": [
+          "no_csv_book"
+        ],
+        "has_csv": false
       },
       {
         "username": "bloodmaster",
@@ -2177,7 +2090,7 @@
         "unique_roi": 4.32,
         "win_rate": 88.73,
         "median_stake": 597.86,
-        "closed": 3520,
+        "closed": 2735,
         "events": 1193,
         "last_30d_n": 305,
         "last_30d_roi": -0.48,
@@ -2208,54 +2121,26 @@
         "has_csv": false
       },
       {
-        "username": "0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563",
-        "wallet": "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+        "username": "xytest",
+        "wallet": "0x3471a897e56a8d3621ca79af87dae4325977f17e",
         "bucket": "skip",
         "take_book": false,
         "joinable": false,
         "recency": "HOT",
-        "unique_roi": -4.03,
-        "win_rate": 55.46,
-        "median_stake": 2512.61,
-        "closed": 8479,
-        "events": 3902,
-        "last_30d_n": 2377,
-        "last_30d_roi": -1.88,
-        "last_60d_n": 4760,
-        "last_60d_roi": -1.33,
-        "last_event_date": "2026-08-19",
+        "unique_roi": 3.25,
+        "win_rate": 54.15,
+        "median_stake": 602.32,
+        "closed": 0,
+        "events": 756,
+        "last_30d_n": 1050,
+        "last_30d_roi": 1.32,
+        "last_60d_n": 1984,
+        "last_60d_roi": 0.79,
+        "last_event_date": "2026-08-17",
         "reasons": [
-          "lane_kicked",
-          "pd_trades=321029>=100k",
-          "market_maker"
+          "lane_kicked"
         ],
-        "has_csv": true
-      },
-      {
-        "username": "wr0ngw4yb3tt0r",
-        "wallet": "0x224a89dbe0db0d6124b335edabd15b3f877da3d5",
-        "bucket": "skip",
-        "take_book": false,
-        "joinable": false,
-        "recency": "HOT",
-        "unique_roi": -6.09,
-        "win_rate": 58.6,
-        "median_stake": 0.0,
-        "closed": 7880,
-        "events": 7880,
-        "last_30d_n": 2834,
-        "last_30d_roi": -4.64,
-        "last_60d_n": 6337,
-        "last_60d_roi": -2.09,
-        "last_event_date": "2026-08-19",
-        "reasons": [
-          "hard_skip_mega_or_mm",
-          "extra_kicked",
-          "lane_kicked",
-          "pd_trades=170396>=100k",
-          "market_maker"
-        ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "ShortFlutterStock",
@@ -2267,7 +2152,7 @@
         "unique_roi": 1.0,
         "win_rate": 57.35,
         "median_stake": 1273.53,
-        "closed": 4461,
+        "closed": 2615,
         "events": 2124,
         "last_30d_n": 82,
         "last_30d_roi": 10.9,
@@ -2287,7 +2172,7 @@
         "unique_roi": 25.37,
         "win_rate": 50.0,
         "median_stake": 278599.5,
-        "closed": 2,
+        "closed": 0,
         "events": 4,
         "last_30d_n": 4,
         "last_30d_roi": 25.37,
@@ -2297,33 +2182,7 @@
         "reasons": [
           "median=$278,600_unjoinable"
         ],
-        "has_csv": true
-      },
-      {
-        "username": "quavoo",
-        "wallet": "0xdc41c39b95453c943174f369926018f6963bdd7e",
-        "bucket": "skip",
-        "take_book": false,
-        "joinable": false,
-        "recency": "HOT",
-        "unique_roi": -10.51,
-        "win_rate": 48.2,
-        "median_stake": 0.0,
-        "closed": 5447,
-        "events": 5447,
-        "last_30d_n": 5625,
-        "last_30d_roi": -9.88,
-        "last_60d_n": 5659,
-        "last_60d_roi": -8.96,
-        "last_event_date": "2026-08-19",
-        "reasons": [
-          "hard_skip_mega_or_mm",
-          "extra_kicked",
-          "lane_kicked",
-          "pd_trades=142788>=100k",
-          "market_maker"
-        ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "EIf",
@@ -2370,6 +2229,30 @@
         "has_csv": true
       },
       {
+        "username": "0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563",
+        "wallet": "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+        "bucket": "skip",
+        "take_book": false,
+        "joinable": false,
+        "recency": "HOT",
+        "unique_roi": -4.03,
+        "win_rate": 55.46,
+        "median_stake": 2512.61,
+        "closed": 0,
+        "events": 3902,
+        "last_30d_n": 2377,
+        "last_30d_roi": -1.88,
+        "last_60d_n": 4760,
+        "last_60d_roi": -1.33,
+        "last_event_date": "2026-08-19",
+        "reasons": [
+          "lane_kicked",
+          "pd_trades=321703>=100k",
+          "market_maker"
+        ],
+        "has_csv": false
+      },
+      {
         "username": "JuniorB",
         "wallet": "0x9ac5c8496bc84f642bac181499bf64405a5c6a3d",
         "bucket": "bench",
@@ -2379,7 +2262,7 @@
         "unique_roi": 4.71,
         "win_rate": 58.16,
         "median_stake": 450.0,
-        "closed": 1352,
+        "closed": 1263,
         "events": 704,
         "last_30d_n": 4,
         "last_30d_roi": -100.01,
@@ -2410,7 +2293,7 @@
         "last_event_date": null,
         "reasons": [
           "hard_skip_mega_or_mm",
-          "pd_trades=6303979>=100k",
+          "pd_trades=6326071>=100k",
           "market_maker"
         ],
         "has_csv": false
@@ -2425,7 +2308,7 @@
         "unique_roi": -7.58,
         "win_rate": 46.91,
         "median_stake": 42941.47,
-        "closed": 631,
+        "closed": 0,
         "events": 517,
         "last_30d_n": 157,
         "last_30d_roi": 15.77,
@@ -2435,19 +2318,19 @@
         "reasons": [
           "median=$42,941_unjoinable"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "fengdubiying",
         "wallet": "0x17db3fcd93ba12d38382a0cade24b200185c5f6d",
         "bucket": "watch",
         "take_book": false,
-        "joinable": true,
+        "joinable": false,
         "recency": "DARK",
         "unique_roi": 28.15,
         "win_rate": 71.43,
         "median_stake": 12835.09,
-        "closed": 97,
+        "closed": 0,
         "events": 82,
         "last_30d_n": 0,
         "last_30d_roi": 0.0,
@@ -2455,7 +2338,7 @@
         "last_60d_roi": -102.12,
         "last_event_date": "2026-07-14",
         "reasons": [],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "asparagus2012",
@@ -2467,7 +2350,7 @@
         "unique_roi": 249.97,
         "win_rate": 68.75,
         "median_stake": 29604.0,
-        "closed": 15,
+        "closed": 0,
         "events": 9,
         "last_30d_n": 4,
         "last_30d_roi": 532.16,
@@ -2477,31 +2360,7 @@
         "reasons": [
           "median=$29,604_unjoinable"
         ],
-        "has_csv": true
-      },
-      {
-        "username": "Qpkwks",
-        "wallet": "0x9ee8bbc36d378af72e5f6b8e2ea2eb67c05a89de",
-        "bucket": "skip",
-        "take_book": false,
-        "joinable": false,
-        "recency": "HOT",
-        "unique_roi": 60.78,
-        "win_rate": 40.68,
-        "median_stake": 90091.02,
-        "closed": 36,
-        "events": 52,
-        "last_30d_n": 3,
-        "last_30d_roi": 46.93,
-        "last_60d_n": 66,
-        "last_60d_roi": 19.1,
-        "last_event_date": "2026-08-17",
-        "reasons": [
-          "extra_kicked",
-          "lane_kicked",
-          "median=$90,091_unjoinable"
-        ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "Cannae",
@@ -2561,7 +2420,7 @@
         "unique_roi": -15.66,
         "win_rate": 43.19,
         "median_stake": 1770.0,
-        "closed": 1295,
+        "closed": 625,
         "events": 732,
         "last_30d_n": 127,
         "last_30d_roi": -175.4,
@@ -2570,6 +2429,58 @@
         "last_event_date": "2026-08-19",
         "reasons": [],
         "has_csv": true
+      },
+      {
+        "username": "quavoo",
+        "wallet": "0xdc41c39b95453c943174f369926018f6963bdd7e",
+        "bucket": "skip",
+        "take_book": false,
+        "joinable": false,
+        "recency": "HOT",
+        "unique_roi": -10.51,
+        "win_rate": 48.2,
+        "median_stake": 0.0,
+        "closed": 0,
+        "events": 0,
+        "last_30d_n": 5625,
+        "last_30d_roi": -9.88,
+        "last_60d_n": 5659,
+        "last_60d_roi": -8.96,
+        "last_event_date": "2026-08-19",
+        "reasons": [
+          "hard_skip_mega_or_mm",
+          "extra_kicked",
+          "lane_kicked",
+          "pd_trades=147547>=100k",
+          "market_maker"
+        ],
+        "has_csv": false
+      },
+      {
+        "username": "wr0ngw4yb3tt0r",
+        "wallet": "0x224a89dbe0db0d6124b335edabd15b3f877da3d5",
+        "bucket": "skip",
+        "take_book": false,
+        "joinable": false,
+        "recency": "HOT",
+        "unique_roi": -6.09,
+        "win_rate": 58.6,
+        "median_stake": 0.0,
+        "closed": 0,
+        "events": 0,
+        "last_30d_n": 2834,
+        "last_30d_roi": -4.64,
+        "last_60d_n": 6337,
+        "last_60d_roi": -2.09,
+        "last_event_date": "2026-08-19",
+        "reasons": [
+          "hard_skip_mega_or_mm",
+          "extra_kicked",
+          "lane_kicked",
+          "pd_trades=171054>=100k",
+          "market_maker"
+        ],
+        "has_csv": false
       },
       {
         "username": "Theo4",
@@ -2601,7 +2512,7 @@
         "unique_roi": 40.56,
         "win_rate": 100.0,
         "median_stake": 99223.15,
-        "closed": 5,
+        "closed": 0,
         "events": 6,
         "last_30d_n": 2,
         "last_30d_roi": 50.71,
@@ -2611,7 +2522,7 @@
         "reasons": [
           "median=$99,223_unjoinable"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "Andromeda1",
@@ -2623,7 +2534,7 @@
         "unique_roi": 3.32,
         "win_rate": 55.72,
         "median_stake": 437.48,
-        "closed": 2435,
+        "closed": 1768,
         "events": 1741,
         "last_30d_n": 0,
         "last_30d_roi": 0.0,
@@ -2645,7 +2556,7 @@
         "unique_roi": 45.71,
         "win_rate": 76.92,
         "median_stake": 301277.24,
-        "closed": 11,
+        "closed": 0,
         "events": 12,
         "last_30d_n": 0,
         "last_30d_roi": 0.0,
@@ -2655,7 +2566,31 @@
         "reasons": [
           "median=$301,277_unjoinable"
         ],
-        "has_csv": true
+        "has_csv": false
+      },
+      {
+        "username": "Qpkwks",
+        "wallet": "0x9ee8bbc36d378af72e5f6b8e2ea2eb67c05a89de",
+        "bucket": "skip",
+        "take_book": false,
+        "joinable": false,
+        "recency": "HOT",
+        "unique_roi": 60.78,
+        "win_rate": 40.68,
+        "median_stake": 90091.02,
+        "closed": 0,
+        "events": 52,
+        "last_30d_n": 3,
+        "last_30d_roi": 46.93,
+        "last_60d_n": 66,
+        "last_60d_roi": 19.1,
+        "last_event_date": "2026-08-17",
+        "reasons": [
+          "extra_kicked",
+          "lane_kicked",
+          "median=$90,091_unjoinable"
+        ],
+        "has_csv": false
       },
       {
         "username": "0xwise",
@@ -2667,7 +2602,7 @@
         "unique_roi": 3.68,
         "win_rate": 31.46,
         "median_stake": 1018.67,
-        "closed": 187,
+        "closed": 0,
         "events": 160,
         "last_30d_n": 11,
         "last_30d_roi": -41.93,
@@ -2678,7 +2613,7 @@
           "extra_kicked",
           "lane_kicked"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "TheMangler",
@@ -2781,7 +2716,7 @@
         "unique_roi": -1.71,
         "win_rate": 30.75,
         "median_stake": 1216.82,
-        "closed": 20612,
+        "closed": 0,
         "events": 10812,
         "last_30d_n": 14750,
         "last_30d_roi": -0.77,
@@ -2792,35 +2727,10 @@
           "hard_skip_mega_or_mm",
           "extra_kicked",
           "lane_kicked",
-          "pd_trades=646651>=100k",
-          "closed=20612>12k",
+          "pd_trades=652147>=100k",
           "market_maker"
         ],
-        "has_csv": true
-      },
-      {
-        "username": "0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6",
-        "wallet": "0xcb6ed9332a8fd1b930893c705dd234f37aa248e6",
-        "bucket": "skip",
-        "take_book": false,
-        "joinable": false,
-        "recency": "DROP",
-        "unique_roi": 33.34,
-        "win_rate": 64.29,
-        "median_stake": 33200.49,
-        "closed": 25,
-        "events": 23,
-        "last_30d_n": 0,
-        "last_30d_roi": 0.0,
-        "last_60d_n": 0,
-        "last_60d_roi": 0.0,
-        "last_event_date": "2026-03-30",
-        "reasons": [
-          "extra_kicked",
-          "lane_kicked",
-          "median=$33,200_unjoinable"
-        ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "RandomPunter",
@@ -2870,6 +2780,30 @@
         "has_csv": true
       },
       {
+        "username": "0xCb6Ed9332A8FD1b930893c705dd234f37aa248E6",
+        "wallet": "0xcb6ed9332a8fd1b930893c705dd234f37aa248e6",
+        "bucket": "skip",
+        "take_book": false,
+        "joinable": false,
+        "recency": "DROP",
+        "unique_roi": 33.34,
+        "win_rate": 64.29,
+        "median_stake": 33200.49,
+        "closed": 0,
+        "events": 23,
+        "last_30d_n": 0,
+        "last_30d_roi": 0.0,
+        "last_60d_n": 0,
+        "last_60d_roi": 0.0,
+        "last_event_date": "2026-03-30",
+        "reasons": [
+          "extra_kicked",
+          "lane_kicked",
+          "median=$33,200_unjoinable"
+        ],
+        "has_csv": false
+      },
+      {
         "username": "redskinrick",
         "wallet": "0xe24838258b572f1771dffba3bcdde57a78def293",
         "bucket": "skip",
@@ -2886,28 +2820,6 @@
         "last_60d_n": 0,
         "last_60d_roi": 0.0,
         "last_event_date": "2026-04-07",
-        "reasons": [
-          "lane_kicked"
-        ],
-        "has_csv": true
-      },
-      {
-        "username": "877s8d8g89I9f8d98fd99ww2",
-        "wallet": "0x1b5e20a28d7115f10ce6190a5ae9a91169be83f8",
-        "bucket": "skip",
-        "take_book": false,
-        "joinable": false,
-        "recency": "DROP",
-        "unique_roi": 4.26,
-        "win_rate": 51.17,
-        "median_stake": 4809.91,
-        "closed": 646,
-        "events": 567,
-        "last_30d_n": 0,
-        "last_30d_roi": 0.0,
-        "last_60d_n": 0,
-        "last_60d_roi": 0.0,
-        "last_event_date": "2026-05-15",
         "reasons": [
           "lane_kicked"
         ],
@@ -2938,27 +2850,26 @@
         "has_csv": true
       },
       {
-        "username": "JPMorgan101",
-        "wallet": "0xb6d6e99d3bfe055874a04279f659f009fd57be17",
+        "username": "877s8d8g89I9f8d98fd99ww2",
+        "wallet": "0x1b5e20a28d7115f10ce6190a5ae9a91169be83f8",
         "bucket": "skip",
         "take_book": false,
         "joinable": false,
         "recency": "DROP",
-        "unique_roi": 56.3,
-        "win_rate": 44.44,
-        "median_stake": 584.97,
-        "closed": 376,
-        "events": 252,
+        "unique_roi": 4.26,
+        "win_rate": 51.17,
+        "median_stake": 4809.91,
+        "closed": 0,
+        "events": 567,
         "last_30d_n": 0,
         "last_30d_roi": 0.0,
-        "last_60d_n": 7,
-        "last_60d_roi": -90.8,
-        "last_event_date": "2026-07-02",
+        "last_60d_n": 0,
+        "last_60d_roi": 0.0,
+        "last_event_date": "2026-05-15",
         "reasons": [
-          "extra_kicked",
           "lane_kicked"
         ],
-        "has_csv": true
+        "has_csv": false
       },
       {
         "username": "Avarice31",
@@ -3029,48 +2940,23 @@
         "has_csv": true
       },
       {
-        "username": "betterfasterstronger",
-        "wallet": "0x13fa4ce1b8a27dd0b7a72db6205a50ee6ff0954c",
+        "username": "JPMorgan101",
+        "wallet": "0xb6d6e99d3bfe055874a04279f659f009fd57be17",
         "bucket": "skip",
         "take_book": false,
         "joinable": false,
-        "recency": "UNKNOWN",
-        "unique_roi": null,
-        "win_rate": 0.0,
-        "median_stake": 0.0,
+        "recency": "DROP",
+        "unique_roi": 56.3,
+        "win_rate": 44.44,
+        "median_stake": 584.97,
         "closed": 0,
-        "events": 0,
+        "events": 252,
         "last_30d_n": 0,
-        "last_30d_roi": null,
-        "last_60d_n": 0,
-        "last_60d_roi": null,
-        "last_event_date": null,
+        "last_30d_roi": 0.0,
+        "last_60d_n": 7,
+        "last_60d_roi": -90.8,
+        "last_event_date": "2026-07-02",
         "reasons": [
-          "hard_skip_mega_or_mm",
-          "extra_kicked",
-          "lane_kicked"
-        ],
-        "has_csv": false
-      },
-      {
-        "username": "HOG993",
-        "wallet": "0xcbba64cddd05171925ffd05d8f8abd38c83fdbff",
-        "bucket": "skip",
-        "take_book": false,
-        "joinable": false,
-        "recency": "UNKNOWN",
-        "unique_roi": null,
-        "win_rate": 0.0,
-        "median_stake": 0.0,
-        "closed": 0,
-        "events": 0,
-        "last_30d_n": 0,
-        "last_30d_roi": null,
-        "last_60d_n": 0,
-        "last_60d_roi": null,
-        "last_event_date": null,
-        "reasons": [
-          "hard_skip_mega_or_mm",
           "extra_kicked",
           "lane_kicked"
         ],
@@ -3120,6 +3006,56 @@
         "reasons": [
           "extra_kicked",
           "lane_kicked"
+        ],
+        "has_csv": false
+      },
+      {
+        "username": "betterfasterstronger",
+        "wallet": "0x13fa4ce1b8a27dd0b7a72db6205a50ee6ff0954c",
+        "bucket": "skip",
+        "take_book": false,
+        "joinable": false,
+        "recency": "UNKNOWN",
+        "unique_roi": null,
+        "win_rate": 0.0,
+        "median_stake": 0.0,
+        "closed": 0,
+        "events": 0,
+        "last_30d_n": 0,
+        "last_30d_roi": null,
+        "last_60d_n": 0,
+        "last_60d_roi": null,
+        "last_event_date": null,
+        "reasons": [
+          "hard_skip_mega_or_mm",
+          "extra_kicked",
+          "lane_kicked"
+        ],
+        "has_csv": false
+      },
+      {
+        "username": "HOG993",
+        "wallet": "0xcbba64cddd05171925ffd05d8f8abd38c83fdbff",
+        "bucket": "skip",
+        "take_book": false,
+        "joinable": false,
+        "recency": "UNKNOWN",
+        "unique_roi": null,
+        "win_rate": 0.0,
+        "median_stake": 0.0,
+        "closed": 0,
+        "events": 0,
+        "last_30d_n": 0,
+        "last_30d_roi": null,
+        "last_60d_n": 0,
+        "last_60d_roi": null,
+        "last_event_date": null,
+        "reasons": [
+          "hard_skip_mega_or_mm",
+          "extra_kicked",
+          "lane_kicked",
+          "pd_trades=147518>=100k",
+          "market_maker"
         ],
         "has_csv": false
       },
@@ -3185,7 +3121,7 @@
         "unique_roi": 19.07,
         "win_rate": 53.39,
         "median_stake": 6115.44,
-        "closed": 137,
+        "closed": 136,
         "events": 218,
         "last_30d_n": 0,
         "last_30d_roi": 0.0,
@@ -3282,13 +3218,13 @@
       },
       {
         "days": 7,
-        "n": 13,
-        "wins": 10,
-        "win_rate": 76.92,
-        "roi_2c": 19.67,
-        "unit_pnl": 255.68,
-        "first": "2026-08-12",
-        "last": "2026-08-18",
+        "n": 10,
+        "wins": 7,
+        "win_rate": 70.0,
+        "roi_2c": -5.93,
+        "unit_pnl": -59.32,
+        "first": "2026-08-14",
+        "last": "2026-08-21",
         "pool": "live_bench_watch"
       },
       {
@@ -3304,13 +3240,13 @@
       },
       {
         "days": 14,
-        "n": 22,
-        "wins": 16,
-        "win_rate": 72.73,
-        "roi_2c": 5.68,
-        "unit_pnl": 124.94,
+        "n": 19,
+        "wins": 14,
+        "win_rate": 73.68,
+        "roi_2c": -2.8,
+        "unit_pnl": -53.27,
         "first": "2026-08-07",
-        "last": "2026-08-18",
+        "last": "2026-08-21",
         "pool": "live_bench_watch"
       },
       {
@@ -3326,23 +3262,23 @@
       },
       {
         "days": 30,
-        "n": 61,
-        "wins": 40,
-        "win_rate": 65.57,
-        "roi_2c": 16.18,
-        "unit_pnl": 986.73,
-        "first": "2026-07-21",
-        "last": "2026-08-18",
+        "n": 56,
+        "wins": 35,
+        "win_rate": 62.5,
+        "roi_2c": 4.82,
+        "unit_pnl": 270.14,
+        "first": "2026-07-22",
+        "last": "2026-08-21",
         "pool": "live_bench_watch"
       }
     ],
     "clv": {
-      "n": 61,
-      "n_with_close_line": 15,
-      "coverage": 0.246,
-      "avg_clv_cents": -3.9,
-      "expected_clv_roi": -7.09,
-      "realized_roi": 16.18,
+      "n": 56,
+      "n_with_close_line": 9,
+      "coverage": 0.161,
+      "avg_clv_cents": -3.45,
+      "expected_clv_roi": -6.29,
+      "realized_roi": 4.82,
       "note": "CLV uses CLOB prices-history last trade ~30 min before event end vs VWAP+2\u00a2 fill. Resolved 0/1 is the result; CLV is whether we beat the close line. Live copy fired 0 TAKEs in the last 30d \u2014 CLV below is the hypothetical bench+watch tape."
     },
     "live_alerts": [],
@@ -3426,44 +3362,6 @@
       {
         "alerted_at": "2026-04-11T18:00:00+00:00",
         "event_end": "2026-04-12T00:00:00+00:00",
-        "username": "TTdes",
-        "title": "Senators vs. Devils",
-        "sport": "NHL",
-        "submarket": "Moneyline",
-        "q": 60,
-        "rel": 5.39,
-        "their_vwap": 0.55,
-        "fill_vwap_plus_2c": 0.57,
-        "result": "lost",
-        "unit_pnl": -100.0,
-        "close_line": null,
-        "clv_cents": null,
-        "expected_clv_roi": null,
-        "clob_ask_at_alert": null,
-        "conditionId": "0x401742c86f0cff9a8683768a810e9ed4500a4c55db0b6ea331103927c9665d51"
-      },
-      {
-        "alerted_at": "2026-04-11T18:00:00+00:00",
-        "event_end": "2026-04-12T00:00:00+00:00",
-        "username": "TTdes",
-        "title": "Canucks vs. Sharks",
-        "sport": "NHL",
-        "submarket": "Moneyline",
-        "q": 60,
-        "rel": 20.27,
-        "their_vwap": 0.631,
-        "fill_vwap_plus_2c": 0.651,
-        "result": "lost",
-        "unit_pnl": -100.0,
-        "close_line": null,
-        "clv_cents": null,
-        "expected_clv_roi": null,
-        "clob_ask_at_alert": null,
-        "conditionId": "0x8eb95dd2c3f4634ea245ba02b1a246362004783bddbd6401538057fae9f665fa"
-      },
-      {
-        "alerted_at": "2026-04-11T18:00:00+00:00",
-        "event_end": "2026-04-12T00:00:00+00:00",
         "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
         "title": "Spread: Hornets (-13.5)",
         "sport": "NBA",
@@ -3483,6 +3381,44 @@
       {
         "alerted_at": "2026-04-11T18:00:00+00:00",
         "event_end": "2026-04-12T00:00:00+00:00",
+        "username": "TTdes",
+        "title": "Canucks vs. Sharks",
+        "sport": "NHL",
+        "submarket": "Moneyline",
+        "q": 65,
+        "rel": 20.27,
+        "their_vwap": 0.631,
+        "fill_vwap_plus_2c": 0.651,
+        "result": "lost",
+        "unit_pnl": -100.0,
+        "close_line": null,
+        "clv_cents": null,
+        "expected_clv_roi": null,
+        "clob_ask_at_alert": null,
+        "conditionId": "0x8eb95dd2c3f4634ea245ba02b1a246362004783bddbd6401538057fae9f665fa"
+      },
+      {
+        "alerted_at": "2026-04-11T18:00:00+00:00",
+        "event_end": "2026-04-12T00:00:00+00:00",
+        "username": "TTdes",
+        "title": "Senators vs. Devils",
+        "sport": "NHL",
+        "submarket": "Moneyline",
+        "q": 65,
+        "rel": 5.39,
+        "their_vwap": 0.55,
+        "fill_vwap_plus_2c": 0.57,
+        "result": "lost",
+        "unit_pnl": -100.0,
+        "close_line": null,
+        "clv_cents": null,
+        "expected_clv_roi": null,
+        "clob_ask_at_alert": null,
+        "conditionId": "0x401742c86f0cff9a8683768a810e9ed4500a4c55db0b6ea331103927c9665d51"
+      },
+      {
+        "alerted_at": "2026-04-11T18:00:00+00:00",
+        "event_end": "2026-04-12T00:00:00+00:00",
         "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
         "title": "UFC 327: Curtis Blaydes vs. Josh Hokit (Heavyweight, Main Card)",
         "sport": "OTHER",
@@ -3498,6 +3434,44 @@
         "expected_clv_roi": null,
         "clob_ask_at_alert": null,
         "conditionId": "0xf8734a886c4e48c0cb9ead399e27c400b03566b3d23985449c2e074261a24ec0"
+      },
+      {
+        "alerted_at": "2026-04-10T18:00:00+00:00",
+        "event_end": "2026-04-11T00:00:00+00:00",
+        "username": "TTdes",
+        "title": "Hurricanes vs. Utah",
+        "sport": "NHL",
+        "submarket": "Moneyline",
+        "q": 64,
+        "rel": 4.52,
+        "their_vwap": 0.459,
+        "fill_vwap_plus_2c": 0.479,
+        "result": "lost",
+        "unit_pnl": -100.0,
+        "close_line": null,
+        "clv_cents": null,
+        "expected_clv_roi": null,
+        "clob_ask_at_alert": null,
+        "conditionId": "0xec3aba74f7869fa5a0c35d26982ce1bc0bad5a6e3266589e6abdf99d47e08a35"
+      },
+      {
+        "alerted_at": "2026-04-10T18:00:00+00:00",
+        "event_end": "2026-04-11T00:00:00+00:00",
+        "username": "TTdes",
+        "title": "Senators vs. Islanders",
+        "sport": "NHL",
+        "submarket": "Moneyline",
+        "q": 64,
+        "rel": 3.37,
+        "their_vwap": 0.52,
+        "fill_vwap_plus_2c": 0.54,
+        "result": "won",
+        "unit_pnl": 85.19,
+        "close_line": null,
+        "clv_cents": null,
+        "expected_clv_roi": null,
+        "clob_ask_at_alert": null,
+        "conditionId": "0x67fdea44cf3f02e3c31cbe358d545a614c615f1c168909d74bfae1f32663866c"
       },
       {
         "alerted_at": "2026-04-10T18:00:00+00:00",
@@ -3544,8 +3518,8 @@
         "title": "Oilers vs. Sharks",
         "sport": "NHL",
         "submarket": "Moneyline",
-        "q": 63,
-        "rel": 11.35,
+        "q": 68,
+        "rel": 11.34,
         "their_vwap": 0.47,
         "fill_vwap_plus_2c": 0.49,
         "result": "lost",
@@ -3559,21 +3533,21 @@
       {
         "alerted_at": "2026-04-07T18:00:00+00:00",
         "event_end": "2026-04-08T00:00:00+00:00",
-        "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
-        "title": "Spread: Warriors (-14.5)",
-        "sport": "NBA",
-        "submarket": "Spread",
-        "q": 84,
-        "rel": 5.66,
+        "username": "TTdes",
+        "title": "Oilers vs. Utah",
+        "sport": "NHL",
+        "submarket": "Moneyline",
+        "q": 66,
+        "rel": 17.09,
         "their_vwap": 0.53,
         "fill_vwap_plus_2c": 0.55,
-        "result": "lost",
-        "unit_pnl": -100.0,
+        "result": "won",
+        "unit_pnl": 81.82,
         "close_line": null,
         "clv_cents": null,
         "expected_clv_roi": null,
         "clob_ask_at_alert": null,
-        "conditionId": "0xbf1471a2a118e4467cb7aec2e3c2f448f2a74d746d6090ff24117c7bb3fecfa6"
+        "conditionId": "0x34aa21fa8c2913b00485f493664b4fa2f309d680184185e2aa0e1e66687a6c8f"
       },
       {
         "alerted_at": "2026-04-07T18:00:00+00:00",
@@ -3597,156 +3571,178 @@
       {
         "alerted_at": "2026-04-07T18:00:00+00:00",
         "event_end": "2026-04-08T00:00:00+00:00",
+        "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+        "title": "Spread: Warriors (-14.5)",
+        "sport": "NBA",
+        "submarket": "Spread",
+        "q": 84,
+        "rel": 5.66,
+        "their_vwap": 0.53,
+        "fill_vwap_plus_2c": 0.55,
+        "result": "lost",
+        "unit_pnl": -100.0,
+        "close_line": null,
+        "clv_cents": null,
+        "expected_clv_roi": null,
+        "clob_ask_at_alert": null,
+        "conditionId": "0xbf1471a2a118e4467cb7aec2e3c2f448f2a74d746d6090ff24117c7bb3fecfa6"
+      },
+      {
+        "alerted_at": "2026-04-06T18:00:00+00:00",
+        "event_end": "2026-04-07T00:00:00+00:00",
         "username": "TTdes",
-        "title": "Oilers vs. Utah",
+        "title": "Lightning vs. Senators",
         "sport": "NHL",
         "submarket": "Moneyline",
-        "q": 60,
-        "rel": 17.09,
-        "their_vwap": 0.53,
-        "fill_vwap_plus_2c": 0.55,
+        "q": 63,
+        "rel": 25.12,
+        "their_vwap": 0.562,
+        "fill_vwap_plus_2c": 0.582,
         "result": "won",
-        "unit_pnl": 81.82,
+        "unit_pnl": 71.85,
         "close_line": null,
         "clv_cents": null,
         "expected_clv_roi": null,
         "clob_ask_at_alert": null,
-        "conditionId": "0x34aa21fa8c2913b00485f493664b4fa2f309d680184185e2aa0e1e66687a6c8f"
+        "conditionId": "0xde5531e56453ae55fe72c99a52637e181a917f92c9c6c4ca82cb87ea8555d3d8"
       },
       {
-        "alerted_at": "2026-04-03T18:00:00+00:00",
-        "event_end": "2026-04-04T00:00:00+00:00",
-        "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
-        "title": "Spread: Celtics (-17.5)",
-        "sport": "NBA",
-        "submarket": "Spread",
-        "q": 82,
-        "rel": 3.77,
-        "their_vwap": 0.53,
-        "fill_vwap_plus_2c": 0.55,
+        "alerted_at": "2026-04-06T18:00:00+00:00",
+        "event_end": "2026-04-07T00:00:00+00:00",
+        "username": "TTdes",
+        "title": "Blackhawks vs. Sharks",
+        "sport": "NHL",
+        "submarket": "Moneyline",
+        "q": 63,
+        "rel": 3.61,
+        "their_vwap": 0.59,
+        "fill_vwap_plus_2c": 0.61,
         "result": "won",
-        "unit_pnl": 81.79,
+        "unit_pnl": 63.93,
         "close_line": null,
         "clv_cents": null,
         "expected_clv_roi": null,
         "clob_ask_at_alert": null,
-        "conditionId": "0x07fe52fd38cd3df12badd1f0ab8d87cd80267493c7d726421e3be42a580ec5a0"
+        "conditionId": "0xbd4a31805b00b4d73a734424b3e094d54caf2d1246ecc939d57b078dcaae1958"
       },
       {
-        "alerted_at": "2026-04-03T18:00:00+00:00",
-        "event_end": "2026-04-04T00:00:00+00:00",
-        "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
-        "title": "Spread: Rockets (-17.5)",
-        "sport": "NBA",
-        "submarket": "Spread",
-        "q": 82,
-        "rel": 2.78,
-        "their_vwap": 0.539,
-        "fill_vwap_plus_2c": 0.559,
-        "result": "won",
-        "unit_pnl": 78.86,
-        "close_line": null,
-        "clv_cents": null,
-        "expected_clv_roi": null,
-        "clob_ask_at_alert": null,
-        "conditionId": "0xa9c8bc525f047e6cbaa63cbf9827a314b16753d8564490e810472c64c45c6ea1"
-      },
-      {
-        "alerted_at": "2026-04-01T18:00:00+00:00",
-        "event_end": "2026-04-02T00:00:00+00:00",
-        "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
-        "title": "Spread: Rockets (-18.5)",
-        "sport": "NBA",
-        "submarket": "Spread",
-        "q": 83,
-        "rel": 2.81,
-        "their_vwap": 0.539,
-        "fill_vwap_plus_2c": 0.559,
+        "alerted_at": "2026-04-06T18:00:00+00:00",
+        "event_end": "2026-04-07T00:00:00+00:00",
+        "username": "TTdes",
+        "title": "Blackhawks vs. Sharks",
+        "sport": "NHL",
+        "submarket": "Moneyline",
+        "q": 63,
+        "rel": 3.75,
+        "their_vwap": 0.38,
+        "fill_vwap_plus_2c": 0.4,
         "result": "lost",
         "unit_pnl": -100.0,
         "close_line": null,
         "clv_cents": null,
         "expected_clv_roi": null,
         "clob_ask_at_alert": null,
-        "conditionId": "0x5aaf3c42e4d04cd1b09b8a1bcd41ea16c120c7954883be154e9a5b1d5fcc07d2"
+        "conditionId": "0xbd4a31805b00b4d73a734424b3e094d54caf2d1246ecc939d57b078dcaae1958"
       },
       {
-        "alerted_at": "2026-04-01T18:00:00+00:00",
-        "event_end": "2026-04-02T00:00:00+00:00",
-        "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
-        "title": "Spread: Bulls (-3.5)",
-        "sport": "NBA",
-        "submarket": "Spread",
-        "q": 83,
-        "rel": 3.52,
+        "alerted_at": "2026-04-05T18:00:00+00:00",
+        "event_end": "2026-04-06T00:00:00+00:00",
+        "username": "TTdes",
+        "title": "Lightning vs. Sabres",
+        "sport": "NHL",
+        "submarket": "Moneyline",
+        "q": 64,
+        "rel": 2.83,
         "their_vwap": 0.53,
         "fill_vwap_plus_2c": 0.55,
-        "result": "won",
-        "unit_pnl": 81.79,
-        "close_line": null,
-        "clv_cents": null,
-        "expected_clv_roi": null,
-        "clob_ask_at_alert": null,
-        "conditionId": "0x95dd17734b20a4d663726674fd267aae18e9447bf3efc3c4f9d5a10134ec3bac"
-      },
-      {
-        "alerted_at": "2026-04-01T18:00:00+00:00",
-        "event_end": "2026-04-02T00:00:00+00:00",
-        "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
-        "title": "Spread: Knicks (-14.5)",
-        "sport": "NBA",
-        "submarket": "Spread",
-        "q": 83,
-        "rel": 3.62,
-        "their_vwap": 0.535,
-        "fill_vwap_plus_2c": 0.555,
         "result": "lost",
         "unit_pnl": -100.0,
         "close_line": null,
         "clv_cents": null,
         "expected_clv_roi": null,
         "clob_ask_at_alert": null,
-        "conditionId": "0x12e6992e55e8cf85a23ac58dcba00656a3888d4ab40f0679aed13df8b013afca"
-      },
-      {
-        "alerted_at": "2026-03-31T00:00:00+00:00",
-        "event_end": "2026-03-31T00:00:00+00:00",
-        "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
-        "title": "Spread: Suns (-12.5)",
-        "sport": "NBA",
-        "submarket": "Spread",
-        "q": 81,
-        "rel": 3.9,
-        "their_vwap": 0.526,
-        "fill_vwap_plus_2c": 0.546,
-        "result": "won",
-        "unit_pnl": 83.02,
-        "close_line": null,
-        "clv_cents": null,
-        "expected_clv_roi": null,
-        "clob_ask_at_alert": null,
-        "conditionId": "0xcaedc85c029a9ea3d5fa00ae83df22ccfb696c6244ad9d824dd5fb8b468777bf"
+        "conditionId": "0xed1e27580725a7387eac41b5080871f5f10a6642efbc244a1d25a30161717606"
       }
     ],
     "hypo_alerts": [
       {
-        "alerted_at": "2026-08-17T18:00:00+00:00",
-        "event_end": "2026-08-18T00:00:00+00:00",
+        "alerted_at": "2026-08-20T18:00:00+00:00",
+        "event_end": "2026-08-21T00:00:00+00:00",
         "username": "HVAB",
-        "title": "National Bank Open: Jakub Mensik vs Ben Shelton",
+        "title": "Astana: Jie Cui vs Aziz Dougaz",
         "sport": "TENNIS",
         "submarket": "Moneyline",
-        "q": 80,
-        "rel": 30.0,
-        "their_vwap": 0.876,
-        "fill_vwap_plus_2c": 0.896,
+        "q": 81,
+        "rel": 2.88,
+        "their_vwap": 0.711,
+        "fill_vwap_plus_2c": 0.731,
         "result": "won",
-        "unit_pnl": 11.66,
+        "unit_pnl": 36.8,
         "close_line": null,
         "clv_cents": null,
         "expected_clv_roi": null,
         "clob_ask_at_alert": null,
-        "conditionId": "0x328fe8cc2126f93b70dc9b8672eb9d57f047b7446a25a01791f745fcf16609e2",
+        "conditionId": "0x49db68f6cb1dab467e2294ae42f55cb8f52b0fdf8c362d2a00c686ae47f3def9",
+        "pool": "watch"
+      },
+      {
+        "alerted_at": "2026-08-20T18:00:00+00:00",
+        "event_end": "2026-08-21T00:00:00+00:00",
+        "username": "HVAB",
+        "title": "Cincinnati Open: Elisabetta Cocciaretto vs Lucrezia Stefanini",
+        "sport": "TENNIS",
+        "submarket": "Moneyline",
+        "q": 81,
+        "rel": 25.14,
+        "their_vwap": 0.788,
+        "fill_vwap_plus_2c": 0.808,
+        "result": "won",
+        "unit_pnl": 23.75,
+        "close_line": null,
+        "clv_cents": null,
+        "expected_clv_roi": null,
+        "clob_ask_at_alert": null,
+        "conditionId": "0x1a567d6db0f1e7ba3f60058e7c299ad33f318f27358decf3a43b6b0c56603623",
+        "pool": "watch"
+      },
+      {
+        "alerted_at": "2026-08-19T18:00:00+00:00",
+        "event_end": "2026-08-20T00:00:00+00:00",
+        "username": "HVAB",
+        "title": "Cincinnati Open: Katie Boulter vs Katie Volynets",
+        "sport": "TENNIS",
+        "submarket": "Moneyline",
+        "q": 82,
+        "rel": 8.51,
+        "their_vwap": 0.711,
+        "fill_vwap_plus_2c": 0.731,
+        "result": "lost",
+        "unit_pnl": -100.0,
+        "close_line": null,
+        "clv_cents": null,
+        "expected_clv_roi": null,
+        "clob_ask_at_alert": null,
+        "conditionId": "0x66056f7aae0be68b3e2628ad587f38d3a2b58fe95e135afdf7cb852369c6effb",
+        "pool": "watch"
+      },
+      {
+        "alerted_at": "2026-08-19T18:00:00+00:00",
+        "event_end": "2026-08-20T00:00:00+00:00",
+        "username": "HVAB",
+        "title": "Cincinnati Open: Zachary Svajda vs Mattia Bellucci",
+        "sport": "TENNIS",
+        "submarket": "Moneyline",
+        "q": 82,
+        "rel": 6.71,
+        "their_vwap": 0.332,
+        "fill_vwap_plus_2c": 0.352,
+        "result": "lost",
+        "unit_pnl": -100.0,
+        "close_line": null,
+        "clv_cents": null,
+        "expected_clv_roi": null,
+        "clob_ask_at_alert": null,
+        "conditionId": "0xcfd447f2377329f74696ba99865d42913ca7dd4aa744f6c80e9b5e38a3f49bdf",
         "pool": "watch"
       },
       {
@@ -3770,6 +3766,26 @@
         "pool": "watch"
       },
       {
+        "alerted_at": "2026-08-17T18:00:00+00:00",
+        "event_end": "2026-08-18T00:00:00+00:00",
+        "username": "HVAB",
+        "title": "National Bank Open: Jakub Mensik vs Ben Shelton",
+        "sport": "TENNIS",
+        "submarket": "Moneyline",
+        "q": 80,
+        "rel": 30.0,
+        "their_vwap": 0.876,
+        "fill_vwap_plus_2c": 0.896,
+        "result": "won",
+        "unit_pnl": 11.66,
+        "close_line": null,
+        "clv_cents": null,
+        "expected_clv_roi": null,
+        "clob_ask_at_alert": null,
+        "conditionId": "0x328fe8cc2126f93b70dc9b8672eb9d57f047b7446a25a01791f745fcf16609e2",
+        "pool": "watch"
+      },
+      {
         "alerted_at": "2026-08-16T18:00:00+00:00",
         "event_end": "2026-08-17T00:00:00+00:00",
         "username": "HVAB",
@@ -3787,46 +3803,6 @@
         "expected_clv_roi": null,
         "clob_ask_at_alert": null,
         "conditionId": "0x8f154d14b8da4e3225b0c17494d369a0d461cb49c77d3f72d56077fab32914c2",
-        "pool": "watch"
-      },
-      {
-        "alerted_at": "2026-08-15T18:00:00+00:00",
-        "event_end": "2026-08-16T00:00:00+00:00",
-        "username": "bigspending",
-        "title": "Will ADO Den Haag win on 2026-08-16?",
-        "sport": "OTHER",
-        "submarket": "Moneyline",
-        "q": 98,
-        "rel": 4.13,
-        "their_vwap": 0.358,
-        "fill_vwap_plus_2c": 0.378,
-        "result": "lost",
-        "unit_pnl": -100.0,
-        "close_line": 0.345,
-        "clv_cents": -3.34,
-        "expected_clv_roi": -8.83,
-        "clob_ask_at_alert": 0.345,
-        "conditionId": "0x2304ea6c29e0bcb374100db1e1954d52684fec58a2854254d47c80b84526e709",
-        "pool": "watch"
-      },
-      {
-        "alerted_at": "2026-08-15T18:00:00+00:00",
-        "event_end": "2026-08-16T00:00:00+00:00",
-        "username": "bigspending",
-        "title": "Will Frosinone Calcio win on 2026-08-16?",
-        "sport": "OTHER",
-        "submarket": "Moneyline",
-        "q": 98,
-        "rel": 4.96,
-        "their_vwap": 0.656,
-        "fill_vwap_plus_2c": 0.676,
-        "result": "won",
-        "unit_pnl": 47.86,
-        "close_line": 0.555,
-        "clv_cents": -12.13,
-        "expected_clv_roi": -17.94,
-        "clob_ask_at_alert": 0.555,
-        "conditionId": "0xa5c2694f55ee9b36b2618b6333ff763cd0c4499dde5898a83ed08777f191a14e",
         "pool": "watch"
       },
       {
@@ -3910,106 +3886,6 @@
         "pool": "watch"
       },
       {
-        "alerted_at": "2026-08-12T18:00:00+00:00",
-        "event_end": "2026-08-13T00:00:00+00:00",
-        "username": "theowalcott",
-        "title": "Will CF Monterrey win on 2026-08-12?",
-        "sport": "OTHER",
-        "submarket": "Moneyline",
-        "q": 80,
-        "rel": 5.12,
-        "their_vwap": 0.473,
-        "fill_vwap_plus_2c": 0.493,
-        "result": "won",
-        "unit_pnl": 102.8,
-        "close_line": 0.495,
-        "clv_cents": 0.19,
-        "expected_clv_roi": 0.39,
-        "clob_ask_at_alert": 0.325,
-        "conditionId": "0x83477c8757f0a33df79a31f93a65162807991c0037389f360b01ce7645bcab47",
-        "pool": "watch"
-      },
-      {
-        "alerted_at": "2026-08-12T18:00:00+00:00",
-        "event_end": "2026-08-13T00:00:00+00:00",
-        "username": "theowalcott",
-        "title": "CR Vasco da Gama vs. Club Olimpia: O/U 2.5",
-        "sport": "OTHER",
-        "submarket": "Total",
-        "q": 80,
-        "rel": 2.16,
-        "their_vwap": 0.408,
-        "fill_vwap_plus_2c": 0.428,
-        "result": "lost",
-        "unit_pnl": -100.0,
-        "close_line": null,
-        "clv_cents": null,
-        "expected_clv_roi": null,
-        "clob_ask_at_alert": null,
-        "conditionId": "0xcf28c56349c5ade94013c1a03a87061616f9fc977b0e578082b890875d03bc65",
-        "pool": "watch"
-      },
-      {
-        "alerted_at": "2026-08-11T18:00:00+00:00",
-        "event_end": "2026-08-12T00:00:00+00:00",
-        "username": "theowalcott",
-        "title": "Will Club Bol\u00edvar win on 2026-08-11?",
-        "sport": "OTHER",
-        "submarket": "Moneyline",
-        "q": 71,
-        "rel": 2.37,
-        "their_vwap": 0.492,
-        "fill_vwap_plus_2c": 0.512,
-        "result": "won",
-        "unit_pnl": 95.24,
-        "close_line": 0.465,
-        "clv_cents": -4.72,
-        "expected_clv_roi": -9.22,
-        "clob_ask_at_alert": 0.465,
-        "conditionId": "0xb2afb6bb007692670d002c490417505911317633dbd354c692b0950cfea1302c",
-        "pool": "watch"
-      },
-      {
-        "alerted_at": "2026-08-11T18:00:00+00:00",
-        "event_end": "2026-08-12T00:00:00+00:00",
-        "username": "theowalcott",
-        "title": "Will CA Tigre win on 2026-08-12?",
-        "sport": "OTHER",
-        "submarket": "Moneyline",
-        "q": 71,
-        "rel": 2.02,
-        "their_vwap": 0.498,
-        "fill_vwap_plus_2c": 0.518,
-        "result": "won",
-        "unit_pnl": 92.86,
-        "close_line": 0.47,
-        "clv_cents": -4.85,
-        "expected_clv_roi": -9.35,
-        "clob_ask_at_alert": 0.455,
-        "conditionId": "0x552f2744b920dfc5a988fe546eed6450898aa367049276efd099f69b2a54eeec",
-        "pool": "watch"
-      },
-      {
-        "alerted_at": "2026-08-10T18:00:00+00:00",
-        "event_end": "2026-08-11T00:00:00+00:00",
-        "username": "HVAB",
-        "title": "National Bank Open: Anna Kalinskaya vs McCartney Kessler",
-        "sport": "TENNIS",
-        "submarket": "Moneyline",
-        "q": 83,
-        "rel": 30.0,
-        "their_vwap": 0.537,
-        "fill_vwap_plus_2c": 0.557,
-        "result": "lost",
-        "unit_pnl": -100.0,
-        "close_line": null,
-        "clv_cents": null,
-        "expected_clv_roi": null,
-        "clob_ask_at_alert": null,
-        "conditionId": "0x7b02186cfb0200f6db3c8cf645334a94e13e4efe0015f3616e632647f088b93c",
-        "pool": "watch"
-      },
-      {
         "alerted_at": "2026-08-10T18:00:00+00:00",
         "event_end": "2026-08-11T00:00:00+00:00",
         "username": "HVAB",
@@ -4030,23 +3906,23 @@
         "pool": "watch"
       },
       {
-        "alerted_at": "2026-08-09T18:00:00+00:00",
-        "event_end": "2026-08-10T00:00:00+00:00",
+        "alerted_at": "2026-08-10T18:00:00+00:00",
+        "event_end": "2026-08-11T00:00:00+00:00",
         "username": "HVAB",
-        "title": "National Bank Open: Diane Parry vs Kayla Day",
+        "title": "National Bank Open: Anna Kalinskaya vs McCartney Kessler",
         "sport": "TENNIS",
         "submarket": "Moneyline",
-        "q": 82,
-        "rel": 6.54,
-        "their_vwap": 0.725,
-        "fill_vwap_plus_2c": 0.745,
+        "q": 83,
+        "rel": 30.0,
+        "their_vwap": 0.537,
+        "fill_vwap_plus_2c": 0.557,
         "result": "lost",
         "unit_pnl": -100.0,
         "close_line": null,
         "clv_cents": null,
         "expected_clv_roi": null,
         "clob_ask_at_alert": null,
-        "conditionId": "0xc78ae7bdc3915a971cd8d3df747d08eb3c9596ff7f36a0fc02eac264ce96cae2",
+        "conditionId": "0x7b02186cfb0200f6db3c8cf645334a94e13e4efe0015f3616e632647f088b93c",
         "pool": "watch"
       },
       {
@@ -4092,21 +3968,21 @@
       {
         "alerted_at": "2026-08-09T18:00:00+00:00",
         "event_end": "2026-08-10T00:00:00+00:00",
-        "username": "theowalcott",
-        "title": "Will CD Santa Clara win on 2026-08-10?",
-        "sport": "OTHER",
+        "username": "HVAB",
+        "title": "National Bank Open: Diane Parry vs Kayla Day",
+        "sport": "TENNIS",
         "submarket": "Moneyline",
-        "q": 72,
-        "rel": 4.34,
-        "their_vwap": 0.52,
-        "fill_vwap_plus_2c": 0.54,
+        "q": 82,
+        "rel": 6.54,
+        "their_vwap": 0.725,
+        "fill_vwap_plus_2c": 0.745,
         "result": "lost",
         "unit_pnl": -100.0,
-        "close_line": 0.515,
-        "clv_cents": -2.54,
-        "expected_clv_roi": -4.7,
-        "clob_ask_at_alert": 0.515,
-        "conditionId": "0x43bc95a56837bdaa742f94e417cdac71466b3a7d3427916da1265278b703f3e6",
+        "close_line": null,
+        "clv_cents": null,
+        "expected_clv_roi": null,
+        "clob_ask_at_alert": null,
+        "conditionId": "0xc78ae7bdc3915a971cd8d3df747d08eb3c9596ff7f36a0fc02eac264ce96cae2",
         "pool": "watch"
       },
       {
@@ -4177,16 +4053,36 @@
         "sport": "TENNIS",
         "submarket": "Moneyline",
         "q": 73,
-        "rel": 30.0,
-        "their_vwap": 0.217,
-        "fill_vwap_plus_2c": 0.237,
-        "result": "won",
-        "unit_pnl": 321.76,
+        "rel": 5.04,
+        "their_vwap": 0.721,
+        "fill_vwap_plus_2c": 0.741,
+        "result": "lost",
+        "unit_pnl": -100.0,
         "close_line": null,
         "clv_cents": null,
         "expected_clv_roi": null,
         "clob_ask_at_alert": null,
         "conditionId": "0x9c2db022cf9ef3d0eb486b5a8e935faff29b65af91a9dd3cc4264856db9efaf0",
+        "pool": "watch"
+      },
+      {
+        "alerted_at": "2026-08-01T18:00:00+00:00",
+        "event_end": "2026-08-02T00:00:00+00:00",
+        "username": "HVAB",
+        "title": "Mubadala Citi DC Open, Qualification: Daria Kasatkina vs Alana Smith",
+        "sport": "TENNIS",
+        "submarket": "Moneyline",
+        "q": 72,
+        "rel": 6.91,
+        "their_vwap": 0.723,
+        "fill_vwap_plus_2c": 0.743,
+        "result": "won",
+        "unit_pnl": 34.52,
+        "close_line": null,
+        "clv_cents": null,
+        "expected_clv_roi": null,
+        "clob_ask_at_alert": null,
+        "conditionId": "0x8c089994b036aa17cad9ebc2b0b12f34b73abce80ddfa5eec65291dbd5407f3c",
         "pool": "watch"
       },
       {
@@ -4230,23 +4126,23 @@
         "pool": "bench"
       },
       {
-        "alerted_at": "2026-08-01T18:00:00+00:00",
-        "event_end": "2026-08-02T00:00:00+00:00",
+        "alerted_at": "2026-07-31T18:00:00+00:00",
+        "event_end": "2026-08-01T00:00:00+00:00",
         "username": "HVAB",
-        "title": "Mubadala Citi DC Open, Qualification: Daria Kasatkina vs Alana Smith",
+        "title": "Mubadala Citi DC Open, Qualification: Cruz Hewitt vs Dusan Lajovic",
         "sport": "TENNIS",
         "submarket": "Moneyline",
-        "q": 72,
-        "rel": 6.91,
-        "their_vwap": 0.723,
-        "fill_vwap_plus_2c": 0.743,
+        "q": 74,
+        "rel": 11.07,
+        "their_vwap": 0.837,
+        "fill_vwap_plus_2c": 0.857,
         "result": "won",
-        "unit_pnl": 34.52,
+        "unit_pnl": 16.73,
         "close_line": null,
         "clv_cents": null,
         "expected_clv_roi": null,
         "clob_ask_at_alert": null,
-        "conditionId": "0x8c089994b036aa17cad9ebc2b0b12f34b73abce80ddfa5eec65291dbd5407f3c",
+        "conditionId": "0x567c5d957a99261189188483a6e00aed0fd27a277f0c25dc42664f1b3a718f9a",
         "pool": "watch"
       },
       {
@@ -4273,26 +4169,6 @@
         "alerted_at": "2026-07-31T18:00:00+00:00",
         "event_end": "2026-08-01T00:00:00+00:00",
         "username": "HVAB",
-        "title": "Mubadala Citi DC Open, Qualification: Cruz Hewitt vs Dusan Lajovic",
-        "sport": "TENNIS",
-        "submarket": "Moneyline",
-        "q": 74,
-        "rel": 11.07,
-        "their_vwap": 0.837,
-        "fill_vwap_plus_2c": 0.857,
-        "result": "won",
-        "unit_pnl": 16.73,
-        "close_line": null,
-        "clv_cents": null,
-        "expected_clv_roi": null,
-        "clob_ask_at_alert": null,
-        "conditionId": "0x567c5d957a99261189188483a6e00aed0fd27a277f0c25dc42664f1b3a718f9a",
-        "pool": "watch"
-      },
-      {
-        "alerted_at": "2026-07-31T18:00:00+00:00",
-        "event_end": "2026-08-01T00:00:00+00:00",
-        "username": "HVAB",
         "title": "Palermo: Francesca Jones vs Alevtina Ibragimova",
         "sport": "TENNIS",
         "submarket": "Moneyline",
@@ -4307,26 +4183,6 @@
         "expected_clv_roi": null,
         "clob_ask_at_alert": null,
         "conditionId": "0xd131afc25e19c564c33203ef63505aaa4b0671ab02da23c0ae621cc621012363",
-        "pool": "watch"
-      },
-      {
-        "alerted_at": "2026-07-30T18:00:00+00:00",
-        "event_end": "2026-07-31T00:00:00+00:00",
-        "username": "HVAB",
-        "title": "ITF Denia: Hernan Casanova vs Carlos Lopez Montagud",
-        "sport": "OTHER",
-        "submarket": "Moneyline",
-        "q": 71,
-        "rel": 30.0,
-        "their_vwap": 0.782,
-        "fill_vwap_plus_2c": 0.802,
-        "result": "won",
-        "unit_pnl": 24.69,
-        "close_line": null,
-        "clv_cents": null,
-        "expected_clv_roi": null,
-        "clob_ask_at_alert": null,
-        "conditionId": "0xdf0164212ca26c8d0aff5e4d732d8d0e1cf912e760e583309cb372b1b809bbdb",
         "pool": "watch"
       },
       {
@@ -4348,6 +4204,26 @@
         "clob_ask_at_alert": null,
         "conditionId": "0x04c5022b6726f117867012a37e57216e598577b791d91ba9254425e7045bcb0c",
         "pool": "bench"
+      },
+      {
+        "alerted_at": "2026-07-30T18:00:00+00:00",
+        "event_end": "2026-07-31T00:00:00+00:00",
+        "username": "HVAB",
+        "title": "ITF Denia: Hernan Casanova vs Carlos Lopez Montagud",
+        "sport": "OTHER",
+        "submarket": "Moneyline",
+        "q": 71,
+        "rel": 30.0,
+        "their_vwap": 0.782,
+        "fill_vwap_plus_2c": 0.802,
+        "result": "won",
+        "unit_pnl": 24.69,
+        "close_line": null,
+        "clv_cents": null,
+        "expected_clv_roi": null,
+        "clob_ask_at_alert": null,
+        "conditionId": "0xdf0164212ca26c8d0aff5e4d732d8d0e1cf912e760e583309cb372b1b809bbdb",
+        "pool": "watch"
       },
       {
         "alerted_at": "2026-07-29T18:00:00+00:00",
@@ -4377,11 +4253,11 @@
         "sport": "TENNIS",
         "submarket": "Moneyline",
         "q": 73,
-        "rel": 4.69,
-        "their_vwap": 0.75,
-        "fill_vwap_plus_2c": 0.77,
-        "result": "won",
-        "unit_pnl": 29.94,
+        "rel": 8.43,
+        "their_vwap": 0.533,
+        "fill_vwap_plus_2c": 0.553,
+        "result": "lost",
+        "unit_pnl": -100.0,
         "close_line": null,
         "clv_cents": null,
         "expected_clv_roi": null,
@@ -4452,6 +4328,46 @@
       {
         "alerted_at": "2026-07-25T18:00:00+00:00",
         "event_end": "2026-07-26T00:00:00+00:00",
+        "username": "WTSA",
+        "title": "Will Cruzeiro EC win on 2026-07-26?",
+        "sport": "SOCCER (Other)",
+        "submarket": "Moneyline",
+        "q": 98,
+        "rel": 4.05,
+        "their_vwap": 0.548,
+        "fill_vwap_plus_2c": 0.568,
+        "result": "lost",
+        "unit_pnl": -100.0,
+        "close_line": 0.545,
+        "clv_cents": -2.32,
+        "expected_clv_roi": -4.08,
+        "clob_ask_at_alert": 0.545,
+        "conditionId": "0x9d10b897459695e100c9b3c1b5a59b424ea4117bea7f709768fab040b475018e",
+        "pool": "bench"
+      },
+      {
+        "alerted_at": "2026-07-25T18:00:00+00:00",
+        "event_end": "2026-07-26T00:00:00+00:00",
+        "username": "WTSA",
+        "title": "CA Tucum\u00e1n vs. CS Independiente Rivadavia: O/U 2.5",
+        "sport": "SOCCER (Other)",
+        "submarket": "Total",
+        "q": 98,
+        "rel": 2.61,
+        "their_vwap": 0.414,
+        "fill_vwap_plus_2c": 0.434,
+        "result": "lost",
+        "unit_pnl": -100.0,
+        "close_line": null,
+        "clv_cents": null,
+        "expected_clv_roi": null,
+        "clob_ask_at_alert": null,
+        "conditionId": "0x8ea4df3a9329198e812e518f40ba8d57476e8a90fe72bddb5362a9dde8227aab",
+        "pool": "bench"
+      },
+      {
+        "alerted_at": "2026-07-25T18:00:00+00:00",
+        "event_end": "2026-07-26T00:00:00+00:00",
         "username": "Vetch",
         "title": "Swedish Open: Andrey Rublev vs Luciano Darderi",
         "sport": "TENNIS",
@@ -4490,46 +4406,112 @@
         "pool": "bench"
       },
       {
-        "alerted_at": "2026-07-25T18:00:00+00:00",
-        "event_end": "2026-07-26T00:00:00+00:00",
-        "username": "WTSA",
-        "title": "Will Cruzeiro EC win on 2026-07-26?",
-        "sport": "SOCCER (Other)",
+        "alerted_at": "2026-07-24T18:00:00+00:00",
+        "event_end": "2026-07-25T00:00:00+00:00",
+        "username": "Vetch",
+        "title": "Counter-Strike: HOTU vs Astralis (BO3) - BLAST Bounty Qualifier",
+        "sport": "ESPORTS",
         "submarket": "Moneyline",
-        "q": 98,
-        "rel": 4.05,
-        "their_vwap": 0.548,
-        "fill_vwap_plus_2c": 0.568,
-        "result": "lost",
-        "unit_pnl": -100.0,
-        "close_line": 0.545,
-        "clv_cents": -2.32,
-        "expected_clv_roi": -4.08,
-        "clob_ask_at_alert": 0.545,
-        "conditionId": "0x9d10b897459695e100c9b3c1b5a59b424ea4117bea7f709768fab040b475018e",
+        "q": 70,
+        "rel": 10.05,
+        "their_vwap": 0.572,
+        "fill_vwap_plus_2c": 0.592,
+        "result": "won",
+        "unit_pnl": 68.86,
+        "close_line": null,
+        "clv_cents": null,
+        "expected_clv_roi": null,
+        "clob_ask_at_alert": null,
+        "conditionId": "0xa68b0238413af58e69cffd60777b6496183f9fb249e3dd7aea703d57bc96d1cd",
         "pool": "bench"
       },
       {
-        "alerted_at": "2026-07-25T18:00:00+00:00",
-        "event_end": "2026-07-26T00:00:00+00:00",
-        "username": "WTSA",
-        "title": "CA Tucum\u00e1n vs. CS Independiente Rivadavia: O/U 2.5",
-        "sport": "SOCCER (Other)",
-        "submarket": "Total",
-        "q": 98,
-        "rel": 2.61,
-        "their_vwap": 0.414,
-        "fill_vwap_plus_2c": 0.434,
+        "alerted_at": "2026-07-24T18:00:00+00:00",
+        "event_end": "2026-07-25T00:00:00+00:00",
+        "username": "Vetch",
+        "title": "Counter-Strike: Liquid vs G2 (BO3) - BLAST Bounty Qualifier",
+        "sport": "ESPORTS",
+        "submarket": "Moneyline",
+        "q": 70,
+        "rel": 7.48,
+        "their_vwap": 0.649,
+        "fill_vwap_plus_2c": 0.669,
         "result": "lost",
         "unit_pnl": -100.0,
         "close_line": null,
         "clv_cents": null,
         "expected_clv_roi": null,
         "clob_ask_at_alert": null,
-        "conditionId": "0x8ea4df3a9329198e812e518f40ba8d57476e8a90fe72bddb5362a9dde8227aab",
+        "conditionId": "0x1854f6cdb1ef59bef6a9766def5feadfd182dee9108ca118616016593dac0370",
+        "pool": "bench"
+      },
+      {
+        "alerted_at": "2026-07-24T18:00:00+00:00",
+        "event_end": "2026-07-25T00:00:00+00:00",
+        "username": "Vetch",
+        "title": "Counter-Strike: FOKUS vs MOUZ (BO3) - BLAST Bounty Qualifier",
+        "sport": "ESPORTS",
+        "submarket": "Moneyline",
+        "q": 70,
+        "rel": 6.14,
+        "their_vwap": 0.787,
+        "fill_vwap_plus_2c": 0.807,
+        "result": "won",
+        "unit_pnl": 23.89,
+        "close_line": null,
+        "clv_cents": null,
+        "expected_clv_roi": null,
+        "clob_ask_at_alert": null,
+        "conditionId": "0x6a04fd3a95a6d2f66ee37aace95b1214d2a359056356c83e420867a5114c45bb",
         "pool": "bench"
       }
     ]
   },
-  "missing_csv": []
+  "missing_csv": [
+    {
+      "username": "bigspending",
+      "wallet": "0x86dab59a8a6e7f9947282d2117aab3429b706428",
+      "bucket": "watch"
+    },
+    {
+      "username": "predictionlegend",
+      "wallet": "0x3eb095d871501a1d7a3cb086a22d174b52356a68",
+      "bucket": "watch"
+    },
+    {
+      "username": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
+      "wallet": "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87",
+      "bucket": "watch"
+    },
+    {
+      "username": "theowalcott",
+      "wallet": "0x7ad71d79a3bb90d0a87a06500fa0fe11663842aa",
+      "bucket": "watch"
+    },
+    {
+      "username": "sainttroplay",
+      "wallet": "0x9319a045cdd0c2180e5eb7ad44374383db9a6410",
+      "bucket": "watch"
+    },
+    {
+      "username": "musholius722",
+      "wallet": "0x4b341d4612437b6e5b5fbcf98e5b675dbacf48a8",
+      "bucket": "watch"
+    },
+    {
+      "username": "SDTrading",
+      "wallet": "0x16bb9951a36fce71e2ef57890b786145e0ba8492",
+      "bucket": "watch"
+    },
+    {
+      "username": "Sassy-Bucket",
+      "wallet": "0x4bff30af91642dc7d2b19a8664378fe55c45fc26",
+      "bucket": "watch"
+    },
+    {
+      "username": "TennisLove",
+      "wallet": "0x2f44fa076c8d2976ac6bea0ddfd9502bad2b93c2",
+      "bucket": "watch"
+    }
+  ]
 }

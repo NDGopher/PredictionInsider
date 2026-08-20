@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-08-18T23:18:31.617001+00:00",
+  "generated_at": "2026-08-20T21:15:50.090726+00:00",
   "pools": [
     {
       "label": "matched_12",
-      "n": 579,
-      "win_rate": 68.22,
-      "roi_2c": 11.65,
+      "n": 577,
+      "win_rate": 68.28,
+      "roi_2c": 11.82,
       "traders": [
         "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
         "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
@@ -29,15 +29,15 @@
         },
         {
           "username": "Vetch",
-          "n": 123,
-          "win_rate": 71.54,
-          "roi_2c": 12.2
+          "n": 119,
+          "win_rate": 71.43,
+          "roi_2c": 10.96
         },
         {
           "username": "Supah9ga",
-          "n": 43,
-          "win_rate": 53.49,
-          "roi_2c": 8.62
+          "n": 45,
+          "win_rate": 55.56,
+          "roi_2c": 14.27
         },
         {
           "username": "HedgeMaster88",
@@ -91,9 +91,9 @@
     },
     {
       "label": "matched_12_minus_bots",
-      "n": 296,
-      "win_rate": 63.85,
-      "roi_2c": 8.09,
+      "n": 294,
+      "win_rate": 63.95,
+      "roi_2c": 8.39,
       "traders": [
         "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
         "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
@@ -108,15 +108,15 @@
       "by_trader": [
         {
           "username": "Vetch",
-          "n": 123,
-          "win_rate": 71.54,
-          "roi_2c": 12.2
+          "n": 119,
+          "win_rate": 71.43,
+          "roi_2c": 10.96
         },
         {
           "username": "Supah9ga",
-          "n": 43,
-          "win_rate": 53.49,
-          "roi_2c": 8.62
+          "n": 45,
+          "win_rate": 55.56,
+          "roi_2c": 14.27
         },
         {
           "username": "HedgeMaster88",
@@ -158,9 +158,9 @@
     },
     {
       "label": "live_joinable",
-      "n": 28,
-      "win_rate": 53.57,
-      "roi_2c": -1.45,
+      "n": 35,
+      "win_rate": 54.29,
+      "roi_2c": -1.78,
       "traders": [
         "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
         "TTdes"
@@ -174,17 +174,17 @@
         },
         {
           "username": "TTdes",
-          "n": 4,
-          "win_rate": 25.0,
-          "roi_2c": -54.55
+          "n": 11,
+          "win_rate": 45.45,
+          "roi_2c": -21.82
         }
       ]
     },
     {
       "label": "live_plus_bench",
-      "n": 654,
-      "win_rate": 59.48,
-      "roi_2c": 4.69,
+      "n": 492,
+      "win_rate": 60.57,
+      "roi_2c": 6.05,
       "traders": [
         "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
         "TTdes",
@@ -197,29 +197,22 @@
         "ckw",
         "Bienville",
         "JhonAlexanderHinestroza",
-        "0x20D6436849F930584892730C7F96eBB2Ac763856",
         "0xheavy888",
         "JuniorB",
         "Andromeda1"
       ],
       "by_trader": [
         {
-          "username": "JhonAlexanderHinestroza",
-          "n": 146,
-          "win_rate": 57.53,
-          "roi_2c": 9.85
-        },
-        {
-          "username": "0x20D6436849F930584892730C7F96eBB2Ac763856",
-          "n": 129,
-          "win_rate": 58.14,
-          "roi_2c": 6.3
-        },
-        {
           "username": "Vetch",
-          "n": 123,
-          "win_rate": 71.54,
-          "roi_2c": 12.2
+          "n": 119,
+          "win_rate": 71.43,
+          "roi_2c": 10.96
+        },
+        {
+          "username": "JhonAlexanderHinestroza",
+          "n": 108,
+          "win_rate": 60.19,
+          "roi_2c": 19.49
         },
         {
           "username": "Andromeda1",
@@ -229,9 +222,9 @@
         },
         {
           "username": "Supah9ga",
-          "n": 43,
-          "win_rate": 53.49,
-          "roi_2c": 8.62
+          "n": 45,
+          "win_rate": 55.56,
+          "roi_2c": 14.27
         },
         {
           "username": "HedgeMaster88",
@@ -264,26 +257,25 @@
           "roi_2c": 14.5
         },
         {
+          "username": "TTdes",
+          "n": 11,
+          "win_rate": 45.45,
+          "roi_2c": -21.82
+        },
+        {
           "username": "Bienville",
           "n": 5,
           "win_rate": 80.0,
           "roi_2c": 55.35
-        },
-        {
-          "username": "TTdes",
-          "n": 4,
-          "win_rate": 25.0,
-          "roi_2c": -54.55
         }
       ]
     },
     {
       "label": "watch_candidates",
-      "n": 140,
-      "win_rate": 55.0,
-      "roi_2c": -5.82,
+      "n": 71,
+      "win_rate": 54.93,
+      "roi_2c": -13.14,
       "traders": [
-        "CoryLahey",
         "ShucksIt69",
         "SineNooneEI",
         "HongYunX",
@@ -301,16 +293,10 @@
       ],
       "by_trader": [
         {
-          "username": "CoryLahey",
-          "n": 66,
-          "win_rate": 56.06,
-          "roi_2c": 1.3
-        },
-        {
           "username": "HVAB",
-          "n": 27,
-          "win_rate": 74.07,
-          "roi_2c": 9.81
+          "n": 32,
+          "win_rate": 71.88,
+          "roi_2c": 5.38
         },
         {
           "username": "UAEVALORANTFAN",
@@ -329,24 +315,6 @@
           "n": 6,
           "win_rate": 50.0,
           "roi_2c": 0.4
-        },
-        {
-          "username": "theowalcott",
-          "n": 5,
-          "win_rate": 60.0,
-          "roi_2c": 18.18
-        },
-        {
-          "username": "bigspending",
-          "n": 2,
-          "win_rate": 50.0,
-          "roi_2c": -26.07
-        },
-        {
-          "username": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
-          "n": 1,
-          "win_rate": 0.0,
-          "roi_2c": -100.0
         }
       ]
     },
@@ -410,14 +378,12 @@
     "ckw",
     "Bienville",
     "JhonAlexanderHinestroza",
-    "0x20D6436849F930584892730C7F96eBB2Ac763856",
     "0xheavy888",
     "JuniorB",
     "Andromeda1"
   ],
   "watch": [
     "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
-    "CoryLahey",
     "ShucksIt69",
     "SineNooneEI",
     "HongYunX",
@@ -431,7 +397,6 @@
     "S-Works",
     "musholius722",
     "SDTrading",
-    "TutiFromFactsOfLife",
     "bloodmaster",
     "ShortFlutterStock",
     "3edmond.dantes",
@@ -444,22 +409,22 @@
   ],
   "demoted_take_rule": [],
   "lane": {
-    "generated_at": "2026-08-18T23:18:31.617001+00:00",
+    "generated_at": "2026-08-20T21:15:50.090726+00:00",
     "rule": "asof_live_q60_sport_rel2 (Q>=60, sport ROI>=5%, rel>=2, 10-88c, no NFL, fill VWAP+2c). Futures excluded from product.",
     "all": {
-      "n": 28,
-      "win_rate": 53.57,
-      "roi_2c": -1.45
+      "n": 35,
+      "win_rate": 54.29,
+      "roi_2c": -1.78
     },
     "sports": {
-      "n": 28,
-      "win_rate": 53.57,
-      "roi_2c": -1.45
+      "n": 34,
+      "win_rate": 52.94,
+      "roi_2c": -3.52
     },
     "other": {
-      "n": 0,
-      "win_rate": 0.0,
-      "roi_2c": 0.0
+      "n": 1,
+      "win_rate": 100.0,
+      "roi_2c": 57.19
     },
     "futures_excluded": {
       "n": 7,
@@ -468,9 +433,9 @@
     },
     "by_submarket": {
       "Moneyline": {
-        "n": 12,
-        "win_rate": 50.0,
-        "roi_2c": -7.28
+        "n": 19,
+        "win_rate": 52.63,
+        "roi_2c": -5.74
       },
       "Spread": {
         "n": 16,
