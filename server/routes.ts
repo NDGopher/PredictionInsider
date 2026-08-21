@@ -19,7 +19,7 @@ import {
   signalMatchesStrategy,
   type TailStrategyFilters,
 } from "./tailStrategies";
-import { collectTakePlays, enrichTakePlaysWithBook, loadLaneBacktest, loadTakeHealthFile, loadTrustedCopyBooks, mapCsvOpenRows, takeStrategyCard, type TakePlayBundle } from "./takePlays";
+import { collectTakePlays, enrichTakePlaysWithBook, loadCopyDiscovery, loadLaneBacktest, loadTakeHealthFile, loadTrustedCopyBooks, mapCsvOpenRows, takeStrategyCard, type TakePlayBundle } from "./takePlays";
 import { syncTakeBookAlerts, telegramConfigured } from "./telegramTakeAlerts";
 import { cancelUnfilledTake, paperLogTakePlays } from "./paperTakeBets";
 import { americanFromPrice } from "./oddsFormat";
@@ -6217,10 +6217,26 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         telegramConfigured: telegramConfigured(),
         copyBooks: loadTrustedCopyBooks(),
         lanes: loadLaneBacktest(),
+        ranked: [...bundle.live.map((p) => ({ ...p, list: "take" as const })), ...bundle.near.map((p) => ({ ...p, list: "near" as const }))]
+          .sort((a, b) => b.grade - a.grade || b.rel - a.rel)
+          .map((p, i) => ({ ...p, rank: i + 1 })),
+        discovery: loadCopyDiscovery(),
       });
     } catch (err: unknown) {
       console.error("take-plays error:", err);
       res.status(500).json({ error: formatApiError(err), live: [], near: [] });
+    }
+  });
+
+  // ── GET /api/copy-discovery ───────────────────────────────────────────────
+  // Live/bench/watch roster + adaptive promote/demote proposals (never auto-live watch).
+  app.get("/api/copy-discovery", async (_req, res) => {
+    try {
+      res.setHeader("Cache-Control", "no-store");
+      res.json(loadCopyDiscovery());
+    } catch (err: unknown) {
+      console.error("copy-discovery error:", err);
+      res.status(500).json({ error: formatApiError(err) });
     }
   });
 

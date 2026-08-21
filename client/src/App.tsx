@@ -12,6 +12,7 @@ import Bets from "@/pages/Bets";
 import Elite from "@/pages/Elite";
 import Strategies from "@/pages/Strategies";
 import Ranks from "@/pages/Ranks";
+import RankedPlays from "@/pages/RankedPlays";
 import NotFound from "@/pages/not-found";
 import { Moon, Sun, TrendingUp } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -59,6 +60,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/plays" component={RankedPlays} />
       <Route path="/signals" component={Signals} />
       <Route path="/markets" component={Markets} />
       <Route path="/bets" component={Bets} />

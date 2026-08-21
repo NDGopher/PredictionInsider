@@ -15,6 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 STEPS: list[tuple[str, list[str]]] = [
+    ("polydata discovery → watch", [sys.executable, str(ROOT / "discover_polydata_boards.py")]),
     ("take-book health", [sys.executable, str(ROOT / "take_book_daily.py")]),
     ("copy universe", [sys.executable, str(ROOT / "copy_roster.py")]),
     ("insider ranks", [sys.executable, str(ROOT / "build_insider_ranks.py"), "--offline"]),

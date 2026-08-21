@@ -55,17 +55,23 @@ export interface AnnotatedTakePlay {
   vwapFmt: PriceQuoteFmt | null;
   valid: boolean;
   invalidReason: string | null;
+  /** 0–100 play grade (signal confidence, take-boosted when all gates pass). */
+  grade: number;
   confidence: number;
   q: number;
   rel: number;
   sportRoi: number | null;
   traders: string[];
   misses: string[];
+  /** Human-readable reasons for the grade / TAKE decision. */
+  why: string[];
+  scoreBreakdown?: Record<string, number>;
   url?: string;
   take: boolean;
   close: boolean;
   tokenId?: string;
   conditionId?: string;
+  rank?: number;
 }
 
 export interface TakePlayBundle {
@@ -176,6 +182,65 @@ function applyQuote(row: AnnotatedTakePlay): void {
   }
 }
 
+function breakdownWhy(breakdown: Record<string, number> | undefined): string[] {
+  if (!breakdown) return [];
+  const labels: Array<[string, string, number]> = [
+    ["roiPct", "Trader ROI edge", 40],
+    ["consensusPct", "Consensus", 30],
+    ["valuePct", "Value vs live", 20],
+    ["sizePct", "Position size", 10],
+    ["relSizePts", "Relative size (conviction)", 15],
+    ["tierBonus", "Multi-trader / tier", 15],
+    ["qualityBoost", "Quality boost", 6],
+  ];
+  const out: string[] = [];
+  for (const [key, label, max] of labels) {
+    const v = breakdown[key];
+    if (typeof v === "number" && v > 0) out.push(`${label} ${Math.round(v)}/${max}`);
+  }
+  return out;
+}
+
+/** 0–100 grade: signal confidence, +small boost when TAKE gates all clear. */
+export function computePlayGrade(confidence: number, take: boolean, q: number, rel: number): number {
+  let g = Math.max(0, Math.min(100, Math.round(confidence || 0)));
+  if (take) {
+    if (q >= 70) g = Math.min(100, g + 3);
+    if (rel >= 3) g = Math.min(100, g + 2);
+    if (rel >= 5) g = Math.min(100, g + 2);
+  }
+  return g;
+}
+
+export function buildTakeWhy(opts: {
+  take: boolean;
+  q: number;
+  rel: number;
+  sportRoi: number | null;
+  traders: string[];
+  misses: string[];
+  confidence: number;
+  scoreBreakdown?: Record<string, number>;
+  valid: boolean;
+  invalidReason: string | null;
+}): string[] {
+  const why: string[] = [];
+  if (opts.take && opts.valid) {
+    why.push("Passes Take these gates (Q≥60, sport ROI≥+5%, ≥2× size, 10–88¢, no NFL)");
+  }
+  if (opts.q > 0) why.push(`Trader quality Q ${Math.round(opts.q)}/100`);
+  if (opts.rel > 0) why.push(`Stake ${opts.rel.toFixed(1)}× their own median`);
+  if (opts.sportRoi != null) why.push(`As-of sport-lane ROI ${opts.sportRoi.toFixed(0)}%`);
+  if (opts.traders.length) why.push(`Copy book: ${opts.traders.join(", ")}`);
+  why.push(...breakdownWhy(opts.scoreBreakdown));
+  if (opts.confidence > 0) why.push(`Signal confidence ${Math.round(opts.confidence)}/100`);
+  for (const m of opts.misses) {
+    if (!why.some((w) => w.includes(m))) why.push(`Missing: ${m}`);
+  }
+  if (opts.invalidReason) why.push(`Fill gate: ${opts.invalidReason}`);
+  return why.slice(0, 10);
+}
+
 function playFromSignal(raw: Signal, report: TakeGateReport): AnnotatedTakePlay {
   const ann = annotateSignal(raw);
   const vwap = raw.avgEntryPrice || raw.currentPrice || 0;
@@ -183,6 +248,8 @@ function playFromSignal(raw: Signal, report: TakeGateReport): AnnotatedTakePlay 
   const tokenId = tokenIdForSignal(raw);
   const filters = takeStrategyCard()?.filters;
   const take = Boolean(filters && report.take && signalMatchesStrategy(raw, filters));
+  const breakdown = (raw as Signal & { scoreBreakdown?: Record<string, number> }).scoreBreakdown;
+  const grade = computePlayGrade(raw.confidence, take, report.q, report.rel);
   const row: AnnotatedTakePlay = {
     id: raw.id,
     marketQuestion: raw.marketQuestion,
@@ -208,12 +275,15 @@ function playFromSignal(raw: Signal, report: TakeGateReport): AnnotatedTakePlay 
     vwapFmt: null,
     valid: false,
     invalidReason: null,
+    grade,
     confidence: raw.confidence,
     q: report.q,
     rel: report.rel,
     sportRoi: report.sportRoi,
     traders: report.allowTraders,
     misses: [...report.misses],
+    why: [],
+    scoreBreakdown: breakdown,
     url: raw.slug ? `https://polymarket.com/event/${raw.slug}` : undefined,
     take,
     close: report.close,
@@ -221,6 +291,19 @@ function playFromSignal(raw: Signal, report: TakeGateReport): AnnotatedTakePlay 
     conditionId: raw.marketId,
   };
   applyQuote(row);
+  row.grade = computePlayGrade(row.confidence, row.take && row.valid, row.q, row.rel);
+  row.why = buildTakeWhy({
+    take: row.take,
+    q: row.q,
+    rel: row.rel,
+    sportRoi: row.sportRoi,
+    traders: row.traders,
+    misses: row.misses,
+    confidence: row.confidence,
+    scoreBreakdown: row.scoreBreakdown,
+    valid: row.valid,
+    invalidReason: row.invalidReason,
+  });
   return row;
 }
 
@@ -241,8 +324,14 @@ export function collectTakePlays(signals: Signal[]): TakePlayBundle {
     if (row.take) live.push(row);
     else if (row.close) near.push(row);
   }
-  live.sort((a, b) => b.rel - a.rel || b.q - a.q);
-  near.sort((a, b) => b.rel - a.rel || b.q - a.q);
+  live.sort((a, b) => b.grade - a.grade || b.rel - a.rel || b.q - a.q);
+  near.sort((a, b) => b.grade - a.grade || b.rel - a.rel || b.q - a.q);
+  live.forEach((p, i) => {
+    p.rank = i + 1;
+  });
+  near.forEach((p, i) => {
+    p.rank = i + 1;
+  });
   return {
     live: live.slice(0, 40),
     near: near.slice(0, 20),
@@ -269,7 +358,22 @@ export async function enrichTakePlaysWithBook(bundle: TakePlayBundle): Promise<T
     }
     applyQuote(row);
     if (row.take && row.valid) stillLive.push(row);
-    else if (row.close || row.misses.length > 0) stillNear.push(row);
+    else if (row.close || row.misses.length > 0) {
+      row.grade = computePlayGrade(row.confidence, false, row.q, row.rel);
+      row.why = buildTakeWhy({
+        take: false,
+        q: row.q,
+        rel: row.rel,
+        sportRoi: row.sportRoi,
+        traders: row.traders,
+        misses: row.misses,
+        confidence: row.confidence,
+        scoreBreakdown: row.scoreBreakdown,
+        valid: row.valid,
+        invalidReason: row.invalidReason,
+      });
+      stillNear.push(row);
+    }
   }
   for (const row of bundle.near) {
     const q = row.tokenId ? quotes.get(row.tokenId) : undefined;
@@ -281,10 +385,44 @@ export async function enrichTakePlaysWithBook(bundle: TakePlayBundle): Promise<T
       row.currentPrice = q.ask;
     }
     applyQuote(row);
+    row.grade = computePlayGrade(row.confidence, false, row.q, row.rel);
+    row.why = buildTakeWhy({
+      take: false,
+      q: row.q,
+      rel: row.rel,
+      sportRoi: row.sportRoi,
+      traders: row.traders,
+      misses: row.misses,
+      confidence: row.confidence,
+      scoreBreakdown: row.scoreBreakdown,
+      valid: row.valid,
+      invalidReason: row.invalidReason,
+    });
     stillNear.push(row);
   }
-  stillLive.sort((a, b) => b.rel - a.rel || b.q - a.q);
-  stillNear.sort((a, b) => b.rel - a.rel || b.q - a.q);
+  for (const row of stillLive) {
+    row.grade = computePlayGrade(row.confidence, true, row.q, row.rel);
+    row.why = buildTakeWhy({
+      take: true,
+      q: row.q,
+      rel: row.rel,
+      sportRoi: row.sportRoi,
+      traders: row.traders,
+      misses: row.misses,
+      confidence: row.confidence,
+      scoreBreakdown: row.scoreBreakdown,
+      valid: row.valid,
+      invalidReason: row.invalidReason,
+    });
+  }
+  stillLive.sort((a, b) => b.grade - a.grade || b.rel - a.rel || b.q - a.q);
+  stillNear.sort((a, b) => b.grade - a.grade || b.rel - a.rel || b.q - a.q);
+  stillLive.forEach((p, i) => {
+    p.rank = i + 1;
+  });
+  stillNear.forEach((p, i) => {
+    p.rank = i + 1;
+  });
   bundle.live = stillLive.slice(0, 40);
   bundle.near = stillNear.slice(0, 20);
   return bundle;
@@ -352,17 +490,30 @@ export function mapCsvOpenRow(row: Record<string, unknown>): AnnotatedTakePlay {
     vwapFmt: null,
     valid: misses.length === 0,
     invalidReason: misses[0] || null,
+    grade: computePlayGrade(num(row.q), misses.length === 0, num(row.q), num(row.rel)),
     confidence: num(row.q),
     q: num(row.q),
     rel: num(row.rel),
     sportRoi: row.sport_roi == null || row.sport_roi === "" ? null : num(row.sport_roi),
     traders: username ? [username] : [],
     misses,
+    why: [],
     url: row.url ? String(row.url) : undefined,
     take: misses.length === 0,
     close: misses.length > 0 && misses.length <= 2,
   };
   applyQuote(play);
+  play.why = buildTakeWhy({
+    take: play.take,
+    q: play.q,
+    rel: play.rel,
+    sportRoi: play.sportRoi,
+    traders: play.traders,
+    misses: play.misses,
+    confidence: play.confidence,
+    valid: play.valid,
+    invalidReason: play.invalidReason,
+  });
   return play;
 }
 
@@ -371,4 +522,83 @@ export function mapCsvOpenRows(rows: Array<Record<string, unknown>>): AnnotatedT
     .map(mapCsvOpenRow)
     .filter((p) => p.lane !== "futures" && p.submarket !== "Futures")
     .filter((p) => !titleLooksStale(p.marketQuestion) && !titleLooksStale(p.slug || ""));
+}
+
+export interface CopyDiscoveryBundle {
+  generatedAt: string | null;
+  live: Array<Record<string, unknown>>;
+  bench: Array<Record<string, unknown>>;
+  watch: Array<Record<string, unknown>>;
+  adaptiveActions: Array<Record<string, unknown>>;
+  topComposite: Array<Record<string, unknown>>;
+  proposeAdd: Array<Record<string, unknown>>;
+  proposeDrop: Array<Record<string, unknown>>;
+  method: string;
+}
+
+/** Live roster + adaptive lab proposals for the UI discovery panel. */
+export function loadCopyDiscovery(): CopyDiscoveryBundle {
+  const uni = loadJson<{
+    generated_at?: string;
+    live?: Array<Record<string, unknown>>;
+    bench?: Array<Record<string, unknown>>;
+    watch?: Array<Record<string, unknown>>;
+  }>("pnl_analysis/output/copy_universe.json");
+  const lab = loadJson<{
+    generated_at?: string;
+    traders?: Array<Record<string, unknown>>;
+    adaptation?: { actions?: Array<Record<string, unknown>> };
+  }>("pnl_analysis/output/adaptive_copy_lab.json");
+  const health = loadTakeHealthFile();
+  const traders = lab?.traders || [];
+  const topComposite = traders
+    .slice()
+    .sort((a, b) => Number(b.composite_score || 0) - Number(a.composite_score || 0))
+    .slice(0, 15)
+    .map((t) => ({
+      username: t.username,
+      bucket: t.bucket,
+      compositeScore: t.composite_score,
+      joinability: (t.joinability as { score?: number } | undefined)?.score,
+      consistency: (t.equity as { consistency_score?: number } | undefined)?.consistency_score,
+      takeN: (t.product as { n?: number } | undefined)?.n,
+      takeRoi: (t.product as { roi?: number } | undefined)?.roi,
+      action: (t.adaptive as { action?: string } | undefined)?.action,
+      why: (t.adaptive as { why?: string } | undefined)?.why,
+      uniqueRoi: t.unique_roi,
+      medianStake: t.median_stake,
+    }));
+  return {
+    generatedAt: lab?.generated_at || uni?.generated_at || null,
+    live: (uni?.live || []).map((t) => ({
+      username: t.username,
+      wallet: t.wallet,
+      uniqueRoi: t.unique_roi,
+      winRate: t.win_rate,
+      medianStake: t.median_stake,
+      last30n: t.last_30d_n,
+      reasons: t.reasons,
+    })),
+    bench: (uni?.bench || []).slice(0, 20).map((t) => ({
+      username: t.username,
+      uniqueRoi: t.unique_roi,
+      reasons: t.reasons,
+      recency: t.recency,
+    })),
+    watch: (uni?.watch || []).slice(0, 24).map((t) => ({
+      username: t.username,
+      uniqueRoi: t.unique_roi,
+      joinable: t.joinable,
+      last30n: t.last_30d_n,
+      medianStake: t.median_stake,
+      reasons: t.reasons,
+    })),
+    adaptiveActions: lab?.adaptation?.actions || [],
+    topComposite,
+    proposeAdd: health?.propose_add || [],
+    proposeDrop: health?.propose_drop || [],
+    method:
+      "Polydata boards → extra_watch → unique book → adaptive lab. Watch never auto-live. "
+      + "Daily: npm run daily-pipeline / discover:polydata.",
+  };
 }

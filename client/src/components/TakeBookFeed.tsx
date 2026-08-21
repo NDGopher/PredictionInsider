@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { ExternalLink, Flame, PauseCircle, Radio } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, Flame, PauseCircle, Radio } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 
@@ -41,12 +41,16 @@ interface TakePlay {
   vwapFmt: PriceFmt | null;
   valid: boolean;
   invalidReason: string | null;
+  grade?: number;
   confidence: number;
   q: number;
   rel: number;
   sportRoi: number | null;
   traders: string[];
   misses: string[];
+  why?: string[];
+  scoreBreakdown?: Record<string, number>;
+  rank?: number;
   url?: string;
 }
 
@@ -55,7 +59,24 @@ interface TakeHealth {
   pauseReason?: string | null;
   windows?: Record<string, { n?: number; win_rate?: number | null; roi_2c?: number | null }>;
   proposeDrop?: Array<{ username?: string; reason?: string }>;
+  proposeAdd?: Array<{ username?: string; reason?: string }>;
   generatedAt?: string;
+}
+
+interface DiscoveryBundle {
+  live?: Array<{ username?: string; uniqueRoi?: number; medianStake?: number }>;
+  watch?: Array<{ username?: string; uniqueRoi?: number; joinable?: boolean }>;
+  topComposite?: Array<{
+    username?: string;
+    bucket?: string;
+    compositeScore?: number;
+    takeN?: number;
+    takeRoi?: number;
+    action?: string;
+    why?: string;
+  }>;
+  adaptiveActions?: Array<{ action?: string; username?: string; why?: string }>;
+  method?: string;
 }
 
 interface TakePlaysResponse {
@@ -69,10 +90,12 @@ interface TakePlaysResponse {
   pauseReason?: string | null;
   live?: TakePlay[];
   near?: TakePlay[];
+  ranked?: TakePlay[];
   csvOpen?: { live?: TakePlay[]; near?: TakePlay[] };
   telegramConfigured?: boolean;
   quotesAt?: number | null;
   copyBooks?: Array<{ username: string; wallet: string }>;
+  discovery?: DiscoveryBundle;
   lanes?: {
     sports?: { n?: number; win_rate?: number; roi_2c?: number };
     other?: { n?: number; win_rate?: number; roi_2c?: number };
@@ -104,6 +127,13 @@ function fmtTriple(p: number | null | undefined, fallback?: PriceFmt | null): st
   return `${p.toFixed(3)}  ${decimalFromPrice(p).toFixed(2)}  ${americanLabel(americanFromPrice(p))}`;
 }
 
+function gradeTone(g: number): string {
+  if (g >= 75) return "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
+  if (g >= 60) return "bg-primary/15 text-primary border-primary/30";
+  if (g >= 45) return "bg-amber-500/15 text-amber-400 border-amber-500/30";
+  return "bg-muted text-muted-foreground border-border";
+}
+
 async function saveActualFill(playId: string, cents: string): Promise<void> {
   const n = Number(cents);
   if (!Number.isFinite(n) || n <= 0 || n >= 100) {
@@ -130,6 +160,60 @@ function PriceRow({ label, price, fmt, hint }: { label: string; price: number | 
   );
 }
 
+function WhyBlock({ play, take }: { play: TakePlay; take: boolean }) {
+  const [open, setOpen] = useState(take);
+  const grade = Math.round(play.grade ?? play.confidence ?? 0);
+  const why = play.why?.length ? play.why : play.misses.map((m) => `Missing: ${m}`);
+  const bd = play.scoreBreakdown || {};
+  return (
+    <div className="rounded-md border border-border/60 bg-muted/20 p-2.5 space-y-2">
+      <button
+        type="button"
+        className="flex w-full items-center justify-between gap-2 text-left"
+        onClick={() => setOpen((v) => !v)}
+        data-testid={take ? "button-why-take" : "button-why-near"}
+      >
+        <div className="flex items-center gap-2">
+          <Badge className={`tabular-nums ${gradeTone(grade)}`}>Grade {grade}/100</Badge>
+          <span className="text-xs text-muted-foreground">
+            {take ? "Why this is recommended" : "Why it is close"}
+          </span>
+        </div>
+        {open ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="space-y-2">
+          <ul className="text-xs text-muted-foreground space-y-1 list-disc pl-4">
+            {why.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+          {Object.keys(bd).length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[10px]">
+              {[
+                ["roiPct", "ROI", 40],
+                ["consensusPct", "Consensus", 30],
+                ["valuePct", "Value", 20],
+                ["sizePct", "Size", 10],
+                ["relSizePts", "Rel size", 15],
+                ["qualityBoost", "Quality", 6],
+              ].map(([key, label, max]) => {
+                const val = Number(bd[key as string] || 0);
+                return (
+                  <div key={String(key)} className="rounded border border-border/40 px-1.5 py-1">
+                    <div className="text-muted-foreground">{label}</div>
+                    <div className="font-semibold tabular-nums">{val}/{max}</div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -137,6 +221,7 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
     play.liveAsk != null ? String(Math.round(play.liveAsk * 1000) / 10) : "",
   );
   const href = play.url || (play.slug ? `https://polymarket.com/event/${play.slug}` : undefined);
+  const grade = Math.round(play.grade ?? play.confidence ?? 0);
 
   async function onSaveFill(): Promise<void> {
     try {
@@ -153,7 +238,11 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
     <Card data-testid={take ? "card-take-play" : "card-near-play"}>
       <CardContent className="p-4 space-y-2">
         <div className="flex flex-wrap items-center gap-1.5">
+          {play.rank != null ? (
+            <Badge variant="outline" className="tabular-nums">#{play.rank}</Badge>
+          ) : null}
           {take ? <Badge>TAKE</Badge> : <Badge variant="outline">NEAR</Badge>}
+          <Badge className={`tabular-nums ${gradeTone(grade)}`}>{grade}/100</Badge>
           <Badge>{play.submarket}</Badge>
           <Badge variant="outline">{play.sport || "—"}</Badge>
           <Badge variant="outline">Q {Math.round(play.q)}</Badge>
@@ -173,6 +262,7 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
           <PriceRow label="Live ask" price={play.liveAsk ?? play.currentPrice} fmt={play.liveFmt} hint="pay this" />
           <PriceRow label="Their VWAP" price={play.avgEntryPrice} fmt={play.vwapFmt} />
         </div>
+        <WhyBlock play={play} take={take} />
         <div className="text-[11px] text-muted-foreground">
           Decimal = 1/price · American next to it. {play.traders.join(", ") || "matched book"}
           {play.sportRoi != null ? ` · sport ROI ${play.sportRoi.toFixed(0)}%` : ""}
@@ -205,6 +295,45 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
   );
 }
 
+function DiscoveryStrip({ discovery }: { discovery?: DiscoveryBundle }) {
+  if (!discovery) return null;
+  const live = discovery.live || [];
+  const top = (discovery.topComposite || []).slice(0, 6);
+  const actions = (discovery.adaptiveActions || []).slice(0, 4);
+  return (
+    <Card data-testid="card-copy-discovery">
+      <CardContent className="p-4 space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="text-xs font-medium">Best-of roster · discovery</div>
+          <Link href="/plays" className="text-xs text-primary">Ranked plays + full watchlist →</Link>
+        </div>
+        <div className="text-[11px] text-muted-foreground">
+          Live now: {live.map((t) => t.username).filter(Boolean).join(", ") || "—"}
+          {" · "}
+          {discovery.method}
+        </div>
+        {top.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {top.map((t) => (
+              <Badge key={String(t.username)} variant="outline" className="text-[10px] font-normal">
+                {t.username} · {t.bucket} · score {t.compositeScore}
+                {t.takeN ? ` · take ${t.takeN}/${t.takeRoi}%` : ""}
+              </Badge>
+            ))}
+          </div>
+        )}
+        {actions.length > 0 && (
+          <div className="text-[11px] text-amber-500 space-y-0.5">
+            {actions.map((a) => (
+              <div key={`${a.action}-${a.username}`}>{a.action}: {a.username} — {a.why}</div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function TakeBookFeed() {
   const { data, isLoading, error, refetch } = useQuery<TakePlaysResponse>({
     queryKey: ["/api/take-plays"],
@@ -228,7 +357,7 @@ export default function TakeBookFeed() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
         <div>
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-            Recommended plays · $100 · live ask · decimal + American · auto-drop when invalid
+            Recommended plays · graded 0–100 · $100 · live ask · decimal + American
           </div>
           <h2 className="text-xl font-semibold tracking-tight flex items-center gap-2">
             <Flame className="w-5 h-5 text-primary" />
@@ -237,7 +366,7 @@ export default function TakeBookFeed() {
           <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
             {data?.rule || "As-of Q60 + sport expert + 2× size, no NFL."}
             {bt?.n ? ` Backtest n=${bt.n} · ${bt.win_rate}% WR · ${bt.roi}% ROI after 2¢.` : ""}
-            {" "}Take these is the only copy rule. Live Signals is a separate, weaker consensus tape.
+            {" "}Each card shows Grade /100 and why. Full ranked list on Ranked Plays.
           </p>
           <div className="flex flex-wrap gap-2 mt-2">
             {(["sports", "other"] as const).map((tab) => {
@@ -280,10 +409,12 @@ export default function TakeBookFeed() {
             <Badge variant="outline">Telegram off — set TELEGRAM_BOT_TOKEN</Badge>
           )}
           <Button size="sm" variant="outline" onClick={() => refetch()}>Refresh</Button>
+          <Link href="/plays" className="text-xs text-primary">Ranked Plays →</Link>
           <Link href="/bets" className="text-xs text-primary">My Bets →</Link>
-          <Link href="/strategies" className="text-xs text-primary">Research →</Link>
         </div>
       </div>
+
+      <DiscoveryStrip discovery={data?.discovery} />
 
       {data?.pauseReason && (
         <Card>
@@ -298,7 +429,7 @@ export default function TakeBookFeed() {
         <Card>
           <CardContent className="p-6 text-sm text-muted-foreground space-y-1">
             <div>No live take-book tickets right now. Alerts auto-delete on Telegram when they go invalid.</div>
-            <div>When one prints: Telegram + paper ticket at the live ask. Type the cents you actually paid.</div>
+            <div>When one prints: Telegram + paper ticket at the live ask. Type the cents you actually paid. Empty book is honest.</div>
           </CardContent>
         </Card>
       )}
