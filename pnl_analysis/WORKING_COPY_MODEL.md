@@ -3,6 +3,7 @@
 Generated **2026-08-21T14:28:41 UTC**. Pull this file plus `pnl_analysis/output/working_copy_model.json` and `pnl_analysis/output/recent_take_alerts.json` — they are committed, not CSVs.
 
 For **how each name wins**, take-rule slices, and CLV: read `pnl_analysis/TAIL_DIGEST.md` (`npm run model:digest`).
+For **multi-strategy bake-off, equity consistency, forward projection, and adaptive promote/demote**: `pnl_analysis/ADAPTIVE_COPY_LAB.md` (`npm run model:adaptive`).
 If Windows `git pull` fails on dirty `pnl_analysis/output`: see `pnl_analysis/LOCAL_SYNC.md`.
 
 Product rule: **`asof_live_q60_sport_rel2`** — Q≥60, sport-lane ROI≥+5%, rel≥2× median, 10–88¢, no NFL, fill VWAP+2¢, hold to resolution. Unique-book ROI/PnL is truth. Polydata month curves are discovery only.

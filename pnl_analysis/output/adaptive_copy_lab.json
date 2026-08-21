@@ -1,0 +1,6843 @@
+{
+  "generated_at": "2026-08-21T15:00:04.457548+00:00",
+  "product_strategy": "asof_live_q60_sport_rel2",
+  "slip_cents": 2,
+  "stake_usd": 100.0,
+  "counts": {
+    "books": 41,
+    "plays_total": 64674,
+    "present_traders": 33,
+    "live_only": 1,
+    "live_plus_bench": 14,
+    "all_csv": 33,
+    "joinable_csv": 21,
+    "easy_tail": 20
+  },
+  "strategies": {
+    "asof_live_q60_sport_rel2": {
+      "n": 1105,
+      "wins": 667,
+      "losses": 438,
+      "win_rate": 60.36,
+      "unit_pnl": 3482.38,
+      "expectancy": 3.15,
+      "roi": 3.15,
+      "profit_factor": 1.08,
+      "sharpe_daily_roi": 1.66,
+      "max_dd": -2812.33,
+      "avg_grade": 72.7,
+      "avg_q": 72.7,
+      "avg_fill": 0.578,
+      "avg_vwap": 0.558,
+      "implied_wr": 57.8,
+      "edge": 2.6,
+      "avg_traders": 1.0,
+      "avg_rel": 5.64,
+      "calmar": 1.24,
+      "days": 216,
+      "trades_per_day": 5.12,
+      "first": "2025-01-07",
+      "last": "2026-08-22"
+    },
+    "asof_q60_sport_rel2": {
+      "n": 1205,
+      "wins": 766,
+      "losses": 439,
+      "win_rate": 63.57,
+      "unit_pnl": 3910.59,
+      "expectancy": 3.25,
+      "roi": 3.25,
+      "profit_factor": 1.089,
+      "sharpe_daily_roi": 1.67,
+      "max_dd": -2803.59,
+      "avg_grade": 72.9,
+      "avg_q": 72.9,
+      "avg_fill": 0.609,
+      "avg_vwap": 0.589,
+      "implied_wr": 60.9,
+      "edge": 2.7,
+      "avg_traders": 1.0,
+      "avg_rel": 5.82,
+      "calmar": 1.39,
+      "days": 221,
+      "trades_per_day": 5.45,
+      "first": "2025-01-07",
+      "last": "2026-08-22"
+    },
+    "asof_q60_sub_rel2": {
+      "n": 1118,
+      "wins": 716,
+      "losses": 402,
+      "win_rate": 64.04,
+      "unit_pnl": 3643.18,
+      "expectancy": 3.26,
+      "roi": 3.26,
+      "profit_factor": 1.091,
+      "sharpe_daily_roi": 1.03,
+      "max_dd": -2977.88,
+      "avg_grade": 72.5,
+      "avg_q": 72.5,
+      "avg_fill": 0.614,
+      "avg_vwap": 0.594,
+      "implied_wr": 61.4,
+      "edge": 2.7,
+      "avg_traders": 1.0,
+      "avg_rel": 5.96,
+      "calmar": 1.22,
+      "days": 214,
+      "trades_per_day": 5.22,
+      "first": "2025-01-07",
+      "last": "2026-08-22"
+    },
+    "asof_live_q50_sport": {
+      "n": 11723,
+      "wins": 6271,
+      "losses": 5452,
+      "win_rate": 53.49,
+      "unit_pnl": -43553.01,
+      "expectancy": -3.72,
+      "roi": -3.72,
+      "profit_factor": 0.92,
+      "sharpe_daily_roi": -0.79,
+      "max_dd": -50131.58,
+      "avg_grade": 64.3,
+      "avg_q": 64.3,
+      "avg_fill": 0.531,
+      "avg_vwap": 0.511,
+      "implied_wr": 53.1,
+      "edge": 0.4,
+      "avg_traders": 1.0,
+      "avg_rel": 1.81,
+      "calmar": -0.87,
+      "days": 383,
+      "trades_per_day": 30.61,
+      "first": "2024-10-19",
+      "last": "2026-08-22"
+    },
+    "asof_q50_sport_rel2": {
+      "n": 3074,
+      "wins": 1989,
+      "losses": 1085,
+      "win_rate": 64.7,
+      "unit_pnl": 7236.72,
+      "expectancy": 2.35,
+      "roi": 2.35,
+      "profit_factor": 1.067,
+      "sharpe_daily_roi": 1.5,
+      "max_dd": -5856.75,
+      "avg_grade": 61.8,
+      "avg_q": 61.8,
+      "avg_fill": 0.618,
+      "avg_vwap": 0.599,
+      "implied_wr": 61.8,
+      "edge": 2.9,
+      "avg_traders": 1.0,
+      "avg_rel": 6.22,
+      "calmar": 1.24,
+      "days": 329,
+      "trades_per_day": 9.34,
+      "first": "2024-12-22",
+      "last": "2026-08-22"
+    },
+    "asof_q60_sport": {
+      "n": 7277,
+      "wins": 4160,
+      "losses": 3117,
+      "win_rate": 57.17,
+      "unit_pnl": -8608.28,
+      "expectancy": -1.18,
+      "roi": -1.18,
+      "profit_factor": 0.972,
+      "sharpe_daily_roi": -0.48,
+      "max_dd": -18473.53,
+      "avg_grade": 72.4,
+      "avg_q": 72.4,
+      "avg_fill": 0.562,
+      "avg_vwap": 0.543,
+      "implied_wr": 56.2,
+      "edge": 1.0,
+      "avg_traders": 1.0,
+      "avg_rel": 1.44,
+      "calmar": -0.47,
+      "days": 286,
+      "trades_per_day": 25.44,
+      "first": "2024-10-19",
+      "last": "2026-08-22"
+    },
+    "asof_ml_sport": {
+      "n": 18570,
+      "wins": 10213,
+      "losses": 8357,
+      "win_rate": 55.0,
+      "unit_pnl": -123372.66,
+      "expectancy": -6.64,
+      "roi": -6.64,
+      "profit_factor": 0.852,
+      "sharpe_daily_roi": -1.41,
+      "max_dd": -125931.53,
+      "avg_grade": 47.5,
+      "avg_q": 47.5,
+      "avg_fill": 0.55,
+      "avg_vwap": 0.531,
+      "implied_wr": 55.0,
+      "edge": -0.0,
+      "avg_traders": 1.0,
+      "avg_rel": 2.48,
+      "calmar": -0.98,
+      "days": 639,
+      "trades_per_day": 29.06,
+      "first": "2024-07-14",
+      "last": "2026-08-22"
+    },
+    "asof_flip_sport": {
+      "n": 11340,
+      "wins": 6004,
+      "losses": 5336,
+      "win_rate": 52.95,
+      "unit_pnl": 14020.73,
+      "expectancy": 1.24,
+      "roi": 1.24,
+      "profit_factor": 1.026,
+      "sharpe_daily_roi": -0.58,
+      "max_dd": -13066.54,
+      "avg_grade": 47.0,
+      "avg_q": 47.0,
+      "avg_fill": 0.522,
+      "avg_vwap": 0.502,
+      "implied_wr": 52.2,
+      "edge": 0.8,
+      "avg_traders": 1.0,
+      "avg_rel": 2.31,
+      "calmar": 1.07,
+      "days": 540,
+      "trades_per_day": 21.0,
+      "first": "2024-08-31",
+      "last": "2026-08-22"
+    },
+    "live_10_88": {
+      "n": 54445,
+      "wins": 28537,
+      "losses": 25908,
+      "win_rate": 52.41,
+      "unit_pnl": -213425.13,
+      "expectancy": -3.92,
+      "roi": -3.92,
+      "profit_factor": 0.918,
+      "sharpe_daily_roi": -3.53,
+      "max_dd": -221912.71,
+      "avg_grade": 41.8,
+      "avg_q": 41.8,
+      "avg_fill": 0.522,
+      "avg_vwap": 0.502,
+      "implied_wr": 52.2,
+      "edge": 0.2,
+      "avg_traders": 1.0,
+      "avg_rel": 1.98,
+      "calmar": -0.96,
+      "days": 769,
+      "trades_per_day": 70.8,
+      "first": "2023-02-26",
+      "last": "2026-08-22"
+    }
+  },
+  "strategy_equity": {
+    "asof_live_q60_sport_rel2": {
+      "n": 1105,
+      "start": 10000.0,
+      "end": 13482.38,
+      "pnl": 3482.38,
+      "roi_on_start": 34.82,
+      "max_dd_usd": -2215.96,
+      "max_dd_pct": -18.35,
+      "sharpe_daily_roi": 1.66,
+      "sharpe_daily_pnl": 1.48,
+      "sharpe_calendar": 0.89,
+      "sortino_daily_pnl": 2.1,
+      "sortino_calendar": 0.77,
+      "calmar": 1.57,
+      "profit_factor": 1.08,
+      "expectancy": 3.15,
+      "avg_win": 70.89,
+      "avg_loss": -100.0,
+      "win_rate": 60.36,
+      "profitable_days_pct": 54.2,
+      "longest_lose_streak": 9,
+      "longest_win_streak": 10,
+      "unique_days": 216,
+      "calendar_days": 593,
+      "bets_per_active_day": 5.12,
+      "bets_per_calendar_day": 1.86,
+      "median_bets_on_active_day": 3.0,
+      "max_bets_one_day": 28,
+      "ruin": false,
+      "first": "2025-01-07",
+      "last": "2026-08-22",
+      "up_day_pct": 54.2,
+      "up_month_pct": 56.2,
+      "consistency_score": 3.1
+    },
+    "asof_q60_sport_rel2": {
+      "n": 1205,
+      "start": 10000.0,
+      "end": 13910.59,
+      "pnl": 3910.59,
+      "roi_on_start": 39.11,
+      "max_dd_usd": -2132.67,
+      "max_dd_pct": -18.04,
+      "sharpe_daily_roi": 1.67,
+      "sharpe_daily_pnl": 1.64,
+      "sharpe_calendar": 1.0,
+      "sortino_daily_pnl": 2.32,
+      "sortino_calendar": 0.86,
+      "calmar": 1.83,
+      "profit_factor": 1.089,
+      "expectancy": 3.25,
+      "avg_win": 62.42,
+      "avg_loss": -100.0,
+      "win_rate": 63.57,
+      "profitable_days_pct": 54.8,
+      "longest_lose_streak": 9,
+      "longest_win_streak": 15,
+      "unique_days": 221,
+      "calendar_days": 593,
+      "bets_per_active_day": 5.45,
+      "bets_per_calendar_day": 2.03,
+      "median_bets_on_active_day": 4.0,
+      "max_bets_one_day": 29,
+      "ruin": false,
+      "first": "2025-01-07",
+      "last": "2026-08-22",
+      "up_day_pct": 54.8,
+      "up_month_pct": 56.2,
+      "consistency_score": 3.4
+    },
+    "asof_q60_sub_rel2": {
+      "n": 1118,
+      "start": 10000.0,
+      "end": 13643.18,
+      "pnl": 3643.18,
+      "roi_on_start": 36.43,
+      "max_dd_usd": -2501.47,
+      "max_dd_pct": -17.33,
+      "sharpe_daily_roi": 1.03,
+      "sharpe_daily_pnl": 1.61,
+      "sharpe_calendar": 0.97,
+      "sortino_daily_pnl": 2.42,
+      "sortino_calendar": 0.87,
+      "calmar": 1.46,
+      "profit_factor": 1.091,
+      "expectancy": 3.26,
+      "avg_win": 61.23,
+      "avg_loss": -100.0,
+      "win_rate": 64.04,
+      "profitable_days_pct": 55.1,
+      "longest_lose_streak": 9,
+      "longest_win_streak": 17,
+      "unique_days": 214,
+      "calendar_days": 593,
+      "bets_per_active_day": 5.22,
+      "bets_per_calendar_day": 1.89,
+      "median_bets_on_active_day": 4.0,
+      "max_bets_one_day": 40,
+      "ruin": false,
+      "first": "2025-01-07",
+      "last": "2026-08-22",
+      "up_day_pct": 55.1,
+      "up_month_pct": 56.2,
+      "consistency_score": 3.4
+    },
+    "asof_live_q50_sport": {
+      "n": 11723,
+      "start": 10000.0,
+      "end": -33553.01,
+      "pnl": -43553.01,
+      "roi_on_start": -435.53,
+      "max_dd_usd": -53008.53,
+      "max_dd_pct": -445.93,
+      "sharpe_daily_roi": -0.79,
+      "sharpe_daily_pnl": -3.91,
+      "sharpe_calendar": -2.92,
+      "sortino_daily_pnl": -5.46,
+      "sortino_calendar": -3.11,
+      "calmar": -0.82,
+      "profit_factor": 0.92,
+      "expectancy": -3.72,
+      "avg_win": 79.99,
+      "avg_loss": -100.0,
+      "win_rate": 53.49,
+      "profitable_days_pct": 37.6,
+      "longest_lose_streak": 11,
+      "longest_win_streak": 14,
+      "unique_days": 383,
+      "calendar_days": 673,
+      "bets_per_active_day": 30.61,
+      "bets_per_calendar_day": 17.42,
+      "median_bets_on_active_day": 11.0,
+      "max_bets_one_day": 228,
+      "ruin": true,
+      "first": "2024-10-19",
+      "last": "2026-08-22",
+      "up_day_pct": 37.6,
+      "up_month_pct": 31.8,
+      "consistency_score": 0.0
+    },
+    "asof_q50_sport_rel2": {
+      "n": 3074,
+      "start": 10000.0,
+      "end": 17236.72,
+      "pnl": 7236.72,
+      "roi_on_start": 72.37,
+      "max_dd_usd": -2914.97,
+      "max_dd_pct": -22.24,
+      "sharpe_daily_roi": 1.5,
+      "sharpe_daily_pnl": 1.6,
+      "sharpe_calendar": 1.18,
+      "sortino_daily_pnl": 2.14,
+      "sortino_calendar": 1.15,
+      "calmar": 2.48,
+      "profit_factor": 1.067,
+      "expectancy": 2.35,
+      "avg_win": 58.19,
+      "avg_loss": -100.0,
+      "win_rate": 64.7,
+      "profitable_days_pct": 56.5,
+      "longest_lose_streak": 11,
+      "longest_win_streak": 14,
+      "unique_days": 329,
+      "calendar_days": 609,
+      "bets_per_active_day": 9.34,
+      "bets_per_calendar_day": 5.05,
+      "median_bets_on_active_day": 6.0,
+      "max_bets_one_day": 69,
+      "ruin": false,
+      "first": "2024-12-22",
+      "last": "2026-08-22",
+      "up_day_pct": 56.5,
+      "up_month_pct": 55.0,
+      "consistency_score": 3.4
+    },
+    "asof_q60_sport": {
+      "n": 7277,
+      "start": 10000.0,
+      "end": 1391.72,
+      "pnl": -8608.28,
+      "roi_on_start": -86.08,
+      "max_dd_usd": -17398.48,
+      "max_dd_pct": -155.19,
+      "sharpe_daily_roi": -0.48,
+      "sharpe_daily_pnl": -1.06,
+      "sharpe_calendar": -0.69,
+      "sortino_daily_pnl": -1.65,
+      "sortino_calendar": -0.7,
+      "calmar": -0.49,
+      "profit_factor": 0.972,
+      "expectancy": -1.18,
+      "avg_win": 72.86,
+      "avg_loss": -100.0,
+      "win_rate": 57.17,
+      "profitable_days_pct": 43.7,
+      "longest_lose_streak": 10,
+      "longest_win_streak": 15,
+      "unique_days": 286,
+      "calendar_days": 673,
+      "bets_per_active_day": 25.44,
+      "bets_per_calendar_day": 10.81,
+      "median_bets_on_active_day": 11.0,
+      "max_bets_one_day": 152,
+      "ruin": true,
+      "first": "2024-10-19",
+      "last": "2026-08-22",
+      "up_day_pct": 43.7,
+      "up_month_pct": 33.3,
+      "consistency_score": 0.0
+    },
+    "asof_ml_sport": {
+      "n": 18570,
+      "start": 10000.0,
+      "end": -113372.66,
+      "pnl": -123372.66,
+      "roi_on_start": -1233.73,
+      "max_dd_usd": -126491.09,
+      "max_dd_pct": -1184.59,
+      "sharpe_daily_roi": -1.41,
+      "sharpe_daily_pnl": -6.28,
+      "sharpe_calendar": -5.67,
+      "sortino_daily_pnl": -6.83,
+      "sortino_calendar": -5.67,
+      "calmar": -0.98,
+      "profit_factor": 0.852,
+      "expectancy": -6.64,
+      "avg_win": 69.75,
+      "avg_loss": -100.0,
+      "win_rate": 55.0,
+      "profitable_days_pct": 37.4,
+      "longest_lose_streak": 12,
+      "longest_win_streak": 19,
+      "unique_days": 639,
+      "calendar_days": 770,
+      "bets_per_active_day": 29.06,
+      "bets_per_calendar_day": 24.12,
+      "median_bets_on_active_day": 10.0,
+      "max_bets_one_day": 446,
+      "ruin": true,
+      "first": "2024-07-14",
+      "last": "2026-08-22",
+      "up_day_pct": 37.4,
+      "up_month_pct": 23.1,
+      "consistency_score": 0.0
+    },
+    "asof_flip_sport": {
+      "n": 11340,
+      "start": 10000.0,
+      "end": 24020.73,
+      "pnl": 14020.73,
+      "roi_on_start": 140.21,
+      "max_dd_usd": -10096.72,
+      "max_dd_pct": -94.06,
+      "sharpe_daily_roi": -0.58,
+      "sharpe_daily_pnl": 1.23,
+      "sharpe_calendar": 1.06,
+      "sortino_daily_pnl": 1.85,
+      "sortino_calendar": 1.38,
+      "calmar": 1.39,
+      "profit_factor": 1.026,
+      "expectancy": 1.24,
+      "avg_win": 91.21,
+      "avg_loss": -100.0,
+      "win_rate": 52.95,
+      "profitable_days_pct": 50.0,
+      "longest_lose_streak": 11,
+      "longest_win_streak": 14,
+      "unique_days": 540,
+      "calendar_days": 722,
+      "bets_per_active_day": 21.0,
+      "bets_per_calendar_day": 15.71,
+      "median_bets_on_active_day": 5.0,
+      "max_bets_one_day": 184,
+      "ruin": false,
+      "first": "2024-08-31",
+      "last": "2026-08-22",
+      "up_day_pct": 50.0,
+      "up_month_pct": 48.0,
+      "consistency_score": 2.6
+    },
+    "live_10_88": {
+      "n": 54445,
+      "start": 10000.0,
+      "end": -203425.13,
+      "pnl": -213425.13,
+      "roi_on_start": -2134.25,
+      "max_dd_usd": -221074.78,
+      "max_dd_pct": -2180.65,
+      "sharpe_daily_roi": -3.53,
+      "sharpe_daily_pnl": -6.18,
+      "sharpe_calendar": -4.7,
+      "sortino_daily_pnl": -6.6,
+      "sortino_calendar": -3.99,
+      "calmar": -0.97,
+      "profit_factor": 0.918,
+      "expectancy": -3.92,
+      "avg_win": 83.31,
+      "avg_loss": -100.0,
+      "win_rate": 52.41,
+      "profitable_days_pct": 36.5,
+      "longest_lose_streak": 17,
+      "longest_win_streak": 13,
+      "unique_days": 769,
+      "calendar_days": 1274,
+      "bets_per_active_day": 70.8,
+      "bets_per_calendar_day": 42.74,
+      "median_bets_on_active_day": 18.0,
+      "max_bets_one_day": 694,
+      "ruin": true,
+      "first": "2023-02-26",
+      "last": "2026-08-22",
+      "up_day_pct": 36.5,
+      "up_month_pct": 25.0,
+      "consistency_score": 0.0
+    }
+  },
+  "pools": {
+    "asof_live_q60_sport_rel2": {
+      "live_only": {
+        "n": 24,
+        "wins": 14,
+        "losses": 10,
+        "win_rate": 58.33,
+        "unit_pnl": 177.55,
+        "expectancy": 7.4,
+        "roi": 7.4,
+        "profit_factor": 1.178,
+        "sharpe_daily_roi": 2.41,
+        "max_dd": -300.0,
+        "avg_grade": 76.1,
+        "avg_q": 76.1,
+        "avg_fill": 0.549,
+        "avg_vwap": 0.529,
+        "implied_wr": 54.9,
+        "edge": 3.5,
+        "avg_traders": 1.0,
+        "avg_rel": 3.74,
+        "calmar": 0.59,
+        "days": 16,
+        "trades_per_day": 1.5,
+        "first": "2026-03-02",
+        "last": "2026-05-17",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a"
+        ]
+      },
+      "live_plus_bench": {
+        "n": 437,
+        "wins": 265,
+        "losses": 172,
+        "win_rate": 60.64,
+        "unit_pnl": 2034.59,
+        "expectancy": 4.66,
+        "roi": 4.66,
+        "profit_factor": 1.118,
+        "sharpe_daily_roi": 2.94,
+        "max_dd": -1824.89,
+        "avg_grade": 76.0,
+        "avg_q": 76.0,
+        "avg_fill": 0.583,
+        "avg_vwap": 0.563,
+        "implied_wr": 58.3,
+        "edge": 2.3,
+        "avg_traders": 1.0,
+        "avg_rel": 5.34,
+        "calmar": 1.11,
+        "days": 151,
+        "trades_per_day": 2.89,
+        "first": "2025-01-07",
+        "last": "2026-07-29",
+        "traders": [
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "DLEK",
+          "HedgeMaster88",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "Supah9ga",
+          "TTdes",
+          "Vetch",
+          "WTSA",
+          "ckw"
+        ]
+      },
+      "all_csv": {
+        "n": 1105,
+        "wins": 667,
+        "losses": 438,
+        "win_rate": 60.36,
+        "unit_pnl": 3482.38,
+        "expectancy": 3.15,
+        "roi": 3.15,
+        "profit_factor": 1.08,
+        "sharpe_daily_roi": 1.66,
+        "max_dd": -2812.33,
+        "avg_grade": 72.7,
+        "avg_q": 72.7,
+        "avg_fill": 0.578,
+        "avg_vwap": 0.558,
+        "implied_wr": 57.8,
+        "edge": 2.6,
+        "avg_traders": 1.0,
+        "avg_rel": 5.64,
+        "calmar": 1.24,
+        "days": 216,
+        "trades_per_day": 5.12,
+        "first": "2025-01-07",
+        "last": "2026-08-22",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "Capman",
+          "CoryLahey",
+          "DLEK",
+          "HVAB",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "Sassy-Bucket",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "WTSA",
+          "bigspending",
+          "bloodmaster",
+          "ckw",
+          "kch123",
+          "norrisfan",
+          "tcp2",
+          "theowalcott"
+        ]
+      },
+      "joinable_csv": {
+        "n": 707,
+        "wins": 391,
+        "losses": 316,
+        "win_rate": 55.3,
+        "unit_pnl": -1106.78,
+        "expectancy": -1.57,
+        "roi": -1.57,
+        "profit_factor": 0.965,
+        "sharpe_daily_roi": 0.5,
+        "max_dd": -4452.89,
+        "avg_grade": 73.6,
+        "avg_q": 73.6,
+        "avg_fill": 0.558,
+        "avg_vwap": 0.538,
+        "implied_wr": 55.8,
+        "edge": -0.5,
+        "avg_traders": 1.0,
+        "avg_rel": 5.69,
+        "calmar": -0.25,
+        "days": 153,
+        "trades_per_day": 4.62,
+        "first": "2025-01-07",
+        "last": "2026-08-17",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      },
+      "easy_tail": {
+        "n": 696,
+        "wins": 383,
+        "losses": 313,
+        "win_rate": 55.03,
+        "unit_pnl": -1693.16,
+        "expectancy": -2.43,
+        "roi": -2.43,
+        "profit_factor": 0.946,
+        "sharpe_daily_roi": -0.31,
+        "max_dd": -4452.89,
+        "avg_grade": 73.5,
+        "avg_q": 73.5,
+        "avg_fill": 0.559,
+        "avg_vwap": 0.539,
+        "implied_wr": 55.9,
+        "edge": -0.9,
+        "avg_traders": 1.0,
+        "avg_rel": 5.69,
+        "calmar": -0.38,
+        "days": 144,
+        "trades_per_day": 4.83,
+        "first": "2025-01-07",
+        "last": "2026-05-17",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      }
+    },
+    "asof_q60_sport_rel2": {
+      "live_only": {
+        "n": 25,
+        "wins": 15,
+        "losses": 10,
+        "win_rate": 60.0,
+        "unit_pnl": 186.26,
+        "expectancy": 7.45,
+        "roi": 7.45,
+        "profit_factor": 1.186,
+        "sharpe_daily_roi": 3.32,
+        "max_dd": -291.29,
+        "avg_grade": 76.1,
+        "avg_q": 76.1,
+        "avg_fill": 0.564,
+        "avg_vwap": 0.544,
+        "implied_wr": 56.4,
+        "edge": 3.6,
+        "avg_traders": 1.0,
+        "avg_rel": 3.93,
+        "calmar": 0.64,
+        "days": 16,
+        "trades_per_day": 1.56,
+        "first": "2026-03-02",
+        "last": "2026-05-17",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a"
+        ]
+      },
+      "live_plus_bench": {
+        "n": 457,
+        "wins": 284,
+        "losses": 173,
+        "win_rate": 62.14,
+        "unit_pnl": 2094.81,
+        "expectancy": 4.58,
+        "roi": 4.58,
+        "profit_factor": 1.121,
+        "sharpe_daily_roi": 3.04,
+        "max_dd": -1789.6,
+        "avg_grade": 76.1,
+        "avg_q": 76.1,
+        "avg_fill": 0.598,
+        "avg_vwap": 0.578,
+        "implied_wr": 59.8,
+        "edge": 2.3,
+        "avg_traders": 1.0,
+        "avg_rel": 5.41,
+        "calmar": 1.17,
+        "days": 158,
+        "trades_per_day": 2.89,
+        "first": "2025-01-07",
+        "last": "2026-07-29",
+        "traders": [
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "DLEK",
+          "HedgeMaster88",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "Supah9ga",
+          "TTdes",
+          "Vetch",
+          "WTSA",
+          "ckw"
+        ]
+      },
+      "all_csv": {
+        "n": 1205,
+        "wins": 766,
+        "losses": 439,
+        "win_rate": 63.57,
+        "unit_pnl": 3910.59,
+        "expectancy": 3.25,
+        "roi": 3.25,
+        "profit_factor": 1.089,
+        "sharpe_daily_roi": 1.67,
+        "max_dd": -2803.59,
+        "avg_grade": 72.9,
+        "avg_q": 72.9,
+        "avg_fill": 0.609,
+        "avg_vwap": 0.589,
+        "implied_wr": 60.9,
+        "edge": 2.7,
+        "avg_traders": 1.0,
+        "avg_rel": 5.82,
+        "calmar": 1.39,
+        "days": 221,
+        "trades_per_day": 5.45,
+        "first": "2025-01-07",
+        "last": "2026-08-22",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "Capman",
+          "CoryLahey",
+          "DLEK",
+          "HVAB",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "Sassy-Bucket",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "WTSA",
+          "bigspending",
+          "bloodmaster",
+          "ckw",
+          "kch123",
+          "norrisfan",
+          "tcp2",
+          "theowalcott"
+        ]
+      },
+      "joinable_csv": {
+        "n": 731,
+        "wins": 414,
+        "losses": 317,
+        "win_rate": 56.63,
+        "unit_pnl": -1037.83,
+        "expectancy": -1.42,
+        "roi": -1.42,
+        "profit_factor": 0.967,
+        "sharpe_daily_roi": 0.5,
+        "max_dd": -4408.87,
+        "avg_grade": 73.7,
+        "avg_q": 73.7,
+        "avg_fill": 0.57,
+        "avg_vwap": 0.55,
+        "implied_wr": 57.0,
+        "edge": -0.4,
+        "avg_traders": 1.0,
+        "avg_rel": 5.76,
+        "calmar": -0.24,
+        "days": 158,
+        "trades_per_day": 4.63,
+        "first": "2025-01-07",
+        "last": "2026-08-17",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      },
+      "easy_tail": {
+        "n": 720,
+        "wins": 406,
+        "losses": 314,
+        "win_rate": 56.39,
+        "unit_pnl": -1624.21,
+        "expectancy": -2.26,
+        "roi": -2.26,
+        "profit_factor": 0.948,
+        "sharpe_daily_roi": -0.31,
+        "max_dd": -4408.87,
+        "avg_grade": 73.6,
+        "avg_q": 73.6,
+        "avg_fill": 0.572,
+        "avg_vwap": 0.552,
+        "implied_wr": 57.2,
+        "edge": -0.8,
+        "avg_traders": 1.0,
+        "avg_rel": 5.76,
+        "calmar": -0.37,
+        "days": 149,
+        "trades_per_day": 4.83,
+        "first": "2025-01-07",
+        "last": "2026-05-17",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      }
+    },
+    "asof_q60_sub_rel2": {
+      "live_only": {
+        "n": 23,
+        "wins": 13,
+        "losses": 10,
+        "win_rate": 56.52,
+        "unit_pnl": -14.58,
+        "expectancy": -0.63,
+        "roi": -0.63,
+        "profit_factor": 0.985,
+        "sharpe_daily_roi": 2.03,
+        "max_dd": -291.29,
+        "avg_grade": 77.0,
+        "avg_q": 77.0,
+        "avg_fill": 0.569,
+        "avg_vwap": 0.549,
+        "implied_wr": 56.9,
+        "edge": -0.3,
+        "avg_traders": 1.0,
+        "avg_rel": 3.79,
+        "calmar": -0.05,
+        "days": 15,
+        "trades_per_day": 1.53,
+        "first": "2026-03-02",
+        "last": "2026-05-17",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a"
+        ]
+      },
+      "live_plus_bench": {
+        "n": 421,
+        "wins": 264,
+        "losses": 157,
+        "win_rate": 62.71,
+        "unit_pnl": 2036.68,
+        "expectancy": 4.84,
+        "roi": 4.84,
+        "profit_factor": 1.13,
+        "sharpe_daily_roi": 2.81,
+        "max_dd": -1744.94,
+        "avg_grade": 75.6,
+        "avg_q": 75.6,
+        "avg_fill": 0.602,
+        "avg_vwap": 0.582,
+        "implied_wr": 60.2,
+        "edge": 2.5,
+        "avg_traders": 1.0,
+        "avg_rel": 5.56,
+        "calmar": 1.17,
+        "days": 154,
+        "trades_per_day": 2.73,
+        "first": "2025-01-07",
+        "last": "2026-07-29",
+        "traders": [
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "DLEK",
+          "HedgeMaster88",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "Supah9ga",
+          "TTdes",
+          "Vetch",
+          "WTSA",
+          "ckw"
+        ]
+      },
+      "all_csv": {
+        "n": 1118,
+        "wins": 716,
+        "losses": 402,
+        "win_rate": 64.04,
+        "unit_pnl": 3643.18,
+        "expectancy": 3.26,
+        "roi": 3.26,
+        "profit_factor": 1.091,
+        "sharpe_daily_roi": 1.03,
+        "max_dd": -2977.88,
+        "avg_grade": 72.5,
+        "avg_q": 72.5,
+        "avg_fill": 0.614,
+        "avg_vwap": 0.594,
+        "implied_wr": 61.4,
+        "edge": 2.7,
+        "avg_traders": 1.0,
+        "avg_rel": 5.96,
+        "calmar": 1.22,
+        "days": 214,
+        "trades_per_day": 5.22,
+        "first": "2025-01-07",
+        "last": "2026-08-22",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "Capman",
+          "CoryLahey",
+          "DLEK",
+          "HVAB",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "Sassy-Bucket",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "WTSA",
+          "bigspending",
+          "bloodmaster",
+          "ckw",
+          "kch123",
+          "norrisfan",
+          "tcp2",
+          "theowalcott"
+        ]
+      },
+      "joinable_csv": {
+        "n": 694,
+        "wins": 403,
+        "losses": 291,
+        "win_rate": 58.07,
+        "unit_pnl": -611.81,
+        "expectancy": -0.88,
+        "roi": -0.88,
+        "profit_factor": 0.979,
+        "sharpe_daily_roi": 0.47,
+        "max_dd": -4333.48,
+        "avg_grade": 73.1,
+        "avg_q": 73.1,
+        "avg_fill": 0.582,
+        "avg_vwap": 0.563,
+        "implied_wr": 58.2,
+        "edge": -0.2,
+        "avg_traders": 1.0,
+        "avg_rel": 5.89,
+        "calmar": -0.14,
+        "days": 155,
+        "trades_per_day": 4.48,
+        "first": "2025-01-07",
+        "last": "2026-08-17",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      },
+      "easy_tail": {
+        "n": 686,
+        "wins": 396,
+        "losses": 290,
+        "win_rate": 57.73,
+        "unit_pnl": -1313.0,
+        "expectancy": -1.91,
+        "roi": -1.91,
+        "profit_factor": 0.955,
+        "sharpe_daily_roi": -0.6,
+        "max_dd": -4333.48,
+        "avg_grade": 73.0,
+        "avg_q": 73.0,
+        "avg_fill": 0.584,
+        "avg_vwap": 0.564,
+        "implied_wr": 58.4,
+        "edge": -0.6,
+        "avg_traders": 1.0,
+        "avg_rel": 5.9,
+        "calmar": -0.3,
+        "days": 149,
+        "trades_per_day": 4.6,
+        "first": "2025-01-07",
+        "last": "2026-05-17",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      }
+    },
+    "asof_live_q50_sport": {
+      "live_only": {
+        "n": 102,
+        "wins": 53,
+        "losses": 49,
+        "win_rate": 51.96,
+        "unit_pnl": 180.77,
+        "expectancy": 1.77,
+        "roi": 1.77,
+        "profit_factor": 1.037,
+        "sharpe_daily_roi": 1.9,
+        "max_dd": -1351.94,
+        "avg_grade": 73.0,
+        "avg_q": 73.0,
+        "avg_fill": 0.539,
+        "avg_vwap": 0.519,
+        "implied_wr": 53.9,
+        "edge": -1.9,
+        "avg_traders": 1.0,
+        "avg_rel": 1.62,
+        "calmar": 0.13,
+        "days": 42,
+        "trades_per_day": 2.43,
+        "first": "2026-02-27",
+        "last": "2026-08-15",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a"
+        ]
+      },
+      "live_plus_bench": {
+        "n": 2253,
+        "wins": 1206,
+        "losses": 1047,
+        "win_rate": 53.53,
+        "unit_pnl": 7365.86,
+        "expectancy": 3.27,
+        "roi": 3.27,
+        "profit_factor": 1.07,
+        "sharpe_daily_roi": 1.19,
+        "max_dd": -5060.74,
+        "avg_grade": 71.0,
+        "avg_q": 71.0,
+        "avg_fill": 0.528,
+        "avg_vwap": 0.508,
+        "implied_wr": 52.8,
+        "edge": 0.8,
+        "avg_traders": 1.0,
+        "avg_rel": 2.15,
+        "calmar": 1.46,
+        "days": 267,
+        "trades_per_day": 8.44,
+        "first": "2024-10-19",
+        "last": "2026-08-17",
+        "traders": [
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "DLEK",
+          "HedgeMaster88",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "Supah9ga",
+          "TTdes",
+          "Vetch",
+          "WTSA",
+          "ckw"
+        ]
+      },
+      "all_csv": {
+        "n": 11723,
+        "wins": 6271,
+        "losses": 5452,
+        "win_rate": 53.49,
+        "unit_pnl": -43553.01,
+        "expectancy": -3.72,
+        "roi": -3.72,
+        "profit_factor": 0.92,
+        "sharpe_daily_roi": -0.79,
+        "max_dd": -50131.58,
+        "avg_grade": 64.3,
+        "avg_q": 64.3,
+        "avg_fill": 0.531,
+        "avg_vwap": 0.511,
+        "implied_wr": 53.1,
+        "edge": 0.4,
+        "avg_traders": 1.0,
+        "avg_rel": 1.81,
+        "calmar": -0.87,
+        "days": 383,
+        "trades_per_day": 30.61,
+        "first": "2024-10-19",
+        "last": "2026-08-22",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "Capman",
+          "CoryLahey",
+          "DLEK",
+          "HVAB",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "Sassy-Bucket",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "WTSA",
+          "bigspending",
+          "bloodmaster",
+          "ckw",
+          "kch123",
+          "norrisfan",
+          "tcp2",
+          "theowalcott"
+        ]
+      },
+      "joinable_csv": {
+        "n": 3960,
+        "wins": 2036,
+        "losses": 1924,
+        "win_rate": 51.41,
+        "unit_pnl": 684.93,
+        "expectancy": 0.17,
+        "roi": 0.17,
+        "profit_factor": 1.004,
+        "sharpe_daily_roi": 0.74,
+        "max_dd": -12685.77,
+        "avg_grade": 67.2,
+        "avg_q": 67.2,
+        "avg_fill": 0.518,
+        "avg_vwap": 0.498,
+        "implied_wr": 51.8,
+        "edge": -0.4,
+        "avg_traders": 1.0,
+        "avg_rel": 2.31,
+        "calmar": 0.05,
+        "days": 322,
+        "trades_per_day": 12.3,
+        "first": "2024-10-19",
+        "last": "2026-08-17",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      },
+      "easy_tail": {
+        "n": 3919,
+        "wins": 2013,
+        "losses": 1906,
+        "win_rate": 51.37,
+        "unit_pnl": -167.9,
+        "expectancy": -0.04,
+        "roi": -0.04,
+        "profit_factor": 0.999,
+        "sharpe_daily_roi": 0.27,
+        "max_dd": -12685.77,
+        "avg_grade": 67.1,
+        "avg_q": 67.1,
+        "avg_fill": 0.518,
+        "avg_vwap": 0.498,
+        "implied_wr": 51.8,
+        "edge": -0.5,
+        "avg_traders": 1.0,
+        "avg_rel": 2.3,
+        "calmar": -0.01,
+        "days": 313,
+        "trades_per_day": 12.52,
+        "first": "2024-10-19",
+        "last": "2026-08-15",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      }
+    },
+    "asof_q50_sport_rel2": {
+      "live_only": {
+        "n": 31,
+        "wins": 20,
+        "losses": 11,
+        "win_rate": 64.52,
+        "unit_pnl": 414.75,
+        "expectancy": 13.38,
+        "roi": 13.38,
+        "profit_factor": 1.377,
+        "sharpe_daily_roi": 3.13,
+        "max_dd": -318.15,
+        "avg_grade": 72.3,
+        "avg_q": 72.3,
+        "avg_fill": 0.574,
+        "avg_vwap": 0.554,
+        "implied_wr": 57.4,
+        "edge": 7.1,
+        "avg_traders": 1.0,
+        "avg_rel": 3.85,
+        "calmar": 1.3,
+        "days": 19,
+        "trades_per_day": 1.63,
+        "first": "2026-02-27",
+        "last": "2026-05-24",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a"
+        ]
+      },
+      "live_plus_bench": {
+        "n": 688,
+        "wins": 411,
+        "losses": 277,
+        "win_rate": 59.74,
+        "unit_pnl": 768.46,
+        "expectancy": 1.12,
+        "roi": 1.12,
+        "profit_factor": 1.028,
+        "sharpe_daily_roi": 1.26,
+        "max_dd": -4337.55,
+        "avg_grade": 68.7,
+        "avg_q": 68.7,
+        "avg_fill": 0.594,
+        "avg_vwap": 0.574,
+        "implied_wr": 59.4,
+        "edge": 0.3,
+        "avg_traders": 1.0,
+        "avg_rel": 5.71,
+        "calmar": 0.18,
+        "days": 201,
+        "trades_per_day": 3.42,
+        "first": "2025-01-05",
+        "last": "2026-08-17",
+        "traders": [
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "DLEK",
+          "HedgeMaster88",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "Supah9ga",
+          "TTdes",
+          "Vetch",
+          "WTSA",
+          "ckw"
+        ]
+      },
+      "all_csv": {
+        "n": 3074,
+        "wins": 1989,
+        "losses": 1085,
+        "win_rate": 64.7,
+        "unit_pnl": 7236.72,
+        "expectancy": 2.35,
+        "roi": 2.35,
+        "profit_factor": 1.067,
+        "sharpe_daily_roi": 1.5,
+        "max_dd": -5856.75,
+        "avg_grade": 61.8,
+        "avg_q": 61.8,
+        "avg_fill": 0.618,
+        "avg_vwap": 0.599,
+        "implied_wr": 61.8,
+        "edge": 2.9,
+        "avg_traders": 1.0,
+        "avg_rel": 6.22,
+        "calmar": 1.24,
+        "days": 329,
+        "trades_per_day": 9.34,
+        "first": "2024-12-22",
+        "last": "2026-08-22",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "Capman",
+          "CoryLahey",
+          "DLEK",
+          "HVAB",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "Sassy-Bucket",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "WTSA",
+          "bigspending",
+          "bloodmaster",
+          "ckw",
+          "kch123",
+          "norrisfan",
+          "tcp2",
+          "theowalcott"
+        ]
+      },
+      "joinable_csv": {
+        "n": 1396,
+        "wins": 828,
+        "losses": 568,
+        "win_rate": 59.31,
+        "unit_pnl": -202.88,
+        "expectancy": -0.15,
+        "roi": -0.15,
+        "profit_factor": 0.996,
+        "sharpe_daily_roi": -0.04,
+        "max_dd": -6334.94,
+        "avg_grade": 64.3,
+        "avg_q": 64.3,
+        "avg_fill": 0.595,
+        "avg_vwap": 0.577,
+        "implied_wr": 59.5,
+        "edge": -0.2,
+        "avg_traders": 1.0,
+        "avg_rel": 6.33,
+        "calmar": -0.03,
+        "days": 257,
+        "trades_per_day": 5.43,
+        "first": "2024-12-22",
+        "last": "2026-08-17",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      },
+      "easy_tail": {
+        "n": 1382,
+        "wins": 818,
+        "losses": 564,
+        "win_rate": 59.19,
+        "unit_pnl": -971.83,
+        "expectancy": -0.7,
+        "roi": -0.7,
+        "profit_factor": 0.983,
+        "sharpe_daily_roi": -0.85,
+        "max_dd": -6334.94,
+        "avg_grade": 64.2,
+        "avg_q": 64.2,
+        "avg_fill": 0.597,
+        "avg_vwap": 0.578,
+        "implied_wr": 59.7,
+        "edge": -0.5,
+        "avg_traders": 1.0,
+        "avg_rel": 6.33,
+        "calmar": -0.15,
+        "days": 246,
+        "trades_per_day": 5.62,
+        "first": "2024-12-22",
+        "last": "2026-07-06",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      }
+    },
+    "asof_q60_sport": {
+      "live_only": {
+        "n": 94,
+        "wins": 47,
+        "losses": 47,
+        "win_rate": 50.0,
+        "unit_pnl": -439.76,
+        "expectancy": -4.68,
+        "roi": -4.68,
+        "profit_factor": 0.906,
+        "sharpe_daily_roi": 0.08,
+        "max_dd": -1156.06,
+        "avg_grade": 74.6,
+        "avg_q": 74.6,
+        "avg_fill": 0.542,
+        "avg_vwap": 0.522,
+        "implied_wr": 54.2,
+        "edge": -4.2,
+        "avg_traders": 1.0,
+        "avg_rel": 1.65,
+        "calmar": -0.38,
+        "days": 39,
+        "trades_per_day": 2.41,
+        "first": "2026-03-01",
+        "last": "2026-08-15",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a"
+        ]
+      },
+      "live_plus_bench": {
+        "n": 1709,
+        "wins": 918,
+        "losses": 791,
+        "win_rate": 53.72,
+        "unit_pnl": 3523.59,
+        "expectancy": 2.06,
+        "roi": 2.06,
+        "profit_factor": 1.045,
+        "sharpe_daily_roi": 0.35,
+        "max_dd": -5828.73,
+        "avg_grade": 77.6,
+        "avg_q": 77.6,
+        "avg_fill": 0.53,
+        "avg_vwap": 0.51,
+        "implied_wr": 53.0,
+        "edge": 0.7,
+        "avg_traders": 1.0,
+        "avg_rel": 1.98,
+        "calmar": 0.6,
+        "days": 222,
+        "trades_per_day": 7.7,
+        "first": "2024-10-19",
+        "last": "2026-08-15",
+        "traders": [
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "DLEK",
+          "HedgeMaster88",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "Supah9ga",
+          "TTdes",
+          "Vetch",
+          "WTSA",
+          "ckw"
+        ]
+      },
+      "all_csv": {
+        "n": 7277,
+        "wins": 4160,
+        "losses": 3117,
+        "win_rate": 57.17,
+        "unit_pnl": -8608.28,
+        "expectancy": -1.18,
+        "roi": -1.18,
+        "profit_factor": 0.972,
+        "sharpe_daily_roi": -0.48,
+        "max_dd": -18473.53,
+        "avg_grade": 72.4,
+        "avg_q": 72.4,
+        "avg_fill": 0.562,
+        "avg_vwap": 0.543,
+        "implied_wr": 56.2,
+        "edge": 1.0,
+        "avg_traders": 1.0,
+        "avg_rel": 1.44,
+        "calmar": -0.47,
+        "days": 286,
+        "trades_per_day": 25.44,
+        "first": "2024-10-19",
+        "last": "2026-08-22",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "Capman",
+          "CoryLahey",
+          "DLEK",
+          "HVAB",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "Sassy-Bucket",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "WTSA",
+          "bigspending",
+          "bloodmaster",
+          "ckw",
+          "kch123",
+          "norrisfan",
+          "tcp2",
+          "theowalcott"
+        ]
+      },
+      "joinable_csv": {
+        "n": 2638,
+        "wins": 1414,
+        "losses": 1224,
+        "win_rate": 53.6,
+        "unit_pnl": 1299.15,
+        "expectancy": 0.49,
+        "roi": 0.49,
+        "profit_factor": 1.011,
+        "sharpe_daily_roi": 0.89,
+        "max_dd": -8900.77,
+        "avg_grade": 75.0,
+        "avg_q": 75.0,
+        "avg_fill": 0.538,
+        "avg_vwap": 0.519,
+        "implied_wr": 53.8,
+        "edge": -0.2,
+        "avg_traders": 1.0,
+        "avg_rel": 2.07,
+        "calmar": 0.15,
+        "days": 221,
+        "trades_per_day": 11.94,
+        "first": "2024-10-19",
+        "last": "2026-08-17",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      },
+      "easy_tail": {
+        "n": 2603,
+        "wins": 1393,
+        "losses": 1210,
+        "win_rate": 53.52,
+        "unit_pnl": 328.89,
+        "expectancy": 0.13,
+        "roi": 0.13,
+        "profit_factor": 1.003,
+        "sharpe_daily_roi": 0.28,
+        "max_dd": -8900.77,
+        "avg_grade": 74.9,
+        "avg_q": 74.9,
+        "avg_fill": 0.539,
+        "avg_vwap": 0.52,
+        "implied_wr": 53.9,
+        "edge": -0.4,
+        "avg_traders": 1.0,
+        "avg_rel": 2.06,
+        "calmar": 0.04,
+        "days": 213,
+        "trades_per_day": 12.22,
+        "first": "2024-10-19",
+        "last": "2026-08-15",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      }
+    },
+    "asof_ml_sport": {
+      "live_only": {
+        "n": 61,
+        "wins": 31,
+        "losses": 30,
+        "win_rate": 50.82,
+        "unit_pnl": 100.08,
+        "expectancy": 1.64,
+        "roi": 1.64,
+        "profit_factor": 1.033,
+        "sharpe_daily_roi": 2.09,
+        "max_dd": -608.24,
+        "avg_grade": 69.1,
+        "avg_q": 69.1,
+        "avg_fill": 0.542,
+        "avg_vwap": 0.522,
+        "implied_wr": 54.2,
+        "edge": -3.4,
+        "avg_traders": 1.0,
+        "avg_rel": 1.49,
+        "calmar": 0.16,
+        "days": 35,
+        "trades_per_day": 1.74,
+        "first": "2026-02-26",
+        "last": "2026-08-15",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a"
+        ]
+      },
+      "live_plus_bench": {
+        "n": 6356,
+        "wins": 3382,
+        "losses": 2974,
+        "win_rate": 53.21,
+        "unit_pnl": -24431.47,
+        "expectancy": -3.84,
+        "roi": -3.84,
+        "profit_factor": 0.918,
+        "sharpe_daily_roi": -0.74,
+        "max_dd": -37331.96,
+        "avg_grade": 43.3,
+        "avg_q": 43.3,
+        "avg_fill": 0.526,
+        "avg_vwap": 0.506,
+        "implied_wr": 52.6,
+        "edge": 0.7,
+        "avg_traders": 1.0,
+        "avg_rel": 2.23,
+        "calmar": -0.65,
+        "days": 455,
+        "trades_per_day": 13.97,
+        "first": "2024-07-14",
+        "last": "2026-08-17",
+        "traders": [
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "DLEK",
+          "HedgeMaster88",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "Supah9ga",
+          "TTdes",
+          "Vetch",
+          "WTSA",
+          "ckw"
+        ]
+      },
+      "all_csv": {
+        "n": 18570,
+        "wins": 10213,
+        "losses": 8357,
+        "win_rate": 55.0,
+        "unit_pnl": -123372.66,
+        "expectancy": -6.64,
+        "roi": -6.64,
+        "profit_factor": 0.852,
+        "sharpe_daily_roi": -1.41,
+        "max_dd": -125931.53,
+        "avg_grade": 47.5,
+        "avg_q": 47.5,
+        "avg_fill": 0.55,
+        "avg_vwap": 0.531,
+        "implied_wr": 55.0,
+        "edge": -0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 2.48,
+        "calmar": -0.98,
+        "days": 639,
+        "trades_per_day": 29.06,
+        "first": "2024-07-14",
+        "last": "2026-08-22",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "Capman",
+          "CoryLahey",
+          "DLEK",
+          "HVAB",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "Sassy-Bucket",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "WTSA",
+          "bigspending",
+          "bloodmaster",
+          "ckw",
+          "kch123",
+          "norrisfan",
+          "tcp2",
+          "theowalcott"
+        ]
+      },
+      "joinable_csv": {
+        "n": 10636,
+        "wins": 5916,
+        "losses": 4720,
+        "win_rate": 55.62,
+        "unit_pnl": -37558.55,
+        "expectancy": -3.53,
+        "roi": -3.53,
+        "profit_factor": 0.92,
+        "sharpe_daily_roi": -0.66,
+        "max_dd": -52730.92,
+        "avg_grade": 42.3,
+        "avg_q": 42.3,
+        "avg_fill": 0.553,
+        "avg_vwap": 0.534,
+        "implied_wr": 55.3,
+        "edge": 0.3,
+        "avg_traders": 1.0,
+        "avg_rel": 2.81,
+        "calmar": -0.71,
+        "days": 634,
+        "trades_per_day": 16.78,
+        "first": "2024-07-14",
+        "last": "2026-08-22",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      },
+      "easy_tail": {
+        "n": 10612,
+        "wins": 5906,
+        "losses": 4706,
+        "win_rate": 55.65,
+        "unit_pnl": -37418.44,
+        "expectancy": -3.53,
+        "roi": -3.53,
+        "profit_factor": 0.92,
+        "sharpe_daily_roi": -0.58,
+        "max_dd": -52730.92,
+        "avg_grade": 42.2,
+        "avg_q": 42.2,
+        "avg_fill": 0.553,
+        "avg_vwap": 0.535,
+        "implied_wr": 55.3,
+        "edge": 0.3,
+        "avg_traders": 1.0,
+        "avg_rel": 2.81,
+        "calmar": -0.71,
+        "days": 634,
+        "trades_per_day": 16.74,
+        "first": "2024-07-14",
+        "last": "2026-08-22",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      }
+    },
+    "asof_flip_sport": {
+      "live_only": {
+        "n": 117,
+        "wins": 62,
+        "losses": 55,
+        "win_rate": 52.99,
+        "unit_pnl": -347.03,
+        "expectancy": -2.97,
+        "roi": -2.97,
+        "profit_factor": 0.937,
+        "sharpe_daily_roi": -2.52,
+        "max_dd": -1152.61,
+        "avg_grade": 57.7,
+        "avg_q": 57.7,
+        "avg_fill": 0.543,
+        "avg_vwap": 0.523,
+        "implied_wr": 54.3,
+        "edge": -1.3,
+        "avg_traders": 1.0,
+        "avg_rel": 1.98,
+        "calmar": -0.3,
+        "days": 46,
+        "trades_per_day": 2.54,
+        "first": "2026-02-26",
+        "last": "2026-08-06",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a"
+        ]
+      },
+      "live_plus_bench": {
+        "n": 4823,
+        "wins": 2640,
+        "losses": 2183,
+        "win_rate": 54.74,
+        "unit_pnl": 23255.78,
+        "expectancy": 4.82,
+        "roi": 4.82,
+        "profit_factor": 1.107,
+        "sharpe_daily_roi": 1.37,
+        "max_dd": -6857.8,
+        "avg_grade": 42.9,
+        "avg_q": 42.9,
+        "avg_fill": 0.522,
+        "avg_vwap": 0.502,
+        "implied_wr": 52.2,
+        "edge": 2.5,
+        "avg_traders": 1.0,
+        "avg_rel": 1.99,
+        "calmar": 3.39,
+        "days": 346,
+        "trades_per_day": 13.94,
+        "first": "2024-09-04",
+        "last": "2026-08-17",
+        "traders": [
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "DLEK",
+          "HedgeMaster88",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "Supah9ga",
+          "TTdes",
+          "Vetch",
+          "WTSA",
+          "ckw"
+        ]
+      },
+      "all_csv": {
+        "n": 11340,
+        "wins": 6004,
+        "losses": 5336,
+        "win_rate": 52.95,
+        "unit_pnl": 14020.73,
+        "expectancy": 1.24,
+        "roi": 1.24,
+        "profit_factor": 1.026,
+        "sharpe_daily_roi": -0.58,
+        "max_dd": -13066.54,
+        "avg_grade": 47.0,
+        "avg_q": 47.0,
+        "avg_fill": 0.522,
+        "avg_vwap": 0.502,
+        "implied_wr": 52.2,
+        "edge": 0.8,
+        "avg_traders": 1.0,
+        "avg_rel": 2.31,
+        "calmar": 1.07,
+        "days": 540,
+        "trades_per_day": 21.0,
+        "first": "2024-08-31",
+        "last": "2026-08-22",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "Capman",
+          "CoryLahey",
+          "DLEK",
+          "HVAB",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "Sassy-Bucket",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "WTSA",
+          "bigspending",
+          "bloodmaster",
+          "ckw",
+          "kch123",
+          "norrisfan",
+          "tcp2",
+          "theowalcott"
+        ]
+      },
+      "joinable_csv": {
+        "n": 7316,
+        "wins": 3907,
+        "losses": 3409,
+        "win_rate": 53.4,
+        "unit_pnl": 17999.06,
+        "expectancy": 2.46,
+        "roi": 2.46,
+        "profit_factor": 1.053,
+        "sharpe_daily_roi": -0.58,
+        "max_dd": -12639.56,
+        "avg_grade": 41.7,
+        "avg_q": 41.7,
+        "avg_fill": 0.521,
+        "avg_vwap": 0.501,
+        "implied_wr": 52.1,
+        "edge": 1.3,
+        "avg_traders": 1.0,
+        "avg_rel": 2.16,
+        "calmar": 1.42,
+        "days": 530,
+        "trades_per_day": 13.8,
+        "first": "2024-08-31",
+        "last": "2026-08-21",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      },
+      "easy_tail": {
+        "n": 7290,
+        "wins": 3890,
+        "losses": 3400,
+        "win_rate": 53.36,
+        "unit_pnl": 17167.56,
+        "expectancy": 2.35,
+        "roi": 2.35,
+        "profit_factor": 1.05,
+        "sharpe_daily_roi": -0.59,
+        "max_dd": -12639.56,
+        "avg_grade": 41.6,
+        "avg_q": 41.6,
+        "avg_fill": 0.521,
+        "avg_vwap": 0.501,
+        "implied_wr": 52.1,
+        "edge": 1.3,
+        "avg_traders": 1.0,
+        "avg_rel": 2.16,
+        "calmar": 1.36,
+        "days": 528,
+        "trades_per_day": 13.81,
+        "first": "2024-08-31",
+        "last": "2026-08-21",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      }
+    },
+    "live_10_88": {
+      "live_only": {
+        "n": 424,
+        "wins": 229,
+        "losses": 195,
+        "win_rate": 54.01,
+        "unit_pnl": -19.99,
+        "expectancy": -0.05,
+        "roi": -0.05,
+        "profit_factor": 0.999,
+        "sharpe_daily_roi": -1.11,
+        "max_dd": -1953.52,
+        "avg_grade": 60.7,
+        "avg_q": 60.7,
+        "avg_fill": 0.549,
+        "avg_vwap": 0.529,
+        "implied_wr": 54.9,
+        "edge": -0.9,
+        "avg_traders": 1.0,
+        "avg_rel": 1.24,
+        "calmar": -0.01,
+        "days": 133,
+        "trades_per_day": 3.19,
+        "first": "2026-02-26",
+        "last": "2026-08-22",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a"
+        ]
+      },
+      "live_plus_bench": {
+        "n": 18084,
+        "wins": 9444,
+        "losses": 8640,
+        "win_rate": 52.22,
+        "unit_pnl": -54124.82,
+        "expectancy": -2.99,
+        "roi": -2.99,
+        "profit_factor": 0.937,
+        "sharpe_daily_roi": -2.07,
+        "max_dd": -78898.59,
+        "avg_grade": 35.9,
+        "avg_q": 35.9,
+        "avg_fill": 0.52,
+        "avg_vwap": 0.5,
+        "implied_wr": 52.0,
+        "edge": 0.2,
+        "avg_traders": 1.0,
+        "avg_rel": 1.83,
+        "calmar": -0.69,
+        "days": 706,
+        "trades_per_day": 25.61,
+        "first": "2023-02-26",
+        "last": "2026-08-22",
+        "traders": [
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "DLEK",
+          "HedgeMaster88",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "Supah9ga",
+          "TTdes",
+          "Vetch",
+          "WTSA",
+          "ckw"
+        ]
+      },
+      "all_csv": {
+        "n": 54445,
+        "wins": 28537,
+        "losses": 25908,
+        "win_rate": 52.41,
+        "unit_pnl": -213425.13,
+        "expectancy": -3.92,
+        "roi": -3.92,
+        "profit_factor": 0.918,
+        "sharpe_daily_roi": -3.53,
+        "max_dd": -221912.71,
+        "avg_grade": 41.8,
+        "avg_q": 41.8,
+        "avg_fill": 0.522,
+        "avg_vwap": 0.502,
+        "implied_wr": 52.2,
+        "edge": 0.2,
+        "avg_traders": 1.0,
+        "avg_rel": 1.98,
+        "calmar": -0.96,
+        "days": 769,
+        "trades_per_day": 70.8,
+        "first": "2023-02-26",
+        "last": "2026-08-22",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "Capman",
+          "CoryLahey",
+          "DLEK",
+          "HVAB",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "Sassy-Bucket",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "WTSA",
+          "bigspending",
+          "bloodmaster",
+          "ckw",
+          "kch123",
+          "norrisfan",
+          "tcp2",
+          "theowalcott"
+        ]
+      },
+      "joinable_csv": {
+        "n": 31236,
+        "wins": 16267,
+        "losses": 14969,
+        "win_rate": 52.08,
+        "unit_pnl": -86996.86,
+        "expectancy": -2.79,
+        "roi": -2.79,
+        "profit_factor": 0.942,
+        "sharpe_daily_roi": -3.1,
+        "max_dd": -116711.04,
+        "avg_grade": 34.4,
+        "avg_q": 34.4,
+        "avg_fill": 0.523,
+        "avg_vwap": 0.503,
+        "implied_wr": 52.3,
+        "edge": -0.2,
+        "avg_traders": 1.0,
+        "avg_rel": 2.17,
+        "calmar": -0.75,
+        "days": 769,
+        "trades_per_day": 40.62,
+        "first": "2023-02-26",
+        "last": "2026-08-22",
+        "traders": [
+          "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      },
+      "easy_tail": {
+        "n": 31190,
+        "wins": 16242,
+        "losses": 14948,
+        "win_rate": 52.07,
+        "unit_pnl": -87704.13,
+        "expectancy": -2.81,
+        "roi": -2.81,
+        "profit_factor": 0.941,
+        "sharpe_daily_roi": -3.1,
+        "max_dd": -116711.04,
+        "avg_grade": 34.3,
+        "avg_q": 34.3,
+        "avg_fill": 0.523,
+        "avg_vwap": 0.503,
+        "implied_wr": 52.3,
+        "edge": -0.2,
+        "avg_traders": 1.0,
+        "avg_rel": 2.17,
+        "calmar": -0.75,
+        "days": 769,
+        "trades_per_day": 40.56,
+        "first": "2023-02-26",
+        "last": "2026-08-22",
+        "traders": [
+          "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "0xheavy888",
+          "Andromeda1",
+          "Bienville",
+          "CoryLahey",
+          "DLEK",
+          "HedgeMaster88",
+          "HongYunX",
+          "JhonAlexanderHinestroza",
+          "JuniorB",
+          "S-Works",
+          "SDTrading",
+          "ShortFlutterStock",
+          "ShucksIt69",
+          "SineNooneEI",
+          "Supah9ga",
+          "TTdes",
+          "UAEVALORANTFAN",
+          "Vetch",
+          "ckw"
+        ]
+      }
+    }
+  },
+  "traders": [
+    {
+      "username": "Vetch",
+      "wallet": "0x9c82c60829df081d593055ee5fa288870c051f13",
+      "bucket": "bench",
+      "joinable": true,
+      "unique_roi": 11.24,
+      "win_rate": 60.79,
+      "median_stake": 1724.42,
+      "last_30d_n": 41,
+      "last_30d_roi": -19.64,
+      "reasons": [
+        "recency_COLD"
+      ],
+      "joinability": {
+        "score": 100.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_2k",
+          "wr_band",
+          "unique_roi_ge_5",
+          "active_30d"
+        ],
+        "median": 1724.42,
+        "wr": 60.79
+      },
+      "product": {
+        "n": 84,
+        "wins": 66,
+        "losses": 18,
+        "win_rate": 78.57,
+        "unit_pnl": 1058.44,
+        "expectancy": 12.6,
+        "roi": 12.6,
+        "profit_factor": 1.588,
+        "sharpe_daily_roi": 6.04,
+        "max_dd": -357.8,
+        "avg_grade": 81.7,
+        "avg_q": 81.7,
+        "avg_fill": 0.702,
+        "avg_vwap": 0.682,
+        "implied_wr": 70.2,
+        "edge": 8.4,
+        "avg_traders": 1.0,
+        "avg_rel": 4.72,
+        "calmar": 2.96,
+        "days": 51,
+        "trades_per_day": 1.65,
+        "first": "2025-11-12",
+        "last": "2026-03-18"
+      },
+      "equity": {
+        "n": 84,
+        "total_pnl": 1058.44,
+        "end_bank": 11058.44,
+        "max_dd_usd": -357.8,
+        "max_dd_pct": -3.5,
+        "sharpe_pnl": 4.96,
+        "sortino": 11.88,
+        "up_day_pct": 70.6,
+        "up_month_pct": 80.0,
+        "consistency_score": 10.3,
+        "monthly_pnls": [
+          {
+            "month": "2025-11",
+            "pnl": -114.4
+          },
+          {
+            "month": "2025-12",
+            "pnl": 546.12
+          },
+          {
+            "month": "2026-01",
+            "pnl": 165.8
+          },
+          {
+            "month": "2026-02",
+            "pnl": 426.25
+          },
+          {
+            "month": "2026-03",
+            "pnl": 34.67
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 14,
+          "win_rate": 71.43,
+          "roi_2c": 7.0,
+          "unit_pnl": 98.01,
+          "sharpe": 3.41,
+          "max_dd": -271.41
+        },
+        "d60": {
+          "n": 37,
+          "win_rate": 78.38,
+          "roi_2c": 16.85,
+          "unit_pnl": 623.5,
+          "sharpe": 7.3,
+          "max_dd": -271.41
+        },
+        "d90": {
+          "n": 54,
+          "win_rate": 81.48,
+          "roi_2c": 16.27,
+          "unit_pnl": 878.5,
+          "sharpe": 7.26,
+          "max_dd": -271.41
+        }
+      },
+      "adaptive": {
+        "action": "keep_bench",
+        "why": "bench hold \u2014 not yet promote gates"
+      },
+      "composite_score": 68.2
+    },
+    {
+      "username": "JhonAlexanderHinestroza",
+      "wallet": "0x44c58184f89a5c2f699dc8943009cb3d75a08d45",
+      "bucket": "bench",
+      "joinable": true,
+      "unique_roi": 1.48,
+      "win_rate": 51.84,
+      "median_stake": 1927.02,
+      "last_30d_n": 281,
+      "last_30d_roi": -3.69,
+      "reasons": [
+        "unique_roi=1.48_lt_5.0",
+        "unique_roi=1.48_bench"
+      ],
+      "joinability": {
+        "score": 90.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_2k",
+          "wr_band",
+          "active_30d"
+        ],
+        "median": 1927.02,
+        "wr": 51.84
+      },
+      "product": {
+        "n": 108,
+        "wins": 65,
+        "losses": 43,
+        "win_rate": 60.19,
+        "unit_pnl": 2104.92,
+        "expectancy": 19.49,
+        "roi": 19.49,
+        "profit_factor": 1.49,
+        "sharpe_daily_roi": 3.27,
+        "max_dd": -626.34,
+        "avg_grade": 82.3,
+        "avg_q": 82.3,
+        "avg_fill": 0.516,
+        "avg_vwap": 0.496,
+        "implied_wr": 51.6,
+        "edge": 8.6,
+        "avg_traders": 1.0,
+        "avg_rel": 5.41,
+        "calmar": 3.36,
+        "days": 47,
+        "trades_per_day": 2.3,
+        "first": "2026-01-03",
+        "last": "2026-04-13"
+      },
+      "equity": {
+        "n": 108,
+        "total_pnl": 2104.92,
+        "end_bank": 12104.92,
+        "max_dd_usd": -618.18,
+        "max_dd_pct": -4.86,
+        "sharpe_pnl": 5.89,
+        "sortino": 13.27,
+        "up_day_pct": 59.6,
+        "up_month_pct": 50.0,
+        "consistency_score": 12.2,
+        "monthly_pnls": [
+          {
+            "month": "2026-01",
+            "pnl": -357.74
+          },
+          {
+            "month": "2026-02",
+            "pnl": 1436.83
+          },
+          {
+            "month": "2026-03",
+            "pnl": 1552.25
+          },
+          {
+            "month": "2026-04",
+            "pnl": -526.41
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 38,
+          "win_rate": 63.16,
+          "roi_2c": 19.36,
+          "unit_pnl": 735.86,
+          "sharpe": 6.89,
+          "max_dd": -626.34
+        },
+        "d60": {
+          "n": 83,
+          "win_rate": 61.45,
+          "roi_2c": 20.99,
+          "unit_pnl": 1741.97,
+          "sharpe": 4.91,
+          "max_dd": -626.34
+        },
+        "d90": {
+          "n": 103,
+          "win_rate": 62.14,
+          "roi_2c": 23.72,
+          "unit_pnl": 2443.63,
+          "sharpe": 5.8,
+          "max_dd": -626.34
+        }
+      },
+      "adaptive": {
+        "action": "keep_bench",
+        "why": "bench hold \u2014 not yet promote gates"
+      },
+      "composite_score": 66.9
+    },
+    {
+      "username": "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+      "wallet": "0x1b20a00709dfe648afd26b326394b5e031f83ab0",
+      "bucket": "watch",
+      "joinable": true,
+      "unique_roi": 34.66,
+      "win_rate": 51.39,
+      "median_stake": 12787.59,
+      "last_30d_n": 51,
+      "last_30d_roi": 34.66,
+      "reasons": [],
+      "joinability": {
+        "score": 80.0,
+        "reasons": [
+          "joinable_gates",
+          "median_under_15k",
+          "wr_band",
+          "unique_roi_ge_5",
+          "active_30d"
+        ],
+        "median": 12787.59,
+        "wr": 51.39
+      },
+      "product": {
+        "n": 11,
+        "wins": 8,
+        "losses": 3,
+        "win_rate": 72.73,
+        "unit_pnl": 586.38,
+        "expectancy": 53.31,
+        "roi": 53.31,
+        "profit_factor": 2.955,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": -300.0,
+        "avg_grade": 81.4,
+        "avg_q": 81.4,
+        "avg_fill": 0.476,
+        "avg_vwap": 0.456,
+        "implied_wr": 47.6,
+        "edge": 25.2,
+        "avg_traders": 1.0,
+        "avg_rel": 6.15,
+        "calmar": 1.95,
+        "days": 9,
+        "trades_per_day": 1.22,
+        "first": "2026-08-01",
+        "last": "2026-08-17"
+      },
+      "equity": {
+        "n": 11,
+        "total_pnl": 586.38,
+        "end_bank": 10586.38,
+        "max_dd_usd": -300.0,
+        "max_dd_pct": -2.88,
+        "sharpe_pnl": 0.0,
+        "sortino": 0.0,
+        "up_day_pct": 66.7,
+        "up_month_pct": 100.0,
+        "consistency_score": 19.6,
+        "monthly_pnls": [
+          {
+            "month": "2026-08",
+            "pnl": 586.38
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 11,
+          "win_rate": 72.73,
+          "roi_2c": 53.31,
+          "unit_pnl": 586.38,
+          "sharpe": 0.0,
+          "max_dd": -300.0
+        },
+        "d60": {
+          "n": 11,
+          "win_rate": 72.73,
+          "roi_2c": 53.31,
+          "unit_pnl": 586.38,
+          "sharpe": 0.0,
+          "max_dd": -300.0
+        },
+        "d90": {
+          "n": 11,
+          "win_rate": 72.73,
+          "roi_2c": 53.31,
+          "unit_pnl": 586.38,
+          "sharpe": 0.0,
+          "max_dd": -300.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 61.2
+    },
+    {
+      "username": "ShortFlutterStock",
+      "wallet": "0x13414a77a4be48988851c73dfd824d0168e70853",
+      "bucket": "watch",
+      "joinable": true,
+      "unique_roi": 1.0,
+      "win_rate": 57.35,
+      "median_stake": 1273.53,
+      "last_30d_n": 82,
+      "last_30d_roi": 10.9,
+      "reasons": [],
+      "joinability": {
+        "score": 90.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_2k",
+          "wr_band",
+          "active_30d"
+        ],
+        "median": 1273.53,
+        "wr": 57.35
+      },
+      "product": {
+        "n": 198,
+        "wins": 95,
+        "losses": 103,
+        "win_rate": 47.98,
+        "unit_pnl": -1860.55,
+        "expectancy": -9.4,
+        "roi": -9.4,
+        "profit_factor": 0.819,
+        "sharpe_daily_roi": -1.81,
+        "max_dd": -2617.06,
+        "avg_grade": 66.6,
+        "avg_q": 66.6,
+        "avg_fill": 0.51,
+        "avg_vwap": 0.49,
+        "implied_wr": 51.0,
+        "edge": -3.0,
+        "avg_traders": 1.0,
+        "avg_rel": 6.93,
+        "calmar": -0.71,
+        "days": 37,
+        "trades_per_day": 5.35,
+        "first": "2025-11-12",
+        "last": "2026-04-04"
+      },
+      "equity": {
+        "n": 198,
+        "total_pnl": -1860.55,
+        "end_bank": 8139.45,
+        "max_dd_usd": -2276.76,
+        "max_dd_pct": -21.86,
+        "sharpe_pnl": -3.81,
+        "sortino": -5.4,
+        "up_day_pct": 43.2,
+        "up_month_pct": 0.0,
+        "consistency_score": 0.0,
+        "monthly_pnls": [
+          {
+            "month": "2025-11",
+            "pnl": -93.57
+          },
+          {
+            "month": "2026-02",
+            "pnl": -236.12
+          },
+          {
+            "month": "2026-03",
+            "pnl": -1474.0
+          },
+          {
+            "month": "2026-04",
+            "pnl": -56.87
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 75,
+          "win_rate": 49.33,
+          "roi_2c": -3.02,
+          "unit_pnl": -226.71,
+          "sharpe": -0.26,
+          "max_dd": -1855.11
+        },
+        "d60": {
+          "n": 195,
+          "win_rate": 48.21,
+          "roi_2c": -9.06,
+          "unit_pnl": -1766.98,
+          "sharpe": -1.07,
+          "max_dd": -2617.06
+        },
+        "d90": {
+          "n": 195,
+          "win_rate": 48.21,
+          "roi_2c": -9.06,
+          "unit_pnl": -1766.98,
+          "sharpe": -1.07,
+          "max_dd": -2617.06
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 56.6
+    },
+    {
+      "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+      "wallet": "0x8a3ab8120807bd64a3de48695110e390fa2ceb9a",
+      "bucket": "live",
+      "joinable": true,
+      "unique_roi": 14.84,
+      "win_rate": 54.04,
+      "median_stake": 4834.8,
+      "last_30d_n": 119,
+      "last_30d_roi": -4.39,
+      "reasons": [],
+      "joinability": {
+        "score": 93.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_5k",
+          "wr_band",
+          "unique_roi_ge_5",
+          "active_30d"
+        ],
+        "median": 4834.8,
+        "wr": 54.04
+      },
+      "product": {
+        "n": 24,
+        "wins": 14,
+        "losses": 10,
+        "win_rate": 58.33,
+        "unit_pnl": 177.55,
+        "expectancy": 7.4,
+        "roi": 7.4,
+        "profit_factor": 1.178,
+        "sharpe_daily_roi": 2.41,
+        "max_dd": -300.0,
+        "avg_grade": 76.1,
+        "avg_q": 76.1,
+        "avg_fill": 0.549,
+        "avg_vwap": 0.529,
+        "implied_wr": 54.9,
+        "edge": 3.5,
+        "avg_traders": 1.0,
+        "avg_rel": 3.74,
+        "calmar": 0.59,
+        "days": 16,
+        "trades_per_day": 1.5,
+        "first": "2026-03-02",
+        "last": "2026-05-17"
+      },
+      "equity": {
+        "n": 24,
+        "total_pnl": 177.55,
+        "end_bank": 10177.55,
+        "max_dd_usd": -300.0,
+        "max_dd_pct": -2.86,
+        "sharpe_pnl": 1.73,
+        "sortino": 6.27,
+        "up_day_pct": 56.2,
+        "up_month_pct": 66.7,
+        "consistency_score": 3.5,
+        "monthly_pnls": [
+          {
+            "month": "2026-03",
+            "pnl": 239.64
+          },
+          {
+            "month": "2026-04",
+            "pnl": 237.91
+          },
+          {
+            "month": "2026-05",
+            "pnl": -300.0
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 4,
+          "win_rate": 25.0,
+          "roi_2c": -54.24,
+          "unit_pnl": -216.95,
+          "sharpe": 0.0,
+          "max_dd": -300.0
+        },
+        "d60": {
+          "n": 20,
+          "win_rate": 65.0,
+          "roi_2c": 19.79,
+          "unit_pnl": 395.7,
+          "sharpe": 5.07,
+          "max_dd": -300.0
+        },
+        "d90": {
+          "n": 24,
+          "win_rate": 58.33,
+          "roi_2c": 7.4,
+          "unit_pnl": 177.55,
+          "sharpe": 2.41,
+          "max_dd": -300.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_live_caution",
+        "why": "live hist take +7.4% n=24 but rolling 30d take -54.24% n=4 \u2014 size down / wait for prints"
+      },
+      "composite_score": 55.0
+    },
+    {
+      "username": "CoryLahey",
+      "wallet": "0x5c3a1a602848565bb16165fcd460b00c3d43020b",
+      "bucket": "watch",
+      "joinable": true,
+      "unique_roi": 4.61,
+      "win_rate": 59.4,
+      "median_stake": 7364.68,
+      "last_30d_n": 10,
+      "last_30d_roi": 29.65,
+      "reasons": [],
+      "joinability": {
+        "score": 75.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_10k",
+          "wr_band",
+          "active_30d"
+        ],
+        "median": 7364.68,
+        "wr": 59.4
+      },
+      "product": {
+        "n": 66,
+        "wins": 37,
+        "losses": 29,
+        "win_rate": 56.06,
+        "unit_pnl": 86.06,
+        "expectancy": 1.3,
+        "roi": 1.3,
+        "profit_factor": 1.03,
+        "sharpe_daily_roi": -2.15,
+        "max_dd": -522.99,
+        "avg_grade": 69.1,
+        "avg_q": 69.1,
+        "avg_fill": 0.561,
+        "avg_vwap": 0.541,
+        "implied_wr": 56.1,
+        "edge": -0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 3.58,
+        "calmar": 0.16,
+        "days": 24,
+        "trades_per_day": 2.75,
+        "first": "2026-01-30",
+        "last": "2026-03-10"
+      },
+      "equity": {
+        "n": 66,
+        "total_pnl": 86.06,
+        "end_bank": 10086.06,
+        "max_dd_usd": -522.99,
+        "max_dd_pct": -4.94,
+        "sharpe_pnl": 0.51,
+        "sortino": 1.17,
+        "up_day_pct": 45.8,
+        "up_month_pct": 66.7,
+        "consistency_score": 1.1,
+        "monthly_pnls": [
+          {
+            "month": "2026-01",
+            "pnl": 68.99
+          },
+          {
+            "month": "2026-02",
+            "pnl": 305.37
+          },
+          {
+            "month": "2026-03",
+            "pnl": -288.3
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 51,
+          "win_rate": 52.94,
+          "roi_2c": -2.97,
+          "unit_pnl": -151.5,
+          "sharpe": -3.6,
+          "max_dd": -522.99
+        },
+        "d60": {
+          "n": 66,
+          "win_rate": 56.06,
+          "roi_2c": 1.3,
+          "unit_pnl": 86.06,
+          "sharpe": -2.15,
+          "max_dd": -522.99
+        },
+        "d90": {
+          "n": 66,
+          "win_rate": 56.06,
+          "roi_2c": 1.3,
+          "unit_pnl": 86.06,
+          "sharpe": -2.15,
+          "max_dd": -522.99
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 54.3
+    },
+    {
+      "username": "Andromeda1",
+      "wallet": "0x39932ca2b7a1b8ab6cbf0b8f7419261b950ccded",
+      "bucket": "bench",
+      "joinable": true,
+      "unique_roi": 3.32,
+      "win_rate": 55.72,
+      "median_stake": 437.48,
+      "last_30d_n": 0,
+      "last_30d_roi": 0.0,
+      "reasons": [
+        "stale_DARK"
+      ],
+      "joinability": {
+        "score": 75.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_2k",
+          "wr_band",
+          "quiet_30d"
+        ],
+        "median": 437.48,
+        "wr": 55.72
+      },
+      "product": {
+        "n": 79,
+        "wins": 40,
+        "losses": 39,
+        "win_rate": 50.63,
+        "unit_pnl": -1358.11,
+        "expectancy": -17.19,
+        "roi": -17.19,
+        "profit_factor": 0.652,
+        "sharpe_daily_roi": -6.72,
+        "max_dd": -1479.38,
+        "avg_grade": 67.1,
+        "avg_q": 67.1,
+        "avg_fill": 0.592,
+        "avg_vwap": 0.572,
+        "implied_wr": 59.2,
+        "edge": -8.6,
+        "avg_traders": 1.0,
+        "avg_rel": 7.13,
+        "calmar": -0.92,
+        "days": 25,
+        "trades_per_day": 3.16,
+        "first": "2025-09-28",
+        "last": "2026-01-10"
+      },
+      "equity": {
+        "n": 79,
+        "total_pnl": -1358.11,
+        "end_bank": 8641.89,
+        "max_dd_usd": -1571.69,
+        "max_dd_pct": -15.43,
+        "sharpe_pnl": -7.81,
+        "sortino": -12.71,
+        "up_day_pct": 40.0,
+        "up_month_pct": 20.0,
+        "consistency_score": 0.0,
+        "monthly_pnls": [
+          {
+            "month": "2025-09",
+            "pnl": -64.86
+          },
+          {
+            "month": "2025-10",
+            "pnl": -226.23
+          },
+          {
+            "month": "2025-11",
+            "pnl": 166.9
+          },
+          {
+            "month": "2025-12",
+            "pnl": -787.26
+          },
+          {
+            "month": "2026-01",
+            "pnl": -446.66
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 23,
+          "win_rate": 34.78,
+          "roi_2c": -42.1,
+          "unit_pnl": -968.39,
+          "sharpe": 0.0,
+          "max_dd": -962.36
+        },
+        "d60": {
+          "n": 54,
+          "win_rate": 46.3,
+          "roi_2c": -19.76,
+          "unit_pnl": -1067.02,
+          "sharpe": -9.63,
+          "max_dd": -1479.38
+        },
+        "d90": {
+          "n": 59,
+          "win_rate": 49.15,
+          "roi_2c": -16.71,
+          "unit_pnl": -985.96,
+          "sharpe": -7.3,
+          "max_dd": -1479.38
+        }
+      },
+      "adaptive": {
+        "action": "keep_cold",
+        "why": "take-rule cold n=79 roi=-17.19%"
+      },
+      "composite_score": 49.5
+    },
+    {
+      "username": "Supah9ga",
+      "wallet": "0x57cd939930fd119067ca9dc42b22b3e15708a0fb",
+      "bucket": "bench",
+      "joinable": true,
+      "unique_roi": 21.53,
+      "win_rate": 52.23,
+      "median_stake": 5550.6,
+      "last_30d_n": 1,
+      "last_30d_roi": -100.0,
+      "reasons": [
+        "quiet_30d_n=1<8",
+        "recency_HOT"
+      ],
+      "joinability": {
+        "score": 70.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_10k",
+          "wr_band",
+          "unique_roi_ge_5",
+          "quiet_30d"
+        ],
+        "median": 5550.6,
+        "wr": 52.23
+      },
+      "product": {
+        "n": 21,
+        "wins": 11,
+        "losses": 10,
+        "win_rate": 52.38,
+        "unit_pnl": 348.0,
+        "expectancy": 16.57,
+        "roi": 16.57,
+        "profit_factor": 1.348,
+        "sharpe_daily_roi": 0.51,
+        "max_dd": -600.0,
+        "avg_grade": 62.6,
+        "avg_q": 62.6,
+        "avg_fill": 0.463,
+        "avg_vwap": 0.443,
+        "implied_wr": 46.3,
+        "edge": 6.1,
+        "avg_traders": 1.0,
+        "avg_rel": 4.85,
+        "calmar": 0.58,
+        "days": 12,
+        "trades_per_day": 1.75,
+        "first": "2025-11-01",
+        "last": "2026-04-12"
+      },
+      "equity": {
+        "n": 21,
+        "total_pnl": 348.0,
+        "end_bank": 10348.0,
+        "max_dd_usd": -600.0,
+        "max_dd_pct": -5.48,
+        "sharpe_pnl": 3.95,
+        "sortino": 13.85,
+        "up_day_pct": 58.3,
+        "up_month_pct": 50.0,
+        "consistency_score": 7.9,
+        "monthly_pnls": [
+          {
+            "month": "2025-11",
+            "pnl": 31.26
+          },
+          {
+            "month": "2026-02",
+            "pnl": -200.0
+          },
+          {
+            "month": "2026-03",
+            "pnl": 916.74
+          },
+          {
+            "month": "2026-04",
+            "pnl": -400.0
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 9,
+          "win_rate": 33.33,
+          "roi_2c": -14.58,
+          "unit_pnl": -131.25,
+          "sharpe": 0.0,
+          "max_dd": -600.0
+        },
+        "d60": {
+          "n": 19,
+          "win_rate": 52.63,
+          "roi_2c": 16.67,
+          "unit_pnl": 316.74,
+          "sharpe": 0.26,
+          "max_dd": -600.0
+        },
+        "d90": {
+          "n": 19,
+          "win_rate": 52.63,
+          "roi_2c": 16.67,
+          "unit_pnl": 316.74,
+          "sharpe": 0.26,
+          "max_dd": -600.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_bench",
+        "why": "bench hold \u2014 not yet promote gates"
+      },
+      "composite_score": 49.4
+    },
+    {
+      "username": "Bienville",
+      "wallet": "0x9f138019d5481fdc5c59b93b0ae4b9b817cce0fd",
+      "bucket": "bench",
+      "joinable": true,
+      "unique_roi": 2.12,
+      "win_rate": 50.15,
+      "median_stake": 1935.33,
+      "last_30d_n": 0,
+      "last_30d_roi": 0.0,
+      "reasons": [
+        "stale_DROP"
+      ],
+      "joinability": {
+        "score": 75.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_2k",
+          "wr_band",
+          "quiet_30d"
+        ],
+        "median": 1935.33,
+        "wr": 50.15
+      },
+      "product": {
+        "n": 5,
+        "wins": 4,
+        "losses": 1,
+        "win_rate": 80.0,
+        "unit_pnl": 276.74,
+        "expectancy": 55.35,
+        "roi": 55.35,
+        "profit_factor": 3.767,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": -100.0,
+        "avg_grade": 85.6,
+        "avg_q": 85.6,
+        "avg_fill": 0.54,
+        "avg_vwap": 0.52,
+        "implied_wr": 54.0,
+        "edge": 26.0,
+        "avg_traders": 1.0,
+        "avg_rel": 2.95,
+        "calmar": 2.77,
+        "days": 3,
+        "trades_per_day": 1.67,
+        "first": "2025-09-27",
+        "last": "2025-10-19"
+      },
+      "equity": {
+        "n": 5,
+        "total_pnl": 276.74,
+        "end_bank": 10276.74,
+        "max_dd_usd": -100.0,
+        "max_dd_pct": -0.99,
+        "sharpe_pnl": 0.0,
+        "sortino": 0.0,
+        "up_day_pct": 100.0,
+        "up_month_pct": 100.0,
+        "consistency_score": 68.6,
+        "monthly_pnls": [
+          {
+            "month": "2025-09",
+            "pnl": 144.02
+          },
+          {
+            "month": "2025-10",
+            "pnl": 132.72
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 5,
+          "win_rate": 80.0,
+          "roi_2c": 55.35,
+          "unit_pnl": 276.74,
+          "sharpe": 0.0,
+          "max_dd": -100.0
+        },
+        "d60": {
+          "n": 5,
+          "win_rate": 80.0,
+          "roi_2c": 55.35,
+          "unit_pnl": 276.74,
+          "sharpe": 0.0,
+          "max_dd": -100.0
+        },
+        "d90": {
+          "n": 5,
+          "win_rate": 80.0,
+          "roi_2c": 55.35,
+          "unit_pnl": 276.74,
+          "sharpe": 0.0,
+          "max_dd": -100.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_bench",
+        "why": "bench hold \u2014 not yet promote gates"
+      },
+      "composite_score": 48.9
+    },
+    {
+      "username": "HedgeMaster88",
+      "wallet": "0x036c159d5a348058a81066a76b89f35926d4178d",
+      "bucket": "bench",
+      "joinable": true,
+      "unique_roi": 19.07,
+      "win_rate": 53.39,
+      "median_stake": 6115.44,
+      "last_30d_n": 0,
+      "last_30d_roi": 0.0,
+      "reasons": [
+        "stale_DROP"
+      ],
+      "joinability": {
+        "score": 70.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_10k",
+          "wr_band",
+          "unique_roi_ge_5",
+          "quiet_30d"
+        ],
+        "median": 6115.44,
+        "wr": 53.39
+      },
+      "product": {
+        "n": 35,
+        "wins": 19,
+        "losses": 16,
+        "win_rate": 54.29,
+        "unit_pnl": -269.99,
+        "expectancy": -7.71,
+        "roi": -7.71,
+        "profit_factor": 0.831,
+        "sharpe_daily_roi": 4.3,
+        "max_dd": -558.49,
+        "avg_grade": 80.6,
+        "avg_q": 80.6,
+        "avg_fill": 0.578,
+        "avg_vwap": 0.558,
+        "implied_wr": 57.8,
+        "edge": -3.6,
+        "avg_traders": 1.0,
+        "avg_rel": 5.45,
+        "calmar": -0.48,
+        "days": 13,
+        "trades_per_day": 2.69,
+        "first": "2026-02-28",
+        "last": "2026-03-23"
+      },
+      "equity": {
+        "n": 35,
+        "total_pnl": -269.99,
+        "end_bank": 9730.01,
+        "max_dd_usd": -543.27,
+        "max_dd_pct": -5.36,
+        "sharpe_pnl": -2.37,
+        "sortino": -4.67,
+        "up_day_pct": 61.5,
+        "up_month_pct": 50.0,
+        "consistency_score": 0.0,
+        "monthly_pnls": [
+          {
+            "month": "2026-02",
+            "pnl": 40.11
+          },
+          {
+            "month": "2026-03",
+            "pnl": -310.1
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 35,
+          "win_rate": 54.29,
+          "roi_2c": -7.71,
+          "unit_pnl": -269.99,
+          "sharpe": 4.3,
+          "max_dd": -558.49
+        },
+        "d60": {
+          "n": 35,
+          "win_rate": 54.29,
+          "roi_2c": -7.71,
+          "unit_pnl": -269.99,
+          "sharpe": 4.3,
+          "max_dd": -558.49
+        },
+        "d90": {
+          "n": 35,
+          "win_rate": 54.29,
+          "roi_2c": -7.71,
+          "unit_pnl": -269.99,
+          "sharpe": 4.3,
+          "max_dd": -558.49
+        }
+      },
+      "adaptive": {
+        "action": "keep_bench",
+        "why": "bench hold \u2014 not yet promote gates"
+      },
+      "composite_score": 45.6
+    },
+    {
+      "username": "DLEK",
+      "wallet": "0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c",
+      "bucket": "bench",
+      "joinable": true,
+      "unique_roi": 7.28,
+      "win_rate": 55.62,
+      "median_stake": 4741.82,
+      "last_30d_n": 3,
+      "last_30d_roi": 74.65,
+      "reasons": [
+        "recency_COLD"
+      ],
+      "joinability": {
+        "score": 83.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_5k",
+          "wr_band",
+          "unique_roi_ge_5",
+          "sparse_30d"
+        ],
+        "median": 4741.82,
+        "wr": 55.62
+      },
+      "product": {
+        "n": 22,
+        "wins": 11,
+        "losses": 11,
+        "win_rate": 50.0,
+        "unit_pnl": -511.29,
+        "expectancy": -23.24,
+        "roi": -23.24,
+        "profit_factor": 0.535,
+        "sharpe_daily_roi": -9.09,
+        "max_dd": -411.29,
+        "avg_grade": 66.0,
+        "avg_q": 66.0,
+        "avg_fill": 0.612,
+        "avg_vwap": 0.592,
+        "implied_wr": 61.2,
+        "edge": -11.2,
+        "avg_traders": 1.0,
+        "avg_rel": 4.11,
+        "calmar": -1.24,
+        "days": 13,
+        "trades_per_day": 1.69,
+        "first": "2025-01-07",
+        "last": "2025-02-13"
+      },
+      "equity": {
+        "n": 22,
+        "total_pnl": -511.29,
+        "end_bank": 9488.71,
+        "max_dd_usd": -411.29,
+        "max_dd_pct": -4.15,
+        "sharpe_pnl": -11.44,
+        "sortino": -25.34,
+        "up_day_pct": 30.8,
+        "up_month_pct": 0.0,
+        "consistency_score": 0.0,
+        "monthly_pnls": [
+          {
+            "month": "2025-01",
+            "pnl": -269.0
+          },
+          {
+            "month": "2025-02",
+            "pnl": -242.29
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 18,
+          "win_rate": 50.0,
+          "roi_2c": -20.73,
+          "unit_pnl": -373.19,
+          "sharpe": -7.27,
+          "max_dd": -373.55
+        },
+        "d60": {
+          "n": 22,
+          "win_rate": 50.0,
+          "roi_2c": -23.24,
+          "unit_pnl": -511.29,
+          "sharpe": -9.09,
+          "max_dd": -411.29
+        },
+        "d90": {
+          "n": 22,
+          "win_rate": 50.0,
+          "roi_2c": -23.24,
+          "unit_pnl": -511.29,
+          "sharpe": -9.09,
+          "max_dd": -411.29
+        }
+      },
+      "adaptive": {
+        "action": "keep_cold",
+        "why": "take-rule cold n=22 roi=-23.24%"
+      },
+      "composite_score": 42.3
+    },
+    {
+      "username": "SineNooneEI",
+      "wallet": "0x38337de21ff0bb0a11a40761507d51e318d633d1",
+      "bucket": "watch",
+      "joinable": true,
+      "unique_roi": 5.01,
+      "win_rate": 53.75,
+      "median_stake": 6832.18,
+      "last_30d_n": 196,
+      "last_30d_roi": 7.43,
+      "reasons": [
+        "extra_watch_never_live"
+      ],
+      "joinability": {
+        "score": 85.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_10k",
+          "wr_band",
+          "unique_roi_ge_5",
+          "active_30d"
+        ],
+        "median": 6832.18,
+        "wr": 53.75
+      },
+      "product": {
+        "n": 14,
+        "wins": 7,
+        "losses": 7,
+        "win_rate": 50.0,
+        "unit_pnl": -251.4,
+        "expectancy": -17.96,
+        "roi": -17.96,
+        "profit_factor": 0.641,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": -550.33,
+        "avg_grade": 99.0,
+        "avg_q": 99.0,
+        "avg_fill": 0.563,
+        "avg_vwap": 0.543,
+        "implied_wr": 56.3,
+        "edge": -6.3,
+        "avg_traders": 1.0,
+        "avg_rel": 4.94,
+        "calmar": -0.46,
+        "days": 2,
+        "trades_per_day": 7.0,
+        "first": "2026-02-07",
+        "last": "2026-02-08"
+      },
+      "equity": {
+        "n": 14,
+        "total_pnl": -251.4,
+        "end_bank": 9748.6,
+        "max_dd_usd": -550.33,
+        "max_dd_pct": -5.34,
+        "sharpe_pnl": 0.0,
+        "sortino": 0.0,
+        "up_day_pct": 50.0,
+        "up_month_pct": 0.0,
+        "consistency_score": 0.0,
+        "monthly_pnls": [
+          {
+            "month": "2026-02",
+            "pnl": -251.4
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 14,
+          "win_rate": 50.0,
+          "roi_2c": -17.96,
+          "unit_pnl": -251.4,
+          "sharpe": 0.0,
+          "max_dd": -550.33
+        },
+        "d60": {
+          "n": 14,
+          "win_rate": 50.0,
+          "roi_2c": -17.96,
+          "unit_pnl": -251.4,
+          "sharpe": 0.0,
+          "max_dd": -550.33
+        },
+        "d90": {
+          "n": 14,
+          "win_rate": 50.0,
+          "roi_2c": -17.96,
+          "unit_pnl": -251.4,
+          "sharpe": 0.0,
+          "max_dd": -550.33
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 42.0
+    },
+    {
+      "username": "TTdes",
+      "wallet": "0x25867077c891354137bbaf7fde12eec6949cc893",
+      "bucket": "bench",
+      "joinable": true,
+      "unique_roi": 7.06,
+      "win_rate": 53.64,
+      "median_stake": 920.2,
+      "last_30d_n": 16,
+      "last_30d_roi": -5.82,
+      "reasons": [
+        "take_rule_bleed",
+        "recency_HOT"
+      ],
+      "joinability": {
+        "score": 100.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_2k",
+          "wr_band",
+          "unique_roi_ge_5",
+          "active_30d"
+        ],
+        "median": 920.2,
+        "wr": 53.64
+      },
+      "product": {
+        "n": 15,
+        "wins": 5,
+        "losses": 10,
+        "win_rate": 33.33,
+        "unit_pnl": -640.02,
+        "expectancy": -42.67,
+        "roi": -42.67,
+        "profit_factor": 0.36,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": -733.0,
+        "avg_grade": 63.5,
+        "avg_q": 63.5,
+        "avg_fill": 0.567,
+        "avg_vwap": 0.547,
+        "implied_wr": 56.7,
+        "edge": -23.4,
+        "avg_traders": 1.0,
+        "avg_rel": 8.94,
+        "calmar": -0.87,
+        "days": 8,
+        "trades_per_day": 1.88,
+        "first": "2025-04-28",
+        "last": "2026-04-13"
+      },
+      "equity": {
+        "n": 15,
+        "total_pnl": -640.02,
+        "end_bank": 9359.98,
+        "max_dd_usd": -733.0,
+        "max_dd_pct": -7.26,
+        "sharpe_pnl": 0.0,
+        "sortino": -11.56,
+        "up_day_pct": 37.5,
+        "up_month_pct": 50.0,
+        "consistency_score": 0.0,
+        "monthly_pnls": [
+          {
+            "month": "2025-04",
+            "pnl": 57.19
+          },
+          {
+            "month": "2026-04",
+            "pnl": -697.21
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 14,
+          "win_rate": 28.57,
+          "roi_2c": -49.8,
+          "unit_pnl": -697.21,
+          "sharpe": 0.0,
+          "max_dd": -733.0
+        },
+        "d60": {
+          "n": 14,
+          "win_rate": 28.57,
+          "roi_2c": -49.8,
+          "unit_pnl": -697.21,
+          "sharpe": 0.0,
+          "max_dd": -733.0
+        },
+        "d90": {
+          "n": 14,
+          "win_rate": 28.57,
+          "roi_2c": -49.8,
+          "unit_pnl": -697.21,
+          "sharpe": 0.0,
+          "max_dd": -733.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_bench",
+        "why": "already take_rule_bleed"
+      },
+      "composite_score": 41.3
+    },
+    {
+      "username": "UAEVALORANTFAN",
+      "wallet": "0xc65ca4755436f82d8eb461e65781584b8cadea39",
+      "bucket": "watch",
+      "joinable": true,
+      "unique_roi": 3.18,
+      "win_rate": 55.29,
+      "median_stake": 3724.82,
+      "last_30d_n": 60,
+      "last_30d_roi": 35.4,
+      "reasons": [],
+      "joinability": {
+        "score": 83.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_5k",
+          "wr_band",
+          "active_30d"
+        ],
+        "median": 3724.82,
+        "wr": 55.29
+      },
+      "product": {
+        "n": 19,
+        "wins": 6,
+        "losses": 13,
+        "win_rate": 31.58,
+        "unit_pnl": -855.89,
+        "expectancy": -45.05,
+        "roi": -45.05,
+        "profit_factor": 0.342,
+        "sharpe_daily_roi": -9.94,
+        "max_dd": -948.48,
+        "avg_grade": 91.6,
+        "avg_q": 91.6,
+        "avg_fill": 0.585,
+        "avg_vwap": 0.565,
+        "implied_wr": 58.5,
+        "edge": -27.0,
+        "avg_traders": 1.0,
+        "avg_rel": 5.0,
+        "calmar": -0.9,
+        "days": 10,
+        "trades_per_day": 1.9,
+        "first": "2025-12-27",
+        "last": "2026-01-13"
+      },
+      "equity": {
+        "n": 19,
+        "total_pnl": -855.89,
+        "end_bank": 9144.11,
+        "max_dd_usd": -948.48,
+        "max_dd_pct": -9.4,
+        "sharpe_pnl": -11.99,
+        "sortino": -17.98,
+        "up_day_pct": 30.0,
+        "up_month_pct": 0.0,
+        "consistency_score": 0.0,
+        "monthly_pnls": [
+          {
+            "month": "2025-12",
+            "pnl": -268.42
+          },
+          {
+            "month": "2026-01",
+            "pnl": -587.47
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 19,
+          "win_rate": 31.58,
+          "roi_2c": -45.05,
+          "unit_pnl": -855.89,
+          "sharpe": -9.94,
+          "max_dd": -948.48
+        },
+        "d60": {
+          "n": 19,
+          "win_rate": 31.58,
+          "roi_2c": -45.05,
+          "unit_pnl": -855.89,
+          "sharpe": -9.94,
+          "max_dd": -948.48
+        },
+        "d90": {
+          "n": 19,
+          "win_rate": 31.58,
+          "roi_2c": -45.05,
+          "unit_pnl": -855.89,
+          "sharpe": -9.94,
+          "max_dd": -948.48
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 36.0
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "bucket": "watch",
+      "joinable": false,
+      "unique_roi": 10.31,
+      "win_rate": 81.84,
+      "median_stake": 896.4,
+      "last_30d_n": 175,
+      "last_30d_roi": 14.44,
+      "reasons": [],
+      "joinability": {
+        "score": 50.0,
+        "reasons": [
+          "median_le_2k",
+          "unique_roi_ge_5",
+          "active_30d"
+        ],
+        "median": 896.4,
+        "wr": 81.84
+      },
+      "product": {
+        "n": 34,
+        "wins": 24,
+        "losses": 10,
+        "win_rate": 70.59,
+        "unit_pnl": 120.22,
+        "expectancy": 3.54,
+        "roi": 3.54,
+        "profit_factor": 1.12,
+        "sharpe_daily_roi": 3.46,
+        "max_dd": -232.87,
+        "avg_grade": 78.0,
+        "avg_q": 78.0,
+        "avg_fill": 0.691,
+        "avg_vwap": 0.671,
+        "implied_wr": 69.1,
+        "edge": 1.5,
+        "avg_traders": 1.0,
+        "avg_rel": 13.23,
+        "calmar": 0.52,
+        "days": 19,
+        "trades_per_day": 1.79,
+        "first": "2026-06-11",
+        "last": "2026-08-22"
+      },
+      "equity": {
+        "n": 34,
+        "total_pnl": 120.22,
+        "end_bank": 10120.22,
+        "max_dd_usd": -221.04,
+        "max_dd_pct": -2.15,
+        "sharpe_pnl": 1.51,
+        "sortino": 3.39,
+        "up_day_pct": 63.2,
+        "up_month_pct": 66.7,
+        "consistency_score": 3.1,
+        "monthly_pnls": [
+          {
+            "month": "2026-06",
+            "pnl": -87.85
+          },
+          {
+            "month": "2026-07",
+            "pnl": 66.99
+          },
+          {
+            "month": "2026-08",
+            "pnl": 141.09
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 32,
+          "win_rate": 71.88,
+          "roi_2c": 6.5,
+          "unit_pnl": 208.07,
+          "sharpe": 4.75,
+          "max_dd": -232.87
+        },
+        "d60": {
+          "n": 32,
+          "win_rate": 71.88,
+          "roi_2c": 6.5,
+          "unit_pnl": 208.07,
+          "sharpe": 4.75,
+          "max_dd": -232.87
+        },
+        "d90": {
+          "n": 34,
+          "win_rate": 70.59,
+          "roi_2c": 3.54,
+          "unit_pnl": 120.22,
+          "sharpe": 3.46,
+          "max_dd": -232.87
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 35.6
+    },
+    {
+      "username": "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+      "wallet": "0x5966db1fe50763c9e3c014d756369bad07e1f804",
+      "bucket": "bench",
+      "joinable": false,
+      "unique_roi": 25.47,
+      "win_rate": 58.24,
+      "median_stake": 46032.55,
+      "last_30d_n": 0,
+      "last_30d_roi": 0.0,
+      "reasons": [
+        "median=$46,033_unjoinable",
+        "stale_DARK"
+      ],
+      "joinability": {
+        "score": 25.0,
+        "reasons": [
+          "whale_unjoinable",
+          "wr_band",
+          "unique_roi_ge_5",
+          "quiet_30d"
+        ],
+        "median": 46032.55,
+        "wr": 58.24
+      },
+      "product": {
+        "n": 32,
+        "wins": 23,
+        "losses": 9,
+        "win_rate": 71.88,
+        "unit_pnl": 674.34,
+        "expectancy": 21.07,
+        "roi": 21.07,
+        "profit_factor": 1.749,
+        "sharpe_daily_roi": 6.94,
+        "max_dd": -209.05,
+        "avg_grade": 72.3,
+        "avg_q": 72.3,
+        "avg_fill": 0.61,
+        "avg_vwap": 0.59,
+        "implied_wr": 61.0,
+        "edge": 10.9,
+        "avg_traders": 1.0,
+        "avg_rel": 3.8,
+        "calmar": 3.23,
+        "days": 18,
+        "trades_per_day": 1.78,
+        "first": "2026-05-17",
+        "last": "2026-07-09"
+      },
+      "equity": {
+        "n": 32,
+        "total_pnl": 674.34,
+        "end_bank": 10674.34,
+        "max_dd_usd": -209.05,
+        "max_dd_pct": -2.07,
+        "sharpe_pnl": 7.21,
+        "sortino": 20.6,
+        "up_day_pct": 72.2,
+        "up_month_pct": 100.0,
+        "consistency_score": 14.7,
+        "monthly_pnls": [
+          {
+            "month": "2026-05",
+            "pnl": 89.67
+          },
+          {
+            "month": "2026-06",
+            "pnl": 380.73
+          },
+          {
+            "month": "2026-07",
+            "pnl": 203.94
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 23,
+          "win_rate": 73.91,
+          "roi_2c": 23.53,
+          "unit_pnl": 541.11,
+          "sharpe": 9.72,
+          "max_dd": -200.0
+        },
+        "d60": {
+          "n": 32,
+          "win_rate": 71.88,
+          "roi_2c": 21.07,
+          "unit_pnl": 674.34,
+          "sharpe": 6.94,
+          "max_dd": -209.05
+        },
+        "d90": {
+          "n": 32,
+          "win_rate": 71.88,
+          "roi_2c": 21.07,
+          "unit_pnl": 674.34,
+          "sharpe": 6.94,
+          "max_dd": -209.05
+        }
+      },
+      "adaptive": {
+        "action": "keep_bench",
+        "why": "bench hold \u2014 not yet promote gates"
+      },
+      "composite_score": 33.8
+    },
+    {
+      "username": "HongYunX",
+      "wallet": "0xc72d7dcdb23597d143a83536fb97b1d7db7efc21",
+      "bucket": "watch",
+      "joinable": true,
+      "unique_roi": 9.43,
+      "win_rate": 60.79,
+      "median_stake": 3112.74,
+      "last_30d_n": 53,
+      "last_30d_roi": 23.71,
+      "reasons": [
+        "extra_watch_never_live"
+      ],
+      "joinability": {
+        "score": 93.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_5k",
+          "wr_band",
+          "unique_roi_ge_5",
+          "active_30d"
+        ],
+        "median": 3112.74,
+        "wr": 60.79
+      },
+      "product": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "unit_pnl": 0.0,
+        "expectancy": 0.0,
+        "roi": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": 0.0,
+        "avg_grade": 0.0,
+        "avg_q": 0.0,
+        "avg_fill": 0.0,
+        "avg_vwap": 0.0,
+        "implied_wr": 0.0,
+        "edge": 0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 0.0,
+        "calmar": 0.0,
+        "days": 0,
+        "trades_per_day": 0.0,
+        "first": null,
+        "last": null
+      },
+      "equity": {
+        "n": 0,
+        "total_pnl": null,
+        "end_bank": null,
+        "max_dd_usd": null,
+        "max_dd_pct": null,
+        "sharpe_pnl": null,
+        "sortino": null,
+        "up_day_pct": null,
+        "up_month_pct": null,
+        "consistency_score": null,
+        "monthly_pnls": null
+      },
+      "rolling": {
+        "d30": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d60": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d90": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 31.5
+    },
+    {
+      "username": "0xheavy888",
+      "wallet": "0xec981ed70ae69c5cbcac08c1ba063e734f6bafcd",
+      "bucket": "bench",
+      "joinable": true,
+      "unique_roi": 2.22,
+      "win_rate": 50.64,
+      "median_stake": 617.86,
+      "last_30d_n": 1834,
+      "last_30d_roi": 1.3,
+      "reasons": [
+        "unique_roi=2.22_lt_5.0",
+        "unique_roi=2.22_bench"
+      ],
+      "joinability": {
+        "score": 90.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_2k",
+          "wr_band",
+          "active_30d"
+        ],
+        "median": 617.86,
+        "wr": 50.64
+      },
+      "product": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "unit_pnl": 0.0,
+        "expectancy": 0.0,
+        "roi": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": 0.0,
+        "avg_grade": 0.0,
+        "avg_q": 0.0,
+        "avg_fill": 0.0,
+        "avg_vwap": 0.0,
+        "implied_wr": 0.0,
+        "edge": 0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 0.0,
+        "calmar": 0.0,
+        "days": 0,
+        "trades_per_day": 0.0,
+        "first": null,
+        "last": null
+      },
+      "equity": {
+        "n": 0,
+        "total_pnl": null,
+        "end_bank": null,
+        "max_dd_usd": null,
+        "max_dd_pct": null,
+        "sharpe_pnl": null,
+        "sortino": null,
+        "up_day_pct": null,
+        "up_month_pct": null,
+        "consistency_score": null,
+        "monthly_pnls": null
+      },
+      "rolling": {
+        "d30": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d60": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d90": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_bench",
+        "why": "bench hold \u2014 not yet promote gates"
+      },
+      "composite_score": 30.8
+    },
+    {
+      "username": "S-Works",
+      "wallet": "0xee00ba338c59557141789b127927a55f5cc5cea1",
+      "bucket": "watch",
+      "joinable": true,
+      "unique_roi": -2.27,
+      "win_rate": 67.69,
+      "median_stake": 1206.5,
+      "last_30d_n": 106,
+      "last_30d_roi": -1.47,
+      "reasons": [],
+      "joinability": {
+        "score": 90.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_2k",
+          "wr_band",
+          "active_30d"
+        ],
+        "median": 1206.5,
+        "wr": 67.69
+      },
+      "product": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "unit_pnl": 0.0,
+        "expectancy": 0.0,
+        "roi": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": 0.0,
+        "avg_grade": 0.0,
+        "avg_q": 0.0,
+        "avg_fill": 0.0,
+        "avg_vwap": 0.0,
+        "implied_wr": 0.0,
+        "edge": 0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 0.0,
+        "calmar": 0.0,
+        "days": 0,
+        "trades_per_day": 0.0,
+        "first": null,
+        "last": null
+      },
+      "equity": {
+        "n": 0,
+        "total_pnl": null,
+        "end_bank": null,
+        "max_dd_usd": null,
+        "max_dd_pct": null,
+        "sharpe_pnl": null,
+        "sortino": null,
+        "up_day_pct": null,
+        "up_month_pct": null,
+        "consistency_score": null,
+        "monthly_pnls": null
+      },
+      "rolling": {
+        "d30": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d60": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d90": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 30.8
+    },
+    {
+      "username": "WTSA",
+      "wallet": "0x04d5524a0a5af2eca6e39e03defc261d42fe66d8",
+      "bucket": "bench",
+      "joinable": false,
+      "unique_roi": 20.21,
+      "win_rate": 53.44,
+      "median_stake": 27762.68,
+      "last_30d_n": 92,
+      "last_30d_roi": 18.93,
+      "reasons": [
+        "median=$27,763_unjoinable",
+        "unjoinable_keep_book"
+      ],
+      "joinability": {
+        "score": 40.0,
+        "reasons": [
+          "whale_unjoinable",
+          "wr_band",
+          "unique_roi_ge_5",
+          "active_30d"
+        ],
+        "median": 27762.68,
+        "wr": 53.44
+      },
+      "product": {
+        "n": 12,
+        "wins": 7,
+        "losses": 5,
+        "win_rate": 58.33,
+        "unit_pnl": 174.01,
+        "expectancy": 14.5,
+        "roi": 14.5,
+        "profit_factor": 1.348,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": -218.12,
+        "avg_grade": 86.7,
+        "avg_q": 86.7,
+        "avg_fill": 0.519,
+        "avg_vwap": 0.499,
+        "implied_wr": 51.9,
+        "edge": 6.4,
+        "avg_traders": 1.0,
+        "avg_rel": 3.73,
+        "calmar": 0.8,
+        "days": 5,
+        "trades_per_day": 2.4,
+        "first": "2026-07-23",
+        "last": "2026-07-29"
+      },
+      "equity": {
+        "n": 12,
+        "total_pnl": 174.01,
+        "end_bank": 10174.01,
+        "max_dd_usd": -218.12,
+        "max_dd_pct": -2.1,
+        "sharpe_pnl": 0.0,
+        "sortino": 0.0,
+        "up_day_pct": 40.0,
+        "up_month_pct": 100.0,
+        "consistency_score": 7.3,
+        "monthly_pnls": [
+          {
+            "month": "2026-07",
+            "pnl": 174.01
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 12,
+          "win_rate": 58.33,
+          "roi_2c": 14.5,
+          "unit_pnl": 174.01,
+          "sharpe": 0.0,
+          "max_dd": -218.12
+        },
+        "d60": {
+          "n": 12,
+          "win_rate": 58.33,
+          "roi_2c": 14.5,
+          "unit_pnl": 174.01,
+          "sharpe": 0.0,
+          "max_dd": -218.12
+        },
+        "d90": {
+          "n": 12,
+          "win_rate": 58.33,
+          "roi_2c": 14.5,
+          "unit_pnl": 174.01,
+          "sharpe": 0.0,
+          "max_dd": -218.12
+        }
+      },
+      "adaptive": {
+        "action": "keep_bench",
+        "why": "bench hold \u2014 not yet promote gates"
+      },
+      "composite_score": 30.2
+    },
+    {
+      "username": "kch123",
+      "wallet": "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee",
+      "bucket": "matched_archive",
+      "joinable": false,
+      "unique_roi": null,
+      "win_rate": null,
+      "median_stake": null,
+      "last_30d_n": null,
+      "last_30d_roi": null,
+      "reasons": [
+        "take_book_matched"
+      ],
+      "joinability": {
+        "score": 0.0,
+        "reasons": [
+          "whale_unjoinable",
+          "quiet_30d"
+        ],
+        "median": 1000000000.0,
+        "wr": 0.0
+      },
+      "product": {
+        "n": 18,
+        "wins": 14,
+        "losses": 4,
+        "win_rate": 77.78,
+        "unit_pnl": 487.79,
+        "expectancy": 27.1,
+        "roi": 27.1,
+        "profit_factor": 2.219,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": -200.0,
+        "avg_grade": 62.8,
+        "avg_q": 62.8,
+        "avg_fill": 0.624,
+        "avg_vwap": 0.604,
+        "implied_wr": 62.4,
+        "edge": 15.4,
+        "avg_traders": 1.0,
+        "avg_rel": 11.24,
+        "calmar": 2.44,
+        "days": 3,
+        "trades_per_day": 6.0,
+        "first": "2025-10-23",
+        "last": "2025-11-27"
+      },
+      "equity": {
+        "n": 18,
+        "total_pnl": 487.79,
+        "end_bank": 10487.79,
+        "max_dd_usd": -200.0,
+        "max_dd_pct": -1.93,
+        "sharpe_pnl": 0.0,
+        "sortino": 0.0,
+        "up_day_pct": 66.7,
+        "up_month_pct": 100.0,
+        "consistency_score": 43.0,
+        "monthly_pnls": [
+          {
+            "month": "2025-10",
+            "pnl": 272.69
+          },
+          {
+            "month": "2025-11",
+            "pnl": 215.1
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 12,
+          "win_rate": 75.0,
+          "roi_2c": 17.93,
+          "unit_pnl": 215.1,
+          "sharpe": 0.0,
+          "max_dd": -200.0
+        },
+        "d60": {
+          "n": 18,
+          "win_rate": 77.78,
+          "roi_2c": 27.1,
+          "unit_pnl": 487.79,
+          "sharpe": 0.0,
+          "max_dd": -200.0
+        },
+        "d90": {
+          "n": 18,
+          "win_rate": 77.78,
+          "roi_2c": 27.1,
+          "unit_pnl": 487.79,
+          "sharpe": 0.0,
+          "max_dd": -200.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 30.1
+    },
+    {
+      "username": "Capman",
+      "wallet": "0xc5b5bbd42624a8f0c8dfa90221913007d8c77e80",
+      "bucket": "matched_archive",
+      "joinable": false,
+      "unique_roi": null,
+      "win_rate": null,
+      "median_stake": null,
+      "last_30d_n": null,
+      "last_30d_roi": null,
+      "reasons": [
+        "take_book_matched"
+      ],
+      "joinability": {
+        "score": 0.0,
+        "reasons": [
+          "whale_unjoinable",
+          "quiet_30d"
+        ],
+        "median": 1000000000.0,
+        "wr": 0.0
+      },
+      "product": {
+        "n": 260,
+        "wins": 188,
+        "losses": 72,
+        "win_rate": 72.31,
+        "unit_pnl": 3760.64,
+        "expectancy": 14.46,
+        "roi": 14.46,
+        "profit_factor": 1.522,
+        "sharpe_daily_roi": 5.05,
+        "max_dd": -417.48,
+        "avg_grade": 69.8,
+        "avg_q": 69.8,
+        "avg_fill": 0.619,
+        "avg_vwap": 0.599,
+        "implied_wr": 61.9,
+        "edge": 10.4,
+        "avg_traders": 1.0,
+        "avg_rel": 4.46,
+        "calmar": 9.01,
+        "days": 100,
+        "trades_per_day": 2.6,
+        "first": "2025-11-15",
+        "last": "2026-04-08"
+      },
+      "equity": {
+        "n": 260,
+        "total_pnl": 3760.64,
+        "end_bank": 13760.64,
+        "max_dd_usd": -499.83,
+        "max_dd_pct": -4.9,
+        "sharpe_pnl": 6.61,
+        "sortino": 17.44,
+        "up_day_pct": 67.0,
+        "up_month_pct": 83.3,
+        "consistency_score": 13.8,
+        "monthly_pnls": [
+          {
+            "month": "2025-11",
+            "pnl": -13.1
+          },
+          {
+            "month": "2025-12",
+            "pnl": 169.88
+          },
+          {
+            "month": "2026-01",
+            "pnl": 1234.88
+          },
+          {
+            "month": "2026-02",
+            "pnl": 508.95
+          },
+          {
+            "month": "2026-03",
+            "pnl": 1655.31
+          },
+          {
+            "month": "2026-04",
+            "pnl": 204.72
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 81,
+          "win_rate": 76.54,
+          "roi_2c": 14.76,
+          "unit_pnl": 1195.75,
+          "sharpe": 7.28,
+          "max_dd": -266.47
+        },
+        "d60": {
+          "n": 147,
+          "win_rate": 74.83,
+          "roi_2c": 14.44,
+          "unit_pnl": 2123.27,
+          "sharpe": 7.59,
+          "max_dd": -287.62
+        },
+        "d90": {
+          "n": 215,
+          "win_rate": 73.49,
+          "roi_2c": 15.94,
+          "unit_pnl": 3427.16,
+          "sharpe": 6.29,
+          "max_dd": -410.94
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 29.4
+    },
+    {
+      "username": "SDTrading",
+      "wallet": "0x16bb9951a36fce71e2ef57890b786145e0ba8492",
+      "bucket": "watch",
+      "joinable": true,
+      "unique_roi": -1.11,
+      "win_rate": 48.14,
+      "median_stake": 4575.79,
+      "last_30d_n": 208,
+      "last_30d_roi": 14.4,
+      "reasons": [
+        "extra_watch_never_live"
+      ],
+      "joinability": {
+        "score": 83.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_5k",
+          "wr_band",
+          "active_30d"
+        ],
+        "median": 4575.79,
+        "wr": 48.14
+      },
+      "product": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "unit_pnl": 0.0,
+        "expectancy": 0.0,
+        "roi": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": 0.0,
+        "avg_grade": 0.0,
+        "avg_q": 0.0,
+        "avg_fill": 0.0,
+        "avg_vwap": 0.0,
+        "implied_wr": 0.0,
+        "edge": 0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 0.0,
+        "calmar": 0.0,
+        "days": 0,
+        "trades_per_day": 0.0,
+        "first": null,
+        "last": null
+      },
+      "equity": {
+        "n": 0,
+        "total_pnl": null,
+        "end_bank": null,
+        "max_dd_usd": null,
+        "max_dd_pct": null,
+        "sharpe_pnl": null,
+        "sortino": null,
+        "up_day_pct": null,
+        "up_month_pct": null,
+        "consistency_score": null,
+        "monthly_pnls": null
+      },
+      "rolling": {
+        "d30": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d60": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d90": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 29.1
+    },
+    {
+      "username": "ShucksIt69",
+      "wallet": "0x84dbb7103982e3617704a2ed7d5b39691952aeeb",
+      "bucket": "watch",
+      "joinable": true,
+      "unique_roi": 4.62,
+      "win_rate": 53.22,
+      "median_stake": 5210.74,
+      "last_30d_n": 71,
+      "last_30d_roi": -8.89,
+      "reasons": [],
+      "joinability": {
+        "score": 75.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_10k",
+          "wr_band",
+          "active_30d"
+        ],
+        "median": 5210.74,
+        "wr": 53.22
+      },
+      "product": {
+        "n": 6,
+        "wins": 3,
+        "losses": 3,
+        "win_rate": 50.0,
+        "unit_pnl": 2.38,
+        "expectancy": 0.4,
+        "roi": 0.4,
+        "profit_factor": 1.008,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": -200.0,
+        "avg_grade": 67.2,
+        "avg_q": 67.2,
+        "avg_fill": 0.51,
+        "avg_vwap": 0.49,
+        "implied_wr": 51.0,
+        "edge": -1.0,
+        "avg_traders": 1.0,
+        "avg_rel": 3.27,
+        "calmar": 0.01,
+        "days": 3,
+        "trades_per_day": 2.0,
+        "first": "2025-08-20",
+        "last": "2025-09-17"
+      },
+      "equity": {
+        "n": 6,
+        "total_pnl": 2.38,
+        "end_bank": 10002.38,
+        "max_dd_usd": -200.0,
+        "max_dd_pct": -2.01,
+        "sharpe_pnl": 0.0,
+        "sortino": 0.0,
+        "up_day_pct": 33.3,
+        "up_month_pct": 50.0,
+        "consistency_score": 0.1,
+        "monthly_pnls": [
+          {
+            "month": "2025-08",
+            "pnl": -248.48
+          },
+          {
+            "month": "2025-09",
+            "pnl": 250.86
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 6,
+          "win_rate": 50.0,
+          "roi_2c": 0.4,
+          "unit_pnl": 2.38,
+          "sharpe": 0.0,
+          "max_dd": -200.0
+        },
+        "d60": {
+          "n": 6,
+          "win_rate": 50.0,
+          "roi_2c": 0.4,
+          "unit_pnl": 2.38,
+          "sharpe": 0.0,
+          "max_dd": -200.0
+        },
+        "d90": {
+          "n": 6,
+          "win_rate": 50.0,
+          "roi_2c": 0.4,
+          "unit_pnl": 2.38,
+          "sharpe": 0.0,
+          "max_dd": -200.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 28.5
+    },
+    {
+      "username": "JuniorB",
+      "wallet": "0x9ac5c8496bc84f642bac181499bf64405a5c6a3d",
+      "bucket": "bench",
+      "joinable": true,
+      "unique_roi": 4.71,
+      "win_rate": 58.16,
+      "median_stake": 450.0,
+      "last_30d_n": 4,
+      "last_30d_roi": -100.01,
+      "reasons": [
+        "unique_roi=4.71_bench"
+      ],
+      "joinability": {
+        "score": 80.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_2k",
+          "wr_band",
+          "sparse_30d"
+        ],
+        "median": 450.0,
+        "wr": 58.16
+      },
+      "product": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "unit_pnl": 0.0,
+        "expectancy": 0.0,
+        "roi": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": 0.0,
+        "avg_grade": 0.0,
+        "avg_q": 0.0,
+        "avg_fill": 0.0,
+        "avg_vwap": 0.0,
+        "implied_wr": 0.0,
+        "edge": 0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 0.0,
+        "calmar": 0.0,
+        "days": 0,
+        "trades_per_day": 0.0,
+        "first": null,
+        "last": null
+      },
+      "equity": {
+        "n": 0,
+        "total_pnl": null,
+        "end_bank": null,
+        "max_dd_usd": null,
+        "max_dd_pct": null,
+        "sharpe_pnl": null,
+        "sortino": null,
+        "up_day_pct": null,
+        "up_month_pct": null,
+        "consistency_score": null,
+        "monthly_pnls": null
+      },
+      "rolling": {
+        "d30": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d60": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d90": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_bench",
+        "why": "bench hold \u2014 not yet promote gates"
+      },
+      "composite_score": 28.3
+    },
+    {
+      "username": "norrisfan",
+      "wallet": "0xe72bb501df5306c75c89383d48a1e81073fbb0a0",
+      "bucket": "watch",
+      "joinable": false,
+      "unique_roi": -15.66,
+      "win_rate": 43.19,
+      "median_stake": 1770.0,
+      "last_30d_n": 127,
+      "last_30d_roi": -175.4,
+      "reasons": [],
+      "joinability": {
+        "score": 40.0,
+        "reasons": [
+          "median_le_2k",
+          "active_30d"
+        ],
+        "median": 1770.0,
+        "wr": 43.19
+      },
+      "product": {
+        "n": 28,
+        "wins": 12,
+        "losses": 16,
+        "win_rate": 42.86,
+        "unit_pnl": -572.8,
+        "expectancy": -20.46,
+        "roi": -20.46,
+        "profit_factor": 0.642,
+        "sharpe_daily_roi": -1.97,
+        "max_dd": -600.0,
+        "avg_grade": 69.2,
+        "avg_q": 69.2,
+        "avg_fill": 0.524,
+        "avg_vwap": 0.504,
+        "implied_wr": 52.4,
+        "edge": -9.5,
+        "avg_traders": 1.0,
+        "avg_rel": 6.73,
+        "calmar": -0.95,
+        "days": 19,
+        "trades_per_day": 1.47,
+        "first": "2026-01-19",
+        "last": "2026-03-26"
+      },
+      "equity": {
+        "n": 28,
+        "total_pnl": -572.8,
+        "end_bank": 9427.2,
+        "max_dd_usd": -600.0,
+        "max_dd_pct": -5.98,
+        "sharpe_pnl": -5.04,
+        "sortino": -9.24,
+        "up_day_pct": 42.1,
+        "up_month_pct": 33.3,
+        "consistency_score": 0.0,
+        "monthly_pnls": [
+          {
+            "month": "2026-01",
+            "pnl": -339.28
+          },
+          {
+            "month": "2026-02",
+            "pnl": 50.39
+          },
+          {
+            "month": "2026-03",
+            "pnl": -283.9
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 11,
+          "win_rate": 36.36,
+          "roi_2c": -25.81,
+          "unit_pnl": -283.9,
+          "sharpe": 0.0,
+          "max_dd": -600.0
+        },
+        "d60": {
+          "n": 24,
+          "win_rate": 45.83,
+          "roi_2c": -16.46,
+          "unit_pnl": -395.02,
+          "sharpe": -0.59,
+          "max_dd": -600.0
+        },
+        "d90": {
+          "n": 28,
+          "win_rate": 42.86,
+          "roi_2c": -20.46,
+          "unit_pnl": -572.8,
+          "sharpe": -1.97,
+          "max_dd": -600.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_cold",
+        "why": "take-rule cold n=28 roi=-20.46%"
+      },
+      "composite_score": 25.3
+    },
+    {
+      "username": "ckw",
+      "wallet": "0x92672c80d36dcd08172aa1e51dface0f20b70f9a",
+      "bucket": "bench",
+      "joinable": true,
+      "unique_roi": 2.29,
+      "win_rate": 54.93,
+      "median_stake": 7378.95,
+      "last_30d_n": 1,
+      "last_30d_roi": -100.0,
+      "reasons": [
+        "stale_DARK"
+      ],
+      "joinability": {
+        "score": 60.0,
+        "reasons": [
+          "joinable_gates",
+          "median_le_10k",
+          "wr_band",
+          "quiet_30d"
+        ],
+        "median": 7378.95,
+        "wr": 54.93
+      },
+      "product": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "unit_pnl": 0.0,
+        "expectancy": 0.0,
+        "roi": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": 0.0,
+        "avg_grade": 0.0,
+        "avg_q": 0.0,
+        "avg_fill": 0.0,
+        "avg_vwap": 0.0,
+        "implied_wr": 0.0,
+        "edge": 0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 0.0,
+        "calmar": 0.0,
+        "days": 0,
+        "trades_per_day": 0.0,
+        "first": null,
+        "last": null
+      },
+      "equity": {
+        "n": 0,
+        "total_pnl": null,
+        "end_bank": null,
+        "max_dd_usd": null,
+        "max_dd_pct": null,
+        "sharpe_pnl": null,
+        "sortino": null,
+        "up_day_pct": null,
+        "up_month_pct": null,
+        "consistency_score": null,
+        "monthly_pnls": null
+      },
+      "rolling": {
+        "d30": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d60": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d90": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_bench",
+        "why": "bench hold \u2014 not yet promote gates"
+      },
+      "composite_score": 23.4
+    },
+    {
+      "username": "theowalcott",
+      "wallet": "0x7ad71d79a3bb90d0a87a06500fa0fe11663842aa",
+      "bucket": "watch",
+      "joinable": false,
+      "unique_roi": -0.71,
+      "win_rate": 56.47,
+      "median_stake": 24554.96,
+      "last_30d_n": 71,
+      "last_30d_roi": 0.59,
+      "reasons": [
+        "median=$24,555_unjoinable"
+      ],
+      "joinability": {
+        "score": 30.0,
+        "reasons": [
+          "whale_unjoinable",
+          "wr_band",
+          "active_30d"
+        ],
+        "median": 24554.96,
+        "wr": 56.47
+      },
+      "product": {
+        "n": 5,
+        "wins": 3,
+        "losses": 2,
+        "win_rate": 60.0,
+        "unit_pnl": 90.9,
+        "expectancy": 18.18,
+        "roi": 18.18,
+        "profit_factor": 1.454,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": -100.0,
+        "avg_grade": 74.8,
+        "avg_q": 74.8,
+        "avg_fill": 0.498,
+        "avg_vwap": 0.478,
+        "implied_wr": 49.8,
+        "edge": 10.2,
+        "avg_traders": 1.0,
+        "avg_rel": 3.2,
+        "calmar": 0.91,
+        "days": 3,
+        "trades_per_day": 1.67,
+        "first": "2026-08-10",
+        "last": "2026-08-13"
+      },
+      "equity": {
+        "n": 5,
+        "total_pnl": 90.9,
+        "end_bank": 10090.9,
+        "max_dd_usd": -100.0,
+        "max_dd_pct": -0.99,
+        "sharpe_pnl": 0.0,
+        "sortino": 0.0,
+        "up_day_pct": 66.7,
+        "up_month_pct": 100.0,
+        "consistency_score": 8.3,
+        "monthly_pnls": [
+          {
+            "month": "2026-08",
+            "pnl": 90.9
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 5,
+          "win_rate": 60.0,
+          "roi_2c": 18.18,
+          "unit_pnl": 90.9,
+          "sharpe": 0.0,
+          "max_dd": -100.0
+        },
+        "d60": {
+          "n": 5,
+          "win_rate": 60.0,
+          "roi_2c": 18.18,
+          "unit_pnl": 90.9,
+          "sharpe": 0.0,
+          "max_dd": -100.0
+        },
+        "d90": {
+          "n": 5,
+          "win_rate": 60.0,
+          "roi_2c": 18.18,
+          "unit_pnl": 90.9,
+          "sharpe": 0.0,
+          "max_dd": -100.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 18.5
+    },
+    {
+      "username": "predictionlegend",
+      "wallet": "0x3eb095d871501a1d7a3cb086a22d174b52356a68",
+      "bucket": "watch",
+      "joinable": false,
+      "unique_roi": 63.53,
+      "win_rate": 50.0,
+      "median_stake": 18319.79,
+      "last_30d_n": 12,
+      "last_30d_roi": 63.53,
+      "reasons": [
+        "median=$18,320_unjoinable"
+      ],
+      "joinability": {
+        "score": 40.0,
+        "reasons": [
+          "whale_unjoinable",
+          "wr_band",
+          "unique_roi_ge_5",
+          "active_30d"
+        ],
+        "median": 18319.79,
+        "wr": 50.0
+      },
+      "product": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "unit_pnl": 0.0,
+        "expectancy": 0.0,
+        "roi": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": 0.0,
+        "avg_grade": 0.0,
+        "avg_q": 0.0,
+        "avg_fill": 0.0,
+        "avg_vwap": 0.0,
+        "implied_wr": 0.0,
+        "edge": 0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 0.0,
+        "calmar": 0.0,
+        "days": 0,
+        "trades_per_day": 0.0,
+        "first": null,
+        "last": null
+      },
+      "equity": {
+        "n": 0,
+        "total_pnl": null,
+        "end_bank": null,
+        "max_dd_usd": null,
+        "max_dd_pct": null,
+        "sharpe_pnl": null,
+        "sortino": null,
+        "up_day_pct": null,
+        "up_month_pct": null,
+        "consistency_score": null,
+        "monthly_pnls": null
+      },
+      "rolling": {
+        "d30": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d60": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d90": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 15.8
+    },
+    {
+      "username": "bloodmaster",
+      "wallet": "0x58f8f1138be2192696378629fc9aa23c7910dc70",
+      "bucket": "watch",
+      "joinable": false,
+      "unique_roi": 4.32,
+      "win_rate": 88.73,
+      "median_stake": 597.86,
+      "last_30d_n": 305,
+      "last_30d_roi": -0.48,
+      "reasons": [],
+      "joinability": {
+        "score": 40.0,
+        "reasons": [
+          "median_le_2k",
+          "active_30d"
+        ],
+        "median": 597.86,
+        "wr": 88.73
+      },
+      "product": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "unit_pnl": 0.0,
+        "expectancy": 0.0,
+        "roi": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": 0.0,
+        "avg_grade": 0.0,
+        "avg_q": 0.0,
+        "avg_fill": 0.0,
+        "avg_vwap": 0.0,
+        "implied_wr": 0.0,
+        "edge": 0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 0.0,
+        "calmar": 0.0,
+        "days": 0,
+        "trades_per_day": 0.0,
+        "first": null,
+        "last": null
+      },
+      "equity": {
+        "n": 0,
+        "total_pnl": null,
+        "end_bank": null,
+        "max_dd_usd": null,
+        "max_dd_pct": null,
+        "sharpe_pnl": null,
+        "sortino": null,
+        "up_day_pct": null,
+        "up_month_pct": null,
+        "consistency_score": null,
+        "monthly_pnls": null
+      },
+      "rolling": {
+        "d30": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d60": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d90": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 15.8
+    },
+    {
+      "username": "3edmond.dantes",
+      "wallet": "0x983eedfbd75803602e4a6e6ea9aab6dc6b9c6748",
+      "bucket": "watch",
+      "joinable": false,
+      "unique_roi": 25.37,
+      "win_rate": 50.0,
+      "median_stake": 278599.5,
+      "last_30d_n": 4,
+      "last_30d_roi": 25.37,
+      "reasons": [
+        "median=$278,600_unjoinable"
+      ],
+      "joinability": {
+        "score": 30.0,
+        "reasons": [
+          "whale_unjoinable",
+          "wr_band",
+          "unique_roi_ge_5",
+          "sparse_30d"
+        ],
+        "median": 278599.5,
+        "wr": 50.0
+      },
+      "product": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "unit_pnl": 0.0,
+        "expectancy": 0.0,
+        "roi": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": 0.0,
+        "avg_grade": 0.0,
+        "avg_q": 0.0,
+        "avg_fill": 0.0,
+        "avg_vwap": 0.0,
+        "implied_wr": 0.0,
+        "edge": 0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 0.0,
+        "calmar": 0.0,
+        "days": 0,
+        "trades_per_day": 0.0,
+        "first": null,
+        "last": null
+      },
+      "equity": {
+        "n": 0,
+        "total_pnl": null,
+        "end_bank": null,
+        "max_dd_usd": null,
+        "max_dd_pct": null,
+        "sharpe_pnl": null,
+        "sortino": null,
+        "up_day_pct": null,
+        "up_month_pct": null,
+        "consistency_score": null,
+        "monthly_pnls": null
+      },
+      "rolling": {
+        "d30": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d60": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d90": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 13.7
+    },
+    {
+      "username": "fengdubiying",
+      "wallet": "0x17db3fcd93ba12d38382a0cade24b200185c5f6d",
+      "bucket": "watch",
+      "joinable": false,
+      "unique_roi": 28.15,
+      "win_rate": 71.43,
+      "median_stake": 12835.09,
+      "last_30d_n": 0,
+      "last_30d_roi": 0.0,
+      "reasons": [],
+      "joinability": {
+        "score": 30.0,
+        "reasons": [
+          "median_under_15k",
+          "wr_band",
+          "unique_roi_ge_5",
+          "quiet_30d"
+        ],
+        "median": 12835.09,
+        "wr": 71.43
+      },
+      "product": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "unit_pnl": 0.0,
+        "expectancy": 0.0,
+        "roi": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": 0.0,
+        "avg_grade": 0.0,
+        "avg_q": 0.0,
+        "avg_fill": 0.0,
+        "avg_vwap": 0.0,
+        "implied_wr": 0.0,
+        "edge": 0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 0.0,
+        "calmar": 0.0,
+        "days": 0,
+        "trades_per_day": 0.0,
+        "first": null,
+        "last": null
+      },
+      "equity": {
+        "n": 0,
+        "total_pnl": null,
+        "end_bank": null,
+        "max_dd_usd": null,
+        "max_dd_pct": null,
+        "sharpe_pnl": null,
+        "sortino": null,
+        "up_day_pct": null,
+        "up_month_pct": null,
+        "consistency_score": null,
+        "monthly_pnls": null
+      },
+      "rolling": {
+        "d30": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d60": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d90": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 13.7
+    },
+    {
+      "username": "asparagus2012",
+      "wallet": "0x476e1322d1a412fa0325527b8c3bc5e707b1396d",
+      "bucket": "watch",
+      "joinable": false,
+      "unique_roi": 249.97,
+      "win_rate": 68.75,
+      "median_stake": 29604.0,
+      "last_30d_n": 4,
+      "last_30d_roi": 532.16,
+      "reasons": [
+        "median=$29,604_unjoinable"
+      ],
+      "joinability": {
+        "score": 30.0,
+        "reasons": [
+          "whale_unjoinable",
+          "wr_band",
+          "unique_roi_ge_5",
+          "sparse_30d"
+        ],
+        "median": 29604.0,
+        "wr": 68.75
+      },
+      "product": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "unit_pnl": 0.0,
+        "expectancy": 0.0,
+        "roi": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": 0.0,
+        "avg_grade": 0.0,
+        "avg_q": 0.0,
+        "avg_fill": 0.0,
+        "avg_vwap": 0.0,
+        "implied_wr": 0.0,
+        "edge": 0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 0.0,
+        "calmar": 0.0,
+        "days": 0,
+        "trades_per_day": 0.0,
+        "first": null,
+        "last": null
+      },
+      "equity": {
+        "n": 0,
+        "total_pnl": null,
+        "end_bank": null,
+        "max_dd_usd": null,
+        "max_dd_pct": null,
+        "sharpe_pnl": null,
+        "sortino": null,
+        "up_day_pct": null,
+        "up_month_pct": null,
+        "consistency_score": null,
+        "monthly_pnls": null
+      },
+      "rolling": {
+        "d30": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d60": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d90": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 13.7
+    },
+    {
+      "username": "tcp2",
+      "wallet": "0x6b7c75862e64d6e976d2c08ad9f9b54add6c5f83",
+      "bucket": "matched_archive",
+      "joinable": false,
+      "unique_roi": null,
+      "win_rate": null,
+      "median_stake": null,
+      "last_30d_n": null,
+      "last_30d_roi": null,
+      "reasons": [
+        "take_book_matched"
+      ],
+      "joinability": {
+        "score": 0.0,
+        "reasons": [
+          "whale_unjoinable",
+          "quiet_30d"
+        ],
+        "median": 1000000000.0,
+        "wr": 0.0
+      },
+      "product": {
+        "n": 5,
+        "wins": 4,
+        "losses": 1,
+        "win_rate": 80.0,
+        "unit_pnl": 106.2,
+        "expectancy": 21.24,
+        "roi": 21.24,
+        "profit_factor": 2.062,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": -100.0,
+        "avg_grade": 64.2,
+        "avg_q": 64.2,
+        "avg_fill": 0.669,
+        "avg_vwap": 0.649,
+        "implied_wr": 66.9,
+        "edge": 13.1,
+        "avg_traders": 1.0,
+        "avg_rel": 2.59,
+        "calmar": 1.06,
+        "days": 3,
+        "trades_per_day": 1.67,
+        "first": "2025-09-29",
+        "last": "2025-10-01"
+      },
+      "equity": {
+        "n": 5,
+        "total_pnl": 106.2,
+        "end_bank": 10106.2,
+        "max_dd_usd": -100.0,
+        "max_dd_pct": -0.99,
+        "sharpe_pnl": 0.0,
+        "sortino": 0.0,
+        "up_day_pct": 66.7,
+        "up_month_pct": 50.0,
+        "consistency_score": 11.5,
+        "monthly_pnls": [
+          {
+            "month": "2025-09",
+            "pnl": -36.19
+          },
+          {
+            "month": "2025-10",
+            "pnl": 142.39
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 5,
+          "win_rate": 80.0,
+          "roi_2c": 21.24,
+          "unit_pnl": 106.2,
+          "sharpe": 0.0,
+          "max_dd": -100.0
+        },
+        "d60": {
+          "n": 5,
+          "win_rate": 80.0,
+          "roi_2c": 21.24,
+          "unit_pnl": 106.2,
+          "sharpe": 0.0,
+          "max_dd": -100.0
+        },
+        "d90": {
+          "n": 5,
+          "win_rate": 80.0,
+          "roi_2c": 21.24,
+          "unit_pnl": 106.2,
+          "sharpe": 0.0,
+          "max_dd": -100.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 13.2
+    },
+    {
+      "username": "musholius722",
+      "wallet": "0x4b341d4612437b6e5b5fbcf98e5b675dbacf48a8",
+      "bucket": "watch",
+      "joinable": false,
+      "unique_roi": 60.63,
+      "win_rate": 50.0,
+      "median_stake": 173567.58,
+      "last_30d_n": 1,
+      "last_30d_roi": 60.64,
+      "reasons": [
+        "median=$173,568_unjoinable"
+      ],
+      "joinability": {
+        "score": 25.0,
+        "reasons": [
+          "whale_unjoinable",
+          "wr_band",
+          "unique_roi_ge_5",
+          "quiet_30d"
+        ],
+        "median": 173567.58,
+        "wr": 50.0
+      },
+      "product": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "unit_pnl": 0.0,
+        "expectancy": 0.0,
+        "roi": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": 0.0,
+        "avg_grade": 0.0,
+        "avg_q": 0.0,
+        "avg_fill": 0.0,
+        "avg_vwap": 0.0,
+        "implied_wr": 0.0,
+        "edge": 0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 0.0,
+        "calmar": 0.0,
+        "days": 0,
+        "trades_per_day": 0.0,
+        "first": null,
+        "last": null
+      },
+      "equity": {
+        "n": 0,
+        "total_pnl": null,
+        "end_bank": null,
+        "max_dd_usd": null,
+        "max_dd_pct": null,
+        "sharpe_pnl": null,
+        "sortino": null,
+        "up_day_pct": null,
+        "up_month_pct": null,
+        "consistency_score": null,
+        "monthly_pnls": null
+      },
+      "rolling": {
+        "d30": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d60": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d90": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 12.6
+    },
+    {
+      "username": "bigspending",
+      "wallet": "0x86dab59a8a6e7f9947282d2117aab3429b706428",
+      "bucket": "watch",
+      "joinable": false,
+      "unique_roi": 24.89,
+      "win_rate": 64.52,
+      "median_stake": 7426.17,
+      "last_30d_n": 30,
+      "last_30d_roi": 24.89,
+      "reasons": [],
+      "joinability": {
+        "score": 50.0,
+        "reasons": [
+          "median_le_10k",
+          "wr_band",
+          "unique_roi_ge_5",
+          "active_30d"
+        ],
+        "median": 7426.17,
+        "wr": 64.52
+      },
+      "product": {
+        "n": 3,
+        "wins": 1,
+        "losses": 2,
+        "win_rate": 33.33,
+        "unit_pnl": -152.14,
+        "expectancy": -50.71,
+        "roi": -50.71,
+        "profit_factor": 0.239,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": -200.0,
+        "avg_grade": 97.7,
+        "avg_q": 97.7,
+        "avg_fill": 0.504,
+        "avg_vwap": 0.484,
+        "implied_wr": 50.4,
+        "edge": -17.1,
+        "avg_traders": 1.0,
+        "avg_rel": 3.99,
+        "calmar": -0.76,
+        "days": 2,
+        "trades_per_day": 1.5,
+        "first": "2026-08-16",
+        "last": "2026-08-21"
+      },
+      "equity": {
+        "n": 3,
+        "total_pnl": -152.14,
+        "end_bank": 9847.86,
+        "max_dd_usd": -200.0,
+        "max_dd_pct": -1.99,
+        "sharpe_pnl": 0.0,
+        "sortino": 0.0,
+        "up_day_pct": 0.0,
+        "up_month_pct": 0.0,
+        "consistency_score": 0.0,
+        "monthly_pnls": [
+          {
+            "month": "2026-08",
+            "pnl": -152.14
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 3,
+          "win_rate": 33.33,
+          "roi_2c": -50.71,
+          "unit_pnl": -152.14,
+          "sharpe": 0.0,
+          "max_dd": -200.0
+        },
+        "d60": {
+          "n": 3,
+          "win_rate": 33.33,
+          "roi_2c": -50.71,
+          "unit_pnl": -152.14,
+          "sharpe": 0.0,
+          "max_dd": -200.0
+        },
+        "d90": {
+          "n": 3,
+          "win_rate": 33.33,
+          "roi_2c": -50.71,
+          "unit_pnl": -152.14,
+          "sharpe": 0.0,
+          "max_dd": -200.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 10.9
+    },
+    {
+      "username": "sainttroplay",
+      "wallet": "0x9319a045cdd0c2180e5eb7ad44374383db9a6410",
+      "bucket": "watch",
+      "joinable": false,
+      "unique_roi": 77.2,
+      "win_rate": 83.33,
+      "median_stake": 650806.53,
+      "last_30d_n": 6,
+      "last_30d_roi": 77.2,
+      "reasons": [
+        "median=$650,807_unjoinable"
+      ],
+      "joinability": {
+        "score": 15.0,
+        "reasons": [
+          "whale_unjoinable",
+          "unique_roi_ge_5",
+          "sparse_30d"
+        ],
+        "median": 650806.53,
+        "wr": 83.33
+      },
+      "product": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "unit_pnl": 0.0,
+        "expectancy": 0.0,
+        "roi": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": 0.0,
+        "avg_grade": 0.0,
+        "avg_q": 0.0,
+        "avg_fill": 0.0,
+        "avg_vwap": 0.0,
+        "implied_wr": 0.0,
+        "edge": 0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 0.0,
+        "calmar": 0.0,
+        "days": 0,
+        "trades_per_day": 0.0,
+        "first": null,
+        "last": null
+      },
+      "equity": {
+        "n": 0,
+        "total_pnl": null,
+        "end_bank": null,
+        "max_dd_usd": null,
+        "max_dd_pct": null,
+        "sharpe_pnl": null,
+        "sortino": null,
+        "up_day_pct": null,
+        "up_month_pct": null,
+        "consistency_score": null,
+        "monthly_pnls": null
+      },
+      "rolling": {
+        "d30": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d60": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d90": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 10.6
+    },
+    {
+      "username": "Sassy-Bucket",
+      "wallet": "0x4bff30af91642dc7d2b19a8664378fe55c45fc26",
+      "bucket": "watch",
+      "joinable": false,
+      "unique_roi": -7.83,
+      "win_rate": 46.5,
+      "median_stake": 42249.78,
+      "last_30d_n": 124,
+      "last_30d_roi": 11.2,
+      "reasons": [
+        "median=$42,250_unjoinable"
+      ],
+      "joinability": {
+        "score": 15.0,
+        "reasons": [
+          "whale_unjoinable",
+          "active_30d"
+        ],
+        "median": 42249.78,
+        "wr": 46.5
+      },
+      "product": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "unit_pnl": 0.0,
+        "expectancy": 0.0,
+        "roi": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": 0.0,
+        "avg_grade": 0.0,
+        "avg_q": 0.0,
+        "avg_fill": 0.0,
+        "avg_vwap": 0.0,
+        "implied_wr": 0.0,
+        "edge": 0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 0.0,
+        "calmar": 0.0,
+        "days": 0,
+        "trades_per_day": 0.0,
+        "first": null,
+        "last": null
+      },
+      "equity": {
+        "n": 0,
+        "total_pnl": null,
+        "end_bank": null,
+        "max_dd_usd": null,
+        "max_dd_pct": null,
+        "sharpe_pnl": null,
+        "sortino": null,
+        "up_day_pct": null,
+        "up_month_pct": null,
+        "consistency_score": null,
+        "monthly_pnls": null
+      },
+      "rolling": {
+        "d30": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d60": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d90": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 10.6
+    },
+    {
+      "username": "TennisLove",
+      "wallet": "0x2f44fa076c8d2976ac6bea0ddfd9502bad2b93c2",
+      "bucket": "watch",
+      "joinable": false,
+      "unique_roi": 40.56,
+      "win_rate": 100.0,
+      "median_stake": 99223.15,
+      "last_30d_n": 2,
+      "last_30d_roi": 50.71,
+      "reasons": [
+        "median=$99,223_unjoinable"
+      ],
+      "joinability": {
+        "score": 10.0,
+        "reasons": [
+          "whale_unjoinable",
+          "unique_roi_ge_5",
+          "quiet_30d"
+        ],
+        "median": 99223.15,
+        "wr": 100.0
+      },
+      "product": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "unit_pnl": 0.0,
+        "expectancy": 0.0,
+        "roi": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": 0.0,
+        "avg_grade": 0.0,
+        "avg_q": 0.0,
+        "avg_fill": 0.0,
+        "avg_vwap": 0.0,
+        "implied_wr": 0.0,
+        "edge": 0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 0.0,
+        "calmar": 0.0,
+        "days": 0,
+        "trades_per_day": 0.0,
+        "first": null,
+        "last": null
+      },
+      "equity": {
+        "n": 0,
+        "total_pnl": null,
+        "end_bank": null,
+        "max_dd_usd": null,
+        "max_dd_pct": null,
+        "sharpe_pnl": null,
+        "sortino": null,
+        "up_day_pct": null,
+        "up_month_pct": null,
+        "consistency_score": null,
+        "monthly_pnls": null
+      },
+      "rolling": {
+        "d30": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d60": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d90": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 9.5
+    },
+    {
+      "username": "KeyTransporter",
+      "wallet": "0x94f199fb7789f1aef7fff6b758d6b375100f4c7a",
+      "bucket": "watch",
+      "joinable": false,
+      "unique_roi": 45.71,
+      "win_rate": 76.92,
+      "median_stake": 301277.24,
+      "last_30d_n": 0,
+      "last_30d_roi": 0.0,
+      "reasons": [
+        "median=$301,277_unjoinable"
+      ],
+      "joinability": {
+        "score": 10.0,
+        "reasons": [
+          "whale_unjoinable",
+          "unique_roi_ge_5",
+          "quiet_30d"
+        ],
+        "median": 301277.24,
+        "wr": 76.92
+      },
+      "product": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "unit_pnl": 0.0,
+        "expectancy": 0.0,
+        "roi": 0.0,
+        "profit_factor": 0.0,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": 0.0,
+        "avg_grade": 0.0,
+        "avg_q": 0.0,
+        "avg_fill": 0.0,
+        "avg_vwap": 0.0,
+        "implied_wr": 0.0,
+        "edge": 0.0,
+        "avg_traders": 1.0,
+        "avg_rel": 0.0,
+        "calmar": 0.0,
+        "days": 0,
+        "trades_per_day": 0.0,
+        "first": null,
+        "last": null
+      },
+      "equity": {
+        "n": 0,
+        "total_pnl": null,
+        "end_bank": null,
+        "max_dd_usd": null,
+        "max_dd_pct": null,
+        "sharpe_pnl": null,
+        "sortino": null,
+        "up_day_pct": null,
+        "up_month_pct": null,
+        "consistency_score": null,
+        "monthly_pnls": null
+      },
+      "rolling": {
+        "d30": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d60": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        },
+        "d90": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi_2c": 0.0,
+          "unit_pnl": 0.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 9.5
+    },
+    {
+      "username": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
+      "wallet": "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87",
+      "bucket": "watch",
+      "joinable": false,
+      "unique_roi": 12.47,
+      "win_rate": 55.1,
+      "median_stake": 39637.5,
+      "last_30d_n": 25,
+      "last_30d_roi": 33.2,
+      "reasons": [
+        "median=$39,638_unjoinable"
+      ],
+      "joinability": {
+        "score": 40.0,
+        "reasons": [
+          "whale_unjoinable",
+          "wr_band",
+          "unique_roi_ge_5",
+          "active_30d"
+        ],
+        "median": 39637.5,
+        "wr": 55.1
+      },
+      "product": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "win_rate": 0.0,
+        "unit_pnl": -100.0,
+        "expectancy": -100.0,
+        "roi": -100.0,
+        "profit_factor": 0.0,
+        "sharpe_daily_roi": 0.0,
+        "max_dd": 0.0,
+        "avg_grade": 70.0,
+        "avg_q": 70.0,
+        "avg_fill": 0.407,
+        "avg_vwap": 0.387,
+        "implied_wr": 40.7,
+        "edge": -40.7,
+        "avg_traders": 1.0,
+        "avg_rel": 3.05,
+        "calmar": -100.0,
+        "days": 1,
+        "trades_per_day": 1.0,
+        "first": "2026-04-29",
+        "last": "2026-04-29"
+      },
+      "equity": {
+        "n": 1,
+        "total_pnl": -100.0,
+        "end_bank": 9900.0,
+        "max_dd_usd": 0.0,
+        "max_dd_pct": 0.0,
+        "sharpe_pnl": 0.0,
+        "sortino": 0.0,
+        "up_day_pct": 0.0,
+        "up_month_pct": 0.0,
+        "consistency_score": 0.0,
+        "monthly_pnls": [
+          {
+            "month": "2026-04",
+            "pnl": -100.0
+          }
+        ]
+      },
+      "rolling": {
+        "d30": {
+          "n": 1,
+          "win_rate": 0.0,
+          "roi_2c": -100.0,
+          "unit_pnl": -100.0,
+          "sharpe": 0.0,
+          "max_dd": 0.0
+        },
+        "d60": {
+          "n": 1,
+          "win_rate": 0.0,
+          "roi_2c": -100.0,
+          "unit_pnl": -100.0,
+          "sharpe": 0.0,
+          "max_dd": 0.0
+        },
+        "d90": {
+          "n": 1,
+          "win_rate": 0.0,
+          "roi_2c": -100.0,
+          "unit_pnl": -100.0,
+          "sharpe": 0.0,
+          "max_dd": 0.0
+        }
+      },
+      "adaptive": {
+        "action": "keep_watch",
+        "why": "screen only / thin take / not joinable"
+      },
+      "composite_score": 8.5
+    }
+  ],
+  "projection_30d": {
+    "horizon_days": 30,
+    "method": "trades_per_day \u00d7 $100 expectancy from in-sample product rule on the scored pool. Bands are illustrative (\u00b11.28\u03c3-style), not a forecast of edge persistence.",
+    "pool_hist_n": 24,
+    "pool_hist_roi_2c": 7.4,
+    "proj_n": 45.0,
+    "proj_pnl_usd": 333.0,
+    "proj_roi_pct": 7.4,
+    "band_low_usd": 161.27,
+    "band_high_usd": 504.73,
+    "live_traders": [
+      {
+        "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+        "proj_n_30d": 45.0,
+        "proj_pnl_30d": 333.0,
+        "hist_roi_2c": 7.4,
+        "hist_n": 24
+      }
+    ],
+    "caveat": "Empty live open book \u21d2 near-term n may be 0 even if hist tpd > 0. Cold weeks pause; do not force size.",
+    "if_tailed_easy_set": {
+      "horizon_days": 30,
+      "method": "trades_per_day \u00d7 $100 expectancy from in-sample product rule on the scored pool. Bands are illustrative (\u00b11.28\u03c3-style), not a forecast of edge persistence.",
+      "pool_hist_n": 696,
+      "pool_hist_roi_2c": -2.43,
+      "proj_n": 144.9,
+      "proj_pnl_usd": -352.11,
+      "proj_roi_pct": -2.43,
+      "band_low_usd": -660.27,
+      "band_high_usd": -43.95,
+      "live_traders": [
+        {
+          "username": "Vetch",
+          "proj_n_30d": 49.5,
+          "proj_pnl_30d": 623.7,
+          "hist_roi_2c": 12.6,
+          "hist_n": 84
+        },
+        {
+          "username": "JhonAlexanderHinestroza",
+          "proj_n_30d": 69.0,
+          "proj_pnl_30d": 1344.81,
+          "hist_roi_2c": 19.49,
+          "hist_n": 108
+        },
+        {
+          "username": "ShortFlutterStock",
+          "proj_n_30d": 160.5,
+          "proj_pnl_30d": -1508.7,
+          "hist_roi_2c": -9.4,
+          "hist_n": 198
+        },
+        {
+          "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+          "proj_n_30d": 45.0,
+          "proj_pnl_30d": 333.0,
+          "hist_roi_2c": 7.4,
+          "hist_n": 24
+        },
+        {
+          "username": "CoryLahey",
+          "proj_n_30d": 82.5,
+          "proj_pnl_30d": 107.25,
+          "hist_roi_2c": 1.3,
+          "hist_n": 66
+        },
+        {
+          "username": "Andromeda1",
+          "proj_n_30d": 94.8,
+          "proj_pnl_30d": -1629.61,
+          "hist_roi_2c": -17.19,
+          "hist_n": 79
+        },
+        {
+          "username": "Supah9ga",
+          "proj_n_30d": 52.5,
+          "proj_pnl_30d": 869.93,
+          "hist_roi_2c": 16.57,
+          "hist_n": 21
+        },
+        {
+          "username": "Bienville",
+          "proj_n_30d": 50.1,
+          "proj_pnl_30d": 2773.03,
+          "hist_roi_2c": 55.35,
+          "hist_n": 5
+        },
+        {
+          "username": "HedgeMaster88",
+          "proj_n_30d": 80.7,
+          "proj_pnl_30d": -622.2,
+          "hist_roi_2c": -7.71,
+          "hist_n": 35
+        },
+        {
+          "username": "DLEK",
+          "proj_n_30d": 50.7,
+          "proj_pnl_30d": -1178.27,
+          "hist_roi_2c": -23.24,
+          "hist_n": 22
+        },
+        {
+          "username": "SineNooneEI",
+          "proj_n_30d": 210.0,
+          "proj_pnl_30d": -3771.6,
+          "hist_roi_2c": -17.96,
+          "hist_n": 14
+        },
+        {
+          "username": "TTdes",
+          "proj_n_30d": 56.4,
+          "proj_pnl_30d": -2406.59,
+          "hist_roi_2c": -42.67,
+          "hist_n": 15
+        },
+        {
+          "username": "UAEVALORANTFAN",
+          "proj_n_30d": 57.0,
+          "proj_pnl_30d": -2567.85,
+          "hist_roi_2c": -45.05,
+          "hist_n": 19
+        },
+        {
+          "username": "HongYunX",
+          "proj_n_30d": 0.0,
+          "proj_pnl_30d": 0.0,
+          "hist_roi_2c": 0.0,
+          "hist_n": 0
+        },
+        {
+          "username": "0xheavy888",
+          "proj_n_30d": 0.0,
+          "proj_pnl_30d": 0.0,
+          "hist_roi_2c": 0.0,
+          "hist_n": 0
+        },
+        {
+          "username": "S-Works",
+          "proj_n_30d": 0.0,
+          "proj_pnl_30d": 0.0,
+          "hist_roi_2c": 0.0,
+          "hist_n": 0
+        },
+        {
+          "username": "SDTrading",
+          "proj_n_30d": 0.0,
+          "proj_pnl_30d": 0.0,
+          "hist_roi_2c": 0.0,
+          "hist_n": 0
+        },
+        {
+          "username": "ShucksIt69",
+          "proj_n_30d": 60.0,
+          "proj_pnl_30d": 24.0,
+          "hist_roi_2c": 0.4,
+          "hist_n": 6
+        },
+        {
+          "username": "JuniorB",
+          "proj_n_30d": 0.0,
+          "proj_pnl_30d": 0.0,
+          "hist_roi_2c": 0.0,
+          "hist_n": 0
+        },
+        {
+          "username": "ckw",
+          "proj_n_30d": 0.0,
+          "proj_pnl_30d": 0.0,
+          "hist_roi_2c": 0.0,
+          "hist_n": 0
+        }
+      ],
+      "caveat": "Empty live open book \u21d2 near-term n may be 0 even if hist tpd > 0. Cold weeks pause; do not force size."
+    }
+  },
+  "adaptation": {
+    "loop": [
+      "Refresh CSVs (live+bench+watch only) \u2192 rebuild unique ranks \u2192 copy_universe gates.",
+      "Run product take-rule + this lab (multi-strategy + consistency + joinability).",
+      "Demote: take_rule_bleed, quiet_30d, unique ROI collapse \u2014 automatic in copy_roster.",
+      "Promote bench\u2192live: only when propose_promote_live gates fire (joinable + take n\u226512 +ROI + active).",
+      "Promote watch\u2192live: human edits extra_traders status (never auto).",
+      "Cold: keep fetching bench/watch; pause live sizing if live 30d take ROI deeply red.",
+      "New traders: Polydata boards \u2192 extra_watch \u2192 unique book \u2192 digest \u2192 lab score \u2192 human promote.",
+      "New strategies: compete in COMPARE_STRATEGIES; swap only via propose_strategy_swap + cache bump."
+    ],
+    "actions": [
+      {
+        "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+        "bucket": "live",
+        "action": "keep_live_caution",
+        "why": "live hist take +7.4% n=24 but rolling 30d take -54.24% n=4 \u2014 size down / wait for prints",
+        "composite_score": 55.0
+      },
+      {
+        "username": "Andromeda1",
+        "bucket": "bench",
+        "action": "keep_cold",
+        "why": "take-rule cold n=79 roi=-17.19%",
+        "composite_score": 49.5
+      },
+      {
+        "username": "DLEK",
+        "bucket": "bench",
+        "action": "keep_cold",
+        "why": "take-rule cold n=22 roi=-23.24%",
+        "composite_score": 42.3
+      },
+      {
+        "username": "norrisfan",
+        "bucket": "watch",
+        "action": "keep_cold",
+        "why": "take-rule cold n=28 roi=-20.46%",
+        "composite_score": 25.3
+      }
+    ],
+    "gates": {
+      "promote_bench_min_take_n": 12,
+      "promote_bench_min_roi": 5,
+      "promote_watch_min_roi": 8,
+      "min_joinability": 55,
+      "min_consistency_bench": 12,
+      "min_consistency_watch": 15,
+      "min_last30_n": 8,
+      "never_auto_live_extra_watch": true
+    }
+  },
+  "method": "Hold-to-res as-of masks from asof_fullbook_backtest.strategy_masks; flat $100 +2\u00a2 fill; pools from copy_universe; adaptive proposals only."
+}
