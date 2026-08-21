@@ -1,6 +1,6 @@
 # Insider Ranks
 
-As of **2026-08-20**. Polydata is the public calibration. Our Insider Score is built on **our** full books (winners + losers + recent closed, plus opens).
+As of **2026-08-21**. Polydata is the public calibration. Our Insider Score is built on **our** full books (winners + losers + recent closed, plus opens).
 
 ## Why this exists
 
@@ -46,11 +46,11 @@ Copyable = the 12 matched sports books in `trusted_full_books.json`. Health KICK
 
 | Trader | Recency | Last | Our PnL | Our WR | PD WR | ΔWR | Accuracy | Closed |
 |--------|---------|------|--------:|-------:|------:|----:|----------|-------:|
-| Supah9ga | HOT | 2026-08-15 | +$1,967,685 | 52.23% | 53.0% | -0.8 | matched | 658 |
+| Supah9ga | HOT | 2026-08-15 | +$1,967,685 | 52.23% | 53.0% | -0.8 | matched | 549 |
 | WTSA | HOT | 2026-08-17 | +$1,154,695 | 53.44% | 55.0% | -1.6 | matched | 71 |
 | 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a | HOT | 2026-08-21 | +$668,465 | 54.04% | 58.0% | -4.0 | matched | 427 |
-| DLEK | COLD | 2026-07-30 | +$1,362,509 | 55.62% | 55.0% | +0.6 | matched | 1163 |
-| Vetch | COLD | 2026-08-02 | +$321,365 | 60.79% | 61.0% | -0.2 | matched | 693 |
+| DLEK | COLD | 2026-07-30 | +$1,362,509 | 55.62% | 55.0% | +0.6 | matched | 1123 |
+| Vetch | COLD | 2026-08-02 | +$321,365 | 60.79% | 61.0% | -0.2 | matched | 613 |
 | 0x5966Db1fE50763C9e3C014d756369BAd07E1F804 | DARK | 2026-07-16 | +$3,458,340 | 58.24% | 62.0% | -3.8 | matched | 123 |
 | kch123 | DROP | 2026-07-01 | +$12,061,185 | 58.0% | 55.0% | +3.0 | matched | 3818 |
 | HedgeMaster88 | DROP | 2026-05-27 | +$931,923 | 53.39% | 53.0% | +0.4 | matched | 136 |

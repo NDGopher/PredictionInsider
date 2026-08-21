@@ -35,6 +35,7 @@
     "backtest:bankroll": "python pnl_analysis/take_book_bankroll.py",
     "backtest:copy-evolve": "python pnl_analysis/evolve_copy_book.py",
     "model:rebuild": "python pnl_analysis/rebuild_working_model.py",
+    "model:digest": "python pnl_analysis/digest_tail_candidates.py",
     "backtest:take-health": "python pnl_analysis/take_book_daily.py"
   },
   "dependencies": {

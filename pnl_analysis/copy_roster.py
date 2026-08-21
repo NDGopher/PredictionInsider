@@ -41,6 +41,12 @@ LIVE_MIN_LAST60_N = 20
 # One print in 30d is HOT recency, not a live book (Supah9ga n=1, −$4k).
 LIVE_MIN_LAST30_N = 8
 
+# Unique book can look fine while asof_live_q60 loses money (see TAIL_DIGEST).
+# Keep on BENCH until the take-slice recovers — do not $100-tail these tonight.
+TAKE_RULE_BLEED_BENCH = {
+    "TTdes",  # NHL ML take slice deeply red in last digest
+}
+
 # Reasons that mean "do not fetch / do not copy" vs size that is just unjoinable.
 HARD_REASON_PREFIXES = (
     "hard_skip",
@@ -200,6 +206,12 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
     if live and last_30_n < LIVE_MIN_LAST30_N:
         reasons.append(f"quiet_30d_n={last_30_n}<{LIVE_MIN_LAST30_N}")
         live = False
+    if live and (
+        username in TAKE_RULE_BLEED_BENCH
+        or wallet in {a.lower() for a in TAKE_RULE_BLEED_BENCH if a.startswith("0x")}
+    ):
+        reasons.append("take_rule_bleed")
+        live = False
     bench = False
     # Discovery watch stays watch (fetch + screen). Do not auto-bench onto the copy list.
     if extra != "watch" and not live and not hard and lane not in {"kicked", "reference"}:
@@ -288,7 +300,8 @@ def build_universe() -> dict[str, Any]:
             "HOT/WARM, unique-book ROI ≥5%, ≥40 events, ≥8 settled prints in 30d. "
             "extra_traders status=watch never auto-live. "
             "Skip = 100k+ Polydata trades, 50k+ CSV rows, MM, kicked grinders, no CSV. "
-            "Bench = take-book 12 who are stale, quiet, whale-sized, or unique ROI too low. "
+            "Bench = take-book 12 who are stale, quiet, whale-sized, unique ROI too low, "
+            "or take-rule bleed (unique green / asof_live_q60 red). "
             "Futures are not a copy lane (n=5, −37% after 2¢)."
         ),
         "rules": {
@@ -302,6 +315,7 @@ def build_universe() -> dict[str, Any]:
             "live_min_roi": LIVE_MIN_ROI,
             "live_min_events": LIVE_MIN_EVENTS,
             "live_min_last30_n": LIVE_MIN_LAST30_N,
+            "take_rule_bleed_bench": sorted(TAKE_RULE_BLEED_BENCH),
         },
         "take_book_matched": [{"username": t.get("username"), "wallet": str(t.get("wallet") or "").lower()} for t in take],
         "counts": {k: len(v) for k, v in buckets.items()},

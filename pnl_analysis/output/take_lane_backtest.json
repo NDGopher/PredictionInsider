@@ -1,31 +1,31 @@
 {
-  "generated_at": "2026-08-20T21:15:50.090726+00:00",
+  "generated_at": "2026-08-21T14:28:41.958318+00:00",
   "rule": "asof_live_q60_sport_rel2 (Q>=60, sport ROI>=5%, rel>=2, 10-88c, no NFL, fill VWAP+2c). Futures excluded from product.",
   "all": {
-    "n": 35,
-    "win_rate": 54.29,
-    "roi_2c": -1.78
+    "n": 24,
+    "win_rate": 58.33,
+    "roi_2c": 7.4
   },
   "sports": {
-    "n": 34,
-    "win_rate": 52.94,
-    "roi_2c": -3.52
+    "n": 24,
+    "win_rate": 58.33,
+    "roi_2c": 7.4
   },
   "other": {
-    "n": 1,
-    "win_rate": 100.0,
-    "roi_2c": 57.19
+    "n": 0,
+    "win_rate": 0.0,
+    "roi_2c": 0.0
   },
   "futures_excluded": {
-    "n": 7,
-    "win_rate": 42.86,
-    "roi_2c": -35.67
+    "n": 9,
+    "win_rate": 44.44,
+    "roi_2c": -37.5
   },
   "by_submarket": {
     "Moneyline": {
-      "n": 19,
-      "win_rate": 52.63,
-      "roi_2c": -5.74
+      "n": 8,
+      "win_rate": 62.5,
+      "roi_2c": 16.36
     },
     "Spread": {
       "n": 16,
