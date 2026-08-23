@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-21T14:28:41.960242+00:00",
-  "method": "Live copy = Polydata-matched, joinable (40\u201312k closed, WR 48\u201375, median <$15k), HOT/WARM, unique-book ROI \u22655%, \u226540 events, \u22658 settled prints in 30d. extra_traders status=watch never auto-live. Skip = 100k+ Polydata trades, 50k+ CSV rows, MM, kicked grinders, no CSV. Bench = take-book 12 who are stale, quiet, whale-sized, unique ROI too low, or take-rule bleed (unique green / asof_live_q60 red). Futures are not a copy lane (n=5, \u221237% after 2\u00a2).",
+  "generated_at": "2026-08-23T13:36:39.719197+00:00",
+  "method": "Live copy = Polydata-matched, joinable (40\u201312k closed, WR 48\u201375, median <$15k), HOT/WARM, unique-book ROI \u22655%, \u226540 events, \u22658 settled prints in 30d. extra_traders status=watch stays discovery until auto_promote flips to take_book. Auto-promote is automatic when joinable + HOT/WARM + (unique ROI\u22655% or turnaround last30). Skip = 100k+ Polydata trades, 50k+ CSV rows, MM, kicked grinders, no CSV. Bench = take-book 12 who are stale, quiet, whale-sized, unique ROI too low, or take-rule bleed (unique green / asof_live_q60 red). Futures are not a copy lane (n=5, \u221237% after 2\u00a2).",
   "rules": {
     "pd_trades_bot": 100000,
     "csv_rows_bot": 50000,
@@ -73,9 +73,9 @@
     }
   ],
   "counts": {
-    "live": 1,
+    "live": 4,
     "bench": 13,
-    "watch": 24,
+    "watch": 21,
     "kicked": 0,
     "skip": 42,
     "reference": 2
@@ -103,6 +103,80 @@
       "extra_status": "take_book",
       "last_event_date": "2026-08-21",
       "reasons": [],
+      "refresh": true
+    },
+    {
+      "username": "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+      "wallet": "0x1b20a00709dfe648afd26b326394b5e031f83ab0",
+      "bucket": "live",
+      "take_book": true,
+      "matched": true,
+      "joinable": true,
+      "recency": "HOT",
+      "closed": 72,
+      "rows": 72,
+      "pd_trades": 334,
+      "win_rate": 51.39,
+      "median_stake": 12787.59,
+      "unique_roi": 34.66,
+      "events": 51,
+      "last_30d_n": 51,
+      "last_30d_roi": 34.66,
+      "last_60d_n": 51,
+      "last_60d_roi": 34.66,
+      "extra_status": "take_book",
+      "last_event_date": "2026-08-17",
+      "reasons": [],
+      "refresh": true
+    },
+    {
+      "username": "HongYunX",
+      "wallet": "0xc72d7dcdb23597d143a83536fb97b1d7db7efc21",
+      "bucket": "live",
+      "take_book": true,
+      "matched": true,
+      "joinable": true,
+      "recency": "HOT",
+      "closed": 200,
+      "rows": 329,
+      "pd_trades": 10474,
+      "win_rate": 60.79,
+      "median_stake": 3112.74,
+      "unique_roi": 9.43,
+      "events": 261,
+      "last_30d_n": 53,
+      "last_30d_roi": 23.71,
+      "last_60d_n": 77,
+      "last_60d_roi": 19.81,
+      "extra_status": "take_book",
+      "last_event_date": "2026-08-18",
+      "reasons": [],
+      "refresh": true
+    },
+    {
+      "username": "SDTrading",
+      "wallet": "0x16bb9951a36fce71e2ef57890b786145e0ba8492",
+      "bucket": "live",
+      "take_book": true,
+      "matched": true,
+      "joinable": true,
+      "recency": "HOT",
+      "closed": 499,
+      "rows": 984,
+      "pd_trades": 6061,
+      "win_rate": 48.14,
+      "median_stake": 4575.79,
+      "unique_roi": -1.11,
+      "events": 723,
+      "last_30d_n": 208,
+      "last_30d_roi": 14.4,
+      "last_60d_n": 336,
+      "last_60d_roi": 6.56,
+      "extra_status": "take_book",
+      "last_event_date": "2026-08-22",
+      "reasons": [
+        "turnaround_last30_roi=14.4%_n=208"
+      ],
       "refresh": true
     }
   ],
@@ -454,30 +528,6 @@
   ],
   "watch": [
     {
-      "username": "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
-      "wallet": "0x1b20a00709dfe648afd26b326394b5e031f83ab0",
-      "bucket": "watch",
-      "take_book": false,
-      "matched": false,
-      "joinable": true,
-      "recency": "HOT",
-      "closed": 72,
-      "rows": 72,
-      "pd_trades": 334,
-      "win_rate": 51.39,
-      "median_stake": 12787.59,
-      "unique_roi": 34.66,
-      "events": 51,
-      "last_30d_n": 51,
-      "last_30d_roi": 34.66,
-      "last_60d_n": 51,
-      "last_60d_roi": 34.66,
-      "extra_status": "watch",
-      "last_event_date": "2026-08-17",
-      "reasons": [],
-      "refresh": true
-    },
-    {
       "username": "CoryLahey",
       "wallet": "0x5c3a1a602848565bb16165fcd460b00c3d43020b",
       "bucket": "watch",
@@ -547,33 +597,7 @@
       "extra_status": "watch",
       "last_event_date": "2026-08-21",
       "reasons": [
-        "extra_watch_never_live"
-      ],
-      "refresh": true
-    },
-    {
-      "username": "HongYunX",
-      "wallet": "0xc72d7dcdb23597d143a83536fb97b1d7db7efc21",
-      "bucket": "watch",
-      "take_book": false,
-      "matched": true,
-      "joinable": true,
-      "recency": "HOT",
-      "closed": 200,
-      "rows": 329,
-      "pd_trades": 10474,
-      "win_rate": 60.79,
-      "median_stake": 3112.74,
-      "unique_roi": 9.43,
-      "events": 261,
-      "last_30d_n": 53,
-      "last_30d_roi": 23.71,
-      "last_60d_n": 77,
-      "last_60d_roi": 19.81,
-      "extra_status": "watch",
-      "last_event_date": "2026-08-18",
-      "reasons": [
-        "extra_watch_never_live"
+        "extra_watch_pending_auto_promote"
       ],
       "refresh": true
     },
@@ -774,32 +798,6 @@
       "last_event_date": "2026-08-19",
       "reasons": [
         "median=$173,568_unjoinable"
-      ],
-      "refresh": true
-    },
-    {
-      "username": "SDTrading",
-      "wallet": "0x16bb9951a36fce71e2ef57890b786145e0ba8492",
-      "bucket": "watch",
-      "take_book": false,
-      "matched": true,
-      "joinable": true,
-      "recency": "HOT",
-      "closed": 499,
-      "rows": 984,
-      "pd_trades": 6061,
-      "win_rate": 48.14,
-      "median_stake": 4575.79,
-      "unique_roi": -1.11,
-      "events": 723,
-      "last_30d_n": 208,
-      "last_30d_roi": 14.4,
-      "last_60d_n": 336,
-      "last_60d_roi": 6.56,
-      "extra_status": "watch",
-      "last_event_date": "2026-08-22",
-      "reasons": [
-        "extra_watch_never_live"
       ],
       "refresh": true
     },
@@ -2590,9 +2588,9 @@
     {
       "username": "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
       "wallet": "0x1b20a00709dfe648afd26b326394b5e031f83ab0",
-      "bucket": "watch",
-      "take_book": false,
-      "matched": false,
+      "bucket": "live",
+      "take_book": true,
+      "matched": true,
       "joinable": true,
       "recency": "HOT",
       "closed": 72,
@@ -2606,7 +2604,7 @@
       "last_30d_roi": 34.66,
       "last_60d_n": 51,
       "last_60d_roi": 34.66,
-      "extra_status": "watch",
+      "extra_status": "take_book",
       "last_event_date": "2026-08-17",
       "reasons": [],
       "refresh": true
@@ -2711,15 +2709,15 @@
       "extra_status": "watch",
       "last_event_date": "2026-08-21",
       "reasons": [
-        "extra_watch_never_live"
+        "extra_watch_pending_auto_promote"
       ],
       "refresh": true
     },
     {
       "username": "HongYunX",
       "wallet": "0xc72d7dcdb23597d143a83536fb97b1d7db7efc21",
-      "bucket": "watch",
-      "take_book": false,
+      "bucket": "live",
+      "take_book": true,
       "matched": true,
       "joinable": true,
       "recency": "HOT",
@@ -2734,11 +2732,9 @@
       "last_30d_roi": 23.71,
       "last_60d_n": 77,
       "last_60d_roi": 19.81,
-      "extra_status": "watch",
+      "extra_status": "take_book",
       "last_event_date": "2026-08-18",
-      "reasons": [
-        "extra_watch_never_live"
-      ],
+      "reasons": [],
       "refresh": true
     },
     {
@@ -3166,8 +3162,8 @@
     {
       "username": "SDTrading",
       "wallet": "0x16bb9951a36fce71e2ef57890b786145e0ba8492",
-      "bucket": "watch",
-      "take_book": false,
+      "bucket": "live",
+      "take_book": true,
       "matched": true,
       "joinable": true,
       "recency": "HOT",
@@ -3182,10 +3178,10 @@
       "last_30d_roi": 14.4,
       "last_60d_n": 336,
       "last_60d_roi": 6.56,
-      "extra_status": "watch",
+      "extra_status": "take_book",
       "last_event_date": "2026-08-22",
       "reasons": [
-        "extra_watch_never_live"
+        "turnaround_last30_roi=14.4%_n=208"
       ],
       "refresh": true
     },
@@ -4448,37 +4444,5 @@
       ],
       "refresh": false
     }
-  ],
-  "backtest": {
-    "matched_12": {
-      "n": 518,
-      "win_rate": 69.69,
-      "roi_2c": 12.13
-    },
-    "matched_12_minus_bots": {
-      "n": 235,
-      "win_rate": 65.96,
-      "roi_2c": 8.2
-    },
-    "live_joinable": {
-      "n": 24,
-      "win_rate": 58.33,
-      "roi_2c": 7.4
-    },
-    "live_plus_bench": {
-      "n": 437,
-      "win_rate": 60.64,
-      "roi_2c": 4.66
-    },
-    "watch_candidates": {
-      "n": 148,
-      "win_rate": 54.73,
-      "roi_2c": -7.16
-    },
-    "archive_stale": {
-      "n": 323,
-      "win_rate": 70.9,
-      "roi_2c": 13.5
-    }
-  }
+  ]
 }

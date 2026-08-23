@@ -10,6 +10,7 @@ import {
   loadTailStrategiesFile,
   signalMatchesStrategy,
   type TailStrategyCard,
+  type TailStrategyFilters,
   type TakeGateReport,
 } from "./tailStrategies";
 
@@ -131,6 +132,20 @@ export function takeStrategyCard(): TailStrategyCard | null {
   );
 }
 
+/** Product filters with live copy_universe books merged into allowUsernames (auto-promote). */
+export function takeFiltersWithLiveBooks(): TailStrategyFilters | null {
+  const card = takeStrategyCard();
+  if (!card?.filters) return null;
+  const live = loadTrustedCopyBooks();
+  const extra = [
+    ...live.map((t) => t.username),
+    ...live.map((t) => t.wallet),
+  ].filter((s) => Boolean(s));
+  const base = card.filters.allowUsernames || [];
+  const allowUsernames = Array.from(new Set([...base, ...extra]));
+  return { ...card.filters, allowUsernames };
+}
+
 export function tokenIdForSignal(signal: Signal): string | undefined {
   const side = (signal.side || "YES").toUpperCase();
   if (side === "NO") return signal.noTokenId || undefined;
@@ -241,13 +256,13 @@ export function buildTakeWhy(opts: {
   return why.slice(0, 10);
 }
 
-function playFromSignal(raw: Signal, report: TakeGateReport): AnnotatedTakePlay {
+function playFromSignal(raw: Signal, report: TakeGateReport, filters?: TailStrategyFilters | null): AnnotatedTakePlay {
   const ann = annotateSignal(raw);
   const vwap = raw.avgEntryPrice || raw.currentPrice || 0;
   const takeCap = takeCapFromVwap(vwap);
   const tokenId = tokenIdForSignal(raw);
-  const filters = takeStrategyCard()?.filters;
-  const take = Boolean(filters && report.take && signalMatchesStrategy(raw, filters));
+  const f = filters || takeFiltersWithLiveBooks();
+  const take = Boolean(f && report.take && signalMatchesStrategy(raw, f));
   const breakdown = (raw as Signal & { scoreBreakdown?: Record<string, number> }).scoreBreakdown;
   const grade = computePlayGrade(raw.confidence, take, report.q, report.rel);
   const row: AnnotatedTakePlay = {
@@ -308,8 +323,7 @@ function playFromSignal(raw: Signal, report: TakeGateReport): AnnotatedTakePlay 
 }
 
 export function collectTakePlays(signals: Signal[]): TakePlayBundle {
-  const card = takeStrategyCard();
-  const filters = card?.filters;
+  const filters = takeFiltersWithLiveBooks();
   const health = loadTakeHealthFile();
   const paused = health?.status === "pause";
   if (!filters) {
@@ -319,7 +333,7 @@ export function collectTakePlays(signals: Signal[]): TakePlayBundle {
   const near: AnnotatedTakePlay[] = [];
   for (const raw of signals) {
     const report: TakeGateReport = diagnoseTakeGates(raw, filters);
-    const row = playFromSignal(raw, report);
+    const row = playFromSignal(raw, report, filters);
     if (row.lane === "futures" || row.submarket === "Futures") continue;
     if (row.take) live.push(row);
     else if (row.close) near.push(row);
@@ -533,6 +547,12 @@ export interface CopyDiscoveryBundle {
   topComposite: Array<Record<string, unknown>>;
   proposeAdd: Array<Record<string, unknown>>;
   proposeDrop: Array<Record<string, unknown>>;
+  autoPromote?: {
+    promoted: Array<Record<string, unknown>>;
+    demoted: Array<Record<string, unknown>>;
+    counts: Record<string, number>;
+    generatedAt: string | null;
+  };
   method: string;
 }
 
@@ -549,6 +569,12 @@ export function loadCopyDiscovery(): CopyDiscoveryBundle {
     traders?: Array<Record<string, unknown>>;
     adaptation?: { actions?: Array<Record<string, unknown>> };
   }>("pnl_analysis/output/adaptive_copy_lab.json");
+  const promote = loadJson<{
+    generated_at?: string;
+    promoted?: Array<Record<string, unknown>>;
+    demoted?: Array<Record<string, unknown>>;
+    counts?: Record<string, number>;
+  }>("pnl_analysis/output/auto_promote_log.json");
   const health = loadTakeHealthFile();
   const traders = lab?.traders || [];
   const topComposite = traders
@@ -567,9 +593,11 @@ export function loadCopyDiscovery(): CopyDiscoveryBundle {
       why: (t.adaptive as { why?: string } | undefined)?.why,
       uniqueRoi: t.unique_roi,
       medianStake: t.median_stake,
+      regime: (t.regime as { regime?: string } | undefined)?.regime,
+      regimeWhy: (t.regime as { why?: string } | undefined)?.why,
     }));
   return {
-    generatedAt: lab?.generated_at || uni?.generated_at || null,
+    generatedAt: promote?.generated_at || lab?.generated_at || uni?.generated_at || null,
     live: (uni?.live || []).map((t) => ({
       username: t.username,
       wallet: t.wallet,
@@ -597,8 +625,18 @@ export function loadCopyDiscovery(): CopyDiscoveryBundle {
     topComposite,
     proposeAdd: health?.propose_add || [],
     proposeDrop: health?.propose_drop || [],
+    autoPromote: {
+      promoted: promote?.promoted || [],
+      demoted: promote?.demoted || [],
+      counts: promote?.counts || {},
+      generatedAt: promote?.generated_at || null,
+    },
     method:
-      "Polydata boards → extra_watch → unique book → adaptive lab. Watch never auto-live. "
-      + "Daily: npm run daily-pipeline / discover:polydata.",
+      "Polydata → watch → unique book → regime/lab → auto_promote (watch→take_book). "
+      + "Daily: npm run daily-pipeline. MM lane is separate (/mm-research).",
   };
+}
+
+export function loadMmResearch(): Record<string, unknown> | null {
+  return loadJson<Record<string, unknown>>("pnl_analysis/output/mm_maker_research.json");
 }

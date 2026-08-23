@@ -37,6 +37,8 @@
     "model:rebuild": "python pnl_analysis/rebuild_working_model.py",
     "model:digest": "python pnl_analysis/digest_tail_candidates.py",
     "model:adaptive": "python pnl_analysis/adaptive_copy_lab.py",
+    "model:promote": "python pnl_analysis/auto_promote.py",
+    "research:mm": "python pnl_analysis/mm_maker_research.py",
     "backtest:take-health": "python pnl_analysis/take_book_daily.py"
   },
   "dependencies": {

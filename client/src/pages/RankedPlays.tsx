@@ -60,6 +60,10 @@ interface TakePlaysResponse {
     topComposite?: DiscoveryTrader[];
     adaptiveActions?: Array<{ action?: string; username?: string; why?: string; to?: string }>;
     proposeAdd?: Array<{ username?: string; reason?: string }>;
+    autoPromote?: {
+      promoted?: Array<{ username?: string; why?: string; regime?: string }>;
+      demoted?: Array<{ username?: string; why?: string }>;
+    };
     method?: string;
     generatedAt?: string | null;
   };
@@ -190,13 +194,21 @@ export default function RankedPlays() {
             <div className="font-medium text-sm">Trader discovery · stay best-of</div>
           </div>
           <p className="text-[11px] text-muted-foreground">
-            {disc?.method || "Polydata → watch → unique book → adaptive lab. Watch never auto-promotes."}
-            {disc?.generatedAt ? ` · lab ${String(disc.generatedAt).slice(0, 19)}` : ""}
+            {disc?.method || "Polydata → watch → unique book → auto_promote when gates fire."}
+            {disc?.generatedAt ? ` · ${String(disc.generatedAt).slice(0, 19)}` : ""}
           </p>
           <div className="text-xs">
             <span className="text-muted-foreground">Live copy: </span>
             {(disc?.live || []).map((t) => t.username).filter(Boolean).join(", ") || "—"}
           </div>
+          {(disc?.autoPromote?.promoted?.length) ? (
+            <div className="text-[11px] text-emerald-400 space-y-0.5">
+              <div className="font-medium text-foreground">Auto-promoted</div>
+              {(disc.autoPromote.promoted || []).map((p) => (
+                <div key={p.username}>{p.username}: {p.why}{p.regime ? ` · ${p.regime}` : ""}</div>
+              ))}
+            </div>
+          ) : null}
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>

@@ -34,10 +34,29 @@ def test_live_ok() -> None:
     assert out["bucket"] == "live", out
 
 
-def test_extra_watch_never_live() -> None:
+def test_extra_watch_pending_until_auto_promote() -> None:
     out = classify_trader(_row(username="SDTrading", wallet="0x16bb"), {"0x16bb": "watch"})
     assert out["bucket"] == "watch", out
-    assert "extra_watch_never_live" in out["reasons"]
+    assert "extra_watch_pending_auto_promote" in out["reasons"]
+
+
+def test_auto_promoted_take_book_can_live() -> None:
+    out = classify_trader(_row(username="SDTrading", wallet="0x16bb"), {"0x16bb": "take_book"})
+    assert out["bucket"] == "live", out
+
+
+def test_turnaround_last30_overrides_lifetime_roi() -> None:
+    row = _row(username="SDTrading", wallet="0x16bb")
+    row["our"] = {
+        **row["our"],  # type: ignore[dict-item]
+        "roi": -1.0,
+        "events": 80,
+        "last_30d_n": 200,
+        "last_30d_roi": 14.0,
+    }
+    out = classify_trader(row, {"0x16bb": "take_book"})
+    assert out["bucket"] == "live", out
+    assert any("turnaround_last30" in r for r in out["reasons"])
 
 
 def test_low_unique_roi_benches_take_book() -> None:
@@ -114,7 +133,9 @@ def test_quiet_30d_benches_take_book() -> None:
 if __name__ == "__main__":
     tests = [
         test_live_ok,
-        test_extra_watch_never_live,
+        test_extra_watch_pending_until_auto_promote,
+        test_auto_promoted_take_book_can_live,
+        test_turnaround_last30_overrides_lifetime_roi,
         test_low_unique_roi_benches_take_book,
         test_mentionmarket_hard_skip,
         test_no_csv_roster_skipped,

@@ -310,7 +310,7 @@ function DiscoveryStrip({ discovery }: { discovery?: DiscoveryBundle }) {
         <div className="text-[11px] text-muted-foreground">
           Live now: {live.map((t) => t.username).filter(Boolean).join(", ") || "—"}
           {" · "}
-          {discovery.method}
+          Auto-promote on: joinable + HOT + (unique ROI≥5% or turnaround last30). MM is a separate lane.
         </div>
         {top.length > 0 && (
           <div className="flex flex-wrap gap-1.5">

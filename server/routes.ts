@@ -19,7 +19,7 @@ import {
   signalMatchesStrategy,
   type TailStrategyFilters,
 } from "./tailStrategies";
-import { collectTakePlays, enrichTakePlaysWithBook, loadCopyDiscovery, loadLaneBacktest, loadTakeHealthFile, loadTrustedCopyBooks, mapCsvOpenRows, takeStrategyCard, type TakePlayBundle } from "./takePlays";
+import { collectTakePlays, enrichTakePlaysWithBook, loadCopyDiscovery, loadLaneBacktest, loadMmResearch, loadTakeHealthFile, loadTrustedCopyBooks, mapCsvOpenRows, takeStrategyCard, type TakePlayBundle } from "./takePlays";
 import { syncTakeBookAlerts, telegramConfigured } from "./telegramTakeAlerts";
 import { cancelUnfilledTake, paperLogTakePlays } from "./paperTakeBets";
 import { americanFromPrice } from "./oddsFormat";
@@ -6229,7 +6229,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   });
 
   // ── GET /api/copy-discovery ───────────────────────────────────────────────
-  // Live/bench/watch roster + adaptive promote/demote proposals (never auto-live watch).
+  // Live/bench/watch roster + adaptive promote/demote proposals (auto-promote applied by pipeline).
   app.get("/api/copy-discovery", async (_req, res) => {
     try {
       res.setHeader("Cache-Control", "no-store");
@@ -6237,6 +6237,27 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     } catch (err: unknown) {
       console.error("copy-discovery error:", err);
       res.status(500).json({ error: formatApiError(err) });
+    }
+  });
+
+  // ── GET /api/mm-research ──────────────────────────────────────────────────
+  // Market-making research JSON (not live quoting).
+  app.get("/api/mm-research", async (_req, res) => {
+    try {
+      const data = loadMmResearch();
+      if (!data) {
+        res.status(404).json({
+          error: "mm_maker_research.json missing. Run npm run research:mm",
+          books: [],
+          feasibility: { can_we_automate_today: false, verdict: "Research file not built yet." },
+        });
+        return;
+      }
+      res.setHeader("Cache-Control", "no-store");
+      res.json(data);
+    } catch (err: unknown) {
+      console.error("mm-research error:", err);
+      res.status(500).json({ error: formatApiError(err), books: [] });
     }
   });
 

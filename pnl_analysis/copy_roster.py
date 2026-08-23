@@ -158,6 +158,10 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
     matched = bool(acc.get("matched") or lane == "take_book")
     take_book = bool(row.get("take_book") or lane == "take_book")
     extra = extra_status.get(wallet, "")
+    # Auto-promote writes status=take_book (or live) — treat as copy-eligible matched books.
+    if extra in {"take_book", "live", "auto_live"}:
+        take_book = True
+        matched = True
 
     reasons: list[str] = []
     if username in HARD_SKIP_USERNAMES or wallet in HARD_SKIP_WALLETS:
@@ -190,14 +194,27 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
         and lane not in {"kicked", "reference"}
     )
     live = joinable and matched and recency in LIVE_RECENCY
+    # Plain discovery watch stays off live until auto_promote flips status → take_book.
+    # Once status is take_book/live, this block does not apply.
     if live and extra == "watch":
-        # Auto-watch from Polydata boards never becomes live without a human status change.
-        reasons.append("extra_watch_never_live")
+        reasons.append("extra_watch_pending_auto_promote")
         live = False
+    last_30_roi = _f(our.get("last_30d_roi"))
+    # Turnaround: lifetime unique ROI can be flat/red while last-30d is strongly green
+    # (SDTrading-style). Allow live when HOT/WARM + joinable + last30 gates fire.
+    turnaround_ok = (
+        last_30_n >= 30
+        and last_30_roi is not None
+        and last_30_roi >= 8.0
+        and (roi is None or roi < LIVE_MIN_ROI)
+    )
     if live and (roi is None or roi < LIVE_MIN_ROI):
-        reasons.append(f"unique_roi={roi}_lt_{LIVE_MIN_ROI}")
-        live = False
-    if live and events < LIVE_MIN_EVENTS:
+        if turnaround_ok and extra in {"take_book", "live", "auto_live"}:
+            reasons.append(f"turnaround_last30_roi={last_30_roi}%_n={last_30_n}")
+        else:
+            reasons.append(f"unique_roi={roi}_lt_{LIVE_MIN_ROI}")
+            live = False
+    if live and events < LIVE_MIN_EVENTS and not turnaround_ok:
         reasons.append(f"events={events}<{LIVE_MIN_EVENTS}")
         live = False
     if live and last_60_n >= LIVE_MIN_LAST60_N and last_60_roi is not None and last_60_roi < LIVE_MAX_LAST60_ROI:
@@ -213,7 +230,7 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
         reasons.append("take_rule_bleed")
         live = False
     bench = False
-    # Discovery watch stays watch (fetch + screen). Do not auto-bench onto the copy list.
+    # Discovery watch stays watch (fetch + screen) until auto-promoted to take_book.
     if extra != "watch" and not live and not hard and lane not in {"kicked", "reference"}:
         if take_book or (matched and CLOSED_MIN <= closed <= CLOSED_MAX_COPY and WR_LO <= wr <= WR_HI):
             bench = True
@@ -221,7 +238,7 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
                 reasons.append(f"stale_{recency}")
             elif not joinable and median >= MEDIAN_JOIN_MAX:
                 reasons.append("unjoinable_keep_book")
-            elif roi is not None and roi < LIVE_MIN_ROI:
+            elif roi is not None and roi < LIVE_MIN_ROI and not turnaround_ok:
                 reasons.append(f"unique_roi={roi}_bench")
             elif not matched:
                 reasons.append("unmatched_pd")
@@ -298,7 +315,8 @@ def build_universe() -> dict[str, Any]:
         "method": (
             "Live copy = Polydata-matched, joinable (40–12k closed, WR 48–75, median <$15k), "
             "HOT/WARM, unique-book ROI ≥5%, ≥40 events, ≥8 settled prints in 30d. "
-            "extra_traders status=watch never auto-live. "
+            "extra_traders status=watch stays discovery until auto_promote flips to take_book. "
+            "Auto-promote is automatic when joinable + HOT/WARM + (unique ROI≥5% or turnaround last30). "
             "Skip = 100k+ Polydata trades, 50k+ CSV rows, MM, kicked grinders, no CSV. "
             "Bench = take-book 12 who are stale, quiet, whale-sized, unique ROI too low, "
             "or take-rule bleed (unique green / asof_live_q60 red). "

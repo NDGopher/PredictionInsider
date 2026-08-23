@@ -48,6 +48,7 @@ from copy_roster import (  # noqa: E402
     load_universe,
 )
 from evolve_copy_book import no_futures  # noqa: E402
+from equity_regime import regime_for_trader  # noqa: E402
 from take_book_bankroll import equity_stats  # noqa: E402
 
 OUT_JSON = OUTPUT_DIR / "adaptive_copy_lab.json"
@@ -238,7 +239,7 @@ def adaptive_action(
     if bucket in {"bench", "watch"} and n >= 20 and roi <= -10:
         return {"action": "keep_cold", "why": f"take-rule cold n={n} roi={roi}%"}
 
-    # Promote proposals (never auto for watch)
+    # Promote — automatic via auto_promote.py (watch→take_book); lab labels the action.
     if (
         bucket == "bench"
         and bool(t.get("joinable"))
@@ -251,20 +252,28 @@ def adaptive_action(
         and _f(w30.get("roi_2c")) > -8
         and str(t.get("recency") or "") in {"HOT", "WARM"}
     ):
-        return {"action": "propose_promote_live", "why": f"bench take +{roi}% n={n}, join={join_s}, cons={cons}"}
+        return {"action": "auto_promote_live", "why": f"bench take +{roi}% n={n}, join={join_s}, cons={cons}"}
     if (
         bucket == "watch"
         and bool(t.get("joinable"))
-        and n >= 12
-        and roi >= 8
-        and join_s >= 60
-        and cons >= 15
+        and str(t.get("recency") or "") in {"HOT", "WARM"}
         and last30_n >= LIVE_MIN_LAST30_N
-        and _f(t.get("unique_roi")) >= LIVE_MIN_ROI
     ):
+        # Regime turnaround / hot unique path — auto_promote applies to extra_traders
+        if n >= 12 and roi >= 8 and join_s >= 60 and cons >= 15 and _f(t.get("unique_roi")) >= LIVE_MIN_ROI:
+            return {
+                "action": "auto_promote_live",
+                "why": f"watch take +{roi}% n={n} — auto_promote will flip status to take_book",
+            }
+        # Thin take but strong unique/regime — still auto-promote for live allowlist
+        if join_s >= 55 and (_f(t.get("unique_roi")) or 0) >= LIVE_MIN_ROI:
+            return {
+                "action": "auto_promote_live",
+                "why": f"watch unique ROI ready — auto_promote (take n={n})",
+            }
         return {
-            "action": "propose_human_promote",
-            "why": f"watch candidate take +{roi}% n={n} — requires human status change (never auto-live)",
+            "action": "auto_promote_if_regime",
+            "why": "watch candidate — auto_promote checks turnaround/hot last30 gates",
         }
     if bucket == "live" and n >= 8 and roi > 0 and _f(w30.get("roi_2c"), 0) >= -10:
         return {"action": "keep_live", "why": f"live take ok n={n} roi={roi}%"}
@@ -364,17 +373,21 @@ def score_trader_row(
     w60 = window_stat(sub, 60, slip)
     w90 = window_stat(sub, 90, slip)
     action = adaptive_action(t, st, eq, join, w30, w60)
-    # Composite: prioritize easy + consistent + take +ROI
+    regime = regime_for_trader(wallet, username)
+    # Composite: prioritize easy + consistent + take +ROI + regime
     composite = (
-        0.35 * join["score"]
-        + 0.25 * min(_f(eq.get("consistency_score")), 100.0)
-        + 0.25 * (50.0 + min(max(st.get("roi") or 0.0, -50.0), 50.0))
+        0.30 * join["score"]
+        + 0.20 * min(_f(eq.get("consistency_score")), 100.0)
+        + 0.20 * (50.0 + min(max(st.get("roi") or 0.0, -50.0), 50.0))
         + 0.15 * min(100.0, (st.get("n") or 0) * 2.0)
+        + 0.15 * min(_f(regime.get("score")), 100.0)
     )
     if (st.get("n") or 0) < 8:
         composite *= 0.7
     if not t.get("joinable"):
         composite *= 0.85
+    if regime.get("regime") == "turnaround":
+        composite = max(composite, 62.0)
     return {
         "username": name,
         "wallet": t.get("wallet"),
@@ -387,6 +400,7 @@ def score_trader_row(
         "last_30d_roi": t.get("last_30d_roi"),
         "reasons": t.get("reasons") or [],
         "joinability": join,
+        "regime": regime,
         "product": st,
         "equity": {
             "n": eq.get("n"),
@@ -671,14 +685,13 @@ def main() -> int:
 
     adaptation = {
         "loop": [
-            "Refresh CSVs (live+bench+watch only) → rebuild unique ranks → copy_universe gates.",
-            "Run product take-rule + this lab (multi-strategy + consistency + joinability).",
-            "Demote: take_rule_bleed, quiet_30d, unique ROI collapse — automatic in copy_roster.",
-            "Promote bench→live: only when propose_promote_live gates fire (joinable + take n≥12 +ROI + active).",
-            "Promote watch→live: human edits extra_traders status (never auto).",
-            "Cold: keep fetching bench/watch; pause live sizing if live 30d take ROI deeply red.",
-            "New traders: Polydata boards → extra_watch → unique book → digest → lab score → human promote.",
-            "New strategies: compete in COMPARE_STRATEGIES; swap only via propose_strategy_swap + cache bump.",
+            "Refresh CSVs (live+bench+watch) → ranks → copy_universe.",
+            "Adaptive lab: multi-strategy + joinability + consistency + equity regime.",
+            "auto_promote.py: watch/bench → take_book automatically when gates fire (including turnaround).",
+            "Rebuild copy_universe so Take these allowlist updates without human edits.",
+            "Demote automatic: take_rule_bleed, quiet_30d, live take n≥12 deeply red.",
+            "New traders: Polydata → watch → unique book → regime/lab → auto_promote.",
+            "MM lane is separate (mm_maker_research) — not $100 copy.",
         ],
         "actions": actions,
         "gates": {
@@ -689,7 +702,9 @@ def main() -> int:
             "min_consistency_bench": 12,
             "min_consistency_watch": 15,
             "min_last30_n": LIVE_MIN_LAST30_N,
-            "never_auto_live_extra_watch": True,
+            "auto_promote": True,
+            "turnaround_last30_min_roi": 8,
+            "turnaround_last30_min_n": 30,
         },
     }
 
@@ -714,8 +729,8 @@ def main() -> int:
         "projection_30d": projection,
         "adaptation": adaptation,
         "method": (
-            "Hold-to-res as-of masks from asof_fullbook_backtest.strategy_masks; "
-            "flat $100 +2¢ fill; pools from copy_universe; adaptive proposals only."
+            "Hold-to-res as-of masks; flat $100 +2¢; equity regime; "
+            "auto_promote flips extra_traders watch→take_book when gates fire."
         ),
     }
     OUT_JSON.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")

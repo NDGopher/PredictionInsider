@@ -1,0 +1,511 @@
+{
+  "generated_at": "2026-08-23T13:36:56.185907+00:00",
+  "method": "Historical MM/skip books: hedge vs directional split from conditionId both-sides; locked edge proxy 1-(yesVWAP+noVWAP). Research only.",
+  "feasibility": {
+    "can_we_automate_today": false,
+    "why_not_yet": [
+      "Polymarket CLOB requires continuous two-sided quoting, cancel/replace, and inventory caps.",
+      "Historical CSVs give filled inventory, not the full quote tape (missed fills / queue position).",
+      "RN1-class books run 100k\u20133M+ fills \u2014 infrastructure and capital, not a $100 copy bot.",
+      "Latency, gas/bridge, and adverse selection vs informed flow dominate retail MM."
+    ],
+    "what_is_viable_near_term": [
+      "Research + alert when locked yes+no VWAP < 1.00 on markets we already trade.",
+      "Hedge overlay: when our take-book print is one-sided, optionally buy cheap opposite if sum < 0.98.",
+      "Separate MM desk paper-trading with hard inventory limits before any live quoting."
+    ],
+    "hist_avg_locked_edge": 0.0214,
+    "verdict": "Market making is a separate product lane from Take these. History shows hedge inventory can be profitable for mega books, but automating live MM on Poly is not ready as a $100 retail strategy."
+  },
+  "books": [
+    {
+      "username": "kch123",
+      "wallet": "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee",
+      "analysis": {
+        "username": "kch123",
+        "wallet": "0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee",
+        "dashboard_pnl": 82055167.79,
+        "overall_roi": 35.51,
+        "win_rate": 58.0,
+        "median_stake": 43246.16,
+        "events": 1047,
+        "hedge_count": 4073,
+        "hedge_profit": 294822.12,
+        "hedge_risk": 97572172.39,
+        "bond_count": 2,
+        "bond_profit": 803.5,
+        "last_30d": null,
+        "monthly_pnl": {
+          "2025-11": 1953041.25,
+          "2025-12": 507530.2,
+          "2026-01": 5761997.8,
+          "2026-02": 2008261.43,
+          "2026-03": 1201066.71,
+          "2026-04": 163822.31
+        }
+      },
+      "csv_sim": {
+        "rows_sampled": 3838,
+        "conditions": 2462,
+        "hedge_markets": {
+          "n": 4,
+          "pnl": 412347.61,
+          "cost": 3437.56,
+          "roi_pct": 11995.34,
+          "avg_pnl": 103086.9,
+          "win_rate": 50.0
+        },
+        "directional_markets": {
+          "n": 2458,
+          "pnl": 11801653.0,
+          "cost": 702991.06,
+          "roi_pct": 1678.78,
+          "avg_pnl": 4801.32,
+          "win_rate": 54.11
+        },
+        "maker_sim": {
+          "stake_usd": 100.0,
+          "method": "On both-side conditions, assumed round-trip edge = 1-(yesVWAP+noVWAP). Apply to $100 notional per hedged market. Directional leftovers excluded.",
+          "hedged_markets": 4,
+          "avg_locked_edge": 0.0078,
+          "median_locked_edge": 0.0037,
+          "positive_edge_pct": 75.0,
+          "proj_pnl_per_100_hedges": 77.87,
+          "caveat": "Edge uses position VWAPs not live CLOB mid/spread. Adverse selection and unfilled quotes are not modeled. Research estimate only \u2014 not live automation."
+        }
+      },
+      "has_csv": true
+    },
+    {
+      "username": "tcp2",
+      "wallet": "0x6b7c75862e64d6e976d2c08ad9f9b54add6c5f83",
+      "analysis": {
+        "username": "tcp2",
+        "wallet": "0x6b7c75862e64d6e976d2c08ad9f9b54add6c5f83",
+        "dashboard_pnl": 2975328.56,
+        "overall_roi": 12.74,
+        "win_rate": 49.93,
+        "median_stake": 32.0,
+        "events": 1909,
+        "hedge_count": 19162,
+        "hedge_profit": 560984.88,
+        "hedge_risk": 22511224.63,
+        "bond_count": 102,
+        "bond_profit": 1940.72,
+        "last_30d": null,
+        "monthly_pnl": {
+          "2025-11": 1964.78,
+          "2025-12": -11514.42,
+          "2026-01": 4884.2,
+          "2026-02": -15077.01,
+          "2026-03": -7554.45,
+          "2026-04": -1443.12
+        }
+      },
+      "csv_sim": {
+        "rows_sampled": 20810,
+        "conditions": 12199,
+        "hedge_markets": {
+          "n": 1841,
+          "pnl": 78018.6,
+          "cost": 1841.0,
+          "roi_pct": 4237.84,
+          "avg_pnl": 42.38,
+          "win_rate": 55.57
+        },
+        "directional_markets": {
+          "n": 10358,
+          "pnl": 461780.09,
+          "cost": 10358.0,
+          "roi_pct": 4458.2,
+          "avg_pnl": 44.58,
+          "win_rate": 54.52
+        },
+        "maker_sim": {
+          "stake_usd": 100.0,
+          "method": "On both-side conditions, assumed round-trip edge = 1-(yesVWAP+noVWAP). Apply to $100 notional per hedged market. Directional leftovers excluded.",
+          "hedged_markets": 1841,
+          "avg_locked_edge": 0.025,
+          "median_locked_edge": 0.0303,
+          "positive_edge_pct": 59.91,
+          "proj_pnl_per_100_hedges": 250.24,
+          "caveat": "Edge uses position VWAPs not live CLOB mid/spread. Adverse selection and unfilled quotes are not modeled. Research estimate only \u2014 not live automation."
+        }
+      },
+      "has_csv": true
+    },
+    {
+      "username": "RN1",
+      "wallet": "0x2005d16a84ceefa912d4e380cd32e7ff827875ea",
+      "analysis": {
+        "username": "RN1",
+        "wallet": "0x2005d16a84ceefa912d4e380cd32e7ff827875ea",
+        "dashboard_pnl": 71474672.16,
+        "overall_roi": 27.31,
+        "win_rate": 56.35,
+        "median_stake": 54.07,
+        "events": 10087,
+        "hedge_count": 80125,
+        "hedge_profit": 7029125.49,
+        "hedge_risk": 200374620.73,
+        "bond_count": 132,
+        "bond_profit": -8037.62,
+        "last_30d": null,
+        "monthly_pnl": {
+          "2025-11": 10399.47,
+          "2025-12": 11091.79,
+          "2026-01": 115704.06,
+          "2026-02": 76023.69,
+          "2026-03": 121278.21,
+          "2026-04": 84928.43
+        }
+      },
+      "csv_sim": {
+        "rows_sampled": 91866,
+        "conditions": 52126,
+        "hedge_markets": {
+          "n": 14404,
+          "pnl": 2926574.65,
+          "cost": 113908.02,
+          "roi_pct": 2569.24,
+          "avg_pnl": 203.18,
+          "win_rate": 59.41
+        },
+        "directional_markets": {
+          "n": 37722,
+          "pnl": 5112916.38,
+          "cost": 616688.47,
+          "roi_pct": 829.09,
+          "avg_pnl": 135.54,
+          "win_rate": 55.37
+        },
+        "maker_sim": {
+          "stake_usd": 100.0,
+          "method": "On both-side conditions, assumed round-trip edge = 1-(yesVWAP+noVWAP). Apply to $100 notional per hedged market. Directional leftovers excluded.",
+          "hedged_markets": 14404,
+          "avg_locked_edge": 0.0568,
+          "median_locked_edge": 0.0458,
+          "positive_edge_pct": 66.11,
+          "proj_pnl_per_100_hedges": 567.61,
+          "caveat": "Edge uses position VWAPs not live CLOB mid/spread. Adverse selection and unfilled quotes are not modeled. Research estimate only \u2014 not live automation."
+        }
+      },
+      "has_csv": true
+    },
+    {
+      "username": "GoalLineGhost",
+      "wallet": "0x0346afae2603313d2bbee96b628536c8cbe352a5",
+      "analysis": {
+        "username": "GoalLineGhost",
+        "wallet": "0x0346afae2603313d2bbee96b628536c8cbe352a5",
+        "dashboard_pnl": -1159219.67,
+        "overall_roi": -0.73,
+        "win_rate": 52.31,
+        "median_stake": 420.09,
+        "events": 4704,
+        "hedge_count": 14628,
+        "hedge_profit": -4657190.96,
+        "hedge_risk": 135329568.38,
+        "bond_count": 33,
+        "bond_profit": 35528.43,
+        "last_30d": {
+          "n": 13898,
+          "pnl": -262784.4,
+          "cost": 25429120.56,
+          "roi": -1.03,
+          "wins": 6656,
+          "win_rate": 47.9,
+          "first": "2026-07-21",
+          "last": "2026-08-19"
+        },
+        "monthly_pnl": {
+          "2026-04": 38374.15,
+          "2026-05": 926165.54,
+          "2026-06": 1027078.68,
+          "2026-07": 795484.28,
+          "2026-08": 676149.25,
+          "2026-10": -809.03
+        }
+      },
+      "csv_sim": {
+        "n": 0
+      },
+      "has_csv": false
+    },
+    {
+      "username": "HomeRunHazard",
+      "wallet": "0x5268527977f700f9bf9b6d5cd843859e4e70135d",
+      "analysis": {
+        "username": "HomeRunHazard",
+        "wallet": "0x5268527977f700f9bf9b6d5cd843859e4e70135d",
+        "dashboard_pnl": 1010528.92,
+        "overall_roi": 0.78,
+        "win_rate": 55.37,
+        "median_stake": 29.16,
+        "events": 2705,
+        "hedge_count": 36478,
+        "hedge_profit": 878767.61,
+        "hedge_risk": 125985910.72,
+        "bond_count": 0,
+        "bond_profit": 0.0,
+        "last_30d": {
+          "n": 13576,
+          "pnl": 407706.81,
+          "cost": 44279098.77,
+          "roi": 0.92,
+          "wins": 6850,
+          "win_rate": 50.5,
+          "first": "2026-07-20",
+          "last": "2026-08-19"
+        },
+        "monthly_pnl": {
+          "2026-04": 19819.4,
+          "2026-05": -51851.67,
+          "2026-06": 72282.1,
+          "2026-07": 56704.43,
+          "2026-08": 34808.71,
+          "2026-09": -1.67
+        }
+      },
+      "csv_sim": {
+        "n": 0
+      },
+      "has_csv": false
+    },
+    {
+      "username": "BoomLaLa",
+      "wallet": "0xe40172522c7c64afa2d052ddae6c92cd0f417b88",
+      "analysis": {
+        "username": "BoomLaLa",
+        "wallet": "0xe40172522c7c64afa2d052ddae6c92cd0f417b88",
+        "dashboard_pnl": 4454542.22,
+        "overall_roi": 18.27,
+        "win_rate": 54.03,
+        "median_stake": 51.65,
+        "events": 4760,
+        "hedge_count": 23466,
+        "hedge_profit": 527593.77,
+        "hedge_risk": 20708745.88,
+        "bond_count": 137,
+        "bond_profit": 2458.79,
+        "last_30d": null,
+        "monthly_pnl": {
+          "2025-11": 3462.73,
+          "2025-12": 18812.11,
+          "2026-01": 34691.64,
+          "2026-02": 27294.13,
+          "2026-03": 23819.93,
+          "2026-04": 19959.54
+        }
+      },
+      "csv_sim": {
+        "rows_sampled": 32966,
+        "conditions": 21967,
+        "hedge_markets": {
+          "n": 556,
+          "pnl": -6452.35,
+          "cost": 667.95,
+          "roi_pct": -965.99,
+          "avg_pnl": -11.6,
+          "win_rate": 56.29
+        },
+        "directional_markets": {
+          "n": 21411,
+          "pnl": 744212.83,
+          "cost": 157756.04,
+          "roi_pct": 471.75,
+          "avg_pnl": 34.76,
+          "win_rate": 54.08
+        },
+        "maker_sim": {
+          "stake_usd": 100.0,
+          "method": "On both-side conditions, assumed round-trip edge = 1-(yesVWAP+noVWAP). Apply to $100 notional per hedged market. Directional leftovers excluded.",
+          "hedged_markets": 556,
+          "avg_locked_edge": 0.0813,
+          "median_locked_edge": 0.0905,
+          "positive_edge_pct": 85.61,
+          "proj_pnl_per_100_hedges": 812.79,
+          "caveat": "Edge uses position VWAPs not live CLOB mid/spread. Adverse selection and unfilled quotes are not modeled. Research estimate only \u2014 not live automation."
+        }
+      },
+      "has_csv": true
+    },
+    {
+      "username": "0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563",
+      "wallet": "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+      "analysis": {
+        "username": "0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563",
+        "wallet": "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+        "dashboard_pnl": -23213439.5,
+        "overall_roi": -4.03,
+        "win_rate": 55.46,
+        "median_stake": 2512.61,
+        "events": 3902,
+        "hedge_count": 4202,
+        "hedge_profit": -17802856.28,
+        "hedge_risk": 426057438.49,
+        "bond_count": 145,
+        "bond_profit": 390970.05,
+        "last_30d": null,
+        "monthly_pnl": {
+          "2026-06": 797983.44,
+          "2026-07": -13184163.49,
+          "2026-08": 1147977.18,
+          "2026-12": -135739.77,
+          "2027-01": 1043.93,
+          "2027-07": 41.31
+        }
+      },
+      "csv_sim": {
+        "n": 0
+      },
+      "has_csv": false
+    },
+    {
+      "username": "swisstony",
+      "wallet": "0x204f72f35326db932158cba6adff0b9a1da95e14",
+      "analysis": {},
+      "csv_sim": {
+        "n": 0
+      },
+      "has_csv": false
+    },
+    {
+      "username": "Cannae",
+      "wallet": "0x7ea571c40408f340c1c8fc8eaacebab53c1bde7b",
+      "analysis": {
+        "username": "Cannae",
+        "wallet": "0x7ea571c40408f340c1c8fc8eaacebab53c1bde7b",
+        "dashboard_pnl": 31290665.38,
+        "overall_roi": 44.14,
+        "win_rate": 49.91,
+        "median_stake": 86.79,
+        "events": 4157,
+        "hedge_count": 28358,
+        "hedge_profit": -61289.97,
+        "hedge_risk": 55115723.11,
+        "bond_count": 8,
+        "bond_profit": 237.6,
+        "last_30d": null,
+        "monthly_pnl": {
+          "2026-03": -508809.58,
+          "2026-04": -461000.81,
+          "2026-05": 0.0,
+          "2026-06": 0.0,
+          "2026-07": 0.0,
+          "2026-08": 0.0
+        }
+      },
+      "csv_sim": {
+        "rows_sampled": 32592,
+        "conditions": 19438,
+        "hedge_markets": {
+          "n": 6694,
+          "pnl": 9850208.46,
+          "cost": 9788391.56,
+          "roi_pct": 100.63,
+          "avg_pnl": 1471.5,
+          "win_rate": 89.44
+        },
+        "directional_markets": {
+          "n": 12744,
+          "pnl": 1505151.37,
+          "cost": 2393492.16,
+          "roi_pct": 62.89,
+          "avg_pnl": 118.11,
+          "win_rate": 43.56
+        },
+        "maker_sim": {
+          "stake_usd": 100.0,
+          "method": "On both-side conditions, assumed round-trip edge = 1-(yesVWAP+noVWAP). Apply to $100 notional per hedged market. Directional leftovers excluded.",
+          "hedged_markets": 6694,
+          "avg_locked_edge": 0.0101,
+          "median_locked_edge": 0.0105,
+          "positive_edge_pct": 79.83,
+          "proj_pnl_per_100_hedges": 100.66,
+          "caveat": "Edge uses position VWAPs not live CLOB mid/spread. Adverse selection and unfilled quotes are not modeled. Research estimate only \u2014 not live automation."
+        }
+      },
+      "has_csv": true
+    },
+    {
+      "username": "geniusMC",
+      "wallet": "0x0b9cae2b0dfe7a71c413e0604eaac1c352f87e44",
+      "analysis": {
+        "username": "geniusMC",
+        "wallet": "0x0b9cae2b0dfe7a71c413e0604eaac1c352f87e44",
+        "dashboard_pnl": -20615864.86,
+        "overall_roi": -13.64,
+        "win_rate": 58.61,
+        "median_stake": 3692.02,
+        "events": 304,
+        "hedge_count": 282,
+        "hedge_profit": -1156531.71,
+        "hedge_risk": 90336917.08,
+        "bond_count": 814,
+        "bond_profit": 29875.47,
+        "last_30d": null,
+        "monthly_pnl": {
+          "2026-01": 1530950.89,
+          "2026-02": 1568879.89,
+          "2026-03": 147946.76,
+          "2026-04": 11381.44,
+          "2026-05": 62304.79,
+          "2026-12": 52.8
+        }
+      },
+      "csv_sim": {
+        "rows_sampled": 1127,
+        "conditions": 1057,
+        "hedge_markets": {
+          "n": 40,
+          "pnl": -807404.26,
+          "cost": 50409.02,
+          "roi_pct": -1601.71,
+          "avg_pnl": -20185.11,
+          "win_rate": 20.0
+        },
+        "directional_markets": {
+          "n": 1017,
+          "pnl": 2824393.54,
+          "cost": 449084.5,
+          "roi_pct": 628.92,
+          "avg_pnl": 2777.18,
+          "win_rate": 73.25
+        },
+        "maker_sim": {
+          "stake_usd": 100.0,
+          "method": "On both-side conditions, assumed round-trip edge = 1-(yesVWAP+noVWAP). Apply to $100 notional per hedged market. Directional leftovers excluded.",
+          "hedged_markets": 40,
+          "avg_locked_edge": -0.0527,
+          "median_locked_edge": -0.0249,
+          "positive_edge_pct": 25.0,
+          "proj_pnl_per_100_hedges": -527.47,
+          "caveat": "Edge uses position VWAPs not live CLOB mid/spread. Adverse selection and unfilled quotes are not modeled. Research estimate only \u2014 not live automation."
+        }
+      },
+      "has_csv": true
+    },
+    {
+      "username": "quavoo",
+      "wallet": "0xdc41c39b95453c943174f369926018f6963bdd7e",
+      "analysis": {},
+      "csv_sim": {
+        "n": 0
+      },
+      "has_csv": false
+    },
+    {
+      "username": "wr0ngw4yb3tt0r",
+      "wallet": "0x224a89dbe0db0d6124b335edabd15b3f877da3d5",
+      "analysis": {},
+      "csv_sim": {
+        "n": 0
+      },
+      "has_csv": false
+    }
+  ],
+  "counts": {
+    "books": 12
+  }
+}
