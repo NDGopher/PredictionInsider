@@ -1,4 +1,4 @@
-import { LayoutDashboard, Zap, BarChart3, TrendingUp, BookOpen, FlaskConical, Trophy, ListOrdered, Activity } from "lucide-react";
+import { LayoutDashboard, Zap, BarChart3, TrendingUp, BookOpen, FlaskConical, Trophy, ListOrdered, Activity, Sparkles } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -16,7 +16,8 @@ import { Badge } from "@/components/ui/badge";
 
 const navItems = [
   { title: "Take these", url: "/", icon: LayoutDashboard, badge: "LIVE" },
-  { title: "Ranked Plays", url: "/plays", icon: ListOrdered, badge: "LIVE" },
+  { title: "Prediction Insiders", url: "/insiders", icon: Sparkles, badge: "LIVE" },
+  { title: "Ranked Plays", url: "/plays", icon: ListOrdered, badge: null },
   { title: "Market Making", url: "/mm-research", icon: Activity, badge: "LAB" },
   { title: "Live Signals", url: "/signals", icon: Zap, badge: "LIVE" },
   { title: "Markets", url: "/markets", icon: BarChart3, badge: null },

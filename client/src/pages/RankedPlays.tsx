@@ -246,7 +246,7 @@ export default function RankedPlays() {
             </div>
           )}
           <div className="flex flex-wrap gap-3 text-xs">
-            <Link href="/ranks" className="text-primary">Insider Ranks →</Link>
+            <Link href="/insiders" className="text-primary">Prediction Insiders →</Link>
             <Link href="/elite" className="text-primary">Elite books →</Link>
             <span className="text-muted-foreground">Refresh roster: npm run daily-pipeline</span>
           </div>

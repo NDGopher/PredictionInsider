@@ -305,7 +305,7 @@ function DiscoveryStrip({ discovery }: { discovery?: DiscoveryBundle }) {
       <CardContent className="p-4 space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="text-xs font-medium">Best-of roster · discovery</div>
-          <Link href="/plays" className="text-xs text-primary">Ranked plays + full watchlist →</Link>
+          <Link href="/insiders" className="text-xs text-primary">Prediction Insiders →</Link>
         </div>
         <div className="text-[11px] text-muted-foreground">
           Live now: {live.map((t) => t.username).filter(Boolean).join(", ") || "—"}
@@ -409,7 +409,7 @@ export default function TakeBookFeed() {
             <Badge variant="outline">Telegram off — set TELEGRAM_BOT_TOKEN</Badge>
           )}
           <Button size="sm" variant="outline" onClick={() => refetch()}>Refresh</Button>
-          <Link href="/plays" className="text-xs text-primary">Ranked Plays →</Link>
+          <Link href="/insiders" className="text-xs text-primary">Prediction Insiders →</Link>
           <Link href="/bets" className="text-xs text-primary">My Bets →</Link>
         </div>
       </div>

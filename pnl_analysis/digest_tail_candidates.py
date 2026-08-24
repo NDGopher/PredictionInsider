@@ -413,7 +413,7 @@ def write_md(payload: dict[str, Any]) -> None:
         f"- **CLV priced:** {len(clv_ok)}/{len(rows)} traders have ≥1 close print. "
         "UFC/NBA/tennis often return 0/n (thin CLOB history). Soccer whales usually have coverage. "
         "Negative CLV + positive hold-to-res = paid at settlement, not beating the line.",
-        "- **Gap still real:** we digest live + bench + priority watch only — not every Polydata name. "
+        "- **Coverage:** digest runs on all live + bench + watch traders with a local CSV (not just a hand-picked list). "
         "Promote only when take-rule n≥12 and +ROI, joinable median, WR 48–75, HOT, unique ROI≥5%.",
         "",
         "## Ranked tail list",

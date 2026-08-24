@@ -12,6 +12,7 @@ import Bets from "@/pages/Bets";
 import Elite from "@/pages/Elite";
 import Strategies from "@/pages/Strategies";
 import Ranks from "@/pages/Ranks";
+import PredictionInsiders from "@/pages/PredictionInsiders";
 import RankedPlays from "@/pages/RankedPlays";
 import MarketMaking from "@/pages/MarketMaking";
 import NotFound from "@/pages/not-found";
@@ -61,6 +62,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/insiders" component={PredictionInsiders} />
       <Route path="/plays" component={RankedPlays} />
       <Route path="/mm-research" component={MarketMaking} />
       <Route path="/signals" component={Signals} />

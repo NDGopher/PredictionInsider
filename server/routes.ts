@@ -19,6 +19,7 @@ import {
   signalMatchesStrategy,
   type TailStrategyFilters,
 } from "./tailStrategies";
+import { loadPredictionInsiders } from "./predictionInsiders";
 import { collectTakePlays, enrichTakePlaysWithBook, loadCopyDiscovery, loadLaneBacktest, loadMmResearch, loadRankedPlayBoard, loadTakeHealthFile, loadTrustedCopyBooks, mapCsvOpenRows, mergeRankedPlays, takeStrategyCard, type TakePlayBundle } from "./takePlays";
 import { syncTakeBookAlerts, telegramConfigured } from "./telegramTakeAlerts";
 import { cancelUnfilledTake, paperLogTakePlays } from "./paperTakeBets";
@@ -6223,6 +6224,23 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     } catch (err: unknown) {
       console.error("take-plays error:", err);
       res.status(500).json({ error: formatApiError(err), live: [], near: [] });
+    }
+  });
+
+  // ── GET /api/prediction-insiders ──────────────────────────────────────────
+  // OddsJam-style unified board: ranked plays + trader excellence + discovery.
+  app.get("/api/prediction-insiders", async (_req, res) => {
+    try {
+      res.setHeader("Cache-Control", "no-store");
+      const health = loadTakeHealthFile();
+      const cached = getCache<SignalsResponse>("signals-elite-v59-vip-premium-sp");
+      const bundle = collectTakePlays(cached?.signals || []);
+      await enrichTakePlaysWithBook(bundle);
+      const payload = loadPredictionInsiders(bundle, health);
+      res.json(payload);
+    } catch (err: unknown) {
+      console.error("prediction-insiders error:", err);
+      res.status(500).json({ error: formatApiError(err), plays: [], traders: [] });
     }
   });
 
