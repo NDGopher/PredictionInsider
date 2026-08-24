@@ -9,7 +9,7 @@ import { Link } from "wouter";
 interface RankedPlay {
   id: string;
   rank?: number;
-  list?: "take" | "near";
+  list?: "take" | "near" | "watch";
   grade?: number;
   confidence?: number;
   q?: number;
@@ -82,10 +82,11 @@ export default function RankedPlays() {
     staleTime: 8_000,
     refetchInterval: 12_000,
   });
-  const [tab, setTab] = useState<"all" | "take" | "near">("all");
+  const [tab, setTab] = useState<"all" | "take" | "near" | "watch">("all");
   const ranked = (data?.ranked || []).filter((p) => {
     if (tab === "take") return p.list === "take";
     if (tab === "near") return p.list === "near";
+    if (tab === "watch") return p.list === "watch";
     return true;
   });
   const disc = data?.discovery;
@@ -114,7 +115,7 @@ export default function RankedPlays() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {(["all", "take", "near"] as const).map((t) => (
+        {(["all", "take", "near", "watch"] as const).map((t) => (
           <button
             key={t}
             type="button"
@@ -123,7 +124,7 @@ export default function RankedPlays() {
               tab === t ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"
             }`}
           >
-            {t === "all" ? "All ranked" : t === "take" ? "Recommended TAKE" : "Near misses"}
+            {t === "all" ? "All ranked" : t === "take" ? "Recommended TAKE" : t === "near" ? "Near misses" : "Watch list"}
           </button>
         ))}
         {dataUpdatedAt ? (
@@ -138,7 +139,7 @@ export default function RankedPlays() {
       {!isLoading && ranked.length === 0 && (
         <Card>
           <CardContent className="p-6 text-sm text-muted-foreground">
-            No graded take/near plays right now. Home Take these stays empty until a live book prints a Q60 + 2× ticket.
+            No graded plays in this tab. The board scans live + bench + watch CSV books every refresh — expand tabs or run the pipeline.
           </CardContent>
         </Card>
       )}
@@ -153,8 +154,8 @@ export default function RankedPlays() {
               <CardContent className="p-4 space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="outline" className="tabular-nums">#{p.rank ?? "—"}</Badge>
-                  <Badge variant={p.list === "near" ? "outline" : "default"}>
-                    {p.list === "near" ? "NEAR" : "TAKE"}
+                  <Badge variant={p.list === "take" ? "default" : p.list === "near" ? "outline" : "secondary"}>
+                    {p.list === "take" ? "TAKE" : p.list === "near" ? "NEAR" : "WATCH"}
                   </Badge>
                   <span className={`text-lg font-bold tabular-nums ${gradeTone(grade)}`}>{grade}</span>
                   <span className="text-xs text-muted-foreground">/100</span>

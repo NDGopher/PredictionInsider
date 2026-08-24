@@ -73,6 +73,8 @@ export interface AnnotatedTakePlay {
   tokenId?: string;
   conditionId?: string;
   rank?: number;
+  /** take | near | watch — OddsJam-style tier from ranked play board */
+  list?: "take" | "near" | "watch";
 }
 
 export interface TakePlayBundle {
@@ -635,6 +637,55 @@ export function loadCopyDiscovery(): CopyDiscoveryBundle {
       "Polydata → watch → unique book → regime/lab → auto_promote (watch→take_book). "
       + "Daily: npm run daily-pipeline. MM lane is separate (/mm-research).",
   };
+}
+
+export interface RankedPlayBoardFile {
+  generated_at?: string;
+  method?: string;
+  rule?: string;
+  books_scanned?: number;
+  counts?: { take?: number; near?: number; watch?: number };
+  plays?: Array<Record<string, unknown>>;
+}
+
+/** Expanded open scan across live+bench+watch CSV books (OddsJam-style board). */
+export function loadRankedPlayBoard(): RankedPlayBoardFile | null {
+  return loadJson<RankedPlayBoardFile>("pnl_analysis/output/ranked_play_board.json");
+}
+
+/** Merge signal TAKEs, CSV near rows, and the ranked play board into one sorted list. */
+export function mergeRankedPlays(
+  bundle: TakePlayBundle,
+  health: TakeHealthFile | null,
+  board: RankedPlayBoardFile | null,
+): AnnotatedTakePlay[] {
+  const byId = new Map<string, AnnotatedTakePlay>();
+  const add = (row: AnnotatedTakePlay, list: "take" | "near" | "watch") => {
+    row.list = list;
+    const prev = byId.get(row.id);
+    if (!prev || row.grade > prev.grade) byId.set(row.id, row);
+  };
+  for (const p of bundle.live) add(p, "take");
+  for (const p of bundle.near) add(p, "near");
+  for (const raw of board?.plays || []) {
+    const row = mapCsvOpenRow(raw);
+    const tier = String(raw.tier || (row.take ? "take" : row.close ? "near" : "watch"));
+    const list = tier === "take" ? "take" : tier === "near" ? "near" : "watch";
+    if (typeof raw.grade === "number") row.grade = raw.grade;
+    if (Array.isArray(raw.why) && raw.why.length) row.why = raw.why.map(String);
+    else if (raw.bucket && !row.why.some((w) => w.includes("bucket"))) {
+      row.why = [`Roster bucket: ${String(raw.bucket)}`, ...row.why];
+    }
+    row.take = list === "take";
+    row.close = list === "near";
+    add(row, list);
+  }
+  for (const raw of health?.near_open || []) {
+    add(mapCsvOpenRow(raw), "near");
+  }
+  return [...byId.values()]
+    .sort((a, b) => b.grade - a.grade || b.rel - a.rel || b.q - a.q)
+    .map((p, i) => ({ ...p, rank: i + 1 }));
 }
 
 export function loadMmResearch(): Record<string, unknown> | null {

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-08-24T18:23:03.503365+00:00",
+  "generated_at": "2026-08-24T19:10:56.827523+00:00",
   "method": "Unique book + as-of take-rule + CLOB CLV. Ranked for $100 joinable tail. extra_watch never auto-live.",
   "strategy": "asof_live_q60_sport_rel2",
   "counts": {
-    "candidates": 25,
-    "with_csv": 16,
-    "take_plays": 707
+    "candidates": 27,
+    "with_csv": 24,
+    "take_plays": 953
   },
   "traders": [
     {
@@ -385,94 +385,9 @@
         ]
       },
       "clv": {
-        "n": 24,
+        "n": 0,
         "n_with_close": 0,
-        "coverage": 0.0,
-        "avg_clv_cents": null,
-        "expected_clv_roi": null,
-        "realized_roi_2c": 7.4,
-        "sample": [
-          {
-            "end": "2026-05-17",
-            "title": "UFC Fight Night: Khaos Williams vs. Nikolay Veretennikov (Welterweight",
-            "fill": 0.495,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-05-10",
-            "title": "UFC 328: Sean Strickland vs. Khamzat Chimaev (Middleweight, Main Card)",
-            "fill": 0.844,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-05-03",
-            "title": "UFC Fight Night: Tim Elliott vs. Steve Erceg (Flyweight, Main Card)",
-            "fill": 0.39,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-04-26",
-            "title": "UFC Fight Night: Alexander Hernandez vs. Rafa Garcia (Lightweight, Pre",
-            "fill": 0.546,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 83.05,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-04-12",
-            "title": "UFC 327: Curtis Blaydes vs. Josh Hokit (Heavyweight, Main Card)",
-            "fill": 0.552,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 81.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-04-12",
-            "title": "Spread: Hornets (-13.5)",
-            "fill": 0.559,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 78.86,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-04-11",
-            "title": "Grizzlies vs. Jazz",
-            "fill": 0.603,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 65.98,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-04-10",
-            "title": "Spread: Heat (-16.5)",
-            "fill": 0.536,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 86.6,
-            "clob_ask": null
-          }
-        ]
+        "coverage": 0.0
       },
       "tail_score": 97.4,
       "tail_why": "live + take-rule +ROI"
@@ -747,94 +662,9 @@
         ]
       },
       "clv": {
-        "n": 11,
+        "n": 0,
         "n_with_close": 0,
-        "coverage": 0.0,
-        "avg_clv_cents": null,
-        "expected_clv_roi": null,
-        "realized_roi_2c": 53.31,
-        "sample": [
-          {
-            "end": "2026-08-17",
-            "title": "Houston Astros vs. San Diego Padres",
-            "fill": 0.54,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 85.19,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-08-11",
-            "title": "Pittsburgh Pirates vs. Milwaukee Brewers",
-            "fill": 0.59,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 69.49,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-08-11",
-            "title": "Toronto Blue Jays vs. Houston Astros",
-            "fill": 0.46,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 117.58,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-08-10",
-            "title": "St. Louis Cardinals vs. New York Yankees",
-            "fill": 0.34,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 194.12,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-08-08",
-            "title": "St. Louis Cardinals vs. Toronto Blue Jays",
-            "fill": 0.417,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-08-06",
-            "title": "Seattle Mariners vs. Los Angeles Dodgers",
-            "fill": 0.4,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-08-05",
-            "title": "Milwaukee Brewers vs. San Francisco Giants",
-            "fill": 0.522,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-08-04",
-            "title": "New York Yankees vs. Chicago White Sox",
-            "fill": 0.54,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 85.19,
-            "clob_ask": null
-          }
-        ]
+        "coverage": 0.0
       },
       "tail_score": 80.0,
       "tail_why": "hot unique + thin take +"
@@ -1140,6 +970,485 @@
       },
       "tail_score": 58.4,
       "tail_why": "watch promote candidate"
+    },
+    {
+      "username": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
+      "wallet": "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87",
+      "bucket": "watch",
+      "joinable": false,
+      "reasons": [
+        "median=$39,638_unjoinable"
+      ],
+      "has_csv": true,
+      "notes": "B-Tier tennis/soccer. Unique +$1.11M / 12.5% ROI, last 30d +$612k / 22%. Median $40k unjoinable \u2014 watch whale, not $100 copy.",
+      "unique": {
+        "roi": 12.47,
+        "win_rate": 55.1,
+        "median_stake": 39637.5,
+        "closed": 0,
+        "events": 98,
+        "last_30d_n": 25,
+        "last_30d_roi": 33.2,
+        "last_event_date": "2026-08-22",
+        "recency": "HOT",
+        "last_30d": {
+          "n": 36,
+          "roi": 42.14,
+          "wr": 72.2,
+          "pnl": 1596357.06
+        },
+        "outsized": {
+          "n": 37,
+          "win_rate": 75.7,
+          "roi": 20.31,
+          "pnl": 1381752.0,
+          "median": 137824.2,
+          "mean": 183908.18
+        },
+        "outsized_30d": {
+          "n": 14,
+          "win_rate": 85.7,
+          "roi": 45.1,
+          "pnl": 1485878.25,
+          "median": 190726.96,
+          "mean": 235338.4
+        },
+        "dashboard_pnl": 1107705.78
+      },
+      "mix": {
+        "n": 116,
+        "politics_frac": 0.0,
+        "futures_frac": 0.009,
+        "sports_frac": 0.991,
+        "top": [
+          {
+            "sport": "TENNIS",
+            "n": 86
+          },
+          {
+            "sport": "OTHER",
+            "n": 18
+          },
+          {
+            "sport": "NBA",
+            "n": 9
+          },
+          {
+            "sport": "NHL",
+            "n": 2
+          },
+          {
+            "sport": "MLB",
+            "n": 1
+          }
+        ]
+      },
+      "how_they_win": {
+        "n": 114,
+        "wr": 54.39,
+        "median_cost": 37473.5,
+        "by_sport": [
+          {
+            "key": "TENNIS",
+            "n": 84,
+            "win_rate": 51.19,
+            "roi_2c": -13.67,
+            "unit_pnl": -1148.18,
+            "avg_fill": 0.534,
+            "edge": -2.2
+          },
+          {
+            "key": "OTHER",
+            "n": 18,
+            "win_rate": 61.11,
+            "roi_2c": 30.52,
+            "unit_pnl": 549.35,
+            "avg_fill": 0.559,
+            "edge": 5.2
+          },
+          {
+            "key": "NBA",
+            "n": 9,
+            "win_rate": 77.78,
+            "roi_2c": 2.83,
+            "unit_pnl": 25.44,
+            "avg_fill": 0.742,
+            "edge": 3.5
+          }
+        ],
+        "by_submarket": [
+          {
+            "key": "Moneyline",
+            "n": 111,
+            "win_rate": 54.05,
+            "roi_2c": -6.38,
+            "unit_pnl": -708.18,
+            "avg_fill": 0.555,
+            "edge": -1.5
+          }
+        ],
+        "by_price": [
+          {
+            "key": "fav_55_70",
+            "n": 33,
+            "win_rate": 75.76,
+            "roi_2c": 16.17,
+            "unit_pnl": 533.5,
+            "avg_fill": 0.65,
+            "edge": 10.7
+          },
+          {
+            "key": "chalk_70plus",
+            "n": 28,
+            "win_rate": 92.86,
+            "roi_2c": 16.6,
+            "unit_pnl": 464.75,
+            "avg_fill": 0.796,
+            "edge": 13.3
+          },
+          {
+            "key": "dog_<30c",
+            "n": 18,
+            "win_rate": 22.22,
+            "roi_2c": 12.18,
+            "unit_pnl": 219.21,
+            "avg_fill": 0.205,
+            "edge": 1.7
+          },
+          {
+            "key": "coin_45_55",
+            "n": 18,
+            "win_rate": 22.22,
+            "roi_2c": -56.69,
+            "unit_pnl": -1020.38,
+            "avg_fill": 0.526,
+            "edge": -30.4
+          },
+          {
+            "key": "dog_30_45",
+            "n": 17,
+            "win_rate": 17.65,
+            "roi_2c": -55.28,
+            "unit_pnl": -939.76,
+            "avg_fill": 0.402,
+            "edge": -22.6
+          }
+        ],
+        "outsized_2x": {
+          "n": 37,
+          "wins": 28,
+          "losses": 9,
+          "win_rate": 75.68,
+          "unit_pnl": 521.51,
+          "expectancy": 14.09,
+          "roi": 14.09,
+          "profit_factor": 1.579,
+          "sharpe_daily_roi": 3.14,
+          "max_dd": -349.0,
+          "avg_grade": 0.0,
+          "avg_q": 0.0,
+          "avg_fill": 0.658,
+          "avg_vwap": 0.638,
+          "implied_wr": 65.8,
+          "edge": 9.9,
+          "avg_traders": 1.0,
+          "avg_rel": 1.0,
+          "calmar": 1.49,
+          "days": 31,
+          "trades_per_day": 1.19,
+          "first": "2026-03-30",
+          "last": "2026-08-25"
+        },
+        "under_2x": {
+          "n": 77,
+          "wins": 34,
+          "losses": 43,
+          "win_rate": 44.16,
+          "unit_pnl": -1264.18,
+          "expectancy": -16.42,
+          "roi": -16.42,
+          "profit_factor": 0.706,
+          "sharpe_daily_roi": -6.3,
+          "max_dd": -2303.8,
+          "avg_grade": 0.0,
+          "avg_q": 0.0,
+          "avg_fill": 0.512,
+          "avg_vwap": 0.492,
+          "implied_wr": 51.2,
+          "edge": -7.0,
+          "avg_traders": 1.0,
+          "avg_rel": 1.0,
+          "calmar": -0.55,
+          "days": 47,
+          "trades_per_day": 1.64,
+          "first": "2026-03-17",
+          "last": "2026-08-25"
+        },
+        "top_edge": [
+          {
+            "key": "OTHER",
+            "n": 18,
+            "win_rate": 61.11,
+            "roi_2c": 30.52,
+            "unit_pnl": 549.35,
+            "avg_fill": 0.559,
+            "edge": 5.2
+          },
+          {
+            "key": "TENNIS",
+            "n": 84,
+            "win_rate": 51.19,
+            "roi_2c": -13.67,
+            "unit_pnl": -1148.18,
+            "avg_fill": 0.534,
+            "edge": -2.2
+          }
+        ]
+      },
+      "take": {
+        "n": 1,
+        "win_rate": 0.0,
+        "roi_2c": -100.0,
+        "unit_pnl": -100.0,
+        "first": "2026-04-29",
+        "last": "2026-04-29",
+        "by_sport": [],
+        "by_submarket": [],
+        "by_price": []
+      },
+      "clv": {
+        "n": 0,
+        "n_with_close": 0,
+        "coverage": 0.0
+      },
+      "tail_score": 32.5,
+      "tail_why": "screen only"
+    },
+    {
+      "username": "predictionlegend",
+      "wallet": "0x3eb095d871501a1d7a3cb086a22d174b52356a68",
+      "bucket": "watch",
+      "joinable": false,
+      "reasons": [
+        "median=$18,320_unjoinable"
+      ],
+      "has_csv": true,
+      "notes": "Auto from Polydata month sports #14 PnL/vol=30.3%. Unique book + take-rule required before live.",
+      "unique": {
+        "roi": 11.43,
+        "win_rate": 40.62,
+        "median_stake": 20032.27,
+        "closed": 0,
+        "events": 11,
+        "last_30d_n": 12,
+        "last_30d_roi": 63.53,
+        "last_event_date": "2026-08-17",
+        "recency": "HOT",
+        "last_30d": {
+          "n": 29,
+          "roi": 18.33,
+          "wr": 41.4,
+          "pnl": 146718.16
+        },
+        "outsized": {
+          "n": 6,
+          "win_rate": 83.3,
+          "roi": 45.43,
+          "pnl": 220096.6,
+          "median": 52156.45,
+          "mean": 80737.07
+        },
+        "outsized_30d": {
+          "n": 6,
+          "win_rate": 83.3,
+          "roi": 45.43,
+          "pnl": 220096.6,
+          "median": 52156.45,
+          "mean": 80737.07
+        },
+        "dashboard_pnl": 111249.19
+      },
+      "mix": {
+        "n": 32,
+        "politics_frac": 0.0,
+        "futures_frac": 0.0,
+        "sports_frac": 1.0,
+        "top": [
+          {
+            "sport": "SOCCER (LaLiga)",
+            "n": 14
+          },
+          {
+            "sport": "OTHER",
+            "n": 10
+          },
+          {
+            "sport": "SOCCER (Other)",
+            "n": 4
+          },
+          {
+            "sport": "SOCCER (EPL)",
+            "n": 2
+          },
+          {
+            "sport": "SOCCER (UCL)",
+            "n": 2
+          }
+        ]
+      },
+      "how_they_win": {
+        "n": 29,
+        "wr": 41.38,
+        "median_cost": 18275.47,
+        "by_sport": [
+          {
+            "key": "SOCCER (LaLiga)",
+            "n": 12,
+            "win_rate": 33.33,
+            "roi_2c": -36.37,
+            "unit_pnl": -436.48,
+            "avg_fill": 0.505,
+            "edge": -17.1
+          },
+          {
+            "key": "OTHER",
+            "n": 10,
+            "win_rate": 20.0,
+            "roi_2c": -61.91,
+            "unit_pnl": -619.09,
+            "avg_fill": 0.52,
+            "edge": -32.0
+          }
+        ],
+        "by_submarket": [
+          {
+            "key": "Moneyline",
+            "n": 15,
+            "win_rate": 46.67,
+            "roi_2c": -12.35,
+            "unit_pnl": -185.32,
+            "avg_fill": 0.505,
+            "edge": -3.8
+          },
+          {
+            "key": "Total",
+            "n": 10,
+            "win_rate": 50.0,
+            "roi_2c": -3.6,
+            "unit_pnl": -36.0,
+            "avg_fill": 0.511,
+            "edge": -1.1
+          }
+        ],
+        "by_price": [
+          {
+            "key": "coin_45_55",
+            "n": 15,
+            "win_rate": 33.33,
+            "roi_2c": -33.73,
+            "unit_pnl": -505.95,
+            "avg_fill": 0.525,
+            "edge": -19.1
+          },
+          {
+            "key": "fav_55_70",
+            "n": 7,
+            "win_rate": 71.43,
+            "roi_2c": 19.45,
+            "unit_pnl": 136.17,
+            "avg_fill": 0.603,
+            "edge": 11.1
+          },
+          {
+            "key": "dog_30_45",
+            "n": 5,
+            "win_rate": 40.0,
+            "roi_2c": -10.31,
+            "unit_pnl": -51.53,
+            "avg_fill": 0.428,
+            "edge": -2.8
+          }
+        ],
+        "outsized_2x": {
+          "n": 6,
+          "wins": 5,
+          "losses": 1,
+          "win_rate": 83.33,
+          "unit_pnl": 355.01,
+          "expectancy": 59.17,
+          "roi": 59.17,
+          "profit_factor": 4.55,
+          "sharpe_daily_roi": 0.0,
+          "max_dd": -100.0,
+          "avg_grade": 0.0,
+          "avg_q": 0.0,
+          "avg_fill": 0.54,
+          "avg_vwap": 0.52,
+          "implied_wr": 54.0,
+          "edge": 29.3,
+          "avg_traders": 1.0,
+          "avg_rel": 1.0,
+          "calmar": 3.55,
+          "days": 4,
+          "trades_per_day": 1.5,
+          "first": "2026-08-15",
+          "last": "2026-08-23"
+        },
+        "under_2x": {
+          "n": 23,
+          "wins": 7,
+          "losses": 16,
+          "win_rate": 30.43,
+          "unit_pnl": -976.33,
+          "expectancy": -42.45,
+          "roi": -42.45,
+          "profit_factor": 0.39,
+          "sharpe_daily_roi": 0.0,
+          "max_dd": -971.56,
+          "avg_grade": 0.0,
+          "avg_q": 0.0,
+          "avg_fill": 0.505,
+          "avg_vwap": 0.485,
+          "implied_wr": 50.5,
+          "edge": -20.0,
+          "avg_traders": 1.0,
+          "avg_rel": 1.0,
+          "calmar": -1.0,
+          "days": 8,
+          "trades_per_day": 2.88,
+          "first": "2026-08-11",
+          "last": "2026-08-23"
+        },
+        "top_edge": [
+          {
+            "key": "SOCCER (LaLiga)",
+            "n": 12,
+            "win_rate": 33.33,
+            "roi_2c": -36.37,
+            "unit_pnl": -436.48,
+            "avg_fill": 0.505,
+            "edge": -17.1
+          }
+        ]
+      },
+      "take": {
+        "n": 1,
+        "win_rate": 0.0,
+        "roi_2c": -100.0,
+        "unit_pnl": -100.0,
+        "first": "2026-08-23",
+        "last": "2026-08-23",
+        "by_sport": [],
+        "by_submarket": [],
+        "by_price": []
+      },
+      "clv": {
+        "n": 0,
+        "n_with_close": 0,
+        "coverage": 0.0
+      },
+      "tail_score": 32.3,
+      "tail_why": "screen only"
     },
     {
       "username": "SDTrading",
@@ -1456,6 +1765,260 @@
         "coverage": 0.0
       },
       "tail_score": 30.0,
+      "tail_why": "screen only"
+    },
+    {
+      "username": "bigspending",
+      "wallet": "0x86dab59a8a6e7f9947282d2117aab3429b706428",
+      "bucket": "watch",
+      "joinable": false,
+      "reasons": [],
+      "has_csv": true,
+      "notes": "Unique +$166k / 33.9% ROI on 27 events / 19 closed. Thin S-Tier \u2014 watch, never auto-live.",
+      "unique": {
+        "roi": -3.35,
+        "win_rate": 52.0,
+        "median_stake": 8662.03,
+        "closed": 0,
+        "events": 30,
+        "last_30d_n": 30,
+        "last_30d_roi": 24.89,
+        "last_event_date": "2026-08-21",
+        "recency": "HOT",
+        "last_30d": {
+          "n": 49,
+          "roi": -2.75,
+          "wr": 53.1,
+          "pnl": -26878.33
+        },
+        "outsized": {
+          "n": 17,
+          "win_rate": 41.2,
+          "roi": -11.62,
+          "pnl": -88803.69,
+          "median": 32950.42,
+          "mean": 44966.0
+        },
+        "outsized_30d": {
+          "n": 17,
+          "win_rate": 41.2,
+          "roi": -11.62,
+          "pnl": -88803.69,
+          "median": 32950.42,
+          "mean": 44966.0
+        },
+        "dashboard_pnl": -32730.47
+      },
+      "mix": {
+        "n": 51,
+        "politics_frac": 0.0,
+        "futures_frac": 0.0,
+        "sports_frac": 1.0,
+        "top": [
+          {
+            "sport": "OTHER",
+            "n": 22
+          },
+          {
+            "sport": "SOCCER (Other)",
+            "n": 20
+          },
+          {
+            "sport": "SOCCER (UCL)",
+            "n": 9
+          }
+        ]
+      },
+      "how_they_win": {
+        "n": 49,
+        "wr": 53.06,
+        "median_cost": 10480.87,
+        "by_sport": [
+          {
+            "key": "OTHER",
+            "n": 22,
+            "win_rate": 68.18,
+            "roi_2c": 29.39,
+            "unit_pnl": 646.64,
+            "avg_fill": 0.531,
+            "edge": 15.1
+          },
+          {
+            "key": "SOCCER (Other)",
+            "n": 18,
+            "win_rate": 33.33,
+            "roi_2c": -35.88,
+            "unit_pnl": -645.76,
+            "avg_fill": 0.499,
+            "edge": -16.6
+          },
+          {
+            "key": "SOCCER (UCL)",
+            "n": 9,
+            "win_rate": 55.56,
+            "roi_2c": 12.0,
+            "unit_pnl": 108.0,
+            "avg_fill": 0.488,
+            "edge": 6.8
+          }
+        ],
+        "by_submarket": [
+          {
+            "key": "Moneyline",
+            "n": 37,
+            "win_rate": 54.05,
+            "roi_2c": 1.32,
+            "unit_pnl": 48.81,
+            "avg_fill": 0.519,
+            "edge": 2.2
+          },
+          {
+            "key": "Total",
+            "n": 10,
+            "win_rate": 40.0,
+            "roi_2c": -14.64,
+            "unit_pnl": -146.37,
+            "avg_fill": 0.486,
+            "edge": -8.6
+          }
+        ],
+        "by_price": [
+          {
+            "key": "dog_30_45",
+            "n": 19,
+            "win_rate": 47.37,
+            "roi_2c": 10.19,
+            "unit_pnl": 193.64,
+            "avg_fill": 0.431,
+            "edge": 4.3
+          },
+          {
+            "key": "coin_45_55",
+            "n": 17,
+            "win_rate": 29.41,
+            "roi_2c": -41.7,
+            "unit_pnl": -708.86,
+            "avg_fill": 0.515,
+            "edge": -22.1
+          },
+          {
+            "key": "fav_55_70",
+            "n": 12,
+            "win_rate": 91.67,
+            "roi_2c": 48.93,
+            "unit_pnl": 587.16,
+            "avg_fill": 0.616,
+            "edge": 30.1
+          }
+        ],
+        "outsized_2x": {
+          "n": 17,
+          "wins": 7,
+          "losses": 10,
+          "win_rate": 41.18,
+          "unit_pnl": -403.05,
+          "expectancy": -23.71,
+          "roi": -23.71,
+          "profit_factor": 0.597,
+          "sharpe_daily_roi": 0.0,
+          "max_dd": -660.19,
+          "avg_grade": 0.0,
+          "avg_q": 0.0,
+          "avg_fill": 0.503,
+          "avg_vwap": 0.483,
+          "implied_wr": 50.3,
+          "edge": -9.1,
+          "avg_traders": 1.0,
+          "avg_rel": 1.0,
+          "calmar": -0.61,
+          "days": 9,
+          "trades_per_day": 1.89,
+          "first": "2026-08-04",
+          "last": "2026-08-24"
+        },
+        "under_2x": {
+          "n": 32,
+          "wins": 19,
+          "losses": 13,
+          "win_rate": 59.38,
+          "unit_pnl": 511.93,
+          "expectancy": 16.0,
+          "roi": 16.0,
+          "profit_factor": 1.394,
+          "sharpe_daily_roi": 0.78,
+          "max_dd": -419.94,
+          "avg_grade": 0.0,
+          "avg_q": 0.0,
+          "avg_fill": 0.516,
+          "avg_vwap": 0.496,
+          "implied_wr": 51.6,
+          "edge": 7.8,
+          "avg_traders": 1.0,
+          "avg_rel": 1.0,
+          "calmar": 1.22,
+          "days": 13,
+          "trades_per_day": 2.46,
+          "first": "2026-08-04",
+          "last": "2026-08-24"
+        },
+        "top_edge": [
+          {
+            "key": "OTHER",
+            "n": 22,
+            "win_rate": 68.18,
+            "roi_2c": 29.39,
+            "unit_pnl": 646.64,
+            "avg_fill": 0.531,
+            "edge": 15.1
+          },
+          {
+            "key": "SOCCER (Other)",
+            "n": 18,
+            "win_rate": 33.33,
+            "roi_2c": -35.88,
+            "unit_pnl": -645.76,
+            "avg_fill": 0.499,
+            "edge": -16.6
+          }
+        ]
+      },
+      "take": {
+        "n": 4,
+        "win_rate": 25.0,
+        "roi_2c": -63.03,
+        "unit_pnl": -252.14,
+        "first": "2026-08-16",
+        "last": "2026-08-22",
+        "by_sport": [
+          {
+            "key": "OTHER",
+            "n": 4,
+            "win_rate": 25.0,
+            "roi_2c": -63.03,
+            "unit_pnl": -252.14,
+            "avg_fill": 0.506,
+            "edge": -25.6
+          }
+        ],
+        "by_submarket": [
+          {
+            "key": "Moneyline",
+            "n": 3,
+            "win_rate": 33.33,
+            "roi_2c": -50.71,
+            "unit_pnl": -152.14,
+            "avg_fill": 0.522,
+            "edge": -18.8
+          }
+        ],
+        "by_price": []
+      },
+      "clv": {
+        "n": 0,
+        "n_with_close": 0,
+        "coverage": 0.0
+      },
+      "tail_score": 29.3,
       "tail_why": "screen only"
     },
     {
@@ -1865,94 +2428,9 @@
         ]
       },
       "clv": {
-        "n": 21,
-        "n_with_close": 19,
-        "coverage": 0.905,
-        "avg_clv_cents": -1.84,
-        "expected_clv_roi": -4.92,
-        "realized_roi_2c": 16.57,
-        "sample": [
-          {
-            "end": "2026-04-12",
-            "title": "Will VfB Stuttgart win on 2026-04-12?",
-            "fill": 0.26,
-            "close": 0.285,
-            "clv_cents": 2.5,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": 0.295
-          },
-          {
-            "end": "2026-04-05",
-            "title": "Will FC Internazionale Milano win on 2026-04-05?",
-            "fill": 0.41,
-            "close": 0.415,
-            "clv_cents": 0.5,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": 0.415
-          },
-          {
-            "end": "2026-04-04",
-            "title": "Will FC Bayern M\u00fcnchen win on 2026-04-04?",
-            "fill": 0.375,
-            "close": 0.305,
-            "clv_cents": -7.02,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": 0.305
-          },
-          {
-            "end": "2026-04-03",
-            "title": "Will Paris Saint-Germain FC win on 2026-04-03?",
-            "fill": 0.26,
-            "close": 0.225,
-            "clv_cents": -3.5,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": 0.235
-          },
-          {
-            "end": "2026-03-22",
-            "title": "Will Real Madrid CF win on 2026-03-22?",
-            "fill": 0.527,
-            "close": 0.475,
-            "clv_cents": -5.21,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": 0.495
-          },
-          {
-            "end": "2026-03-22",
-            "title": "Will AS Roma win on 2026-03-22?",
-            "fill": 0.36,
-            "close": 0.355,
-            "clv_cents": -0.5,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": 0.35
-          },
-          {
-            "end": "2026-03-22",
-            "title": "Will Stade Rennais FC 1901 win on 2026-03-22?",
-            "fill": 0.266,
-            "close": 0.275,
-            "clv_cents": 0.86,
-            "won": true,
-            "pnl": 275.35,
-            "clob_ask": 0.275
-          },
-          {
-            "end": "2026-03-22",
-            "title": "Will Club Atl\u00e9tico de Madrid win on 2026-03-22?",
-            "fill": 0.73,
-            "close": 0.755,
-            "clv_cents": 2.5,
-            "won": true,
-            "pnl": 36.99,
-            "clob_ask": 0.745
-          }
-        ]
+        "n": 0,
+        "n_with_close": 0,
+        "coverage": 0.0
       },
       "tail_score": 20.0,
       "tail_why": "too quiet"
@@ -2387,94 +2865,9 @@
         ]
       },
       "clv": {
-        "n": 80,
-        "n_with_close": 4,
-        "coverage": 0.05,
-        "avg_clv_cents": 0.42,
-        "expected_clv_roi": 0.98,
-        "realized_roi_2c": 10.78,
-        "sample": [
-          {
-            "end": "2026-03-18",
-            "title": "LoL: Bilibili Gaming vs G2 Esports (BO5) - First Stand Group A",
-            "fill": 0.2,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-03-17",
-            "title": "BNP Paribas Open: Novak Djokovic vs Jack Draper",
-            "fill": 0.595,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-03-17",
-            "title": "LoL: LYON vs LOUD (BO5) - First Stand Group B",
-            "fill": 0.778,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 28.59,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-03-16",
-            "title": "Valorant: Nongshim RedForce vs Paper Rex (BO5) - VCT Masters Santiago ",
-            "fill": 0.551,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-03-16",
-            "title": "LoL: G2 Esports vs Team Secret Whales (BO5) - First Stand Group A",
-            "fill": 0.826,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 21.12,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-03-15",
-            "title": "Counter-Strike: FUT Esports vs Astralis (BO3) - ESL Pro League Playoff",
-            "fill": 0.47,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 112.77,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-03-14",
-            "title": "Valorant: Paper Rex vs G2 Esports (BO3) - VCT Masters Santiago Playoff",
-            "fill": 0.509,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-03-12",
-            "title": "Will VfB Stuttgart win on 2026-03-12?",
-            "fill": 0.49,
-            "close": 0.525,
-            "clv_cents": 3.5,
-            "won": true,
-            "pnl": 104.1,
-            "clob_ask": 0.525
-          }
-        ]
+        "n": 0,
+        "n_with_close": 0,
+        "coverage": 0.0
       },
       "tail_score": 20.0,
       "tail_why": "too quiet"
@@ -3367,94 +3760,9 @@
         ]
       },
       "clv": {
-        "n": 80,
-        "n_with_close": 62,
-        "coverage": 0.775,
-        "avg_clv_cents": -0.22,
-        "expected_clv_roi": 6.57,
-        "realized_roi_2c": 23.9,
-        "sample": [
-          {
-            "end": "2026-04-13",
-            "title": "Will CD Tondela vs. Gil Vicente FC end in a draw?",
-            "fill": 0.871,
-            "close": 0.3,
-            "clv_cents": -57.05,
-            "won": true,
-            "pnl": 14.88,
-            "clob_ask": 0.3
-          },
-          {
-            "end": "2026-04-12",
-            "title": "Will SC Braga win on 2026-04-12?",
-            "fill": 0.195,
-            "close": 0.315,
-            "clv_cents": 11.95,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": 0.305
-          },
-          {
-            "end": "2026-04-12",
-            "title": "Will Shenzhen Xinpengcheng FC win on 2026-04-12?",
-            "fill": 0.47,
-            "close": 0.35,
-            "clv_cents": -11.97,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": 0.34
-          },
-          {
-            "end": "2026-04-11",
-            "title": "Will RB Leipzig vs. Borussia M\u00f6nchengladbach end in a draw?",
-            "fill": 0.55,
-            "close": 0.805,
-            "clv_cents": 25.5,
-            "won": true,
-            "pnl": 81.82,
-            "clob_ask": 0.805
-          },
-          {
-            "end": "2026-04-11",
-            "title": "Will Udinese Calcio win on 2026-04-11?",
-            "fill": 0.34,
-            "close": 0.885,
-            "clv_cents": 54.5,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": 0.885
-          },
-          {
-            "end": "2026-04-05",
-            "title": "Will Fenerbah\u00e7e SK win on 2026-04-05?",
-            "fill": 0.49,
-            "close": 0.525,
-            "clv_cents": 3.54,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": 0.525
-          },
-          {
-            "end": "2026-04-05",
-            "title": "Will Eintracht Frankfurt win on 2026-04-05?",
-            "fill": 0.5,
-            "close": 0.475,
-            "clv_cents": -2.5,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": 0.475
-          },
-          {
-            "end": "2026-04-05",
-            "title": "Eintracht Braunschweig vs. 1. FC N\u00fcrnberg: O/U 2.5",
-            "fill": 0.55,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          }
-        ]
+        "n": 0,
+        "n_with_close": 0,
+        "coverage": 0.0
       },
       "tail_score": 20.0,
       "tail_why": "too quiet"
@@ -4489,301 +4797,671 @@
         ]
       },
       "clv": {
-        "n": 6,
+        "n": 0,
         "n_with_close": 0,
-        "coverage": 0.0,
-        "avg_clv_cents": null,
-        "expected_clv_roi": null,
-        "realized_roi_2c": 0.4,
-        "sample": [
+        "coverage": 0.0
+      },
+      "tail_score": 20.0,
+      "tail_why": "too quiet"
+    },
+    {
+      "username": "S-Works",
+      "wallet": "0xee00ba338c59557141789b127927a55f5cc5cea1",
+      "bucket": "watch",
+      "joinable": true,
+      "reasons": [],
+      "has_csv": true,
+      "notes": "",
+      "unique": {
+        "roi": -2.27,
+        "win_rate": 67.69,
+        "median_stake": 1206.5,
+        "closed": 9506,
+        "events": 3833,
+        "last_30d_n": 106,
+        "last_30d_roi": -1.47,
+        "last_event_date": "2026-08-15",
+        "recency": "HOT",
+        "last_30d": {
+          "n": 0,
+          "roi": 0.0,
+          "wr": 0.0,
+          "pnl": 0.0
+        },
+        "outsized": {
+          "n": 2383,
+          "win_rate": 76.9,
+          "roi": 2.46,
+          "pnl": 2399539.47,
+          "median": 18271.84,
+          "mean": 40975.9
+        },
+        "outsized_30d": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi": 0.0,
+          "pnl": 0.0,
+          "median": 0.0,
+          "mean": 0.0
+        },
+        "dashboard_pnl": -3369975.64
+      },
+      "mix": {
+        "n": 9519,
+        "politics_frac": 0.002,
+        "futures_frac": 0.142,
+        "sports_frac": 0.856,
+        "top": [
           {
-            "end": "2025-09-17",
-            "title": "Astros vs. Blue Jays",
-            "fill": 0.42,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 138.1,
-            "clob_ask": null
+            "sport": "NBA",
+            "n": 2011
           },
           {
-            "end": "2025-09-17",
-            "title": "Rays vs. White Sox",
-            "fill": 0.47,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 112.77,
-            "clob_ask": null
+            "sport": "OTHER",
+            "n": 1954
           },
           {
-            "end": "2025-08-22",
-            "title": "Mariners vs. Mets",
-            "fill": 0.56,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
+            "sport": "NHL",
+            "n": 1015
           },
           {
-            "end": "2025-08-22",
-            "title": "Marlins vs. Red Sox",
-            "fill": 0.41,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
+            "sport": "SOCCER (EPL)",
+            "n": 898
           },
           {
-            "end": "2025-08-22",
-            "title": "Phillies vs. Nationals",
-            "fill": 0.66,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 51.52,
-            "clob_ask": null
+            "sport": "ESPORTS",
+            "n": 621
           },
           {
-            "end": "2025-08-20",
-            "title": "Phillies vs. Reds",
-            "fill": 0.54,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
+            "sport": "TENNIS",
+            "n": 603
           }
         ]
       },
+      "how_they_win": {
+        "n": 6419,
+        "wr": 63.84,
+        "median_cost": 2228.14,
+        "by_sport": [
+          {
+            "key": "NBA",
+            "n": 1759,
+            "win_rate": 62.99,
+            "roi_2c": -16.03,
+            "unit_pnl": -28197.79,
+            "avg_fill": 0.663,
+            "edge": -3.3
+          },
+          {
+            "key": "OTHER",
+            "n": 1026,
+            "win_rate": 63.45,
+            "roi_2c": -13.53,
+            "unit_pnl": -13884.46,
+            "avg_fill": 0.647,
+            "edge": -1.3
+          },
+          {
+            "key": "NHL",
+            "n": 848,
+            "win_rate": 63.09,
+            "roi_2c": -9.17,
+            "unit_pnl": -7773.94,
+            "avg_fill": 0.647,
+            "edge": -1.6
+          },
+          {
+            "key": "MLB",
+            "n": 518,
+            "win_rate": 71.81,
+            "roi_2c": 2.79,
+            "unit_pnl": 1444.51,
+            "avg_fill": 0.715,
+            "edge": 0.3
+          },
+          {
+            "key": "ESPORTS",
+            "n": 500,
+            "win_rate": 62.0,
+            "roi_2c": -12.13,
+            "unit_pnl": -6064.98,
+            "avg_fill": 0.631,
+            "edge": -1.1
+          },
+          {
+            "key": "NFL",
+            "n": 395,
+            "win_rate": 59.24,
+            "roi_2c": -4.49,
+            "unit_pnl": -1773.03,
+            "avg_fill": 0.596,
+            "edge": -0.4
+          },
+          {
+            "key": "SOCCER (EPL)",
+            "n": 345,
+            "win_rate": 70.43,
+            "roi_2c": 1.36,
+            "unit_pnl": 470.44,
+            "avg_fill": 0.659,
+            "edge": 4.6
+          },
+          {
+            "key": "TENNIS",
+            "n": 291,
+            "win_rate": 61.51,
+            "roi_2c": -17.11,
+            "unit_pnl": -4978.47,
+            "avg_fill": 0.626,
+            "edge": -1.1
+          }
+        ],
+        "by_submarket": [
+          {
+            "key": "Moneyline",
+            "n": 5101,
+            "win_rate": 65.63,
+            "roi_2c": -9.2,
+            "unit_pnl": -46923.1,
+            "avg_fill": 0.671,
+            "edge": -1.5
+          },
+          {
+            "key": "Futures",
+            "n": 437,
+            "win_rate": 39.36,
+            "roi_2c": -43.63,
+            "unit_pnl": -19067.83,
+            "avg_fill": 0.412,
+            "edge": -1.8
+          },
+          {
+            "key": "Map / Game",
+            "n": 214,
+            "win_rate": 61.68,
+            "roi_2c": -15.23,
+            "unit_pnl": -3259.14,
+            "avg_fill": 0.652,
+            "edge": -3.6
+          },
+          {
+            "key": "Spread",
+            "n": 182,
+            "win_rate": 64.29,
+            "roi_2c": 10.26,
+            "unit_pnl": 1866.89,
+            "avg_fill": 0.633,
+            "edge": 1.0
+          },
+          {
+            "key": "Total",
+            "n": 178,
+            "win_rate": 70.79,
+            "roi_2c": -1.72,
+            "unit_pnl": -306.47,
+            "avg_fill": 0.703,
+            "edge": 0.5
+          },
+          {
+            "key": "Draw",
+            "n": 175,
+            "win_rate": 74.86,
+            "roi_2c": 0.95,
+            "unit_pnl": 166.73,
+            "avg_fill": 0.718,
+            "edge": 3.1
+          },
+          {
+            "key": "Player Prop",
+            "n": 132,
+            "win_rate": 54.55,
+            "roi_2c": -8.44,
+            "unit_pnl": -1114.47,
+            "avg_fill": 0.577,
+            "edge": -3.1
+          }
+        ],
+        "by_price": [
+          {
+            "key": "chalk_70plus",
+            "n": 2982,
+            "win_rate": 95.04,
+            "roi_2c": 2.52,
+            "unit_pnl": 7499.79,
+            "avg_fill": 0.928,
+            "edge": 2.2
+          },
+          {
+            "key": "dog_<30c",
+            "n": 1029,
+            "win_rate": 9.23,
+            "roi_2c": -54.99,
+            "unit_pnl": -56585.66,
+            "avg_fill": 0.158,
+            "edge": -6.5
+          },
+          {
+            "key": "fav_55_70",
+            "n": 834,
+            "win_rate": 63.67,
+            "roi_2c": -0.78,
+            "unit_pnl": -651.45,
+            "avg_fill": 0.641,
+            "edge": -0.4
+          },
+          {
+            "key": "dog_30_45",
+            "n": 789,
+            "win_rate": 34.47,
+            "roi_2c": -14.2,
+            "unit_pnl": -11203.77,
+            "avg_fill": 0.4,
+            "edge": -5.6
+          },
+          {
+            "key": "coin_45_55",
+            "n": 785,
+            "win_rate": 46.62,
+            "roi_2c": -9.8,
+            "unit_pnl": -7696.29,
+            "avg_fill": 0.516,
+            "edge": -5.0
+          }
+        ],
+        "outsized_2x": {
+          "n": 2528,
+          "wins": 1933,
+          "losses": 595,
+          "win_rate": 76.46,
+          "unit_pnl": -7866.6,
+          "expectancy": -3.11,
+          "roi": -3.11,
+          "profit_factor": 0.868,
+          "sharpe_daily_roi": -1.68,
+          "max_dd": -8924.24,
+          "avg_grade": 0.0,
+          "avg_q": 0.0,
+          "avg_fill": 0.765,
+          "avg_vwap": 0.753,
+          "implied_wr": 76.5,
+          "edge": -0.1,
+          "avg_traders": 1.0,
+          "avg_rel": 1.0,
+          "calmar": -0.88,
+          "days": 473,
+          "trades_per_day": 5.34,
+          "first": "2024-09-04",
+          "last": "2026-05-28"
+        },
+        "under_2x": {
+          "n": 3891,
+          "wins": 2165,
+          "losses": 1726,
+          "win_rate": 55.64,
+          "unit_pnl": -60770.78,
+          "expectancy": -15.62,
+          "roi": -15.62,
+          "profit_factor": 0.648,
+          "sharpe_daily_roi": -1.89,
+          "max_dd": -60932.09,
+          "avg_grade": 0.0,
+          "avg_q": 0.0,
+          "avg_fill": 0.579,
+          "avg_vwap": 0.562,
+          "implied_wr": 57.9,
+          "edge": -2.2,
+          "avg_traders": 1.0,
+          "avg_rel": 1.0,
+          "calmar": -1.0,
+          "days": 512,
+          "trades_per_day": 7.6,
+          "first": "2024-08-16",
+          "last": "2026-05-31"
+        },
+        "top_edge": [
+          {
+            "key": "MLB",
+            "n": 518,
+            "win_rate": 71.81,
+            "roi_2c": 2.79,
+            "unit_pnl": 1444.51,
+            "avg_fill": 0.715,
+            "edge": 0.3
+          },
+          {
+            "key": "SOCCER (EPL)",
+            "n": 345,
+            "win_rate": 70.43,
+            "roi_2c": 1.36,
+            "unit_pnl": 470.44,
+            "avg_fill": 0.659,
+            "edge": 4.6
+          },
+          {
+            "key": "SOCCER (Other)",
+            "n": 283,
+            "win_rate": 71.38,
+            "roi_2c": -1.04,
+            "unit_pnl": -293.92,
+            "avg_fill": 0.706,
+            "edge": 0.8
+          }
+        ]
+      },
+      "take": {
+        "n": 0,
+        "win_rate": 0.0,
+        "roi_2c": 0.0,
+        "by_sport": [],
+        "by_submarket": [],
+        "by_price": []
+      },
+      "clv": {
+        "n": 0,
+        "n_with_close": 0,
+        "coverage": 0.0
+      },
       "tail_score": 20.0,
       "tail_why": "too quiet"
     },
     {
-      "username": "SineNooneEI",
-      "wallet": "0x38337de21ff0bb0a11a40761507d51e318d633d1",
+      "username": "bloodmaster",
+      "wallet": "0x58f8f1138be2192696378629fc9aa23c7910dc70",
       "bucket": "watch",
       "joinable": false,
       "reasons": [],
-      "has_csv": false,
-      "notes": "Esports specialist (tennis secondary). Unique +$793k / 5.4% ROI, median $6.8k joinable, last 30d +11%. Take-rule n=14 ROI \u221218% \u2014 do not live.",
+      "has_csv": true,
+      "notes": "",
       "unique": {
-        "roi": 5.01,
-        "win_rate": 53.75,
-        "median_stake": 6832.18,
-        "closed": 0,
-        "events": 1063,
-        "last_30d_n": 196,
-        "last_30d_roi": 7.43,
-        "last_event_date": "2026-08-21",
-        "recency": "HOT"
+        "roi": 4.32,
+        "win_rate": 88.73,
+        "median_stake": 597.86,
+        "closed": 2735,
+        "events": 1193,
+        "last_30d_n": 305,
+        "last_30d_roi": -0.48,
+        "last_event_date": "2026-08-18",
+        "recency": "HOT",
+        "last_30d": {
+          "n": 0,
+          "roi": 0.0,
+          "wr": 0.0,
+          "pnl": 0.0
+        },
+        "outsized": {
+          "n": 667,
+          "win_rate": 89.2,
+          "roi": 1.6,
+          "pnl": 93230.22,
+          "median": 4825.17,
+          "mean": 8743.76
+        },
+        "outsized_30d": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi": 0.0,
+          "pnl": 0.0,
+          "median": 0.0,
+          "mean": 0.0
+        },
+        "dashboard_pnl": 560478.9
       },
-      "mix": {},
+      "mix": {
+        "n": 2736,
+        "politics_frac": 0.0,
+        "futures_frac": 0.042,
+        "sports_frac": 0.958,
+        "top": [
+          {
+            "sport": "ESPORTS",
+            "n": 2283
+          },
+          {
+            "sport": "OTHER",
+            "n": 415
+          },
+          {
+            "sport": "SOCCER (Other)",
+            "n": 14
+          },
+          {
+            "sport": "TENNIS",
+            "n": 10
+          },
+          {
+            "sport": "NBA",
+            "n": 7
+          },
+          {
+            "sport": "NFL",
+            "n": 3
+          }
+        ]
+      },
       "how_they_win": {
-        "n": 0
-      },
-      "take": {
-        "n": 0,
-        "win_rate": 0.0,
-        "roi_2c": 0.0,
-        "by_sport": [],
-        "by_submarket": [],
-        "by_price": []
-      },
-      "clv": {
-        "n": 0,
-        "n_with_close": 0,
-        "coverage": 0.0
-      },
-      "tail_score": 20.0,
-      "tail_why": "too quiet"
-    },
-    {
-      "username": "bigspending",
-      "wallet": "0x86dab59a8a6e7f9947282d2117aab3429b706428",
-      "bucket": "watch",
-      "joinable": false,
-      "reasons": [],
-      "has_csv": false,
-      "notes": "Unique +$166k / 33.9% ROI on 27 events / 19 closed. Thin S-Tier \u2014 watch, never auto-live.",
-      "unique": {
-        "roi": 24.89,
-        "win_rate": 64.52,
-        "median_stake": 7426.17,
-        "closed": 0,
-        "events": 30,
-        "last_30d_n": 30,
-        "last_30d_roi": 24.89,
-        "last_event_date": "2026-08-21",
-        "recency": "HOT"
-      },
-      "mix": {},
-      "how_they_win": {
-        "n": 0
-      },
-      "take": {
-        "n": 0,
-        "win_rate": 0.0,
-        "roi_2c": 0.0,
-        "by_sport": [],
-        "by_submarket": [],
-        "by_price": []
-      },
-      "clv": {
-        "n": 0,
-        "n_with_close": 0,
-        "coverage": 0.0
-      },
-      "tail_score": 20.0,
-      "tail_why": "too quiet"
-    },
-    {
-      "username": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
-      "wallet": "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87",
-      "bucket": "watch",
-      "joinable": false,
-      "reasons": [
-        "median=$39,638_unjoinable"
-      ],
-      "has_csv": false,
-      "notes": "B-Tier tennis/soccer. Unique +$1.11M / 12.5% ROI, last 30d +$612k / 22%. Median $40k unjoinable \u2014 watch whale, not $100 copy.",
-      "unique": {
-        "roi": 12.47,
-        "win_rate": 55.1,
-        "median_stake": 39637.5,
-        "closed": 0,
-        "events": 98,
-        "last_30d_n": 25,
-        "last_30d_roi": 33.2,
-        "last_event_date": "2026-08-22",
-        "recency": "HOT"
-      },
-      "mix": {},
-      "how_they_win": {
-        "n": 0
-      },
-      "take": {
-        "n": 0,
-        "win_rate": 0.0,
-        "roi_2c": 0.0,
-        "by_sport": [],
-        "by_submarket": [],
-        "by_price": []
-      },
-      "clv": {
-        "n": 0,
-        "n_with_close": 0,
-        "coverage": 0.0
-      },
-      "tail_score": 20.0,
-      "tail_why": "too quiet"
-    },
-    {
-      "username": "HVAB",
-      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
-      "bucket": "watch",
-      "joinable": false,
-      "reasons": [],
-      "has_csv": false,
-      "notes": "Tennis unique +$281k / 10.5% ROI, 386 events, WR 82.0%, median $896. Take-rule n=27 +9.8% after 2\u00a2 \u2014 edge is real but WR is outside the 48\u201375 copy band. Watch specialist, not $100 live.",
-      "unique": {
-        "roi": 10.31,
-        "win_rate": 81.84,
-        "median_stake": 896.4,
-        "closed": 0,
-        "events": 394,
-        "last_30d_n": 175,
-        "last_30d_roi": 14.44,
-        "last_event_date": "2026-08-21",
-        "recency": "HOT"
-      },
-      "mix": {},
-      "how_they_win": {
-        "n": 0
-      },
-      "take": {
-        "n": 0,
-        "win_rate": 0.0,
-        "roi_2c": 0.0,
-        "by_sport": [],
-        "by_submarket": [],
-        "by_price": []
-      },
-      "clv": {
-        "n": 0,
-        "n_with_close": 0,
-        "coverage": 0.0
-      },
-      "tail_score": 20.0,
-      "tail_why": "too quiet"
-    },
-    {
-      "username": "theowalcott",
-      "wallet": "0x7ad71d79a3bb90d0a87a06500fa0fe11663842aa",
-      "bucket": "watch",
-      "joinable": false,
-      "reasons": [
-        "median=$24,555_unjoinable"
-      ],
-      "has_csv": false,
-      "notes": "Soccer. Unique +$336k / 14% ROI on 65 markets, median $27k unjoinable. Take n=5. Watch whale, not live.",
-      "unique": {
-        "roi": -0.71,
-        "win_rate": 56.47,
-        "median_stake": 24554.96,
-        "closed": 0,
-        "events": 73,
-        "last_30d_n": 71,
-        "last_30d_roi": 0.59,
-        "last_event_date": "2026-08-20",
-        "recency": "HOT"
-      },
-      "mix": {},
-      "how_they_win": {
-        "n": 0
-      },
-      "take": {
-        "n": 0,
-        "win_rate": 0.0,
-        "roi_2c": 0.0,
-        "by_sport": [],
-        "by_submarket": [],
-        "by_price": []
-      },
-      "clv": {
-        "n": 0,
-        "n_with_close": 0,
-        "coverage": 0.0
-      },
-      "tail_score": 20.0,
-      "tail_why": "too quiet"
-    },
-    {
-      "username": "Sassy-Bucket",
-      "wallet": "0x4bff30af91642dc7d2b19a8664378fe55c45fc26",
-      "bucket": "watch",
-      "joinable": false,
-      "reasons": [
-        "median=$42,250_unjoinable"
-      ],
-      "has_csv": false,
-      "notes": "PD month sports #3. Unique lifetime \u2212$3.53M / \u22127.6% ROI, median $43k. Last 30d +$1.01M / 16% but outsized lifetime \u22126% and take-rule n=0. Watch whale \u2014 not $100 copy.",
-      "unique": {
-        "roi": -7.83,
-        "win_rate": 46.5,
-        "median_stake": 42249.78,
-        "closed": 0,
-        "events": 532,
-        "last_30d_n": 124,
-        "last_30d_roi": 11.2,
-        "last_event_date": "2026-08-21",
-        "recency": "HOT"
-      },
-      "mix": {},
-      "how_they_win": {
-        "n": 0
+        "n": 2153,
+        "wr": 91.73,
+        "median_cost": 730.19,
+        "by_sport": [
+          {
+            "key": "ESPORTS",
+            "n": 1814,
+            "win_rate": 91.51,
+            "roi_2c": 1.02,
+            "unit_pnl": 1852.13,
+            "avg_fill": 0.901,
+            "edge": 1.4
+          },
+          {
+            "key": "OTHER",
+            "n": 303,
+            "win_rate": 93.73,
+            "roi_2c": -0.32,
+            "unit_pnl": -95.8,
+            "avg_fill": 0.935,
+            "edge": 0.2
+          },
+          {
+            "key": "SOCCER (Other)",
+            "n": 13,
+            "win_rate": 92.31,
+            "roi_2c": 1.74,
+            "unit_pnl": 22.57,
+            "avg_fill": 0.896,
+            "edge": 2.7
+          },
+          {
+            "key": "TENNIS",
+            "n": 9,
+            "win_rate": 100.0,
+            "roi_2c": 2.04,
+            "unit_pnl": 18.37,
+            "avg_fill": 0.98,
+            "edge": 2.0
+          },
+          {
+            "key": "NBA",
+            "n": 7,
+            "win_rate": 42.86,
+            "roi_2c": -34.19,
+            "unit_pnl": -239.31,
+            "avg_fill": 0.536,
+            "edge": -10.7
+          }
+        ],
+        "by_submarket": [
+          {
+            "key": "Total",
+            "n": 662,
+            "win_rate": 97.28,
+            "roi_2c": 0.81,
+            "unit_pnl": 534.49,
+            "avg_fill": 0.961,
+            "edge": 1.1
+          },
+          {
+            "key": "Map / Game",
+            "n": 650,
+            "win_rate": 91.54,
+            "roi_2c": -0.32,
+            "unit_pnl": -207.37,
+            "avg_fill": 0.911,
+            "edge": 0.5
+          },
+          {
+            "key": "Moneyline",
+            "n": 619,
+            "win_rate": 84.98,
+            "roi_2c": 2.75,
+            "unit_pnl": 1700.58,
+            "avg_fill": 0.826,
+            "edge": 2.4
+          },
+          {
+            "key": "Spread",
+            "n": 209,
+            "win_rate": 95.22,
+            "roi_2c": 0.05,
+            "unit_pnl": 10.94,
+            "avg_fill": 0.944,
+            "edge": 0.8
+          },
+          {
+            "key": "Futures",
+            "n": 11,
+            "win_rate": 81.82,
+            "roi_2c": -10.39,
+            "unit_pnl": -114.25,
+            "avg_fill": 0.774,
+            "edge": 4.5
+          }
+        ],
+        "by_price": [
+          {
+            "key": "chalk_70plus",
+            "n": 1956,
+            "win_rate": 96.32,
+            "roi_2c": 1.56,
+            "unit_pnl": 3056.81,
+            "avg_fill": 0.948,
+            "edge": 1.5
+          },
+          {
+            "key": "fav_55_70",
+            "n": 81,
+            "win_rate": 64.2,
+            "roi_2c": -2.07,
+            "unit_pnl": -167.27,
+            "avg_fill": 0.656,
+            "edge": -1.4
+          },
+          {
+            "key": "dog_<30c",
+            "n": 55,
+            "win_rate": 20.0,
+            "roi_2c": -17.9,
+            "unit_pnl": -984.74,
+            "avg_fill": 0.223,
+            "edge": -2.3
+          },
+          {
+            "key": "dog_30_45",
+            "n": 34,
+            "win_rate": 35.29,
+            "roi_2c": -10.74,
+            "unit_pnl": -365.22,
+            "avg_fill": 0.396,
+            "edge": -4.3
+          },
+          {
+            "key": "coin_45_55",
+            "n": 27,
+            "win_rate": 59.26,
+            "roi_2c": 14.4,
+            "unit_pnl": 388.88,
+            "avg_fill": 0.522,
+            "edge": 7.0
+          }
+        ],
+        "outsized_2x": {
+          "n": 711,
+          "wins": 635,
+          "losses": 76,
+          "win_rate": 89.31,
+          "unit_pnl": 682.49,
+          "expectancy": 0.96,
+          "roi": 0.96,
+          "profit_factor": 1.09,
+          "sharpe_daily_roi": 2.29,
+          "max_dd": -1293.54,
+          "avg_grade": 0.0,
+          "avg_q": 0.0,
+          "avg_fill": 0.885,
+          "avg_vwap": 0.872,
+          "implied_wr": 88.5,
+          "edge": 0.8,
+          "avg_traders": 1.0,
+          "avg_rel": 1.0,
+          "calmar": 0.53,
+          "days": 151,
+          "trades_per_day": 4.71,
+          "first": "2025-07-11",
+          "last": "2026-04-16"
+        },
+        "under_2x": {
+          "n": 1442,
+          "wins": 1340,
+          "losses": 102,
+          "win_rate": 92.93,
+          "unit_pnl": 1245.98,
+          "expectancy": 0.86,
+          "roi": 0.86,
+          "profit_factor": 1.122,
+          "sharpe_daily_roi": -1.86,
+          "max_dd": -1005.59,
+          "avg_grade": 0.0,
+          "avg_q": 0.0,
+          "avg_fill": 0.914,
+          "avg_vwap": 0.91,
+          "implied_wr": 91.4,
+          "edge": 1.5,
+          "avg_traders": 1.0,
+          "avg_rel": 1.0,
+          "calmar": 1.24,
+          "days": 140,
+          "trades_per_day": 10.3,
+          "first": "2025-07-12",
+          "last": "2026-04-14"
+        },
+        "top_edge": [
+          {
+            "key": "SOCCER (Other)",
+            "n": 13,
+            "win_rate": 92.31,
+            "roi_2c": 1.74,
+            "unit_pnl": 22.57,
+            "avg_fill": 0.896,
+            "edge": 2.7
+          },
+          {
+            "key": "ESPORTS",
+            "n": 1814,
+            "win_rate": 91.51,
+            "roi_2c": 1.02,
+            "unit_pnl": 1852.13,
+            "avg_fill": 0.901,
+            "edge": 1.4
+          },
+          {
+            "key": "OTHER",
+            "n": 303,
+            "win_rate": 93.73,
+            "roi_2c": -0.32,
+            "unit_pnl": -95.8,
+            "avg_fill": 0.935,
+            "edge": 0.2
+          }
+        ]
       },
       "take": {
         "n": 0,
@@ -5180,94 +5858,9 @@
         ]
       },
       "clv": {
-        "n": 22,
+        "n": 0,
         "n_with_close": 0,
-        "coverage": 0.0,
-        "avg_clv_cents": null,
-        "expected_clv_roi": null,
-        "realized_roi_2c": -23.24,
-        "sample": [
-          {
-            "end": "2025-02-13",
-            "title": "Cavaliers vs. Pistons",
-            "fill": 0.36,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2025-02-12",
-            "title": "Rockets vs. Nets",
-            "fill": 0.816,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2025-02-11",
-            "title": "Wizards vs. Hornets",
-            "fill": 0.38,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 163.16,
-            "clob_ask": null
-          },
-          {
-            "end": "2025-02-11",
-            "title": "Suns vs. Trail Blazers",
-            "fill": 0.68,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2025-02-08",
-            "title": "Bulls vs. Raptors",
-            "fill": 0.624,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2025-02-08",
-            "title": "Mavericks vs. Pistons",
-            "fill": 0.549,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 82.19,
-            "clob_ask": null
-          },
-          {
-            "end": "2025-02-07",
-            "title": "Rockets vs. Grizzlies",
-            "fill": 0.39,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2025-02-05",
-            "title": "Jazz vs. Warriors",
-            "fill": 0.89,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 12.36,
-            "clob_ask": null
-          }
-        ]
+        "coverage": 0.0
       },
       "tail_score": 15.0,
       "tail_why": "take-rule bleed \u2014 do not promote"
@@ -5656,94 +6249,9 @@
         ]
       },
       "clv": {
-        "n": 35,
-        "n_with_close": 19,
-        "coverage": 0.543,
-        "avg_clv_cents": -2.06,
-        "expected_clv_roi": -3.69,
-        "realized_roi_2c": -7.71,
-        "sample": [
-          {
-            "end": "2026-03-23",
-            "title": "Will AA Argentinos Juniors win on 2026-03-22?",
-            "fill": 0.539,
-            "close": 0.505,
-            "clv_cents": -3.36,
-            "won": true,
-            "pnl": 85.67,
-            "clob_ask": 0.535
-          },
-          {
-            "end": "2026-03-22",
-            "title": "Will Real Madrid CF win on 2026-03-22?",
-            "fill": 0.517,
-            "close": 0.475,
-            "clv_cents": -4.17,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": 0.495
-          },
-          {
-            "end": "2026-03-22",
-            "title": "Will San Diego FC win on 2026-03-22?",
-            "fill": 0.519,
-            "close": 0.525,
-            "clv_cents": 0.61,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": 0.53
-          },
-          {
-            "end": "2026-03-22",
-            "title": "FC Nantes vs. RC Strasbourg Alsace: O/U 2.5",
-            "fill": 0.529,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-03-21",
-            "title": "Will Columbus Crew win on 2026-03-21?",
-            "fill": 0.593,
-            "close": 0.63,
-            "clv_cents": 3.74,
-            "won": true,
-            "pnl": 68.76,
-            "clob_ask": 0.625
-          },
-          {
-            "end": "2026-03-21",
-            "title": "Philadelphia Union vs. Chicago Fire FC: O/U 2.5",
-            "fill": 0.54,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 85.19,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-03-21",
-            "title": "Nashville SC vs. Orlando City SC: O/U 2.5",
-            "fill": 0.625,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 60.09,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-03-19",
-            "title": "Will FC Midtjylland vs. Nottingham Forest FC end in a draw?",
-            "fill": 0.74,
-            "close": 0.725,
-            "clv_cents": -1.5,
-            "won": true,
-            "pnl": 35.14,
-            "clob_ask": 0.735
-          }
-        ]
+        "n": 0,
+        "n_with_close": 0,
+        "coverage": 0.0
       },
       "tail_score": 15.0,
       "tail_why": "take-rule bleed \u2014 do not promote"
@@ -6119,94 +6627,9 @@
         ]
       },
       "clv": {
-        "n": 15,
-        "n_with_close": 1,
-        "coverage": 0.067,
-        "avg_clv_cents": -18.12,
-        "expected_clv_roi": -28.48,
-        "realized_roi_2c": -42.67,
-        "sample": [
-          {
-            "end": "2026-04-13",
-            "title": "Rangers vs. Panthers",
-            "fill": 0.58,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-04-13",
-            "title": "Utah vs. Flames",
-            "fill": 0.61,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-04-13",
-            "title": "Canucks vs. Ducks",
-            "fill": 0.75,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-04-13",
-            "title": "Hurricanes vs. Flyers",
-            "fill": 0.51,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-04-12",
-            "title": "Senators vs. Devils",
-            "fill": 0.57,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-04-12",
-            "title": "Canucks vs. Sharks",
-            "fill": 0.648,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-04-11",
-            "title": "Hurricanes vs. Utah",
-            "fill": 0.479,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-04-11",
-            "title": "Senators vs. Islanders",
-            "fill": 0.54,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 85.19,
-            "clob_ask": null
-          }
-        ]
+        "n": 0,
+        "n_with_close": 0,
+        "coverage": 0.0
       },
       "tail_score": 15.0,
       "tail_why": "take-rule bleed \u2014 do not promote"
@@ -6662,94 +7085,348 @@
         ]
       },
       "clv": {
-        "n": 79,
-        "n_with_close": 16,
-        "coverage": 0.203,
-        "avg_clv_cents": -1.8,
-        "expected_clv_roi": -1.42,
-        "realized_roi_2c": -17.19,
-        "sample": [
+        "n": 0,
+        "n_with_close": 0,
+        "coverage": 0.0
+      },
+      "tail_score": 15.0,
+      "tail_why": "take-rule bleed \u2014 do not promote"
+    },
+    {
+      "username": "SineNooneEI",
+      "wallet": "0x38337de21ff0bb0a11a40761507d51e318d633d1",
+      "bucket": "watch",
+      "joinable": false,
+      "reasons": [],
+      "has_csv": true,
+      "notes": "Esports specialist (tennis secondary). Unique +$793k / 5.4% ROI, median $6.8k joinable, last 30d +11%. Take-rule n=14 ROI \u221218% \u2014 do not live.",
+      "unique": {
+        "roi": 4.42,
+        "win_rate": 53.52,
+        "median_stake": 6838.93,
+        "closed": 0,
+        "events": 1063,
+        "last_30d_n": 196,
+        "last_30d_roi": 7.43,
+        "last_event_date": "2026-08-21",
+        "recency": "HOT",
+        "last_30d": {
+          "n": 244,
+          "roi": 4.69,
+          "wr": 55.3,
+          "pnl": 94384.36
+        },
+        "outsized": {
+          "n": 256,
+          "win_rate": 62.1,
+          "roi": 7.06,
+          "pnl": 488936.94,
+          "median": 20386.0,
+          "mean": 27071.1
+        },
+        "outsized_30d": {
+          "n": 31,
+          "win_rate": 77.4,
+          "roi": 16.86,
+          "pnl": 100308.92,
+          "median": 16664.81,
+          "mean": 19193.16
+        },
+        "dashboard_pnl": 670060.16
+      },
+      "mix": {
+        "n": 1596,
+        "politics_frac": 0.0,
+        "futures_frac": 0.041,
+        "sports_frac": 0.959,
+        "top": [
           {
-            "end": "2026-01-10",
-            "title": "Will West Ham United FC win on 2026-01-10?",
-            "fill": 0.65,
-            "close": 0.605,
-            "clv_cents": -4.5,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": 0.605
+            "sport": "ESPORTS",
+            "n": 1472
           },
           {
-            "end": "2026-01-08",
-            "title": "Arsenal FC vs. Liverpool FC: Both Teams to Score",
-            "fill": 0.491,
-            "close": 0.48,
-            "clv_cents": -1.05,
-            "won": true,
-            "pnl": 103.87,
-            "clob_ask": 0.49
+            "sport": "TENNIS",
+            "n": 103
           },
           {
-            "end": "2026-01-08",
-            "title": "Will Real Madrid CF win on 2026-01-08?",
-            "fill": 0.59,
-            "close": 0.59,
-            "clv_cents": 0.0,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": 0.59
+            "sport": "SOCCER (Other)",
+            "n": 8
           },
           {
-            "end": "2026-01-07",
-            "title": "Will Chelsea FC win on 2026-01-07?",
-            "fill": 0.53,
-            "close": 0.535,
-            "clv_cents": 0.5,
-            "won": true,
-            "pnl": 88.68,
-            "clob_ask": 0.535
+            "sport": "MLB",
+            "n": 4
           },
           {
-            "end": "2026-01-07",
-            "title": "Will Crystal Palace FC win on 2026-01-07?",
-            "fill": 0.7,
-            "close": 0.705,
-            "clv_cents": 0.5,
-            "won": true,
-            "pnl": 42.86,
-            "clob_ask": 0.705
+            "sport": "NHL",
+            "n": 3
           },
           {
-            "end": "2026-01-07",
-            "title": "Will FC Barcelona win on 2026-01-07?",
-            "fill": 0.36,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-01-04",
-            "title": "Will Manchester City FC win on 2026-01-04?",
-            "fill": 0.68,
-            "close": 0.595,
-            "clv_cents": -8.5,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": 0.595
-          },
-          {
-            "end": "2026-01-04",
-            "title": "Leeds United FC vs. Manchester United FC: Both Teams to Score",
-            "fill": 0.46,
-            "close": 0.425,
-            "clv_cents": -3.5,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": 0.42
+            "sport": "OTHER",
+            "n": 3
           }
         ]
+      },
+      "how_they_win": {
+        "n": 1573,
+        "wr": 53.34,
+        "median_cost": 7000.0,
+        "by_sport": [
+          {
+            "key": "ESPORTS",
+            "n": 1457,
+            "win_rate": 53.05,
+            "roi_2c": -0.52,
+            "unit_pnl": -755.63,
+            "avg_fill": 0.536,
+            "edge": -0.5
+          },
+          {
+            "key": "TENNIS",
+            "n": 95,
+            "win_rate": 56.84,
+            "roi_2c": 12.11,
+            "unit_pnl": 1150.41,
+            "avg_fill": 0.511,
+            "edge": 5.7
+          },
+          {
+            "key": "SOCCER (Other)",
+            "n": 8,
+            "win_rate": 50.0,
+            "roi_2c": -8.53,
+            "unit_pnl": -68.23,
+            "avg_fill": 0.538,
+            "edge": -3.8
+          }
+        ],
+        "by_submarket": [
+          {
+            "key": "Map / Game",
+            "n": 900,
+            "win_rate": 54.11,
+            "roi_2c": -1.78,
+            "unit_pnl": -1598.48,
+            "avg_fill": 0.546,
+            "edge": -0.4
+          },
+          {
+            "key": "Moneyline",
+            "n": 650,
+            "win_rate": 52.0,
+            "roi_2c": 2.39,
+            "unit_pnl": 1552.1,
+            "avg_fill": 0.519,
+            "edge": 0.1
+          },
+          {
+            "key": "Futures",
+            "n": 9,
+            "win_rate": 77.78,
+            "roi_2c": 71.89,
+            "unit_pnl": 647.02,
+            "avg_fill": 0.488,
+            "edge": 29.0
+          },
+          {
+            "key": "Total",
+            "n": 7,
+            "win_rate": 57.14,
+            "roi_2c": 5.07,
+            "unit_pnl": 35.47,
+            "avg_fill": 0.541,
+            "edge": 3.0
+          },
+          {
+            "key": "Spread",
+            "n": 7,
+            "win_rate": 42.86,
+            "roi_2c": -20.61,
+            "unit_pnl": -144.3,
+            "avg_fill": 0.579,
+            "edge": -15.1
+          }
+        ],
+        "by_price": [
+          {
+            "key": "fav_55_70",
+            "n": 496,
+            "win_rate": 66.53,
+            "roi_2c": 3.68,
+            "unit_pnl": 1824.51,
+            "avg_fill": 0.64,
+            "edge": 2.6
+          },
+          {
+            "key": "dog_30_45",
+            "n": 451,
+            "win_rate": 38.8,
+            "roi_2c": -2.98,
+            "unit_pnl": -1343.09,
+            "avg_fill": 0.406,
+            "edge": -1.8
+          },
+          {
+            "key": "coin_45_55",
+            "n": 347,
+            "win_rate": 48.41,
+            "roi_2c": -6.97,
+            "unit_pnl": -2418.94,
+            "avg_fill": 0.521,
+            "edge": -3.7
+          },
+          {
+            "key": "chalk_70plus",
+            "n": 169,
+            "win_rate": 78.7,
+            "roi_2c": 1.58,
+            "unit_pnl": 267.73,
+            "avg_fill": 0.777,
+            "edge": 1.0
+          },
+          {
+            "key": "dog_<30c",
+            "n": 110,
+            "win_rate": 30.0,
+            "roi_2c": 19.65,
+            "unit_pnl": 2161.6,
+            "avg_fill": 0.256,
+            "edge": 4.4
+          }
+        ],
+        "outsized_2x": {
+          "n": 266,
+          "wins": 165,
+          "losses": 101,
+          "win_rate": 62.03,
+          "unit_pnl": -34.72,
+          "expectancy": -0.13,
+          "roi": -0.13,
+          "profit_factor": 0.997,
+          "sharpe_daily_roi": 0.62,
+          "max_dd": -1986.93,
+          "avg_grade": 0.0,
+          "avg_q": 0.0,
+          "avg_fill": 0.614,
+          "avg_vwap": 0.594,
+          "implied_wr": 61.4,
+          "edge": 0.6,
+          "avg_traders": 1.0,
+          "avg_rel": 1.0,
+          "calmar": -0.02,
+          "days": 113,
+          "trades_per_day": 2.35,
+          "first": "2026-02-03",
+          "last": "2026-08-23"
+        },
+        "under_2x": {
+          "n": 1307,
+          "wins": 674,
+          "losses": 633,
+          "win_rate": 51.57,
+          "unit_pnl": 526.53,
+          "expectancy": 0.4,
+          "roi": 0.4,
+          "profit_factor": 1.008,
+          "sharpe_daily_roi": 0.58,
+          "max_dd": -3305.57,
+          "avg_grade": 0.0,
+          "avg_q": 0.0,
+          "avg_fill": 0.518,
+          "avg_vwap": 0.498,
+          "implied_wr": 51.8,
+          "edge": -0.2,
+          "avg_traders": 1.0,
+          "avg_rel": 1.0,
+          "calmar": 0.16,
+          "days": 188,
+          "trades_per_day": 6.95,
+          "first": "2026-02-03",
+          "last": "2026-08-24"
+        },
+        "top_edge": [
+          {
+            "key": "TENNIS",
+            "n": 95,
+            "win_rate": 56.84,
+            "roi_2c": 12.11,
+            "unit_pnl": 1150.41,
+            "avg_fill": 0.511,
+            "edge": 5.7
+          },
+          {
+            "key": "ESPORTS",
+            "n": 1457,
+            "win_rate": 53.05,
+            "roi_2c": -0.52,
+            "unit_pnl": -755.63,
+            "avg_fill": 0.536,
+            "edge": -0.5
+          }
+        ]
+      },
+      "take": {
+        "n": 14,
+        "win_rate": 50.0,
+        "roi_2c": -17.96,
+        "unit_pnl": -251.4,
+        "first": "2026-02-07",
+        "last": "2026-02-08",
+        "by_sport": [
+          {
+            "key": "ESPORTS",
+            "n": 14,
+            "win_rate": 50.0,
+            "roi_2c": -17.96,
+            "unit_pnl": -251.4,
+            "avg_fill": 0.563,
+            "edge": -6.3
+          }
+        ],
+        "by_submarket": [
+          {
+            "key": "Map / Game",
+            "n": 8,
+            "win_rate": 50.0,
+            "roi_2c": -26.42,
+            "unit_pnl": -211.39,
+            "avg_fill": 0.63,
+            "edge": -13.0
+          },
+          {
+            "key": "Moneyline",
+            "n": 6,
+            "win_rate": 50.0,
+            "roi_2c": -6.67,
+            "unit_pnl": -40.01,
+            "avg_fill": 0.472,
+            "edge": 2.8
+          }
+        ],
+        "by_price": [
+          {
+            "key": "fav_55_70",
+            "n": 8,
+            "win_rate": 62.5,
+            "roi_2c": -3.63,
+            "unit_pnl": -29.04,
+            "avg_fill": 0.65,
+            "edge": -2.5
+          },
+          {
+            "key": "dog_30_45",
+            "n": 5,
+            "win_rate": 20.0,
+            "roi_2c": -52.12,
+            "unit_pnl": -260.59,
+            "avg_fill": 0.392,
+            "edge": -19.2
+          }
+        ]
+      },
+      "clv": {
+        "n": 0,
+        "n_with_close": 0,
+        "coverage": 0.0
       },
       "tail_score": 15.0,
       "tail_why": "take-rule bleed \u2014 do not promote"
@@ -7149,94 +7826,903 @@
         ]
       },
       "clv": {
-        "n": 19,
-        "n_with_close": 1,
-        "coverage": 0.053,
-        "avg_clv_cents": 0.13,
-        "expected_clv_roi": 0.24,
-        "realized_roi_2c": -45.05,
-        "sample": [
+        "n": 0,
+        "n_with_close": 0,
+        "coverage": 0.0
+      },
+      "tail_score": 15.0,
+      "tail_why": "take-rule bleed \u2014 do not promote"
+    },
+    {
+      "username": "ShortFlutterStock",
+      "wallet": "0x13414a77a4be48988851c73dfd824d0168e70853",
+      "bucket": "watch",
+      "joinable": true,
+      "reasons": [],
+      "has_csv": true,
+      "notes": "",
+      "unique": {
+        "roi": 1.0,
+        "win_rate": 57.35,
+        "median_stake": 1273.53,
+        "closed": 2615,
+        "events": 2124,
+        "last_30d_n": 82,
+        "last_30d_roi": 10.9,
+        "last_event_date": "2026-08-03",
+        "recency": "COLD",
+        "last_30d": {
+          "n": 0,
+          "roi": 0.0,
+          "wr": 0.0,
+          "pnl": 0.0
+        },
+        "outsized": {
+          "n": 1186,
+          "win_rate": 57.3,
+          "roi": 10.41,
+          "pnl": 1665245.32,
+          "median": 8100.0,
+          "mean": 13481.47
+        },
+        "outsized_30d": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi": 0.0,
+          "pnl": 0.0,
+          "median": 0.0,
+          "mean": 0.0
+        },
+        "dashboard_pnl": 419827.42
+      },
+      "mix": {
+        "n": 3669,
+        "politics_frac": 0.0,
+        "futures_frac": 0.049,
+        "sports_frac": 0.95,
+        "top": [
           {
-            "end": "2026-01-13",
-            "title": "Kraken vs. Rangers",
-            "fill": 0.58,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
+            "sport": "ESPORTS",
+            "n": 2104
           },
           {
-            "end": "2026-01-07",
-            "title": "Spread: Mavericks (-4.5)",
-            "fill": 0.54,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
+            "sport": "OTHER",
+            "n": 459
           },
           {
-            "end": "2026-01-07",
-            "title": "Heat vs. Timberwolves",
-            "fill": 0.66,
-            "close": null,
-            "clv_cents": null,
-            "won": true,
-            "pnl": 51.52,
-            "clob_ask": null
+            "sport": "NHL",
+            "n": 443
           },
           {
-            "end": "2026-01-07",
-            "title": "Spurs vs. Grizzlies",
-            "fill": 0.7,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
+            "sport": "NBA",
+            "n": 291
           },
           {
-            "end": "2026-01-07",
-            "title": "Panthers vs. Maple Leafs",
-            "fill": 0.54,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
+            "sport": "NFL",
+            "n": 205
           },
           {
-            "end": "2026-01-07",
-            "title": "Heat vs. Timberwolves",
-            "fill": 0.38,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-01-06",
-            "title": "Knicks vs. Pistons",
-            "fill": 0.54,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
-          },
-          {
-            "end": "2026-01-06",
-            "title": "Red Wings vs. Senators",
-            "fill": 0.61,
-            "close": null,
-            "clv_cents": null,
-            "won": false,
-            "pnl": -100.0,
-            "clob_ask": null
+            "sport": "SOCCER (Other)",
+            "n": 120
           }
         ]
+      },
+      "how_they_win": {
+        "n": 3178,
+        "wr": 59.63,
+        "median_cost": 1606.5,
+        "by_sport": [
+          {
+            "key": "ESPORTS",
+            "n": 1917,
+            "win_rate": 60.46,
+            "roi_2c": -0.02,
+            "unit_pnl": -40.55,
+            "avg_fill": 0.603,
+            "edge": 0.2
+          },
+          {
+            "key": "NHL",
+            "n": 382,
+            "win_rate": 53.93,
+            "roi_2c": -0.64,
+            "unit_pnl": -244.87,
+            "avg_fill": 0.531,
+            "edge": 0.8
+          },
+          {
+            "key": "OTHER",
+            "n": 351,
+            "win_rate": 60.11,
+            "roi_2c": -3.37,
+            "unit_pnl": -1184.12,
+            "avg_fill": 0.615,
+            "edge": -1.4
+          },
+          {
+            "key": "NBA",
+            "n": 251,
+            "win_rate": 58.57,
+            "roi_2c": -1.45,
+            "unit_pnl": -365.18,
+            "avg_fill": 0.579,
+            "edge": 0.6
+          },
+          {
+            "key": "NFL",
+            "n": 147,
+            "win_rate": 64.63,
+            "roi_2c": -2.52,
+            "unit_pnl": -370.32,
+            "avg_fill": 0.617,
+            "edge": 3.0
+          },
+          {
+            "key": "SOCCER (Other)",
+            "n": 97,
+            "win_rate": 59.79,
+            "roi_2c": -8.67,
+            "unit_pnl": -840.87,
+            "avg_fill": 0.624,
+            "edge": -2.6
+          },
+          {
+            "key": "MLB",
+            "n": 15,
+            "win_rate": 66.67,
+            "roi_2c": -22.28,
+            "unit_pnl": -334.21,
+            "avg_fill": 0.755,
+            "edge": -8.8
+          },
+          {
+            "key": "SOCCER (LaLiga)",
+            "n": 8,
+            "win_rate": 75.0,
+            "roi_2c": 25.53,
+            "unit_pnl": 204.27,
+            "avg_fill": 0.59,
+            "edge": 16.0
+          }
+        ],
+        "by_submarket": [
+          {
+            "key": "Moneyline",
+            "n": 1282,
+            "win_rate": 53.12,
+            "roi_2c": -3.82,
+            "unit_pnl": -4893.15,
+            "avg_fill": 0.533,
+            "edge": -0.2
+          },
+          {
+            "key": "Total",
+            "n": 831,
+            "win_rate": 76.17,
+            "roi_2c": -3.3,
+            "unit_pnl": -2741.11,
+            "avg_fill": 0.777,
+            "edge": -1.5
+          },
+          {
+            "key": "Map / Game",
+            "n": 605,
+            "win_rate": 51.24,
+            "roi_2c": 3.86,
+            "unit_pnl": 2333.82,
+            "avg_fill": 0.502,
+            "edge": 1.0
+          },
+          {
+            "key": "Spread",
+            "n": 419,
+            "win_rate": 58.0,
+            "roi_2c": 5.19,
+            "unit_pnl": 2176.16,
+            "avg_fill": 0.559,
+            "edge": 2.1
+          },
+          {
+            "key": "Futures",
+            "n": 39,
+            "win_rate": 66.67,
+            "roi_2c": -15.68,
+            "unit_pnl": -611.61,
+            "avg_fill": 0.64,
+            "edge": 2.6
+          }
+        ],
+        "by_price": [
+          {
+            "key": "chalk_70plus",
+            "n": 901,
+            "win_rate": 93.78,
+            "roi_2c": 0.6,
+            "unit_pnl": 538.86,
+            "avg_fill": 0.932,
+            "edge": 0.6
+          },
+          {
+            "key": "coin_45_55",
+            "n": 735,
+            "win_rate": 53.2,
+            "roi_2c": 1.47,
+            "unit_pnl": 1078.46,
+            "avg_fill": 0.524,
+            "edge": 0.8
+          },
+          {
+            "key": "fav_55_70",
+            "n": 592,
+            "win_rate": 61.99,
+            "roi_2c": -2.28,
+            "unit_pnl": -1349.51,
+            "avg_fill": 0.632,
+            "edge": -1.2
+          },
+          {
+            "key": "dog_30_45",
+            "n": 514,
+            "win_rate": 40.66,
+            "roi_2c": 3.81,
+            "unit_pnl": 1956.79,
+            "avg_fill": 0.397,
+            "edge": 1.0
+          },
+          {
+            "key": "dog_<30c",
+            "n": 436,
+            "win_rate": 19.04,
+            "roi_2c": -13.63,
+            "unit_pnl": -5940.81,
+            "avg_fill": 0.207,
+            "edge": -1.6
+          }
+        ],
+        "outsized_2x": {
+          "n": 1220,
+          "wins": 691,
+          "losses": 529,
+          "win_rate": 56.64,
+          "unit_pnl": 1613.85,
+          "expectancy": 1.32,
+          "roi": 1.32,
+          "profit_factor": 1.031,
+          "sharpe_daily_roi": 0.57,
+          "max_dd": -2918.74,
+          "avg_grade": 0.0,
+          "avg_q": 0.0,
+          "avg_fill": 0.557,
+          "avg_vwap": 0.538,
+          "implied_wr": 55.7,
+          "edge": 0.9,
+          "avg_traders": 1.0,
+          "avg_rel": 1.0,
+          "calmar": 0.55,
+          "days": 142,
+          "trades_per_day": 8.59,
+          "first": "2025-11-09",
+          "last": "2026-06-30"
+        },
+        "under_2x": {
+          "n": 1958,
+          "wins": 1204,
+          "losses": 754,
+          "win_rate": 61.49,
+          "unit_pnl": -5330.06,
+          "expectancy": -2.72,
+          "roi": -2.72,
+          "profit_factor": 0.929,
+          "sharpe_daily_roi": -2.27,
+          "max_dd": -7380.18,
+          "avg_grade": 0.0,
+          "avg_q": 0.0,
+          "avg_fill": 0.62,
+          "avg_vwap": 0.605,
+          "implied_wr": 62.0,
+          "edge": -0.5,
+          "avg_traders": 1.0,
+          "avg_rel": 1.0,
+          "calmar": -0.72,
+          "days": 147,
+          "trades_per_day": 13.32,
+          "first": "2025-11-09",
+          "last": "2026-06-30"
+        },
+        "top_edge": [
+          {
+            "key": "ESPORTS",
+            "n": 1917,
+            "win_rate": 60.46,
+            "roi_2c": -0.02,
+            "unit_pnl": -40.55,
+            "avg_fill": 0.603,
+            "edge": 0.2
+          },
+          {
+            "key": "NHL",
+            "n": 382,
+            "win_rate": 53.93,
+            "roi_2c": -0.64,
+            "unit_pnl": -244.87,
+            "avg_fill": 0.531,
+            "edge": 0.8
+          },
+          {
+            "key": "NBA",
+            "n": 251,
+            "win_rate": 58.57,
+            "roi_2c": -1.45,
+            "unit_pnl": -365.18,
+            "avg_fill": 0.579,
+            "edge": 0.6
+          }
+        ]
+      },
+      "take": {
+        "n": 198,
+        "win_rate": 47.98,
+        "roi_2c": -9.4,
+        "unit_pnl": -1860.55,
+        "first": "2025-11-12",
+        "last": "2026-04-04",
+        "by_sport": [
+          {
+            "key": "ESPORTS",
+            "n": 191,
+            "win_rate": 48.69,
+            "roi_2c": -7.65,
+            "unit_pnl": -1460.36,
+            "avg_fill": 0.506,
+            "edge": -1.9
+          },
+          {
+            "key": "SOCCER (Other)",
+            "n": 6,
+            "win_rate": 33.33,
+            "roi_2c": -50.03,
+            "unit_pnl": -300.19,
+            "avg_fill": 0.624,
+            "edge": -29.1
+          }
+        ],
+        "by_submarket": [
+          {
+            "key": "Moneyline",
+            "n": 94,
+            "win_rate": 54.26,
+            "roi_2c": -0.02,
+            "unit_pnl": -1.78,
+            "avg_fill": 0.514,
+            "edge": 2.8
+          },
+          {
+            "key": "Map / Game",
+            "n": 74,
+            "win_rate": 48.65,
+            "roi_2c": -6.3,
+            "unit_pnl": -466.52,
+            "avg_fill": 0.509,
+            "edge": -2.3
+          },
+          {
+            "key": "Spread",
+            "n": 20,
+            "win_rate": 30.0,
+            "roi_2c": -36.8,
+            "unit_pnl": -735.96,
+            "avg_fill": 0.487,
+            "edge": -18.7
+          },
+          {
+            "key": "Total",
+            "n": 10,
+            "win_rate": 20.0,
+            "roi_2c": -65.63,
+            "unit_pnl": -656.29,
+            "avg_fill": 0.513,
+            "edge": -31.3
+          }
+        ],
+        "by_price": [
+          {
+            "key": "dog_30_45",
+            "n": 53,
+            "win_rate": 30.19,
+            "roi_2c": -23.93,
+            "unit_pnl": -1268.32,
+            "avg_fill": 0.4,
+            "edge": -9.8
+          },
+          {
+            "key": "fav_55_70",
+            "n": 49,
+            "win_rate": 67.35,
+            "roi_2c": 3.77,
+            "unit_pnl": 184.84,
+            "avg_fill": 0.643,
+            "edge": 3.1
+          },
+          {
+            "key": "coin_45_55",
+            "n": 43,
+            "win_rate": 48.84,
+            "roi_2c": -5.52,
+            "unit_pnl": -237.51,
+            "avg_fill": 0.517,
+            "edge": -2.9
+          },
+          {
+            "key": "dog_<30c",
+            "n": 28,
+            "win_rate": 17.86,
+            "roi_2c": -22.8,
+            "unit_pnl": -638.43,
+            "avg_fill": 0.241,
+            "edge": -6.3
+          },
+          {
+            "key": "chalk_70plus",
+            "n": 25,
+            "win_rate": 80.0,
+            "roi_2c": 3.95,
+            "unit_pnl": 98.87,
+            "avg_fill": 0.769,
+            "edge": 3.1
+          }
+        ]
+      },
+      "clv": {
+        "n": 0,
+        "n_with_close": 0,
+        "coverage": 0.0
+      },
+      "tail_score": 15.0,
+      "tail_why": "take-rule bleed \u2014 do not promote"
+    },
+    {
+      "username": "norrisfan",
+      "wallet": "0xe72bb501df5306c75c89383d48a1e81073fbb0a0",
+      "bucket": "watch",
+      "joinable": false,
+      "reasons": [],
+      "has_csv": true,
+      "notes": "",
+      "unique": {
+        "roi": -15.66,
+        "win_rate": 43.19,
+        "median_stake": 1770.0,
+        "closed": 625,
+        "events": 732,
+        "last_30d_n": 127,
+        "last_30d_roi": -175.4,
+        "last_event_date": "2026-08-19",
+        "recency": "HOT",
+        "last_30d": {
+          "n": 0,
+          "roi": 0.0,
+          "wr": 0.0,
+          "pnl": 0.0
+        },
+        "outsized": {
+          "n": 167,
+          "win_rate": 53.3,
+          "roi": 1.92,
+          "pnl": 77486.49,
+          "median": 19276.29,
+          "mean": 24115.94
+        },
+        "outsized_30d": {
+          "n": 0,
+          "win_rate": 0.0,
+          "roi": 0.0,
+          "pnl": 0.0,
+          "median": 0.0,
+          "mean": 0.0
+        },
+        "dashboard_pnl": -2917655.07
+      },
+      "mix": {
+        "n": 639,
+        "politics_frac": 0.005,
+        "futures_frac": 0.211,
+        "sports_frac": 0.784,
+        "top": [
+          {
+            "sport": "OTHER",
+            "n": 349
+          },
+          {
+            "sport": "SOCCER (Other)",
+            "n": 51
+          },
+          {
+            "sport": "NBA",
+            "n": 49
+          },
+          {
+            "sport": "NHL",
+            "n": 47
+          },
+          {
+            "sport": "ESPORTS",
+            "n": 38
+          },
+          {
+            "sport": "SOCCER (EPL)",
+            "n": 36
+          }
+        ]
+      },
+      "how_they_win": {
+        "n": 466,
+        "wr": 54.08,
+        "median_cost": 3109.0,
+        "by_sport": [
+          {
+            "key": "OTHER",
+            "n": 203,
+            "win_rate": 62.56,
+            "roi_2c": -1.83,
+            "unit_pnl": -371.98,
+            "avg_fill": 0.628,
+            "edge": -0.3
+          },
+          {
+            "key": "NBA",
+            "n": 47,
+            "win_rate": 36.17,
+            "roi_2c": -32.39,
+            "unit_pnl": -1522.43,
+            "avg_fill": 0.514,
+            "edge": -15.2
+          },
+          {
+            "key": "NHL",
+            "n": 46,
+            "win_rate": 50.0,
+            "roi_2c": -7.36,
+            "unit_pnl": -338.41,
+            "avg_fill": 0.542,
+            "edge": -4.2
+          },
+          {
+            "key": "SOCCER (Other)",
+            "n": 40,
+            "win_rate": 50.0,
+            "roi_2c": 3.51,
+            "unit_pnl": 140.46,
+            "avg_fill": 0.463,
+            "edge": 3.7
+          },
+          {
+            "key": "ESPORTS",
+            "n": 38,
+            "win_rate": 42.11,
+            "roi_2c": 11.89,
+            "unit_pnl": 451.77,
+            "avg_fill": 0.364,
+            "edge": 5.7
+          },
+          {
+            "key": "SOCCER (EPL)",
+            "n": 35,
+            "win_rate": 51.43,
+            "roi_2c": 17.78,
+            "unit_pnl": 622.37,
+            "avg_fill": 0.466,
+            "edge": 4.8
+          },
+          {
+            "key": "SOCCER (UCL)",
+            "n": 22,
+            "win_rate": 54.55,
+            "roi_2c": 32.6,
+            "unit_pnl": 717.11,
+            "avg_fill": 0.523,
+            "edge": 2.2
+          },
+          {
+            "key": "SOCCER (LaLiga)",
+            "n": 18,
+            "win_rate": 66.67,
+            "roi_2c": 14.05,
+            "unit_pnl": 252.88,
+            "avg_fill": 0.529,
+            "edge": 13.7
+          }
+        ],
+        "by_submarket": [
+          {
+            "key": "Moneyline",
+            "n": 278,
+            "win_rate": 50.36,
+            "roi_2c": -9.95,
+            "unit_pnl": -2766.49,
+            "avg_fill": 0.534,
+            "edge": -3.0
+          },
+          {
+            "key": "Map / Game",
+            "n": 81,
+            "win_rate": 65.43,
+            "roi_2c": 23.26,
+            "unit_pnl": 1884.2,
+            "avg_fill": 0.606,
+            "edge": 4.8
+          },
+          {
+            "key": "Futures",
+            "n": 47,
+            "win_rate": 59.57,
+            "roi_2c": 3.47,
+            "unit_pnl": 163.12,
+            "avg_fill": 0.548,
+            "edge": 4.8
+          },
+          {
+            "key": "Total",
+            "n": 28,
+            "win_rate": 53.57,
+            "roi_2c": 0.49,
+            "unit_pnl": 13.63,
+            "avg_fill": 0.509,
+            "edge": 2.7
+          },
+          {
+            "key": "Spread",
+            "n": 25,
+            "win_rate": 40.0,
+            "roi_2c": -1.78,
+            "unit_pnl": -44.46,
+            "avg_fill": 0.437,
+            "edge": -3.7
+          },
+          {
+            "key": "Draw",
+            "n": 7,
+            "win_rate": 85.71,
+            "roi_2c": 31.84,
+            "unit_pnl": 222.86,
+            "avg_fill": 0.757,
+            "edge": 10.0
+          }
+        ],
+        "by_price": [
+          {
+            "key": "chalk_70plus",
+            "n": 117,
+            "win_rate": 95.73,
+            "roi_2c": 6.36,
+            "unit_pnl": 743.73,
+            "avg_fill": 0.908,
+            "edge": 5.0
+          },
+          {
+            "key": "dog_30_45",
+            "n": 104,
+            "win_rate": 47.12,
+            "roi_2c": 18.09,
+            "unit_pnl": 1880.9,
+            "avg_fill": 0.402,
+            "edge": 6.9
+          },
+          {
+            "key": "coin_45_55",
+            "n": 95,
+            "win_rate": 41.05,
+            "roi_2c": -18.94,
+            "unit_pnl": -1799.5,
+            "avg_fill": 0.503,
+            "edge": -9.2
+          },
+          {
+            "key": "dog_<30c",
+            "n": 82,
+            "win_rate": 17.07,
+            "roi_2c": -6.41,
+            "unit_pnl": -525.81,
+            "avg_fill": 0.178,
+            "edge": -0.8
+          },
+          {
+            "key": "fav_55_70",
+            "n": 68,
+            "win_rate": 55.88,
+            "roi_2c": -12.15,
+            "unit_pnl": -826.47,
+            "avg_fill": 0.639,
+            "edge": -8.0
+          }
+        ],
+        "outsized_2x": {
+          "n": 188,
+          "wins": 95,
+          "losses": 93,
+          "win_rate": 50.53,
+          "unit_pnl": -615.27,
+          "expectancy": -3.27,
+          "roi": -3.27,
+          "profit_factor": 0.934,
+          "sharpe_daily_roi": 0.02,
+          "max_dd": -1577.59,
+          "avg_grade": 0.0,
+          "avg_q": 0.0,
+          "avg_fill": 0.523,
+          "avg_vwap": 0.503,
+          "implied_wr": 52.3,
+          "edge": -1.7,
+          "avg_traders": 1.0,
+          "avg_rel": 1.0,
+          "calmar": -0.39,
+          "days": 87,
+          "trades_per_day": 2.16,
+          "first": "2025-12-31",
+          "last": "2026-04-16"
+        },
+        "under_2x": {
+          "n": 278,
+          "wins": 157,
+          "losses": 121,
+          "win_rate": 56.47,
+          "unit_pnl": 88.13,
+          "expectancy": 0.32,
+          "roi": 0.32,
+          "profit_factor": 1.007,
+          "sharpe_daily_roi": -2.6,
+          "max_dd": -3285.96,
+          "avg_grade": 0.0,
+          "avg_q": 0.0,
+          "avg_fill": 0.56,
+          "avg_vwap": 0.543,
+          "implied_wr": 56.0,
+          "edge": 0.5,
+          "avg_traders": 1.0,
+          "avg_rel": 1.0,
+          "calmar": 0.03,
+          "days": 81,
+          "trades_per_day": 3.43,
+          "first": "2026-01-04",
+          "last": "2026-04-17"
+        },
+        "top_edge": [
+          {
+            "key": "SOCCER (UCL)",
+            "n": 22,
+            "win_rate": 54.55,
+            "roi_2c": 32.6,
+            "unit_pnl": 717.11,
+            "avg_fill": 0.523,
+            "edge": 2.2
+          },
+          {
+            "key": "SOCCER (EPL)",
+            "n": 35,
+            "win_rate": 51.43,
+            "roi_2c": 17.78,
+            "unit_pnl": 622.37,
+            "avg_fill": 0.466,
+            "edge": 4.8
+          },
+          {
+            "key": "SOCCER (LaLiga)",
+            "n": 18,
+            "win_rate": 66.67,
+            "roi_2c": 14.05,
+            "unit_pnl": 252.88,
+            "avg_fill": 0.529,
+            "edge": 13.7
+          }
+        ]
+      },
+      "take": {
+        "n": 28,
+        "win_rate": 42.86,
+        "roi_2c": -20.46,
+        "unit_pnl": -572.8,
+        "first": "2026-01-19",
+        "last": "2026-03-26",
+        "by_sport": [
+          {
+            "key": "SOCCER (Other)",
+            "n": 9,
+            "win_rate": 33.33,
+            "roi_2c": -38.12,
+            "unit_pnl": -343.05,
+            "avg_fill": 0.498,
+            "edge": -16.5
+          },
+          {
+            "key": "NHL",
+            "n": 4,
+            "win_rate": 75.0,
+            "roi_2c": 29.99,
+            "unit_pnl": 119.97,
+            "avg_fill": 0.57,
+            "edge": 18.0
+          },
+          {
+            "key": "SOCCER (EPL)",
+            "n": 4,
+            "win_rate": 50.0,
+            "roi_2c": 26.09,
+            "unit_pnl": 104.36,
+            "avg_fill": 0.381,
+            "edge": 11.9
+          },
+          {
+            "key": "OTHER",
+            "n": 4,
+            "win_rate": 25.0,
+            "roi_2c": -39.02,
+            "unit_pnl": -156.1,
+            "avg_fill": 0.477,
+            "edge": -22.7
+          }
+        ],
+        "by_submarket": [
+          {
+            "key": "Moneyline",
+            "n": 23,
+            "win_rate": 39.13,
+            "roi_2c": -26.54,
+            "unit_pnl": -610.44,
+            "avg_fill": 0.527,
+            "edge": -13.6
+          },
+          {
+            "key": "Total",
+            "n": 3,
+            "win_rate": 66.67,
+            "roi_2c": 29.46,
+            "unit_pnl": 88.39,
+            "avg_fill": 0.507,
+            "edge": 16.0
+          }
+        ],
+        "by_price": [
+          {
+            "key": "dog_30_45",
+            "n": 9,
+            "win_rate": 44.44,
+            "roi_2c": 7.83,
+            "unit_pnl": 70.48,
+            "avg_fill": 0.39,
+            "edge": 5.4
+          },
+          {
+            "key": "coin_45_55",
+            "n": 7,
+            "win_rate": 42.86,
+            "roi_2c": -17.04,
+            "unit_pnl": -119.31,
+            "avg_fill": 0.5,
+            "edge": -7.1
+          },
+          {
+            "key": "fav_55_70",
+            "n": 6,
+            "win_rate": 33.33,
+            "roi_2c": -51.39,
+            "unit_pnl": -308.33,
+            "avg_fill": 0.645,
+            "edge": -31.2
+          },
+          {
+            "key": "chalk_70plus",
+            "n": 4,
+            "win_rate": 75.0,
+            "roi_2c": -3.91,
+            "unit_pnl": -15.64,
+            "avg_fill": 0.802,
+            "edge": -5.2
+          }
+        ]
+      },
+      "clv": {
+        "n": 0,
+        "n_with_close": 0,
+        "coverage": 0.0
       },
       "tail_score": 15.0,
       "tail_why": "take-rule bleed \u2014 do not promote"

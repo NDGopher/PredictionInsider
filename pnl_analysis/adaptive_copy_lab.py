@@ -373,7 +373,7 @@ def score_trader_row(
     w60 = window_stat(sub, 60, slip)
     w90 = window_stat(sub, 90, slip)
     action = adaptive_action(t, st, eq, join, w30, w60)
-    regime = regime_for_trader(wallet, username)
+    regime = regime_for_trader(str(t.get("wallet") or ""), name)
     # Composite: prioritize easy + consistent + take +ROI + regime
     composite = (
         0.30 * join["score"]

@@ -1,6 +1,6 @@
 # Adaptive copy lab — multi-strategy + fluid roster
 
-Generated **2026-08-21T15:00:04 UTC**.
+Generated **2026-08-24T19:09:39 UTC**.
 
 Unique closed+open books remain truth for ROI. This lab answers: **which rule × which books would we have tailed**, how smooth the $100 equity was, who is easy to join, and how the roster should adapt.
 
@@ -8,25 +8,25 @@ Product rule stays **`asof_live_q60_sport_rel2`** until an alt strategy beats it
 
 ## What we would have tailed (product rule)
 
-- **live_only**: n=24 WR=58.33% +2¢ ROI=7.4% PnL=$177.55 Sharpe=2.41 maxDD=$-300.0 (2026-03-02 → 2026-05-17)
-- **easy_tail**: n=696 WR=55.03% +2¢ ROI=-2.43% PnL=$-1693.16 Sharpe=-0.31 maxDD=$-4452.89 (2025-01-07 → 2026-05-17)
-- **live_plus_bench**: n=437 WR=60.64% +2¢ ROI=4.66% PnL=$2034.59 Sharpe=2.94 maxDD=$-1824.89 (2025-01-07 → 2026-07-29)
-- **all_csv**: n=1105 WR=60.36% +2¢ ROI=3.15% PnL=$3482.38 Sharpe=1.66 maxDD=$-2812.33 (2025-01-07 → 2026-08-22)
-- **joinable_csv**: n=707 WR=55.3% +2¢ ROI=-1.57% PnL=$-1106.78 Sharpe=0.5 maxDD=$-4452.89 (2025-01-07 → 2026-08-17)
+- **live_only**: n=35 WR=62.86% +2¢ ROI=21.83% PnL=$763.93 Sharpe=4.5 maxDD=$-300.0 (2026-03-02 → 2026-08-17)
+- **easy_tail**: n=611 WR=54.83% +2¢ ROI=-2.95% PnL=$-1804.56 Sharpe=-0.24 maxDD=$-4815.69 (2025-01-07 → 2026-05-17)
+- **live_plus_bench**: n=399 WR=59.9% +2¢ ROI=3.75% PnL=$1495.88 Sharpe=2.17 maxDD=$-2101.63 (2025-01-07 → 2026-08-17)
+- **all_csv**: n=953 WR=59.71% +2¢ ROI=1.95% PnL=$1860.11 Sharpe=0.22 maxDD=$-2812.33 (2025-01-07 → 2026-08-23)
+- **joinable_csv**: n=622 WR=55.14% +2¢ ROI=-1.96% PnL=$-1218.18 Sharpe=0.58 maxDD=$-4815.69 (2025-01-07 → 2026-08-17)
 
 ## Multi-strategy bake-off (all CSV live+bench+watch)
 
 | Strategy | n | WR | +2¢ ROI | PnL | Sharpe | maxDD | Consistency* | Verdict |
 |---|---:|---:|---:|---:|---:|---:|---:|---|
-| `asof_q60_sub_rel2`  | 1118 | 64.04% | 3.26% | $3643.18 | 1.03 | $-2977.88 | 3.4 | watch alt — Q≥60 + submarket expert + rel≥2×, no NFL |
-| `asof_q60_sport_rel2`  | 1205 | 63.57% | 3.25% | $3910.59 | 1.67 | $-2803.59 | 3.4 | watch alt — Same gates without live price band (still no NFL |
-| `asof_live_q60_sport_rel2` PRODUCT | 1105 | 60.36% | 3.15% | $3482.38 | 1.66 | $-2812.33 | 3.1 | ship — PRODUCT — Q≥60, sport +5%, rel≥2×, 10–88¢, no NF |
-| `asof_q50_sport_rel2`  | 3074 | 64.7% | 2.35% | $7236.72 | 1.5 | $-5856.75 | 3.4 | lab — Q≥50 + sport + rel≥2× |
-| `asof_flip_sport`  | 11340 | 52.95% | 1.24% | $14020.73 | -0.58 | $-13066.54 | 2.6 | lab — Sport expert coin-flips (40–60¢) |
-| `asof_q60_sport`  | 7277 | 57.17% | -1.18% | $-8608.28 | -0.48 | $-18473.53 | 0.0 | skip — Q≥60 + sport lane only (no size / no price band) |
-| `asof_live_q50_sport`  | 11723 | 53.49% | -3.72% | $-43553.01 | -0.79 | $-50131.58 | 0.0 | skip — Looser grade (Q≥50) + sport lane + live band |
-| `live_10_88`  | 54445 | 52.41% | -3.92% | $-213425.13 | -3.53 | $-221912.71 | 0.0 | skip — Baseline: any warmup print in 10–88¢ |
-| `asof_ml_sport`  | 18570 | 55.0% | -6.64% | $-123372.66 | -1.41 | $-125931.53 | 0.0 | skip — Sport expert moneylines only |
+| `asof_q60_sub_rel2`  | 956 | 62.87% | 3.22% | $3077.76 | 0.23 | $-2239.26 | 3.2 | watch alt — Q≥60 + submarket expert + rel≥2×, no NFL |
+| `asof_q50_sport_rel2`  | 2764 | 64.33% | 2.25% | $6226.42 | 0.84 | $-5301.13 | 3.2 | watch alt — Q≥50 + sport + rel≥2× |
+| `asof_q60_sport_rel2`  | 1015 | 62.07% | 2.15% | $2181.88 | 0.05 | $-2803.59 | 2.2 | watch alt — Same gates without live price band (still no NFL |
+| `asof_live_q60_sport_rel2` PRODUCT | 953 | 59.71% | 1.95% | $1860.11 | 0.22 | $-2812.33 | 1.9 | ship — PRODUCT — Q≥60, sport +5%, rel≥2×, 10–88¢, no NF |
+| `asof_flip_sport`  | 10174 | 52.93% | 1.07% | $10876.11 | -0.69 | $-12286.0 | 2.2 | lab — Sport expert coin-flips (40–60¢) |
+| `asof_q60_sport`  | 6714 | 56.81% | -1.4% | $-9406.45 | -0.12 | $-18730.67 | 0.0 | skip — Q≥60 + sport lane only (no size / no price band) |
+| `asof_live_q50_sport`  | 10990 | 53.31% | -4.02% | $-44223.48 | -0.37 | $-49959.81 | 0.0 | skip — Looser grade (Q≥50) + sport lane + live band |
+| `live_10_88`  | 48612 | 52.38% | -4.23% | $-205681.59 | -3.59 | $-212874.65 | 0.0 | skip — Baseline: any warmup print in 10–88¢ |
+| `asof_ml_sport`  | 16684 | 54.77% | -7.15% | $-119360.66 | -1.05 | $-122284.57 | 0.0 | skip — Sport expert moneylines only |
 
 \*Consistency = mean/std of daily $100 PnL scaled (higher = smoother green).
 
@@ -34,65 +34,71 @@ Product rule stays **`asof_live_q60_sport_rel2`** until an alt strategy beats it
 
 | Rank | Trader | Bucket | Composite | Join | Cons | Take n/+2¢ | 30d | Action |
 |---:|---|---|---:|---:|---:|---|---|---|
-| 1 | Vetch | bench | 68.2 | 100.0 | 10.3 | 84/12.6% | 14/7.0% | keep_bench |
-| 2 | JhonAlexanderHinestroza | bench | 66.9 | 90.0 | 12.2 | 108/19.49% | 38/19.36% | keep_bench |
-| 3 | 0x1b20a00709DfE648AFd26b326394b5e031f83ab0 | watch | 61.2 | 80.0 | 19.6 | 11/53.31% | 11/53.31% | keep_watch |
-| 4 | ShortFlutterStock | watch | 56.6 | 90.0 | 0.0 | 198/-9.4% | 75/-3.02% | keep_watch |
-| 5 | 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a | live | 55.0 | 93.0 | 3.5 | 24/7.4% | 4/-54.24% | keep_live_caution |
-| 6 | CoryLahey | watch | 54.3 | 75.0 | 1.1 | 66/1.3% | 51/-2.97% | keep_watch |
-| 7 | Andromeda1 | bench | 49.5 | 75.0 | 0.0 | 79/-17.19% | 23/-42.1% | keep_cold |
-| 8 | Supah9ga | bench | 49.4 | 70.0 | 7.9 | 21/16.57% | 9/-14.58% | keep_bench |
-| 9 | Bienville | bench | 48.9 | 75.0 | 68.6 | 5/55.35% | 5/55.35% | keep_bench |
-| 10 | HedgeMaster88 | bench | 45.6 | 70.0 | 0.0 | 35/-7.71% | 35/-7.71% | keep_bench |
-| 11 | DLEK | bench | 42.3 | 83.0 | 0.0 | 22/-23.24% | 18/-20.73% | keep_cold |
-| 12 | SineNooneEI | watch | 42.0 | 85.0 | 0.0 | 14/-17.96% | 14/-17.96% | keep_watch |
-| 13 | TTdes | bench | 41.3 | 100.0 | 0.0 | 15/-42.67% | 14/-49.8% | keep_bench |
-| 14 | UAEVALORANTFAN | watch | 36.0 | 83.0 | 0.0 | 19/-45.05% | 19/-45.05% | keep_watch |
-| 15 | HVAB | watch | 35.6 | 50.0 | 3.1 | 34/3.54% | 32/6.5% | keep_watch |
-| 16 | 0x5966Db1fE50763C9e3C014d756369BAd07E1F804 | bench | 33.8 | 25.0 | 14.7 | 32/21.07% | 23/23.53% | keep_bench |
-| 17 | HongYunX | watch | 31.5 | 93.0 | None | 0/0.0% | 0/0.0% | keep_watch |
-| 18 | 0xheavy888 | bench | 30.8 | 90.0 | None | 0/0.0% | 0/0.0% | keep_bench |
-| 19 | S-Works | watch | 30.8 | 90.0 | None | 0/0.0% | 0/0.0% | keep_watch |
-| 20 | WTSA | bench | 30.2 | 40.0 | 7.3 | 12/14.5% | 12/14.5% | keep_bench |
-| 21 | kch123 | matched_archive | 30.1 | 0.0 | 43.0 | 18/27.1% | 12/17.93% | keep_watch |
-| 22 | Capman | matched_archive | 29.4 | 0.0 | 13.8 | 260/14.46% | 81/14.76% | keep_watch |
-| 23 | SDTrading | watch | 29.1 | 83.0 | None | 0/0.0% | 0/0.0% | keep_watch |
-| 24 | ShucksIt69 | watch | 28.5 | 75.0 | 0.1 | 6/0.4% | 6/0.4% | keep_watch |
-| 25 | JuniorB | bench | 28.3 | 80.0 | None | 0/0.0% | 0/0.0% | keep_bench |
-| 26 | norrisfan | watch | 25.3 | 40.0 | 0.0 | 28/-20.46% | 11/-25.81% | keep_cold |
-| 27 | ckw | bench | 23.4 | 60.0 | None | 0/0.0% | 0/0.0% | keep_bench |
-| 28 | theowalcott | watch | 18.5 | 30.0 | 8.3 | 5/18.18% | 5/18.18% | keep_watch |
-| 29 | predictionlegend | watch | 15.8 | 40.0 | None | 0/0.0% | 0/0.0% | keep_watch |
-| 30 | bloodmaster | watch | 15.8 | 40.0 | None | 0/0.0% | 0/0.0% | keep_watch |
+| 1 | JhonAlexanderHinestroza | bench | 64.3 | 90.0 | 12.2 | 108/19.49% | 38/19.36% | keep_bench |
+| 2 | 0x1b20a00709DfE648AFd26b326394b5e031f83ab0 | live | 64.0 | 80.0 | 19.6 | 11/53.31% | 11/53.31% | keep_live |
+| 3 | SDTrading | live | 62.0 | 83.0 | None | 0/0.0% | 0/0.0% | keep_live |
+| 4 | UAEVALORANTFAN | watch | 62.0 | 83.0 | 0.0 | 19/-45.05% | 19/-45.05% | auto_promote_if_regime |
+| 5 | ShortFlutterStock | watch | 61.4 | 90.0 | 0.0 | 198/-9.4% | 75/-3.02% | keep_watch |
+| 6 | Vetch | bench | 60.3 | 100.0 | 10.3 | 84/12.6% | 14/7.0% | keep_bench |
+| 7 | 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a | live | 57.9 | 93.0 | 3.5 | 24/7.4% | 4/-54.24% | keep_live_caution |
+| 8 | Andromeda1 | bench | 45.6 | 75.0 | 0.0 | 79/-17.19% | 23/-42.1% | keep_cold |
+| 9 | Supah9ga | bench | 43.7 | 70.0 | 7.9 | 21/16.57% | 9/-14.58% | keep_bench |
+| 10 | TTdes | bench | 42.0 | 100.0 | 0.0 | 15/-42.67% | 14/-49.8% | keep_bench |
+| 11 | HedgeMaster88 | bench | 41.5 | 70.0 | 0.0 | 35/-7.71% | 35/-7.71% | keep_bench |
+| 12 | DLEK | bench | 38.4 | 83.0 | 0.0 | 22/-23.24% | 18/-20.73% | keep_cold |
+| 13 | HongYunX | live | 35.5 | 93.0 | None | 0/0.0% | 0/0.0% | keep_live |
+| 14 | 0xheavy888 | bench | 30.1 | 90.0 | None | 0/0.0% | 0/0.0% | keep_bench |
+| 15 | S-Works | watch | 27.5 | 90.0 | None | 0/0.0% | 0/0.0% | auto_promote_if_regime |
+| 16 | Capman | matched_archive | 27.3 | 0.0 | 13.8 | 260/14.46% | 81/14.76% | keep_watch |
+| 17 | SineNooneEI | watch | 26.9 | 50.0 | 0.0 | 14/-17.96% | 14/-17.96% | keep_watch |
+| 18 | kch123 | matched_archive | 26.3 | 0.0 | 43.0 | 18/27.1% | 12/17.93% | keep_watch |
+| 19 | JuniorB | bench | 24.8 | 80.0 | None | 0/0.0% | 0/0.0% | keep_bench |
+| 20 | ShucksIt69 | watch | 24.6 | 75.0 | 0.1 | 6/0.4% | 6/0.4% | auto_promote_if_regime |
+| 21 | norrisfan | watch | 23.0 | 40.0 | 0.0 | 28/-20.46% | 11/-25.81% | keep_cold |
+| 22 | HVAB | watch | 21.8 | 50.0 | None | 0/0.0% | 0/0.0% | keep_watch |
+| 23 | ckw | bench | 20.6 | 60.0 | None | 0/0.0% | 0/0.0% | keep_bench |
+| 24 | WTSA | bench | 20.2 | 40.0 | None | 0/0.0% | 0/0.0% | keep_bench |
+| 25 | bloodmaster | watch | 16.7 | 40.0 | None | 0/0.0% | 0/0.0% | keep_watch |
+| 26 | Sassy-Bucket | watch | 15.4 | 15.0 | None | 0/0.0% | 0/0.0% | keep_watch |
+| 27 | 0xE30E74595517de48f1FB19f4553dd3d9F1E96B87 | watch | 14.9 | 40.0 | 0.0 | 1/-100.0% | 1/-100.0% | keep_watch |
+| 28 | predictionlegend | watch | 14.4 | 40.0 | 0.0 | 1/-100.0% | 1/-100.0% | keep_watch |
+| 29 | Bienville | bench | 14.0 | 40.0 | None | 0/0.0% | 0/0.0% | keep_bench |
+| 30 | theowalcott | watch | 12.6 | 30.0 | None | 0/0.0% | 0/0.0% | keep_watch |
 
 ## Adaptive control loop (how we stay fluid)
 
-- Refresh CSVs (live+bench+watch only) → rebuild unique ranks → copy_universe gates.
-- Run product take-rule + this lab (multi-strategy + consistency + joinability).
-- Demote: take_rule_bleed, quiet_30d, unique ROI collapse — automatic in copy_roster.
-- Promote bench→live: only when propose_promote_live gates fire (joinable + take n≥12 +ROI + active).
-- Promote watch→live: human edits extra_traders status (never auto).
-- Cold: keep fetching bench/watch; pause live sizing if live 30d take ROI deeply red.
-- New traders: Polydata boards → extra_watch → unique book → digest → lab score → human promote.
-- New strategies: compete in COMPARE_STRATEGIES; swap only via propose_strategy_swap + cache bump.
+- Refresh CSVs (live+bench+watch) → ranks → copy_universe.
+- Adaptive lab: multi-strategy + joinability + consistency + equity regime.
+- auto_promote.py: watch/bench → take_book automatically when gates fire (including turnaround).
+- Rebuild copy_universe so Take these allowlist updates without human edits.
+- Demote automatic: take_rule_bleed, quiet_30d, live take n≥12 deeply red.
+- New traders: Polydata → watch → unique book → regime/lab → auto_promote.
+- MM lane is separate (mm_maker_research) — not $100 copy.
 
 ### Proposed actions now
 
+- **auto_promote_if_regime** — UAEVALORANTFAN: watch candidate — auto_promote checks turnaround/hot last30 gates
 - **keep_live_caution** — 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a: live hist take +7.4% n=24 but rolling 30d take -54.24% n=4 — size down / wait for prints
 - **keep_cold** — Andromeda1: take-rule cold n=79 roi=-17.19%
 - **keep_cold** — DLEK: take-rule cold n=22 roi=-23.24%
+- **auto_promote_if_regime** — S-Works: watch candidate — auto_promote checks turnaround/hot last30 gates
+- **auto_promote_if_regime** — ShucksIt69: watch candidate — auto_promote checks turnaround/hot last30 gates
 - **keep_cold** — norrisfan: take-rule cold n=28 roi=-20.46%
+- **propose_strategy_swap** — None: easy_tail asof_flip_sport ROI 2.52% n=6222 vs product -2.95% n=611
 
 ## Forward 30d projection (illustrative)
 
 - Method: trades_per_day × $100 expectancy from in-sample product rule on the scored pool. Bands are illustrative (±1.28σ-style), not a forecast of edge persistence.
-- Pool hist: n=24 ROI=7.4%
-- Projected plays: **45.0** · PnL **$333.0** (band $161.27 → $504.73)
+- Pool hist: n=35 ROI=21.83%
+- Projected plays: **42.0** · PnL **$916.86** (band $750.95 → $1082.77)
 - Caveat: Empty live open book ⇒ near-term n may be 0 even if hist tpd > 0. Cold weeks pause; do not force size.
 
 | Live trader | Hist n | Hist +2¢ | Proj n 30d | Proj $ |
 |---|---:|---:|---:|---:|
+| 0x1b20a00709DfE648AFd26b326394b5e031f83ab0 | 11 | 53.31% | 36.6 | $1951.15 |
+| SDTrading | 0 | 0.0% | 0.0 | $0.0 |
 | 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a | 24 | 7.4% | 45.0 | $333.0 |
+| HongYunX | 0 | 0.0% | 0.0 | $0.0 |
 
 ## Machine-learning-style adaptation (without black-box ML yet)
 

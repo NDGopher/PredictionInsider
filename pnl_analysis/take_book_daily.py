@@ -156,15 +156,15 @@ def pause_reason(w30: dict, w60: dict) -> str | None:
 
 
 def scan_open(trusted: list[dict]) -> tuple[list[dict], list[dict]]:
-    allow = {t["wallet"].lower(): t["username"] for t in trusted}
     now = datetime.now(timezone.utc)
     takes: list[dict] = []
     close: list[dict] = []
-    for wallet, username in roster_traders():
-        w = wallet.lower()
-        if w not in allow:
+    for t in trusted:
+        w = str(t.get("wallet") or "").lower()
+        username = str(t.get("username") or "")
+        if not w.startswith("0x") or not username:
             continue
-        csv_p = csv_path_for(wallet, username)
+        csv_p = csv_path_for(w, username)
         if not csv_p.exists():
             continue
         mk = load_trader_markets(csv_p, username, w)

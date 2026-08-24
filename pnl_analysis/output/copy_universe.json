@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-24T18:25:09.227226+00:00",
+  "generated_at": "2026-08-24T19:08:35.632346+00:00",
   "method": "Live copy = Polydata-matched, joinable (40\u201312k closed, WR 48\u201375, median <$15k), HOT/WARM, unique-book ROI \u22655%, \u226540 events, \u22658 settled prints in 30d. extra_traders status=watch stays discovery until auto_promote flips to take_book. Auto-promote is automatic when joinable + HOT/WARM + (unique ROI\u22655% or turnaround last30). Skip = 100k+ Polydata trades, 50k+ CSV rows, MM, kicked grinders, no CSV. Bench = take-book 12 who are stale, quiet, whale-sized, unique ROI too low, or take-rule bleed (unique green / asof_live_q60 red). Futures are not a copy lane (n=5, \u221237% after 2\u00a2).",
   "rules": {
     "pd_trades_bot": 100000,

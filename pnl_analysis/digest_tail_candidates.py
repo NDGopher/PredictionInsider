@@ -82,6 +82,7 @@ def _load_extra_notes() -> dict[str, str]:
 
 
 def candidate_books(uni: dict[str, Any]) -> list[dict[str, Any]]:
+    """Live + bench + every watch/bench name that has a CSV (not just PRIORITY_WATCH)."""
     rows: list[dict[str, Any]] = []
     seen: set[str] = set()
     for bucket in ("live", "bench", "watch"):
@@ -90,7 +91,8 @@ def candidate_books(uni: dict[str, Any]) -> list[dict[str, Any]]:
             u = str(t.get("username") or "")
             if not w or w in seen:
                 continue
-            if bucket == "watch" and u not in PRIORITY_WATCH:
+            csv_p = csv_path_for(w, u)
+            if bucket == "watch" and not csv_p.exists():
                 continue
             seen.add(w)
             rows.append({**t, "bucket": bucket})

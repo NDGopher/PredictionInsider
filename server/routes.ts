@@ -19,7 +19,7 @@ import {
   signalMatchesStrategy,
   type TailStrategyFilters,
 } from "./tailStrategies";
-import { collectTakePlays, enrichTakePlaysWithBook, loadCopyDiscovery, loadLaneBacktest, loadMmResearch, loadTakeHealthFile, loadTrustedCopyBooks, mapCsvOpenRows, takeStrategyCard, type TakePlayBundle } from "./takePlays";
+import { collectTakePlays, enrichTakePlaysWithBook, loadCopyDiscovery, loadLaneBacktest, loadMmResearch, loadRankedPlayBoard, loadTakeHealthFile, loadTrustedCopyBooks, mapCsvOpenRows, mergeRankedPlays, takeStrategyCard, type TakePlayBundle } from "./takePlays";
 import { syncTakeBookAlerts, telegramConfigured } from "./telegramTakeAlerts";
 import { cancelUnfilledTake, paperLogTakePlays } from "./paperTakeBets";
 import { americanFromPrice } from "./oddsFormat";
@@ -6217,9 +6217,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         telegramConfigured: telegramConfigured(),
         copyBooks: loadTrustedCopyBooks(),
         lanes: loadLaneBacktest(),
-        ranked: [...bundle.live.map((p) => ({ ...p, list: "take" as const })), ...bundle.near.map((p) => ({ ...p, list: "near" as const }))]
-          .sort((a, b) => b.grade - a.grade || b.rel - a.rel)
-          .map((p, i) => ({ ...p, rank: i + 1 })),
+        ranked: mergeRankedPlays(bundle, health, loadRankedPlayBoard()),
         discovery: loadCopyDiscovery(),
       });
     } catch (err: unknown) {

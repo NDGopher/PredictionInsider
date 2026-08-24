@@ -16,10 +16,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 STEPS: list[tuple[str, list[str]]] = [
     ("polydata discovery → watch", [sys.executable, str(ROOT / "discover_polydata_boards.py")]),
+    ("fetch missing watch CSVs", [sys.executable, str(ROOT / "fetch_watch_csvs.py"), "--limit", "8"]),
     ("take-book health", [sys.executable, str(ROOT / "take_book_daily.py")]),
+    ("ranked play board (live+bench+watch)", [sys.executable, str(ROOT / "scan_ranked_opens.py")]),
     ("copy universe", [sys.executable, str(ROOT / "copy_roster.py")]),
     ("insider ranks", [sys.executable, str(ROOT / "build_insider_ranks.py"), "--offline"]),
     ("working copy model", [sys.executable, str(ROOT / "rebuild_working_model.py")]),
+    ("as-of fullbook backtest", [sys.executable, str(ROOT / "asof_fullbook_backtest.py"), "--write-product"]),
     ("tail digest + CLV", [sys.executable, str(ROOT / "digest_tail_candidates.py")]),
     ("adaptive multi-strategy lab", [sys.executable, str(ROOT / "adaptive_copy_lab.py")]),
     ("auto-promote to live", [sys.executable, str(ROOT / "auto_promote.py")]),
