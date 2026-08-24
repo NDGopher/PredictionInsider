@@ -20,7 +20,7 @@ import {
   type TailStrategyFilters,
 } from "./tailStrategies";
 import { loadPredictionInsiders } from "./predictionInsiders";
-import { collectTakePlays, enrichTakePlaysWithBook, loadCopyDiscovery, loadLaneBacktest, loadMmResearch, loadRankedPlayBoard, loadTakeHealthFile, loadTrustedCopyBooks, mapCsvOpenRows, mergeRankedPlays, takeStrategyCard, type TakePlayBundle } from "./takePlays";
+import { collectTakePlays, enrichTakePlaysWithBook, loadCopyDiscovery, loadLaneBacktest, loadMmResearch, loadRankedPlayBoard, loadRealizedTakeBacktest, loadTakeHealthFile, loadTrustedCopyBooks, mapCsvOpenRows, mergeRankedPlays, takeStrategyCard, type TakePlayBundle } from "./takePlays";
 import { syncTakeBookAlerts, telegramConfigured } from "./telegramTakeAlerts";
 import { cancelUnfilledTake, paperLogTakePlays } from "./paperTakeBets";
 import { americanFromPrice } from "./oddsFormat";
@@ -6180,11 +6180,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const file = loadTailStrategiesFile();
       const card = takeStrategyCard();
       const health = loadTakeHealthFile();
+      const board = loadRankedPlayBoard();
       const cached = getCache<SignalsResponse>("signals-elite-v59-vip-premium-sp");
       const bundle = collectTakePlays(cached?.signals || []);
       await enrichTakePlaysWithBook(bundle);
       void enqueueTakeBookSync(bundle);
       const stats = card?.join_max_plus_2c || {};
+      const realized = loadRealizedTakeBacktest(health);
+      const ranked = mergeRankedPlays(bundle, health, board);
       res.json({
         generatedAt: file?.generated_at || null,
         asOf: file?.as_of || health?.as_of || null,
@@ -6194,7 +6197,25 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         strategyId: card?.id || null,
         strategyName: card?.name || null,
         rule: card?.rule || null,
-        backtest: stats,
+        backtest: realized?.last30d?.n
+          ? {
+              n: realized.last30d.n,
+              win_rate: realized.last30d.win_rate,
+              roi: realized.last30d.roi_2c,
+              source: realized.source,
+            }
+          : stats,
+        realizedBacktest: realized,
+        dataProvenance:
+          "Open plays: live CSV positions + CLOB ask. Grades: Q from as-of walkforward on unique book. "
+          + "Sport ROI: hold-to-res lane stats at signal time. Rolling ROI: resolved take-slice from asof_fullbook_plays.csv.",
+        rankedBoard: board
+          ? {
+              generatedAt: board.generated_at,
+              booksScanned: board.books_scanned,
+              counts: board.counts,
+            }
+          : null,
         health: health
           ? {
               status: health.status,
@@ -6218,7 +6239,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         telegramConfigured: telegramConfigured(),
         copyBooks: loadTrustedCopyBooks(),
         lanes: loadLaneBacktest(),
-        ranked: mergeRankedPlays(bundle, health, loadRankedPlayBoard()),
+        ranked,
         discovery: loadCopyDiscovery(),
       });
     } catch (err: unknown) {

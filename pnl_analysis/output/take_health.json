@@ -1,10 +1,468 @@
 {
-  "generated_at": "2026-08-24T18:20:41.048141+00:00",
+  "generated_at": "2026-08-24T19:27:43.997290+00:00",
   "as_of": "2026-08-24",
   "status": "go",
   "pause_reason": null,
-  "windows": {},
-  "by_trader": [],
+  "windows": {
+    "last_30d": {
+      "n": 11,
+      "win_rate": 72.73,
+      "roi_2c": 53.31,
+      "pnl_2c": 586.38
+    },
+    "last_60d": {
+      "n": 11,
+      "win_rate": 72.73,
+      "roi_2c": 53.31,
+      "pnl_2c": 586.38
+    },
+    "last_90d": {
+      "n": 11,
+      "win_rate": 72.73,
+      "roi_2c": 53.31,
+      "pnl_2c": 586.38
+    },
+    "all": {
+      "n": 942,
+      "win_rate": 59.98,
+      "roi_2c": 2.36,
+      "pnl_2c": 2226.14
+    }
+  },
+  "by_trader": [
+    {
+      "username": "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+      "last_30d": {
+        "n": 11,
+        "win_rate": 72.73,
+        "roi_2c": 53.31,
+        "pnl_2c": 586.38
+      },
+      "last_60d": {
+        "n": 11,
+        "win_rate": 72.73,
+        "roi_2c": 53.31,
+        "pnl_2c": 586.38
+      },
+      "last_90d": {
+        "n": 11,
+        "win_rate": 72.73,
+        "roi_2c": 53.31,
+        "pnl_2c": 586.38
+      },
+      "all": {
+        "n": 11,
+        "win_rate": 72.73,
+        "roi_2c": 53.31,
+        "pnl_2c": 586.38
+      }
+    },
+    {
+      "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+      "last_30d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_60d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_90d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "all": {
+        "n": 24,
+        "win_rate": 58.33,
+        "roi_2c": 7.4,
+        "pnl_2c": 177.55
+      }
+    },
+    {
+      "username": "Andromeda1",
+      "last_30d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_60d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_90d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "all": {
+        "n": 80,
+        "win_rate": 51.25,
+        "roi_2c": -16.54,
+        "pnl_2c": -1322.98
+      }
+    },
+    {
+      "username": "Capman",
+      "last_30d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_60d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_90d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "all": {
+        "n": 260,
+        "win_rate": 72.31,
+        "roi_2c": 14.46,
+        "pnl_2c": 3760.64
+      }
+    },
+    {
+      "username": "DLEK",
+      "last_30d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_60d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_90d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "all": {
+        "n": 22,
+        "win_rate": 50.0,
+        "roi_2c": -23.24,
+        "pnl_2c": -511.29
+      }
+    },
+    {
+      "username": "HedgeMaster88",
+      "last_30d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_60d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_90d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "all": {
+        "n": 35,
+        "win_rate": 54.29,
+        "roi_2c": -7.71,
+        "pnl_2c": -269.99
+      }
+    },
+    {
+      "username": "JhonAlexanderHinestroza",
+      "last_30d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_60d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_90d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "all": {
+        "n": 108,
+        "win_rate": 60.19,
+        "roi_2c": 19.49,
+        "pnl_2c": 2104.92
+      }
+    },
+    {
+      "username": "ShortFlutterStock",
+      "last_30d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_60d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_90d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "all": {
+        "n": 198,
+        "win_rate": 47.98,
+        "roi_2c": -9.4,
+        "pnl_2c": -1860.55
+      }
+    },
+    {
+      "username": "ShucksIt69",
+      "last_30d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_60d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_90d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "all": {
+        "n": 6,
+        "win_rate": 50.0,
+        "roi_2c": 0.4,
+        "pnl_2c": 2.38
+      }
+    },
+    {
+      "username": "Supah9ga",
+      "last_30d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_60d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_90d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "all": {
+        "n": 23,
+        "win_rate": 52.17,
+        "roi_2c": 11.31,
+        "pnl_2c": 260.18
+      }
+    },
+    {
+      "username": "TTdes",
+      "last_30d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_60d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_90d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "all": {
+        "n": 15,
+        "win_rate": 33.33,
+        "roi_2c": -42.67,
+        "pnl_2c": -640.02
+      }
+    },
+    {
+      "username": "UAEVALORANTFAN",
+      "last_30d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_60d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_90d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "all": {
+        "n": 19,
+        "win_rate": 31.58,
+        "roi_2c": -45.05,
+        "pnl_2c": -855.89
+      }
+    },
+    {
+      "username": "Vetch",
+      "last_30d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_60d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_90d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "all": {
+        "n": 84,
+        "win_rate": 78.57,
+        "roi_2c": 12.6,
+        "pnl_2c": 1058.44
+      }
+    },
+    {
+      "username": "kch123",
+      "last_30d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_60d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_90d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "all": {
+        "n": 18,
+        "win_rate": 77.78,
+        "roi_2c": 27.1,
+        "pnl_2c": 487.79
+      }
+    },
+    {
+      "username": "norrisfan",
+      "last_30d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_60d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_90d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "all": {
+        "n": 29,
+        "win_rate": 41.38,
+        "roi_2c": -23.2,
+        "pnl_2c": -672.8
+      }
+    },
+    {
+      "username": "tcp2",
+      "last_30d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_60d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "last_90d": {
+        "n": 0,
+        "win_rate": null,
+        "roi_2c": null,
+        "pnl_2c": null
+      },
+      "all": {
+        "n": 10,
+        "win_rate": 60.0,
+        "roi_2c": -7.86,
+        "pnl_2c": -78.62
+      }
+    }
+  ],
   "propose_drop": [],
   "propose_add": [],
   "live_open": [],
@@ -34,5 +492,11 @@
       "url": "https://polymarket.com/event/atp-mejia-draxl-2026-08-25"
     }
   ],
-  "note": "Open scan OK; rolling windows skipped (missing asof_fullbook_plays.csv)"
+  "rules": {
+    "pause_30d": "n\u226525 and ROI+2\u00a2 < 0",
+    "pause_60d": "n\u226540 and ROI+2\u00a2 < \u22125%",
+    "drop": "last 90d AND 60d take-slice both negative, n\u226515 each",
+    "add": "never from a 7-day heat \u2014 Polydata match + n\u226540 + sports specialist + hold-to-res not juice-bleed"
+  },
+  "start_bank_ref": 10000.0
 }

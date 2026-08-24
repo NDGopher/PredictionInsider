@@ -51,6 +51,7 @@ interface TakePlay {
   why?: string[];
   scoreBreakdown?: Record<string, number>;
   rank?: number;
+  list?: "take" | "near" | "watch";
   url?: string;
 }
 
@@ -84,7 +85,16 @@ interface TakePlaysResponse {
   rule?: string | null;
   fill?: string;
   stake?: number;
-  backtest?: { n?: number; win_rate?: number; roi?: number };
+  backtest?: { n?: number; win_rate?: number; roi?: number; source?: string };
+  realizedBacktest?: {
+    source?: string;
+    last30d?: { n?: number; win_rate?: number | null; roi_2c?: number | null };
+    last60d?: { n?: number; win_rate?: number | null; roi_2c?: number | null };
+    last90d?: { n?: number; win_rate?: number | null; roi_2c?: number | null };
+    all?: { n?: number; win_rate?: number | null; roi_2c?: number | null };
+  } | null;
+  dataProvenance?: string;
+  rankedBoard?: { booksScanned?: number; counts?: { take?: number; near?: number; watch?: number } };
   health?: TakeHealth | null;
   paused?: boolean;
   pauseReason?: string | null;
@@ -295,6 +305,76 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
   );
 }
 
+function gradeTone(g: number): string {
+  if (g >= 75) return "text-emerald-400";
+  if (g >= 60) return "text-primary";
+  if (g >= 45) return "text-amber-400";
+  return "text-muted-foreground";
+}
+
+function GradedPlayRow({ play, compact }: { play: TakePlay; compact?: boolean }) {
+  const grade = Math.round(play.grade ?? play.confidence ?? 0);
+  const href = play.url || (play.slug ? `https://polymarket.com/event/${play.slug}` : undefined);
+  const tier = play.list === "take" ? "TAKE" : play.list === "near" ? "NEAR" : "WATCH";
+  return (
+    <div
+      className={`flex flex-wrap items-start gap-2 ${compact ? "py-2 border-b border-border/40 last:border-0" : ""}`}
+      data-testid="graded-play-row"
+    >
+      <div className="flex items-center gap-1.5 shrink-0">
+        <Badge variant="outline" className="tabular-nums text-[10px]">#{play.rank ?? "—"}</Badge>
+        <span className={`text-base font-bold tabular-nums ${gradeTone(grade)}`}>{grade}</span>
+        <Badge variant={play.list === "take" ? "default" : play.list === "near" ? "outline" : "secondary"} className="text-[10px]">
+          {tier}
+        </Badge>
+      </div>
+      <div className="flex-1 min-w-0 space-y-0.5">
+        <div className="text-sm font-medium leading-snug">{play.playLabel || play.pick || play.marketQuestion}</div>
+        <div className="text-[10px] text-muted-foreground">
+          {(play.traders || []).join(", ")}
+          {play.q ? ` · Q${Math.round(play.q)}` : ""}
+          {play.rel ? ` · ${play.rel.toFixed(1)}×` : ""}
+          {play.sportRoi != null ? ` · sport ROI ${play.sportRoi.toFixed(0)}%` : ""}
+        </div>
+        {!compact && play.why?.slice(0, 2).map((w) => (
+          <div key={w} className="text-[10px] text-muted-foreground">· {w}</div>
+        ))}
+      </div>
+      {href && (
+        <a href={href} target="_blank" rel="noreferrer" className="text-primary shrink-0">
+          <ExternalLink className="w-3.5 h-3.5" />
+        </a>
+      )}
+    </div>
+  );
+}
+
+function GradedBoard({ plays, board }: { plays: TakePlay[]; board?: TakePlaysResponse["rankedBoard"] }) {
+  if (!plays.length) return null;
+  const counts = board?.counts;
+  return (
+    <Card data-testid="card-graded-board">
+      <CardContent className="p-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Graded board · 0–100</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">
+              {board?.booksScanned ?? "—"} CSV books scanned
+              {counts ? ` · ${counts.take ?? 0} TAKE · ${counts.near ?? 0} NEAR · ${counts.watch ?? 0} watch` : ""}
+            </div>
+          </div>
+          <Link href="/insiders" className="text-xs text-primary">Full board →</Link>
+        </div>
+        <div className="divide-y divide-border/40">
+          {plays.slice(0, 8).map((p) => (
+            <GradedPlayRow key={p.id} play={p} compact />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function DiscoveryStrip({ discovery }: { discovery?: DiscoveryBundle }) {
   if (!discovery) return null;
   const live = discovery.live || [];
@@ -342,14 +422,23 @@ export default function TakeBookFeed() {
   });
 
   const liveAll = (data?.live || []).filter((p) => p.valid !== false);
-  const nearAll = [...(data?.near || []), ...(data?.csvOpen?.near || [])];
+  const rankedAll = data?.ranked || [];
+  const rankedSports = rankedAll.filter((p) => p.lane !== "futures" && p.submarket !== "Futures");
+  const nearAll = [
+    ...rankedSports.filter((p) => p.list === "near"),
+    ...(data?.near || []).filter((p) => !rankedSports.some((r) => r.id === p.id)),
+    ...(data?.csvOpen?.near || []).filter((p) => !rankedSports.some((r) => r.id === p.id)),
+  ];
   const [laneTab, setLaneTab] = useState<"sports" | "other">("sports");
   const inLane = (p: TakePlay) => p.lane !== "futures" && p.submarket !== "Futures" && (p.lane || "sports") === laneTab;
   const live = liveAll.filter(inLane);
   const near = nearAll.filter(inLane).slice(0, 8);
-  const w30 = data?.health?.windows?.last_30d;
-  const w60 = data?.health?.windows?.last_60d;
-  const w90 = data?.health?.windows?.last_90d;
+  const gradedTop = rankedSports.filter(inLane).slice(0, 8);
+  const realized = data?.realizedBacktest;
+  const w30 = realized?.last30d ?? data?.health?.windows?.last_30d;
+  const w60 = realized?.last60d ?? data?.health?.windows?.last_60d;
+  const w90 = realized?.last90d ?? data?.health?.windows?.last_90d;
+  const wall = realized?.all;
   const bt = data?.backtest;
 
   return (
@@ -365,8 +454,14 @@ export default function TakeBookFeed() {
           </h2>
           <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
             {data?.rule || "As-of Q60 + sport expert + 2× size, no NFL."}
-            {bt?.n ? ` Backtest n=${bt.n} · ${bt.win_rate}% WR · ${bt.roi}% ROI after 2¢.` : ""}
-            {" "}Each card shows Grade /100 and why. Full ranked list on Ranked Plays.
+            {bt?.n ? (
+              <>
+                {" "}
+                Real take-slice backtest (30d): n={bt.n} · {bt.win_rate}% WR · {bt.roi}% ROI after 2¢
+                {bt.source ? " — from resolved CSV plays." : "."}
+              </>
+            ) : null}
+            {" "}Graded 0–100 on every open. Only TAKE rows fire alerts.
           </p>
           <div className="flex flex-wrap gap-2 mt-2">
             {(["sports", "other"] as const).map((tab) => {
@@ -403,6 +498,7 @@ export default function TakeBookFeed() {
           {w30?.n ? <Badge variant="outline">30d {w30.n} · {w30.roi_2c}% ROI</Badge> : null}
           {w60?.n ? <Badge variant="outline">60d {w60.n} · {w60.roi_2c}% ROI</Badge> : null}
           {w90?.n ? <Badge variant="outline">90d {w90.n} · {w90.roi_2c}% ROI</Badge> : null}
+          {wall?.n ? <Badge variant="outline">all {wall.n} · {wall.roi_2c}% ROI</Badge> : null}
           {data?.telegramConfigured ? (
             <Badge variant="outline">Telegram on</Badge>
           ) : (
@@ -428,8 +524,8 @@ export default function TakeBookFeed() {
       {!isLoading && live.length === 0 && (
         <Card>
           <CardContent className="p-6 text-sm text-muted-foreground space-y-1">
-            <div>No live take-book tickets right now. Alerts auto-delete on Telegram when they go invalid.</div>
-            <div>When one prints: Telegram + paper ticket at the live ask. Type the cents you actually paid. Empty book is honest.</div>
+            <div>No product TAKE tickets right now — gates are strict on purpose.</div>
+            <div>Graded board below shows NEAR/WATCH opens with real CSV entry prices and as-of sport ROI.</div>
           </CardContent>
         </Card>
       )}
@@ -437,6 +533,10 @@ export default function TakeBookFeed() {
       {live.map((p) => (
         <PlayCard key={p.id} play={p} take />
       ))}
+
+      {!isLoading && gradedTop.length > 0 && (
+        <GradedBoard plays={gradedTop} board={data?.rankedBoard} />
+      )}
 
       {near.length > 0 && (
         <div className="space-y-2">

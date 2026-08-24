@@ -639,6 +639,25 @@ export function loadCopyDiscovery(): CopyDiscoveryBundle {
   };
 }
 
+/** Hold-to-res take-slice ROI from asof_fullbook_plays.csv (real resolved plays, not estimates). */
+export function loadRealizedTakeBacktest(health: TakeHealthFile | null): {
+  source: string;
+  last30d: { n?: number; win_rate?: number | null; roi_2c?: number | null; pnl_2c?: number | null } | null;
+  last60d: { n?: number; win_rate?: number | null; roi_2c?: number | null; pnl_2c?: number | null } | null;
+  last90d: { n?: number; win_rate?: number | null; roi_2c?: number | null; pnl_2c?: number | null } | null;
+  all: { n?: number; win_rate?: number | null; roi_2c?: number | null; pnl_2c?: number | null } | null;
+} | null {
+  const w = health?.windows;
+  if (!w || Object.keys(w).length === 0) return null;
+  return {
+    source: "asof_fullbook_plays.csv — hold-to-resolution take-slice, VWAP+2¢ fill, $100 stake",
+    last30d: w.last_30d ?? null,
+    last60d: w.last_60d ?? null,
+    last90d: w.last_90d ?? null,
+    all: w.all ?? null,
+  };
+}
+
 export interface RankedPlayBoardFile {
   generated_at?: string;
   method?: string;
