@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-08-21T14:28:41.958318+00:00",
+  "generated_at": "2026-08-24T18:22:27.807567+00:00",
   "rule": "asof_live_q60_sport_rel2 (Q>=60, sport ROI>=5%, rel>=2, 10-88c, no NFL, fill VWAP+2c). Futures excluded from product.",
   "all": {
-    "n": 24,
-    "win_rate": 58.33,
-    "roi_2c": 7.4
+    "n": 35,
+    "win_rate": 62.86,
+    "roi_2c": 21.83
   },
   "sports": {
-    "n": 24,
-    "win_rate": 58.33,
-    "roi_2c": 7.4
+    "n": 35,
+    "win_rate": 62.86,
+    "roi_2c": 21.83
   },
   "other": {
     "n": 0,
@@ -23,14 +23,19 @@
   },
   "by_submarket": {
     "Moneyline": {
-      "n": 8,
+      "n": 16,
       "win_rate": 62.5,
-      "roi_2c": 16.36
+      "roi_2c": 23.9
     },
     "Spread": {
       "n": 16,
       "win_rate": 56.25,
       "roi_2c": 2.92
+    },
+    "Total": {
+      "n": 3,
+      "win_rate": 100.0,
+      "roi_2c": 111.61
     }
   },
   "note": "Sports = game ML/spread/total. Other = politics / non-game (no futures). Live copy list is joinable HOT/WARM unique-ROI books only (see copy_universe.json)."

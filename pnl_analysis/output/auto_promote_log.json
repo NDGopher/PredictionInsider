@@ -1,22 +1,10 @@
 {
-  "generated_at": "2026-08-24T15:13:07.129433+00:00",
+  "generated_at": "2026-08-24T18:25:09.032250+00:00",
   "dry_run": false,
   "method": "Automatic watch/bench \u2192 take_book when joinable + HOT/WARM + (unique ROI\u22655% or regime turnaround/hot last30\u22658% n\u226530). Take-rule n\u226512 with \u2212ROI blocks. Rebuilds copy_universe.",
   "promoted": [],
   "demoted": [],
   "held_sample": [
-    {
-      "username": "CoryLahey",
-      "wallet": "0x5c3a1a602848565bb16165fcd460b00c3d43020b",
-      "from_bucket": "watch",
-      "regime": "stable",
-      "why": "gates_fail life=4.61 regime=stable l30=29.65",
-      "unique_roi": 4.61,
-      "last_30d_roi": 29.65,
-      "last_30d_n": 10,
-      "take_n": 66,
-      "take_roi": 1.3
-    },
     {
       "username": "ShucksIt69",
       "wallet": "0x84dbb7103982e3617704a2ed7d5b39691952aeeb",
@@ -34,7 +22,7 @@
       "wallet": "0x38337de21ff0bb0a11a40761507d51e318d633d1",
       "from_bucket": "watch",
       "regime": "stable",
-      "why": "take_bleed_n=14_roi=-17.96",
+      "why": "not_joinable",
       "unique_roi": 5.01,
       "last_30d_roi": 7.43,
       "last_30d_n": 196,
@@ -258,6 +246,138 @@
       "take_roi": 0.0
     },
     {
+      "username": "00xaaxaxaxsasdasddasdjj233j2j32h4h35",
+      "wallet": "0x1f7105a18d9f36aef7c83e5df210e57cf487b2e4",
+      "from_bucket": "watch",
+      "regime": "thin",
+      "why": "not_joinable",
+      "unique_roi": null,
+      "last_30d_roi": null,
+      "last_30d_n": 0,
+      "take_n": null,
+      "take_roi": null
+    },
+    {
+      "username": "0xBc43c8bfBC4d77c2FC9011adaD38Ba43b88996d3",
+      "wallet": "0xbc43c8bfbc4d77c2fc9011adad38ba43b88996d3",
+      "from_bucket": "watch",
+      "regime": "thin",
+      "why": "not_joinable",
+      "unique_roi": null,
+      "last_30d_roi": null,
+      "last_30d_n": 0,
+      "take_n": null,
+      "take_roi": null
+    },
+    {
+      "username": "ic4cream",
+      "wallet": "0x27f738fe203827445690339104aae35b20bc44b0",
+      "from_bucket": "watch",
+      "regime": "thin",
+      "why": "not_joinable",
+      "unique_roi": null,
+      "last_30d_roi": null,
+      "last_30d_n": 0,
+      "take_n": null,
+      "take_roi": null
+    },
+    {
+      "username": "kekasaur",
+      "wallet": "0xf5f92940519a72da460b1c2a606bc1230f0e87b0",
+      "from_bucket": "watch",
+      "regime": "thin",
+      "why": "not_joinable",
+      "unique_roi": null,
+      "last_30d_roi": null,
+      "last_30d_n": 0,
+      "take_n": null,
+      "take_roi": null
+    },
+    {
+      "username": "Kosherlocks",
+      "wallet": "0x82398835fe16616214d928ba87127e28fc1cd9a3",
+      "from_bucket": "watch",
+      "regime": "thin",
+      "why": "not_joinable",
+      "unique_roi": null,
+      "last_30d_roi": null,
+      "last_30d_n": 0,
+      "take_n": null,
+      "take_roi": null
+    },
+    {
+      "username": "murgionsek",
+      "wallet": "0x91dda263d251e7f771ea333f8cb6b6066761600b",
+      "from_bucket": "watch",
+      "regime": "thin",
+      "why": "not_joinable",
+      "unique_roi": null,
+      "last_30d_roi": null,
+      "last_30d_n": 0,
+      "take_n": null,
+      "take_roi": null
+    },
+    {
+      "username": "plonker2026",
+      "wallet": "0x0a39b3b29ab3b7dd753aa96fde4ecab3f2dbb0b9",
+      "from_bucket": "watch",
+      "regime": "thin",
+      "why": "not_joinable",
+      "unique_roi": null,
+      "last_30d_roi": null,
+      "last_30d_n": 0,
+      "take_n": null,
+      "take_roi": null
+    },
+    {
+      "username": "ripley86alien",
+      "wallet": "0x168a51f1cac0ad3b166797069382495a8aa10d24",
+      "from_bucket": "watch",
+      "regime": "thin",
+      "why": "not_joinable",
+      "unique_roi": null,
+      "last_30d_roi": null,
+      "last_30d_n": 0,
+      "take_n": null,
+      "take_roi": null
+    },
+    {
+      "username": "saftey-first",
+      "wallet": "0xbdea99acf04cb6863252d43b13db89d5c7681db5",
+      "from_bucket": "watch",
+      "regime": "thin",
+      "why": "not_joinable",
+      "unique_roi": null,
+      "last_30d_roi": null,
+      "last_30d_n": 0,
+      "take_n": null,
+      "take_roi": null
+    },
+    {
+      "username": "takeormake",
+      "wallet": "0xa38a455bbdd4b68486548b7e19da99903f4f821d",
+      "from_bucket": "watch",
+      "regime": "thin",
+      "why": "not_joinable",
+      "unique_roi": null,
+      "last_30d_roi": null,
+      "last_30d_n": 0,
+      "take_n": null,
+      "take_roi": null
+    },
+    {
+      "username": "vito3corleone",
+      "wallet": "0x34dd4a4b70eaf79a17878f7938263c801d4dfd83",
+      "from_bucket": "watch",
+      "regime": "thin",
+      "why": "not_joinable",
+      "unique_roi": null,
+      "last_30d_roi": null,
+      "last_30d_n": 0,
+      "take_n": null,
+      "take_roi": null
+    },
+    {
       "username": "Supah9ga",
       "wallet": "0x57cd939930fd119067ca9dc42b22b3e15708a0fb",
       "from_bucket": "bench",
@@ -346,7 +466,7 @@
       "wallet": "0x9f138019d5481fdc5c59b93b0ae4b9b817cce0fd",
       "from_bucket": "bench",
       "regime": "thin",
-      "why": "recency_DROP",
+      "why": "not_joinable",
       "unique_roi": 2.12,
       "last_30d_roi": 0.0,
       "last_30d_n": 0,
@@ -364,59 +484,11 @@
       "last_30d_n": 281,
       "take_n": 108,
       "take_roi": 19.49
-    },
-    {
-      "username": "0xheavy888",
-      "wallet": "0xec981ed70ae69c5cbcac08c1ba063e734f6bafcd",
-      "from_bucket": "bench",
-      "regime": "stable",
-      "why": "gates_fail life=2.22 regime=stable l30=1.3",
-      "unique_roi": 2.22,
-      "last_30d_roi": 1.3,
-      "last_30d_n": 1834,
-      "take_n": 0,
-      "take_roi": 0.0
-    },
-    {
-      "username": "TTdes",
-      "wallet": "0x25867077c891354137bbaf7fde12eec6949cc893",
-      "from_bucket": "bench",
-      "regime": "stable",
-      "why": "take_rule_bleed_bench",
-      "unique_roi": 7.06,
-      "last_30d_roi": -5.82,
-      "last_30d_n": 16,
-      "take_n": 15,
-      "take_roi": -42.67
-    },
-    {
-      "username": "JuniorB",
-      "wallet": "0x9ac5c8496bc84f642bac181499bf64405a5c6a3d",
-      "from_bucket": "bench",
-      "regime": "thin",
-      "why": "recency_COLD",
-      "unique_roi": 4.71,
-      "last_30d_roi": -100.01,
-      "last_30d_n": 4,
-      "take_n": 0,
-      "take_roi": 0.0
-    },
-    {
-      "username": "Andromeda1",
-      "wallet": "0x39932ca2b7a1b8ab6cbf0b8f7419261b950ccded",
-      "from_bucket": "bench",
-      "regime": "thin",
-      "why": "recency_DARK",
-      "unique_roi": 3.32,
-      "last_30d_roi": 0.0,
-      "last_30d_n": 0,
-      "take_n": 79,
-      "take_roi": -17.19
     }
   ],
   "counts": {
     "promoted": 0,
     "demoted": 0,
-    "held": 34
+    "held": 44
   }
 }

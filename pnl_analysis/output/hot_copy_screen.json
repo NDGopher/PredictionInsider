@@ -1,30 +1,30 @@
 {
-  "generated_at": "2026-08-20T21:12:58.311433+00:00",
+  "generated_at": "2026-08-24T18:27:11.547884+00:00",
   "named": [
     {
       "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
       "wallet": "0x8a3ab8120807bd64a3de48695110e390fa2ceb9a",
       "why": "live_flat_curve",
-      "dashboard_pnl": 668465.34,
-      "overall_roi": 14.84,
-      "win_rate": 54.04,
-      "median_stake": 4834.8,
-      "closed_markets": 473,
-      "last_event": "2026-08-21",
+      "dashboard_pnl": 708972.9,
+      "overall_roi": 15.52,
+      "win_rate": 54.24,
+      "median_stake": 4836.57,
+      "closed_markets": 484,
+      "last_event": "2026-08-25",
       "days_since_last": 0,
       "recency": "HOT",
-      "last_30d_pnl": -25919.05,
-      "last_30d_roi": -4.39,
-      "last_30d_n": 119,
+      "last_30d_pnl": 2037.9,
+      "last_30d_roi": 0.3,
+      "last_30d_n": 133,
       "mix": {
-        "n": 475,
+        "n": 486,
         "politics_frac": 0.0,
-        "futures_frac": 0.015,
-        "sports_frac": 0.985,
+        "futures_frac": 0.014,
+        "sports_frac": 0.986,
         "top": [
           {
             "sport": "TENNIS",
-            "n": 268
+            "n": 271
           },
           {
             "sport": "NBA",
@@ -36,15 +36,15 @@
           },
           {
             "sport": "ESPORTS",
-            "n": 8
+            "n": 12
           },
           {
             "sport": "MLB",
-            "n": 6
+            "n": 7
           },
           {
             "sport": "SOCCER (Other)",
-            "n": 5
+            "n": 6
           }
         ]
       },
@@ -55,51 +55,51 @@
         "n": 24,
         "win_rate": 58.33,
         "roi_2c": 7.4,
-        "all_n": 428
+        "all_n": 453
       },
       "unique_slices": {
         "ok": true,
         "lifetime": {
-          "n": 441,
-          "win_rate": 53.7,
-          "roi": 13.71,
-          "pnl": 593339.67,
-          "median": 4889.99,
-          "mean": 9812.1
+          "n": 466,
+          "win_rate": 53.9,
+          "roi": 14.4,
+          "pnl": 642659.24,
+          "median": 4892.99,
+          "mean": 9573.79
         },
         "last_30d": {
-          "n": 124,
-          "win_rate": 49.2,
-          "roi": -5.33,
-          "pnl": -33357.35,
-          "median": 4499.2,
-          "mean": 5047.41
+          "n": 139,
+          "win_rate": 48.2,
+          "roi": -0.24,
+          "pnl": -1653.03,
+          "median": 4548.43,
+          "mean": 5016.54
         },
         "outsized": {
-          "n": 123,
-          "win_rate": 63.4,
-          "roi": 18.47,
-          "pnl": 580140.94,
-          "median": 19436.12,
-          "mean": 25530.65
+          "n": 128,
+          "win_rate": 64.1,
+          "roi": 19.18,
+          "pnl": 614316.55,
+          "median": 18829.68,
+          "mean": 25021.16
         },
         "outsized_30d": {
-          "n": 15,
-          "win_rate": 53.3,
-          "roi": -5.99,
-          "pnl": -11849.25,
-          "median": 12129.43,
-          "mean": 13186.32
+          "n": 18,
+          "win_rate": 55.6,
+          "roi": -0.09,
+          "pnl": -211.92,
+          "median": 11999.63,
+          "mean": 12754.11
         },
-        "politics_or_futures_frac": 0.016,
+        "politics_or_futures_frac": 0.015,
         "hold_to_expiry": true,
         "note": "Copy always holds to resolution (token $1 or $0). These numbers are that P&L, not marked-to-market scalps."
       },
       "copy_10pct": {
-        "copy_stake": 483.48,
-        "starting_bankroll_20_units": 9669.6,
+        "copy_stake": 483.66,
+        "starting_bankroll_20_units": 9673.14,
         "take_prints": 24,
-        "expected_pnl_at_10pct": 858.66,
+        "expected_pnl_at_10pct": 858.97,
         "note": "Bankroll is 20\u00d7 one 10%-of-median fill so we can hold several at once. Expected PnL applies the take-rule ROI after 2\u00a2 to those prints only."
       },
       "flags": [],
@@ -107,202 +107,109 @@
       "verdict": "LIVE_CANDIDATE"
     },
     {
-      "username": "WTSA",
-      "wallet": "0x04d5524a0a5af2eca6e39e03defc261d42fe66d8",
-      "why": "user_wants_live",
-      "dashboard_pnl": 1154695.26,
-      "overall_roi": 20.21,
-      "win_rate": 53.44,
-      "median_stake": 27762.68,
-      "closed_markets": 131,
-      "last_event": "2026-08-17",
-      "days_since_last": 3,
+      "username": "SDTrading",
+      "wallet": "0x16bb9951a36fce71e2ef57890b786145e0ba8492",
+      "why": "user_month_hot",
+      "dashboard_pnl": -14627.35,
+      "overall_roi": -0.15,
+      "win_rate": 48.62,
+      "median_stake": 4539.08,
+      "closed_markets": 977,
+      "last_event": "2026-08-25",
+      "days_since_last": 0,
       "recency": "HOT",
-      "last_30d_pnl": 1015127.86,
-      "last_30d_roi": 18.93,
-      "last_30d_n": 92,
+      "last_30d_pnl": 570334.44,
+      "last_30d_roi": 14.95,
+      "last_30d_n": 222,
       "mix": {
-        "n": 133,
+        "n": 1019,
         "politics_frac": 0.0,
-        "futures_frac": 0.0,
-        "sports_frac": 1.0,
+        "futures_frac": 0.004,
+        "sports_frac": 0.996,
         "top": [
           {
+            "sport": "MLB",
+            "n": 832
+          },
+          {
             "sport": "SOCCER (Other)",
-            "n": 104
+            "n": 105
           },
           {
             "sport": "OTHER",
-            "n": 29
+            "n": 28
+          },
+          {
+            "sport": "NBA",
+            "n": 17
+          },
+          {
+            "sport": "NFL",
+            "n": 12
+          },
+          {
+            "sport": "TENNIS",
+            "n": 12
           }
         ]
       },
       "top_sport": "SOCCER (Other)",
-      "joinable": false,
-      "take_rule": {
-        "ok": true,
-        "n": 12,
-        "win_rate": 58.33,
-        "roi_2c": 14.5,
-        "all_n": 108
-      },
-      "unique_slices": {
-        "ok": true,
-        "lifetime": {
-          "n": 128,
-          "win_rate": 53.9,
-          "roi": 20.31,
-          "pnl": 1124071.9,
-          "median": 28133.55,
-          "mean": 43236.26
-        },
-        "last_30d": {
-          "n": 115,
-          "win_rate": 53.0,
-          "roi": 18.89,
-          "pnl": 988462.01,
-          "median": 29874.79,
-          "mean": 45492.84
-        },
-        "outsized": {
-          "n": 36,
-          "win_rate": 58.3,
-          "roi": 18.45,
-          "pnl": 668980.72,
-          "median": 94422.29,
-          "mean": 100699.25
-        },
-        "outsized_30d": {
-          "n": 35,
-          "win_rate": 57.1,
-          "roi": 16.75,
-          "pnl": 588089.44,
-          "median": 93044.01,
-          "mean": 100315.76
-        },
-        "politics_or_futures_frac": 0.0,
-        "hold_to_expiry": true,
-        "note": "Copy always holds to resolution (token $1 or $0). These numbers are that P&L, not marked-to-market scalps."
-      },
-      "copy_10pct": {
-        "copy_stake": 2776.27,
-        "starting_bankroll_20_units": 55525.36,
-        "take_prints": 12,
-        "expected_pnl_at_10pct": 4830.71,
-        "note": "Bankroll is 20\u00d7 one 10%-of-median fill so we can hold several at once. Expected PnL applies the take-rule ROI after 2\u00a2 to those prints only."
-      },
-      "flags": [
-        "unjoinable_median"
-      ],
-      "hold_to_expiry": true,
-      "verdict": "WATCH_WHALE"
-    },
-    {
-      "username": "SineNooneEI",
-      "wallet": "0x38337de21ff0bb0a11a40761507d51e318d633d1",
-      "why": "user_esports_tennis",
-      "dashboard_pnl": 743877.76,
-      "overall_roi": 5.01,
-      "win_rate": 53.75,
-      "median_stake": 6832.18,
-      "closed_markets": 1522,
-      "last_event": "2026-08-21",
-      "days_since_last": 0,
-      "recency": "HOT",
-      "last_30d_pnl": 158750.36,
-      "last_30d_roi": 7.43,
-      "last_30d_n": 196,
-      "mix": {
-        "n": 1554,
-        "politics_frac": 0.0,
-        "futures_frac": 0.04,
-        "sports_frac": 0.96,
-        "top": [
-          {
-            "sport": "ESPORTS",
-            "n": 1436
-          },
-          {
-            "sport": "TENNIS",
-            "n": 97
-          },
-          {
-            "sport": "SOCCER (Other)",
-            "n": 8
-          },
-          {
-            "sport": "MLB",
-            "n": 4
-          },
-          {
-            "sport": "NHL",
-            "n": 3
-          },
-          {
-            "sport": "OTHER",
-            "n": 3
-          }
-        ]
-      },
-      "top_sport": "ESPORTS",
       "joinable": true,
       "take_rule": {
         "ok": true,
-        "n": 14,
-        "win_rate": 50.0,
-        "roi_2c": -17.96,
-        "all_n": 1504
+        "n": 0,
+        "win_rate": 0.0,
+        "roi_2c": 0.0,
+        "all_n": 952
       },
       "unique_slices": {
         "ok": true,
         "lifetime": {
-          "n": 1477,
-          "win_rate": 53.4,
-          "roi": 5.42,
-          "pnl": 771535.11,
-          "median": 6972.32,
-          "mean": 9633.74
+          "n": 970,
+          "win_rate": 48.5,
+          "roi": 1.01,
+          "pnl": 94295.91,
+          "median": 4895.59,
+          "mean": 9621.31
         },
         "last_30d": {
-          "n": 242,
-          "win_rate": 57.9,
-          "roi": 8.74,
-          "pnl": 174567.4,
-          "median": 7240.74,
-          "mean": 8254.62
+          "n": 321,
+          "win_rate": 52.6,
+          "roi": 15.21,
+          "pnl": 584070.04,
+          "median": 5967.23,
+          "mean": 11959.75
         },
         "outsized": {
-          "n": 257,
-          "win_rate": 62.6,
-          "roi": 7.55,
-          "pnl": 523434.73,
-          "median": 20354.5,
-          "mean": 26976.75
+          "n": 339,
+          "win_rate": 50.1,
+          "roi": 1.3,
+          "pnl": 98653.12,
+          "median": 20700.0,
+          "mean": 22311.51
         },
         "outsized_30d": {
-          "n": 34,
-          "win_rate": 79.4,
-          "roi": 16.88,
-          "pnl": 108263.62,
-          "median": 16797.4,
-          "mean": 18861.82
+          "n": 139,
+          "win_rate": 59.0,
+          "roi": 16.48,
+          "pnl": 565356.54,
+          "median": 24192.02,
+          "mean": 24681.36
         },
-        "politics_or_futures_frac": 0.039,
+        "politics_or_futures_frac": 0.004,
         "hold_to_expiry": true,
         "note": "Copy always holds to resolution (token $1 or $0). These numbers are that P&L, not marked-to-market scalps."
       },
       "copy_10pct": {
-        "copy_stake": 683.22,
-        "starting_bankroll_20_units": 13664.36,
-        "take_prints": 14,
-        "expected_pnl_at_10pct": -1717.88,
+        "copy_stake": 453.91,
+        "starting_bankroll_20_units": 9078.16,
+        "take_prints": 0,
+        "expected_pnl_at_10pct": 0.0,
         "note": "Bankroll is 20\u00d7 one 10%-of-median fill so we can hold several at once. Expected PnL applies the take-rule ROI after 2\u00a2 to those prints only."
       },
-      "flags": [
-        "take_rule_negative"
-      ],
+      "flags": [],
       "hold_to_expiry": true,
-      "verdict": "WATCH_NEGATIVE"
+      "verdict": "WATCH_HOT"
     },
     {
       "username": "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
@@ -525,6 +432,17 @@
       "verdict": "ARCHIVE"
     },
     {
+      "username": "WTSA",
+      "wallet": "0x04d5524a0a5af2eca6e39e03defc261d42fe66d8",
+      "why": "user_wants_live",
+      "flags": [
+        "no_csv"
+      ],
+      "joinable": false,
+      "recency": "UNKNOWN",
+      "verdict": "NEED_FETCH"
+    },
+    {
       "username": "HomeRunHazard",
       "wallet": "0x5268527977f700f9bf9b6d5cd843859e4e70135d",
       "why": "user_equity_curve",
@@ -549,17 +467,6 @@
     {
       "username": "Sassy-Bucket",
       "wallet": "0x4bff30af91642dc7d2b19a8664378fe55c45fc26",
-      "why": "user_month_hot",
-      "flags": [
-        "no_csv"
-      ],
-      "joinable": false,
-      "recency": "UNKNOWN",
-      "verdict": "NEED_FETCH"
-    },
-    {
-      "username": "SDTrading",
-      "wallet": "0x16bb9951a36fce71e2ef57890b786145e0ba8492",
       "why": "user_month_hot",
       "flags": [
         "no_csv"
@@ -690,6 +597,17 @@
       "username": "theowalcott",
       "wallet": "0x7ad71d79a3bb90d0a87a06500fa0fe11663842aa",
       "why": "user_soccer",
+      "flags": [
+        "no_csv"
+      ],
+      "joinable": false,
+      "recency": "UNKNOWN",
+      "verdict": "NEED_FETCH"
+    },
+    {
+      "username": "SineNooneEI",
+      "wallet": "0x38337de21ff0bb0a11a40761507d51e318d633d1",
+      "why": "user_esports_tennis",
       "flags": [
         "no_csv"
       ],
@@ -965,18 +883,18 @@
   ],
   "verdicts": {
     "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a": "LIVE_CANDIDATE",
-    "WTSA": "WATCH_WHALE",
-    "SineNooneEI": "WATCH_NEGATIVE",
+    "SDTrading": "WATCH_HOT",
     "0x5966Db1fE50763C9e3C014d756369BAd07E1F804": "NEED_FETCH",
     "Capman": "WATCH",
     "HedgeMaster88": "ARCHIVE",
+    "WTSA": "NEED_FETCH",
     "HomeRunHazard": "NEED_FETCH",
     "ferrariChampions2026": "NEED_FETCH",
     "Sassy-Bucket": "NEED_FETCH",
-    "SDTrading": "NEED_FETCH",
     "0p0jogggg": "KICK_GRINDER",
     "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87": "NEED_FETCH",
     "theowalcott": "NEED_FETCH",
+    "SineNooneEI": "NEED_FETCH",
     "sainttroplay": "NEED_FETCH",
     "TennisLove": "NEED_FETCH",
     "predictionlegend": "NEED_FETCH",

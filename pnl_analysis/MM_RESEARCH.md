@@ -1,6 +1,6 @@
 # Market making research (not live trading)
 
-Generated **2026-08-23T13:36:56 UTC**.
+Generated **2026-08-24T18:25:10 UTC**.
 
 This is a **separate lane** from Take these / copy-tail. We study mega/MM books to estimate inventory/hedge edge from history. **No orders are placed.**
 
