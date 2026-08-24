@@ -1,48 +1,8 @@
 {
-  "generated_at": "2026-08-23T13:36:39.683282+00:00",
+  "generated_at": "2026-08-24T15:13:07.129433+00:00",
   "dry_run": false,
   "method": "Automatic watch/bench \u2192 take_book when joinable + HOT/WARM + (unique ROI\u22655% or regime turnaround/hot last30\u22658% n\u226530). Take-rule n\u226512 with \u2212ROI blocks. Rebuilds copy_universe.",
-  "promoted": [
-    {
-      "username": "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
-      "wallet": "0x1b20a00709dfe648afd26b326394b5e031f83ab0",
-      "from_bucket": "watch",
-      "regime": "hot",
-      "why": "auto_live unique_roi=34.66% awaiting_take_prints n=11",
-      "unique_roi": 34.66,
-      "last_30d_roi": 34.66,
-      "last_30d_n": 51,
-      "take_n": 11,
-      "take_roi": 53.31,
-      "action": "auto_promote_live"
-    },
-    {
-      "username": "HongYunX",
-      "wallet": "0xc72d7dcdb23597d143a83536fb97b1d7db7efc21",
-      "from_bucket": "watch",
-      "regime": "hot",
-      "why": "auto_live unique_roi=9.43% awaiting_take_prints n=0",
-      "unique_roi": 9.43,
-      "last_30d_roi": 23.71,
-      "last_30d_n": 53,
-      "take_n": 0,
-      "take_roi": 0.0,
-      "action": "auto_promote_live"
-    },
-    {
-      "username": "SDTrading",
-      "wallet": "0x16bb9951a36fce71e2ef57890b786145e0ba8492",
-      "from_bucket": "watch",
-      "regime": "turnaround",
-      "why": "auto_live regime=turnaround last30=14.4% n=208 (4 red months \u2192 1 green; last30 14.4% n=208)",
-      "unique_roi": -1.11,
-      "last_30d_roi": 14.4,
-      "last_30d_n": 208,
-      "take_n": 0,
-      "take_roi": 0.0,
-      "action": "auto_promote_live"
-    }
-  ],
+  "promoted": [],
   "demoted": [],
   "held_sample": [
     {
@@ -455,7 +415,7 @@
     }
   ],
   "counts": {
-    "promoted": 3,
+    "promoted": 0,
     "demoted": 0,
     "held": 34
   }

@@ -300,26 +300,49 @@ def drop_proposals(by_trader: list[dict]) -> list[dict]:
 def main() -> int:
     now = pd.Timestamp(datetime.now(timezone.utc))
     trusted = load_trusted()
+    print("Scanning open books for live / near take plays…")
+    live, close = scan_open(trusted)
     if not PLAYS.exists():
         print(
-            f"[warn] Missing {PLAYS}; skip take-book health. "
-            "Run asof_fullbook_backtest.py when you want rolling take ROI. "
-            "Ranks and copy list still rebuild."
+            f"[warn] Missing {PLAYS}; open scan still ran. "
+            "Rolling take ROI windows need asof_fullbook_backtest.py."
         )
         stub = {
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "as_of": datetime.now(timezone.utc).date().isoformat(),
-            "status": "skipped",
-            "pause_reason": "missing asof_fullbook_plays.csv",
+            "status": "go",
+            "pause_reason": None,
             "windows": {},
             "by_trader": [],
             "propose_drop": [],
             "propose_add": [],
-            "live_open": [],
-            "near_open": [],
+            "live_open": live,
+            "near_open": close,
+            "note": "Open scan OK; rolling windows skipped (missing asof_fullbook_plays.csv)",
         }
         OUT.write_text(json.dumps(stub, indent=2, default=str), encoding="utf-8")
-        OPEN_OUT.write_text(json.dumps({"live": [], "near": []}, indent=2, default=str), encoding="utf-8")
+        OPEN_OUT.write_text(
+            json.dumps(
+                {
+                    "generated_at": stub["generated_at"],
+                    "live": live,
+                    "near": close,
+                    "copy_books": [
+                        {"username": t.get("username"), "wallet": t.get("wallet")}
+                        for t in trusted
+                    ],
+                },
+                indent=2,
+                default=str,
+            ),
+            encoding="utf-8",
+        )
+        print(f"LIVE take opens: {len(live)}   near: {len(close)}")
+        for r in live[:12]:
+            print(f"  TAKE {r['username']:<20} Q={r['q']:>3} {r['rel']:4.1f}×  {r['entry']:.2f}  {r['play'][:80]}")
+        for r in close[:12]:
+            print(f"  NEAR {r['username']:<20} {', '.join(r['misses'])}  {r['play'][:70]}")
+        print(f"Wrote {OUT}")
         return 0
     df = pd.read_csv(PLAYS)
     df["end_dt"] = pd.to_datetime(df["end_dt"], utc=True)
@@ -332,8 +355,6 @@ def main() -> int:
     pause = pause_reason(w30, w60)
     by_trader = trader_windows(take, now)
     drops = drop_proposals(by_trader)
-    print("Scanning open books for live / near take plays…")
-    live, close = scan_open(trusted)
     status = "pause" if pause else "go"
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
