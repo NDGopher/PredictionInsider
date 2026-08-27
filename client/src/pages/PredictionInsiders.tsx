@@ -12,6 +12,7 @@ import {
   Telescope,
   Trophy,
   ChevronRight,
+  Radar,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "wouter";
@@ -69,6 +70,52 @@ interface PolydataFind {
   window?: string;
 }
 
+interface UnusualFlowMarket {
+  rank?: number;
+  question?: string;
+  event_title?: string;
+  url?: string;
+  sports_ish?: boolean;
+  volume24hr?: number;
+  unusual_score?: number;
+  tags?: string[];
+  smart_gap?: number | null;
+  days_to_end?: number | null;
+  prices?: number[];
+  outcomes?: string[];
+  flagged?: Array<{
+    wallet?: string;
+    name?: string;
+    outcome?: string;
+    amount?: number;
+    z?: number;
+    q?: number | null;
+    open_markets?: number | null;
+    trade_depth?: number | null;
+    fresh?: boolean;
+    tags?: string[];
+    polymarket_profile?: string;
+  }>;
+}
+
+interface UnusualFlowInsider {
+  rank?: number;
+  z?: number;
+  name?: string;
+  wallet?: string;
+  outcome?: string;
+  amount?: number;
+  open_markets?: number | null;
+  trade_depth?: number | null;
+  fresh?: boolean;
+  q?: number | null;
+  tags?: string[];
+  market?: string;
+  unusual_score?: number;
+  url?: string;
+  polymarket_profile?: string;
+}
+
 interface PredictionInsidersResponse {
   generatedAt?: string | null;
   rule?: string | null;
@@ -81,6 +128,8 @@ interface PredictionInsidersResponse {
     traders?: number;
     newFinds?: number;
     booksScanned?: number;
+    unusualMarkets?: number;
+    potentialInsiders?: number;
   };
   plays?: RankedPlay[];
   traders?: ExcellenceTrader[];
@@ -90,6 +139,12 @@ interface PredictionInsidersResponse {
     adaptiveActions?: Array<{ action?: string; username?: string; why?: string }>;
     autoPromote?: { promoted?: Array<{ username?: string; why?: string }> };
   };
+  unusualFlow?: {
+    generated_at?: string;
+    method?: string;
+    markets?: UnusualFlowMarket[];
+    potential_insiders?: UnusualFlowInsider[];
+  } | null;
 }
 
 function gradeTone(g: number): string {
@@ -204,6 +259,84 @@ function TraderCard({ t, rank }: { t: ExcellenceTrader; rank: number }) {
   );
 }
 
+function UnusualMarketCard({ m }: { m: UnusualFlowMarket }) {
+  const score = m.unusual_score ?? 0;
+  const top = m.flagged?.[0];
+  return (
+    <Card data-testid="card-unusual-market">
+      <CardContent className="p-4 space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline" className="tabular-nums">#{m.rank ?? "—"}</Badge>
+          <span className={`text-xl font-bold tabular-nums ${gradeTone(Math.min(100, score * 2))}`}>
+            {score.toFixed(1)}
+          </span>
+          <span className="text-xs text-muted-foreground">unusual</span>
+          {m.sports_ish ? <Badge variant="outline">sports</Badge> : null}
+          {m.smart_gap != null ? (
+            <Badge variant="outline">smart gap {m.smart_gap > 0 ? "+" : ""}{m.smart_gap}</Badge>
+          ) : null}
+          {m.days_to_end != null && m.days_to_end <= 7 ? (
+            <Badge variant="outline" className="text-amber-400 border-amber-500/30">closing soon</Badge>
+          ) : null}
+        </div>
+        <div className="font-semibold leading-snug">{m.question || m.event_title}</div>
+        <div className="flex flex-wrap gap-1">
+          {(m.tags || []).map((t) => (
+            <Badge key={t} variant="secondary" className="text-[10px]">{t.replace(/_/g, " ")}</Badge>
+          ))}
+        </div>
+        {top && (
+          <div className="text-xs text-muted-foreground">
+            Top Z: <span className="text-foreground font-medium">{top.name || top.wallet?.slice(0, 10)}</span>
+            {" · "}z={top.z} · {top.outcome} · size {top.amount != null ? Math.round(top.amount).toLocaleString() : "—"}
+            {top.q != null ? ` · Q ${top.q}` : ""}
+            {top.open_markets != null ? ` · ${top.open_markets} open mkts` : ""}
+            {top.fresh ? " · fresh book" : ""}
+          </div>
+        )}
+        {m.url && (
+          <a href={m.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-primary">
+            Polymarket <ExternalLink className="w-3 h-3" />
+          </a>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function InsiderAlertRow({ r }: { r: UnusualFlowInsider }) {
+  return (
+    <div className="border border-border/40 rounded-md p-3 space-y-1" data-testid="row-potential-insider">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge variant="outline">#{r.rank}</Badge>
+        <span className="font-semibold text-sm">{r.name || r.wallet?.slice(0, 12)}</span>
+        <Badge variant="outline" className="tabular-nums">Z {r.z}</Badge>
+        {r.fresh ? <Badge variant="outline" className="text-amber-400 border-amber-500/30">fresh</Badge> : null}
+        {(r.tags || []).slice(0, 3).map((t) => (
+          <Badge key={t} variant="secondary" className="text-[10px]">{t.replace(/_/g, " ")}</Badge>
+        ))}
+      </div>
+      <div className="text-xs text-muted-foreground">
+        {r.market} · {r.outcome} · size {r.amount != null ? Math.round(r.amount).toLocaleString() : "—"}
+        {r.open_markets != null ? ` · ${r.open_markets} open` : ""}
+        {r.trade_depth != null ? ` · depth≥${r.trade_depth}` : ""}
+      </div>
+      <div className="flex gap-3 text-[11px]">
+        {r.polymarket_profile && (
+          <a href={r.polymarket_profile} target="_blank" rel="noreferrer" className="text-primary inline-flex items-center gap-1">
+            Wallet <ExternalLink className="w-3 h-3" />
+          </a>
+        )}
+        {r.url && (
+          <a href={r.url} target="_blank" rel="noreferrer" className="text-primary inline-flex items-center gap-1">
+            Market <ExternalLink className="w-3 h-3" />
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function PredictionInsiders() {
   const { data, isLoading, error, refetch, dataUpdatedAt } = useQuery<PredictionInsidersResponse>({
     queryKey: ["/api/prediction-insiders"],
@@ -226,6 +359,8 @@ export default function PredictionInsiders() {
     return rows.filter((t) => t.bucket === traderFilter);
   }, [data?.traders, traderFilter]);
 
+  const unusualMarkets = data?.unusualFlow?.markets || [];
+  const potentialInsiders = data?.unusualFlow?.potential_insiders || [];
   const counts = data?.counts || {};
 
   return (
@@ -235,10 +370,10 @@ export default function PredictionInsiders() {
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
             <Sparkles className="w-3 h-3" /> Prediction Insiders
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Ranked plays & trader excellence</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Sniper plays · rankings · unusual flow</h1>
           <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-            OddsJam-style intelligence: every open graded 0–100 with why, traders ranked on unique-book edge,
-            and new Polydata names surfaced before they go live.
+            Sniper TAKE stays strict (1–2 quality plays when gates clear). Rankings mirror OddsJam grades.
+            Unusual Flow mirrors Unusual Whales / Hashdive: holder Z-scores, concentration, smart gap — free Polymarket data.
             {data?.rule ? ` Rule: ${data.rule}` : ""}
           </p>
         </div>
@@ -247,13 +382,15 @@ export default function PredictionInsiders() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
         {[
           { label: "Plays ranked", value: counts.plays ?? 0 },
           { label: "TAKE", value: counts.take ?? 0, tone: "text-emerald-400" },
           { label: "NEAR", value: counts.near ?? 0, tone: "text-amber-400" },
           { label: "WATCH", value: counts.watch ?? 0 },
-          { label: "Traders digested", value: counts.traders ?? 0 },
+          { label: "Traders", value: counts.traders ?? 0 },
+          { label: "Unusual mkts", value: counts.unusualMarkets ?? 0 },
+          { label: "Z-alerts", value: counts.potentialInsiders ?? 0, tone: "text-amber-400" },
           { label: "Books scanned", value: counts.booksScanned ?? 0 },
         ].map((s) => (
           <Card key={s.label}>
@@ -281,9 +418,12 @@ export default function PredictionInsiders() {
 
       {!isLoading && !error && (
         <Tabs defaultValue="plays" className="w-full">
-          <TabsList className="grid w-full max-w-lg grid-cols-3">
+          <TabsList className="grid w-full max-w-2xl grid-cols-4">
             <TabsTrigger value="plays" className="gap-1.5">
               <ListOrdered className="w-3.5 h-3.5" /> Plays
+            </TabsTrigger>
+            <TabsTrigger value="unusual" className="gap-1.5">
+              <Radar className="w-3.5 h-3.5" /> Unusual
             </TabsTrigger>
             <TabsTrigger value="traders" className="gap-1.5">
               <Users className="w-3.5 h-3.5" /> Traders
@@ -308,6 +448,9 @@ export default function PredictionInsiders() {
                 </button>
               ))}
             </div>
+            <p className="text-xs text-muted-foreground">
+              TAKE = Sniper product only (as-of Q≥60, sport lane +5%, 2× stake). NEAR/WATCH = ranked board like OddsJam Explorer.
+            </p>
             {plays.length === 0 ? (
               <Card>
                 <CardContent className="p-6 text-sm text-muted-foreground">
@@ -321,6 +464,43 @@ export default function PredictionInsiders() {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="unusual" className="space-y-4 mt-4">
+            <p className="text-xs text-muted-foreground max-w-3xl">
+              Same idea as{" "}
+              <a href="https://unusualwhales.com/predictions/insiders" target="_blank" rel="noreferrer" className="text-primary">
+                Unusual Whales Potential Insiders
+              </a>{" "}
+              / Hashdive: per-market holder Z-score (size vs peers), concentration, shallow trade depth,
+              and capital-weighted smart gap from our known Q books. Free Polymarket /holders — no paid UW API.
+            </p>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Markets by unusual score</div>
+                {unusualMarkets.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-4 text-xs text-muted-foreground">
+                      Run python3 pnl_analysis/scan_unusual_flow.py (or refresh_product).
+                    </CardContent>
+                  </Card>
+                ) : (
+                  unusualMarkets.slice(0, 12).map((m) => <UnusualMarketCard key={m.rank} m={m} />)
+                )}
+              </div>
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Potential insider alerts</div>
+                {potentialInsiders.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-4 text-xs text-muted-foreground">No Z-score alerts yet.</CardContent>
+                  </Card>
+                ) : (
+                  potentialInsiders.slice(0, 15).map((r) => (
+                    <InsiderAlertRow key={`${r.wallet}-${r.market}-${r.rank}`} r={r} />
+                  ))
+                )}
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="traders" className="space-y-3 mt-4">

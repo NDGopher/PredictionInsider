@@ -39,6 +39,7 @@
     "model:adaptive": "python pnl_analysis/adaptive_copy_lab.py",
     "model:promote": "python pnl_analysis/auto_promote.py",
     "model:ranked": "python pnl_analysis/scan_ranked_opens.py",
+    "model:unusual": "python pnl_analysis/scan_unusual_flow.py",
     "model:fetch-watch": "python pnl_analysis/fetch_watch_csvs.py",
     "research:mm": "python pnl_analysis/mm_maker_research.py",
     "backtest:take-health": "python pnl_analysis/take_book_daily.py"

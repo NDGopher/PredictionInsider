@@ -91,6 +91,70 @@ export interface ExcellenceTrader {
   polymarketUrl: string;
 }
 
+export interface UnusualFlowFlagged {
+  wallet?: string;
+  name?: string;
+  outcome?: string;
+  amount?: number;
+  z?: number;
+  q?: number | null;
+  open_markets?: number | null;
+  trade_depth?: number | null;
+  wallet_age_days?: number | null;
+  fresh?: boolean;
+  tags?: string[];
+  polymarket_profile?: string;
+}
+
+export interface UnusualFlowMarket {
+  rank?: number;
+  conditionId?: string;
+  question?: string;
+  event_title?: string;
+  slug?: string;
+  url?: string;
+  sports_ish?: boolean;
+  volume24hr?: number;
+  unusual_score?: number;
+  tags?: string[];
+  smart_gap?: number | null;
+  days_to_end?: number | null;
+  prices?: number[];
+  outcomes?: string[];
+  flagged?: UnusualFlowFlagged[];
+}
+
+export interface UnusualFlowInsider {
+  rank?: number;
+  z?: number;
+  name?: string;
+  wallet?: string;
+  outcome?: string;
+  amount?: number;
+  open_markets?: number | null;
+  trade_depth?: number | null;
+  fresh?: boolean;
+  q?: number | null;
+  tags?: string[];
+  market?: string;
+  unusual_score?: number;
+  url?: string;
+  polymarket_profile?: string;
+}
+
+export interface UnusualFlowBoard {
+  generated_at?: string;
+  method?: string;
+  counts?: {
+    markets_fetched?: number;
+    markets_scored?: number;
+    wallet_alerts?: number;
+    known_q?: number;
+  };
+  markets?: UnusualFlowMarket[];
+  potential_insiders?: UnusualFlowInsider[];
+}
+
 export interface PredictionInsidersBundle {
   generatedAt: string | null;
   rule: string | null;
@@ -103,12 +167,15 @@ export interface PredictionInsidersBundle {
     traders: number;
     newFinds: number;
     booksScanned: number;
+    unusualMarkets: number;
+    potentialInsiders: number;
   };
   plays: AnnotatedTakePlay[];
   traders: ExcellenceTrader[];
   newFinds: PolydataFind[];
   discovery: CopyDiscoveryBundle;
   rankedBoard: RankedPlayBoardFile | null;
+  unusualFlow: UnusualFlowBoard | null;
 }
 
 function loadJson<T>(rel: string): T | null {
@@ -200,6 +267,7 @@ export function loadPredictionInsiders(
     "pnl_analysis/output/insider_ranks.json",
   );
   const polyFile = loadJson<{ sports_survivors?: PolydataFind[] }>("pnl_analysis/output/polydata_boards.json");
+  const unusualFlow = loadJson<UnusualFlowBoard>("pnl_analysis/output/unusual_flow.json");
 
   const insiderByWallet = new Map<string, { insider_score?: number }>();
   for (const t of ranksFile?.traders || []) {
@@ -214,13 +282,19 @@ export function loadPredictionInsiders(
     .slice(0, 30);
 
   const counts = board?.counts || {};
+  const unusualMarkets = unusualFlow?.markets?.length ?? 0;
+  const potentialInsiders = unusualFlow?.potential_insiders?.length ?? 0;
   return {
     generatedAt:
-      board?.generated_at || digestFile?.generated_at || health?.generated_at || null,
+      board?.generated_at
+      || unusualFlow?.generated_at
+      || digestFile?.generated_at
+      || health?.generated_at
+      || null,
     rule: board?.rule || "asof_live_q60_sport_rel2",
     method:
-      "OddsJam-style board: ranked opens + digested trader excellence + Polydata discovery. "
-      + "Grades 0–100 with explicit why on every play and trader.",
+      "Sniper TAKE (as-of Q60+sport+2×) + OddsJam-style graded opens + "
+      + "UW/Hashdive-style unusual flow (holder Z-score, concentration, smart gap) from free Polymarket APIs.",
     counts: {
       plays: plays.length,
       take: counts.take ?? plays.filter((p) => p.list === "take").length,
@@ -229,11 +303,14 @@ export function loadPredictionInsiders(
       traders: traders.length,
       newFinds: newFinds.length,
       booksScanned: board?.books_scanned ?? 0,
+      unusualMarkets,
+      potentialInsiders,
     },
     plays,
     traders,
     newFinds,
     discovery: loadCopyDiscovery(),
     rankedBoard: board,
+    unusualFlow,
   };
 }

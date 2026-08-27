@@ -5,6 +5,15 @@ Unlike walkforward_tail_backtest.py this does NOT treat dashboard pnl>0 as a win
 Win = token resolved to $1. Fill = their VWAP and +2¢. Grade / sport-lane /
 submarket / relative size use only markets that had already resolved.
 
+Forward / look-ahead notes (important for OddsJam-style honesty):
+  - Features (Q, lane ROI, median stake) are as-of (endDate − KNOWLEDGE_LAG),
+    so the *current* market's outcome is never in the snapshot.
+  - Labels are resolution outcomes only — we never peek at future PnL.
+  - Caveat: as-of is tied to resolution day, not the exact entry timestamp.
+    Early entries can still use features that resolved after the bet was placed
+    but before endDate−1d. Live opens use `now − KNOWLEDGE_LAG` (true forward).
+  - Product Sniper rule: asof_live_q60_sport_rel2 (Q≥60, sport +5%, rel≥2×).
+
 Writes:
   pnl_analysis/output/asof_fullbook_backtest.json
   pnl_analysis/output/asof_fullbook_plays.csv  (gitignored)
