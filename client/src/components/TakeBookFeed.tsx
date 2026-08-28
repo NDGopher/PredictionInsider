@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ChevronDown, ChevronUp, ExternalLink, Flame, PauseCircle, Radio } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
-import { effectiveLane, laneLabel, timingLabel, type PlayLane } from "@/lib/playLane";
+import { effectiveLane, laneLabel, type PlayLane } from "@/lib/playLane";
 
 interface PriceFmt {
   price: number;
@@ -307,7 +307,7 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
   );
 }
 
-function gradeTone(g: number): string {
+function gradeTextTone(g: number): string {
   if (g >= 75) return "text-emerald-400";
   if (g >= 60) return "text-primary";
   if (g >= 45) return "text-amber-400";
@@ -325,7 +325,7 @@ function GradedPlayRow({ play, compact }: { play: TakePlay; compact?: boolean })
     >
       <div className="flex items-center gap-1.5 shrink-0">
         <Badge variant="outline" className="tabular-nums text-[10px]">#{play.rank ?? "—"}</Badge>
-        <span className={`text-base font-bold tabular-nums ${gradeTone(grade)}`}>{grade}</span>
+        <span className={`text-base font-bold tabular-nums ${gradeTextTone(grade)}`}>{grade}</span>
         <Badge variant={play.list === "take" ? "default" : play.list === "near" ? "outline" : "secondary"} className="text-[10px]">
           {tier}
         </Badge>
