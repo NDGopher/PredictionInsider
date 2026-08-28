@@ -1,12 +1,15 @@
 {
-  "generated_at": "2026-08-27T20:51:39.515586+00:00",
-  "method": "Live+bench+watch CSV open scan. Grade=Q with tier penalty. Sorted like OddsJam play board.",
+  "generated_at": "2026-08-28T14:13:51.865688+00:00",
+  "method": "Live+bench+watch CSV open scan. Grade=Q with tier penalty. Lanes: sports (live/upcoming) vs politics/other vs futures.",
   "rule": "asof_live_q60_sport_rel2",
   "books_scanned": 16,
   "counts": {
     "take": 0,
     "near": 22,
-    "watch": 12
+    "watch": 12,
+    "sports": 3,
+    "other": 30,
+    "futures": 1
   },
   "plays": [
     {
@@ -34,6 +37,8 @@
       "url": "https://polymarket.com/event/will-a-team-from-lpl-china-win-lol-worlds-2026-779",
       "tier": "near",
       "bucket": "watch",
+      "timing": "long",
+      "lane": "futures",
       "grade": 43,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -71,6 +76,8 @@
       "url": "https://polymarket.com/event/trump-out-as-president-before-2027",
       "tier": "near",
       "bucket": "bench",
+      "timing": "long",
+      "lane": "other",
       "grade": 41,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -108,6 +115,8 @@
       "url": "https://polymarket.com/event/will-the-republican-party-control-the-senate-after-the-2026-midterm-elections",
       "tier": "near",
       "bucket": "bench",
+      "timing": "long",
+      "lane": "other",
       "grade": 41,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -145,6 +154,8 @@
       "url": "https://polymarket.com/event/will-the-democratic-party-control-the-senate-after-the-2026-midterm-elections",
       "tier": "near",
       "bucket": "bench",
+      "timing": "long",
+      "lane": "other",
       "grade": 41,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -182,6 +193,8 @@
       "url": "https://polymarket.com/event/will-the-democratic-party-control-the-house-after-the-2026-midterm-elections",
       "tier": "near",
       "bucket": "bench",
+      "timing": "long",
+      "lane": "other",
       "grade": 41,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -219,6 +232,8 @@
       "url": "https://polymarket.com/event/will-the-democratic-party-control-the-house-after-the-2026-midterm-elections",
       "tier": "near",
       "bucket": "bench",
+      "timing": "long",
+      "lane": "other",
       "grade": 38,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -256,6 +271,8 @@
       "url": "https://polymarket.com/event/will-the-democratic-party-control-the-house-after-the-2026-midterm-elections",
       "tier": "near",
       "bucket": "bench",
+      "timing": "long",
+      "lane": "other",
       "grade": 38,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -293,6 +310,8 @@
       "url": "https://polymarket.com/event/will-the-democratic-party-control-the-senate-after-the-2026-midterm-elections",
       "tier": "near",
       "bucket": "bench",
+      "timing": "long",
+      "lane": "other",
       "grade": 38,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -330,6 +349,8 @@
       "url": "https://polymarket.com/event/will-the-democratic-party-control-the-senate-after-the-2026-midterm-elections",
       "tier": "near",
       "bucket": "bench",
+      "timing": "long",
+      "lane": "other",
       "grade": 38,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -367,6 +388,8 @@
       "url": "https://polymarket.com/event/will-trump-acquire-greenland-before-2027",
       "tier": "near",
       "bucket": "bench",
+      "timing": "long",
+      "lane": "other",
       "grade": 38,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -404,6 +427,8 @@
       "url": "https://polymarket.com/event/will-the-republican-party-control-the-house-after-the-2026-midterm-elections",
       "tier": "near",
       "bucket": "bench",
+      "timing": "long",
+      "lane": "other",
       "grade": 38,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -441,6 +466,8 @@
       "url": "https://polymarket.com/event/will-the-republican-party-control-the-house-after-the-2026-midterm-elections",
       "tier": "near",
       "bucket": "bench",
+      "timing": "long",
+      "lane": "other",
       "grade": 38,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -478,6 +505,8 @@
       "url": "https://polymarket.com/event/billionaire-one-time-wealth-tax-passes-in-california-election-2026",
       "tier": "near",
       "bucket": "bench",
+      "timing": "unknown",
+      "lane": "other",
       "grade": 38,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -516,6 +545,9 @@
       "url": "https://polymarket.com/event/will-jesus-christ-return-before-2027",
       "tier": "watch",
       "bucket": "watch",
+      "event_dt": "2026-12-31 00:00:00+00:00",
+      "timing": "long",
+      "lane": "other",
       "grade": 34,
       "why": [
         "Watch only \u2014 multiple gates failed; track the book, don't force the play",
@@ -555,6 +587,9 @@
       "url": "https://polymarket.com/event/will-the-us-invade-iran-before-2027",
       "tier": "watch",
       "bucket": "watch",
+      "event_dt": "2026-12-31 00:00:00+00:00",
+      "timing": "long",
+      "lane": "other",
       "grade": 30,
       "why": [
         "Watch only \u2014 multiple gates failed; track the book, don't force the play",
@@ -595,6 +630,9 @@
       "url": "https://polymarket.com/event/will-travis-kelce-retire-before-next-season",
       "tier": "watch",
       "bucket": "watch",
+      "event_dt": "2026-09-10 00:00:00+00:00",
+      "timing": "upcoming",
+      "lane": "other",
       "grade": 30,
       "why": [
         "Watch only \u2014 multiple gates failed; track the book, don't force the play",
@@ -635,6 +673,9 @@
       "url": "https://polymarket.com/event/nothing-ever-happens-2026",
       "tier": "watch",
       "bucket": "watch",
+      "event_dt": "2026-12-31 00:00:00+00:00",
+      "timing": "long",
+      "lane": "other",
       "grade": 30,
       "why": [
         "Watch only \u2014 multiple gates failed; track the book, don't force the play",
@@ -674,6 +715,9 @@
       "url": "https://polymarket.com/event/will-jesus-christ-return-before-2027",
       "tier": "watch",
       "bucket": "bench",
+      "event_dt": "2026-12-31 00:00:00+00:00",
+      "timing": "long",
+      "lane": "other",
       "grade": 25,
       "why": [
         "Watch only \u2014 multiple gates failed; track the book, don't force the play",
@@ -713,6 +757,9 @@
       "url": "https://polymarket.com/event/2026-balance-of-power-r-senate-r-house-537",
       "tier": "watch",
       "bucket": "bench",
+      "event_dt": "2026-11-03 00:00:00+00:00",
+      "timing": "long",
+      "lane": "other",
       "grade": 24,
       "why": [
         "Watch only \u2014 multiple gates failed; track the book, don't force the play",
@@ -751,6 +798,8 @@
       "url": "https://polymarket.com/event/will-the-democratic-party-control-the-house-after-the-2026-midterm-elections",
       "tier": "near",
       "bucket": "bench",
+      "timing": "long",
+      "lane": "other",
       "grade": 22,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -789,6 +838,9 @@
       "url": "https://polymarket.com/event/will-the-republican-party-control-the-senate-after-the-2026-midterm-elections",
       "tier": "watch",
       "bucket": "bench",
+      "event_dt": "2026-11-03 00:00:00+00:00",
+      "timing": "long",
+      "lane": "other",
       "grade": 21,
       "why": [
         "Watch only \u2014 multiple gates failed; track the book, don't force the play",
@@ -829,6 +881,9 @@
       "url": "https://polymarket.com/event/will-no-player-win-a-calendar-grand-slam-in-2026",
       "tier": "watch",
       "bucket": "bench",
+      "event_dt": "2026-12-31 00:00:00+00:00",
+      "timing": "long",
+      "lane": "other",
       "grade": 21,
       "why": [
         "Watch only \u2014 multiple gates failed; track the book, don't force the play",
@@ -869,6 +924,9 @@
       "url": "https://polymarket.com/event/will-the-feds-lower-bound-reach-2pt75-or-lower-before-2027-448-727-854",
       "tier": "watch",
       "bucket": "bench",
+      "event_dt": "2026-12-31 00:00:00+00:00",
+      "timing": "long",
+      "lane": "other",
       "grade": 21,
       "why": [
         "Watch only \u2014 multiple gates failed; track the book, don't force the play",
@@ -908,6 +966,9 @@
       "url": "https://polymarket.com/event/will-the-feds-lower-bound-reach-3pt0-or-lower-before-2027-676-111",
       "tier": "watch",
       "bucket": "bench",
+      "event_dt": "2026-12-31 00:00:00+00:00",
+      "timing": "long",
+      "lane": "other",
       "grade": 21,
       "why": [
         "Watch only \u2014 multiple gates failed; track the book, don't force the play",
@@ -947,6 +1008,9 @@
       "url": "https://polymarket.com/event/will-paramount-close-warner-bros-acquisition",
       "tier": "watch",
       "bucket": "bench",
+      "event_dt": "NaT",
+      "timing": "unknown",
+      "lane": "other",
       "grade": 21,
       "why": [
         "Watch only \u2014 multiple gates failed; track the book, don't force the play",
@@ -987,6 +1051,9 @@
       "url": "https://polymarket.com/event/will-no-player-win-a-calendar-grand-slam-in-2026",
       "tier": "watch",
       "bucket": "bench",
+      "event_dt": "2026-12-31 00:00:00+00:00",
+      "timing": "long",
+      "lane": "other",
       "grade": 21,
       "why": [
         "Watch only \u2014 multiple gates failed; track the book, don't force the play",
@@ -1026,6 +1093,8 @@
       "url": "https://polymarket.com/event/poilievre-out-as-leader-of-conservatives-before-2027",
       "tier": "near",
       "bucket": "bench",
+      "timing": "unknown",
+      "lane": "other",
       "grade": 18,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -1062,6 +1131,8 @@
       "url": "https://polymarket.com/event/will-trump-acquire-greenland-before-2027",
       "tier": "near",
       "bucket": "bench",
+      "timing": "long",
+      "lane": "other",
       "grade": 13,
       "why": [
         "Near miss \u2014 1 gate(s) away from product TAKE",
@@ -1098,6 +1169,8 @@
       "url": "https://polymarket.com/event/will-the-us-confirm-that-aliens-exist-before-2027-789",
       "tier": "near",
       "bucket": "bench",
+      "timing": "long",
+      "lane": "other",
       "grade": 2,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -1135,6 +1208,8 @@
       "url": "https://polymarket.com/event/will-michael-carrick-be-appointed-as-manager-of-manchester-united",
       "tier": "near",
       "bucket": "watch",
+      "timing": "unknown",
+      "lane": "sports",
       "grade": 2,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -1172,6 +1247,8 @@
       "url": "https://polymarket.com/event/will-the-us-invade-iran-before-2027",
       "tier": "near",
       "bucket": "bench",
+      "timing": "long",
+      "lane": "other",
       "grade": 2,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -1209,6 +1286,8 @@
       "url": "https://polymarket.com/event/starmer-out-by-december-31-2026-936-416-977",
       "tier": "near",
       "bucket": "bench",
+      "timing": "unknown",
+      "lane": "other",
       "grade": 2,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -1246,6 +1325,8 @@
       "url": "https://polymarket.com/event/will-michael-carrick-be-appointed-as-manager-of-manchester-united",
       "tier": "near",
       "bucket": "watch",
+      "timing": "unknown",
+      "lane": "sports",
       "grade": 2,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",
@@ -1283,6 +1364,8 @@
       "url": "https://polymarket.com/event/will-oliver-glasner-be-appointed-as-manager-of-manchester-united-555",
       "tier": "near",
       "bucket": "watch",
+      "timing": "unknown",
+      "lane": "sports",
       "grade": 2,
       "why": [
         "Near miss \u2014 2 gate(s) away from product TAKE",

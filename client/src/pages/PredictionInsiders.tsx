@@ -16,6 +16,12 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "wouter";
+import {
+  effectiveLane,
+  laneLabel,
+  timingLabel,
+  type PlayLane,
+} from "@/lib/playLane";
 
 interface RankedPlay {
   id: string;
@@ -26,6 +32,8 @@ interface RankedPlay {
   rel?: number;
   sport?: string;
   submarket?: string;
+  lane?: PlayLane;
+  timing?: "live" | "upcoming" | "long" | "unknown";
   playLabel?: string;
   marketQuestion?: string;
   traders?: string[];
@@ -173,6 +181,8 @@ function PlayCard({ p }: { p: RankedPlay }) {
   const grade = Math.round(p.grade ?? 0);
   const href = p.url || (p.slug ? `https://polymarket.com/event/${p.slug}` : undefined);
   const why = p.why?.length ? p.why : (p.misses || []).map((m) => `Missing: ${m}`);
+  const lane = p.lane ?? effectiveLane({ sport: p.sport, submarket: p.submarket, title: p.marketQuestion || p.playLabel });
+  const tLabel = timingLabel(p.timing);
 
   return (
     <Card data-testid="card-insider-play">
@@ -184,6 +194,10 @@ function PlayCard({ p }: { p: RankedPlay }) {
           </Badge>
           <span className={`text-xl font-bold tabular-nums ${gradeTone(grade)}`}>{grade}</span>
           <span className="text-xs text-muted-foreground">/100</span>
+          <Badge variant="outline" className={lane === "sports" ? "text-emerald-400 border-emerald-500/30" : lane === "other" ? "text-amber-400 border-amber-500/30" : ""}>
+            {laneLabel(lane)}
+          </Badge>
+          {tLabel ? <Badge variant="outline">{tLabel}</Badge> : null}
           <Badge variant="outline">{p.submarket || "—"}</Badge>
           <Badge variant="outline">{p.sport || "—"}</Badge>
           {p.q != null ? <Badge variant="outline">Q {Math.round(p.q)}</Badge> : null}
@@ -345,13 +359,28 @@ export default function PredictionInsiders() {
   });
 
   const [playFilter, setPlayFilter] = useState<"all" | "take" | "near" | "watch">("all");
+  const [laneTab, setLaneTab] = useState<PlayLane>("sports");
   const [traderFilter, setTraderFilter] = useState<"all" | "live" | "bench" | "watch">("all");
+  const [unusualLane, setUnusualLane] = useState<"sports" | "macro">("sports");
+
+  const resolveLane = (p: RankedPlay): PlayLane =>
+    p.lane ?? effectiveLane({ sport: p.sport, submarket: p.submarket, title: p.marketQuestion || p.playLabel, timing: p.timing });
 
   const plays = useMemo(() => {
     const rows = data?.plays || [];
-    if (playFilter === "all") return rows;
-    return rows.filter((p) => p.list === playFilter);
-  }, [data?.plays, playFilter]);
+    const inLane = rows.filter((p) => resolveLane(p) === laneTab);
+    if (playFilter === "all") return inLane;
+    return inLane.filter((p) => p.list === playFilter);
+  }, [data?.plays, playFilter, laneTab]);
+
+  const laneCounts = useMemo(() => {
+    const rows = data?.plays || [];
+    return {
+      sports: rows.filter((p) => resolveLane(p) === "sports").length,
+      other: rows.filter((p) => resolveLane(p) === "other").length,
+      futures: rows.filter((p) => resolveLane(p) === "futures").length,
+    };
+  }, [data?.plays]);
 
   const traders = useMemo(() => {
     const rows = data?.traders || [];
@@ -359,7 +388,12 @@ export default function PredictionInsiders() {
     return rows.filter((t) => t.bucket === traderFilter);
   }, [data?.traders, traderFilter]);
 
-  const unusualMarkets = data?.unusualFlow?.markets || [];
+  const unusualMarkets = useMemo(() => {
+    const rows = data?.unusualFlow?.markets || [];
+    if (unusualLane === "sports") return rows.filter((m) => m.sports_ish);
+    return rows.filter((m) => !m.sports_ish);
+  }, [data?.unusualFlow?.markets, unusualLane]);
+
   const potentialInsiders = data?.unusualFlow?.potential_insiders || [];
   const counts = data?.counts || {};
 
@@ -435,26 +469,43 @@ export default function PredictionInsiders() {
 
           <TabsContent value="plays" className="space-y-3 mt-4">
             <div className="flex flex-wrap gap-2">
+              {(["sports", "other", "futures"] as const).map((lane) => (
+                <button
+                  key={lane}
+                  type="button"
+                  onClick={() => setLaneTab(lane)}
+                  className={`text-xs px-3 py-1 rounded-full border ${
+                    laneTab === lane ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"
+                  }`}
+                >
+                  {laneLabel(lane)}
+                  {lane === "sports" ? ` (${laneCounts.sports})` : lane === "other" ? ` (${laneCounts.other})` : ` (${laneCounts.futures})`}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2">
               {(["all", "take", "near", "watch"] as const).map((f) => (
                 <button
                   key={f}
                   type="button"
                   onClick={() => setPlayFilter(f)}
                   className={`text-xs px-3 py-1 rounded-full border ${
-                    playFilter === f ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"
+                    playFilter === f ? "bg-muted text-foreground border-border" : "border-border text-muted-foreground"
                   }`}
                 >
-                  {f === "all" ? "All" : f.toUpperCase()}
+                  {f === "all" ? "All tiers" : f.toUpperCase()}
                 </button>
               ))}
             </div>
             <p className="text-xs text-muted-foreground">
-              TAKE = Sniper product only (as-of Q≥60, sport lane +5%, 2× stake). NEAR/WATCH = ranked board like OddsJam Explorer.
+              Default view is <strong>Sports (live / upcoming)</strong> only — politics, macro, and season-long futures are on separate tabs.
+              TAKE = Sniper (Q≥60, sport lane +5%, 2× stake).
             </p>
             {plays.length === 0 ? (
               <Card>
                 <CardContent className="p-6 text-sm text-muted-foreground">
-                  No plays in this filter. The board scans live + bench + watch CSV books every pipeline run.
+                  No {laneLabel(laneTab).toLowerCase()} plays in this filter.
+                  {laneTab === "sports" ? " Live copy books may have no open game lines right now — check Futures or Politics tabs." : ""}
                 </CardContent>
               </Card>
             ) : (
@@ -467,6 +518,20 @@ export default function PredictionInsiders() {
           </TabsContent>
 
           <TabsContent value="unusual" className="space-y-4 mt-4">
+            <div className="flex flex-wrap gap-2">
+              {(["sports", "macro"] as const).map((lane) => (
+                <button
+                  key={lane}
+                  type="button"
+                  onClick={() => setUnusualLane(lane)}
+                  className={`text-xs px-3 py-1 rounded-full border ${
+                    unusualLane === lane ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"
+                  }`}
+                >
+                  {lane === "sports" ? "Sports unusual flow" : "Politics / macro unusual"}
+                </button>
+              ))}
+            </div>
             <p className="text-xs text-muted-foreground max-w-3xl">
               Same idea as{" "}
               <a href="https://unusualwhales.com/predictions/insiders" target="_blank" rel="noreferrer" className="text-primary">

@@ -41,6 +41,8 @@ export interface AnnotatedTakePlay {
   playLabel: string;
   pick: string;
   lane: "sports" | "other" | "futures";
+  /** live | upcoming | long | unknown — from open scan event_dt */
+  timing?: "live" | "upcoming" | "long" | "unknown";
   outcomeLabel?: string;
   currentPrice: number;
   avgEntryPrice: number;
@@ -481,6 +483,14 @@ export function mapCsvOpenRow(row: Record<string, unknown>): AnnotatedTakePlay {
     outcome: row.outcome ? String(row.outcome) : undefined,
   });
   const submarket = String(row.submarket || inferSubmarket({ marketQuestion: title, sport }));
+  const timingRaw = row.timing ? String(row.timing) : undefined;
+  const timing =
+    timingRaw === "live" || timingRaw === "upcoming" || timingRaw === "long" || timingRaw === "unknown"
+      ? timingRaw
+      : undefined;
+  const laneRaw = row.lane ? String(row.lane) : undefined;
+  const laneFromRaw =
+    laneRaw === "sports" || laneRaw === "other" || laneRaw === "futures" ? laneRaw : playLane(sport, submarket);
   const play: AnnotatedTakePlay = {
     id: `csv-${String(row.wallet || username)}-${slug || title}-${side}`,
     marketQuestion: title,
@@ -490,7 +500,8 @@ export function mapCsvOpenRow(row: Record<string, unknown>): AnnotatedTakePlay {
     submarket,
     playLabel: formatBetHeadline(pick, submarket, sport),
     pick,
-    lane: playLane(sport, submarket),
+    lane: laneFromRaw,
+    timing,
     outcomeLabel: pick,
     currentPrice: live,
     avgEntryPrice: vwap,
@@ -534,10 +545,7 @@ export function mapCsvOpenRow(row: Record<string, unknown>): AnnotatedTakePlay {
 }
 
 export function mapCsvOpenRows(rows: Array<Record<string, unknown>>): AnnotatedTakePlay[] {
-  return rows
-    .map(mapCsvOpenRow)
-    .filter((p) => p.lane !== "futures" && p.submarket !== "Futures")
-    .filter((p) => !titleLooksStale(p.marketQuestion) && !titleLooksStale(p.slug || ""));
+  return rows.map(mapCsvOpenRow);
 }
 
 export interface CopyDiscoveryBundle {

@@ -1,205 +1,141 @@
 {
-  "generated_at": "2026-08-27T15:29:46.559011+00:00",
+  "generated_at": "2026-08-28T14:12:02.390613+00:00",
   "method": "Free Polymarket holders Z-score + concentration/fresh-wallet tags + known-Q capital-weighted smart gap. Modeled on Unusual Whales Predictions / Hashdive Potential Insiders (public methodology).",
   "params": {
-    "events": 12,
-    "max_markets": 15,
+    "events": 15,
+    "max_markets": 20,
     "min_z": 2.0,
     "enrich": true,
     "sports_only": false
   },
   "counts": {
-    "markets_fetched": 15,
-    "markets_scored": 15,
-    "wallet_alerts": 3,
+    "markets_fetched": 20,
+    "markets_scored": 20,
+    "wallet_alerts": 10,
     "known_q": 105
   },
   "markets": [
     {
-      "conditionId": "0xc1143157dd8b1f11df1e7f76d2c1aec4b78cb3ab8cbffc48131be40fcb4aa024",
-      "question": "Counter-Strike: Legacy vs FUT Esports (BO3) - BLAST Open Porto Group B",
-      "event_title": "Counter-Strike: Legacy vs FUT Esports (BO3) - BLAST Open Porto Group B",
-      "slug": "cs2-lgc-fut-2026-08-27",
-      "url": "https://polymarket.com/event/cs2-lgc-fut-2026-08-27",
+      "conditionId": "0xf6937bd09ab1eeb64a1a0ea7b2599f926ef7f4400a9faa1cb1730e4bab1b5bcd",
+      "question": "Counter-Strike: G2 vs Spirit - Map 2 Winner",
+      "event_title": "Counter-Strike: G2 vs Spirit (BO3) - BLAST Open Porto Group A",
+      "slug": "cs2-g2-ts7-2026-08-28-game2",
+      "url": "https://polymarket.com/event/cs2-g2-ts7-2026-08-28",
       "sports_ish": true,
-      "volume24hr": 4475205.94,
-      "liquidity": 259249.43,
-      "endDate": "2026-08-27T20:30:00Z",
+      "volume24hr": 800987.15,
+      "liquidity": 1540895.53,
+      "endDate": "2026-08-28T17:50:00Z",
       "days_to_end": 0.2,
       "outcomes": [
-        "Legacy",
-        "FUT Esports"
+        "G2",
+        "Spirit"
       ],
       "prices": [
-        0.715,
-        0.285
+        0.0005,
+        0.9995
       ],
-      "unusual_score": 22.55,
+      "unusual_score": 23.81,
       "tags": [
         "closing_soon",
+        "concentrated",
         "contrarian_whale",
-        "fresh_wallet",
         "momentum",
-        "potential_insider",
-        "smart_money"
+        "potential_insider"
       ],
-      "smart_gap": 24.5,
+      "smart_gap": -8.0,
       "holders_scanned": 80,
       "flagged": [
         {
-          "wallet": "0x6d20c35f65d9899b6d6b74f8466e824580f9a165",
-          "name": "Djdjdjekekek",
-          "outcome": "FUT Esports",
-          "amount": 1762708.83,
-          "z": 6.21,
-          "q": null,
-          "open_markets": 7,
-          "trade_depth": 2001,
-          "wallet_age_days": 62.2,
+          "wallet": "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+          "name": "0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563-17599",
+          "outcome": "G2",
+          "amount": 287532.29,
+          "z": 6.2,
+          "q": 3,
+          "open_markets": 99,
+          "trade_depth": 4001,
+          "wallet_age_days": 26.6,
           "fresh": false,
           "tags": [
             "contrarian_whale"
           ],
-          "polymarket_profile": "https://polymarket.com/profile/0x6d20c35f65d9899b6d6b74f8466e824580f9a165"
+          "polymarket_profile": "https://polymarket.com/profile/0x2c335066fe58fe9237c3d3dc7b275c2a034a0563"
         },
         {
-          "wallet": "0x14c7111afa871fb215339f365043d7b2837b9ccf",
-          "name": "kilian7kilian",
-          "outcome": "Legacy",
-          "amount": 492160.08,
-          "z": 5.42,
+          "wallet": "0xa16a1302ca05463f30faebeb5c045767fde233a1",
+          "name": "asd147",
+          "outcome": "Spirit",
+          "amount": 120000.0,
+          "z": 3.98,
           "q": null,
-          "open_markets": 7,
-          "trade_depth": 26,
-          "wallet_age_days": 1.8,
-          "fresh": true,
+          "open_markets": 3,
+          "trade_depth": 4001,
+          "wallet_age_days": 30.6,
+          "fresh": false,
           "tags": [
             "potential_insider",
-            "fresh_wallet",
+            "concentrated",
             "momentum"
           ],
-          "polymarket_profile": "https://polymarket.com/profile/0x14c7111afa871fb215339f365043d7b2837b9ccf"
+          "polymarket_profile": "https://polymarket.com/profile/0xa16a1302ca05463f30faebeb5c045767fde233a1"
+        },
+        {
+          "wallet": "0x731a241767938bb23d1b2fac4c9cd2f3cea9033f",
+          "name": "CoinTrick",
+          "outcome": "Spirit",
+          "amount": 98000.0,
+          "z": 3.16,
+          "q": null,
+          "open_markets": 2,
+          "trade_depth": 4001,
+          "wallet_age_days": 142.0,
+          "fresh": false,
+          "tags": [
+            "potential_insider",
+            "concentrated",
+            "momentum"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0x731a241767938bb23d1b2fac4c9cd2f3cea9033f"
+        },
+        {
+          "wallet": "0xcc77f32616a96f696a3850ad48c0e378eddcc035",
+          "name": "depresssin",
+          "outcome": "Spirit",
+          "amount": 75329.64,
+          "z": 2.3,
+          "q": null,
+          "open_markets": 8,
+          "trade_depth": 501,
+          "wallet_age_days": 305.0,
+          "fresh": false,
+          "tags": [
+            "momentum"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0xcc77f32616a96f696a3850ad48c0e378eddcc035"
         }
       ],
       "rank": 1
     },
     {
-      "conditionId": "0xc6c85f3dc412ec9bdc88e42305c3aa9491aa484a2053335df1fa1f7d0ac6dd80",
-      "question": "Will FC Barcelona win on 2026-08-27?",
-      "event_title": "FC Barcelona vs. Athletic Club",
-      "slug": "lal-bar-bil-2026-08-27-bar",
-      "url": "https://polymarket.com/event/lal-bar-bil-2026-08-27",
-      "sports_ish": true,
-      "volume24hr": 1014930.62,
-      "liquidity": 1353171.07,
-      "endDate": "2026-08-27T19:00:00Z",
-      "days_to_end": 0.1,
-      "outcomes": [
-        "Yes",
-        "No"
-      ],
-      "prices": [
-        0.795,
-        0.205
-      ],
-      "unusual_score": 19.43,
-      "tags": [
-        "closing_soon",
-        "contrarian_whale",
-        "momentum",
-        "smart_money"
-      ],
-      "smart_gap": 41.8,
-      "holders_scanned": 80,
-      "flagged": [
-        {
-          "wallet": "0xdc41c39b95453c943174f369926018f6963bdd7e",
-          "name": "nigiri99",
-          "outcome": "Yes",
-          "amount": 482631.98,
-          "z": 6.13,
-          "q": 50,
-          "open_markets": 100,
-          "trade_depth": 4001,
-          "wallet_age_days": 0.8,
-          "fresh": false,
-          "tags": [
-            "smart_money",
-            "momentum"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0xdc41c39b95453c943174f369926018f6963bdd7e"
-        },
-        {
-          "wallet": "0x1b47e9b128e6b671edebfb2cac23dd3efc40d814",
-          "name": "sbsigner",
-          "outcome": "No",
-          "amount": 100748.35,
-          "z": 2.88,
-          "q": null,
-          "open_markets": 40,
-          "trade_depth": 4001,
-          "wallet_age_days": 28.8,
-          "fresh": false,
-          "tags": [
-            "contrarian_whale"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0x1b47e9b128e6b671edebfb2cac23dd3efc40d814"
-        },
-        {
-          "wallet": "0x1cbf495ed072b485b1ae628b7f98d0d9bd73107a",
-          "name": "Harahiro",
-          "outcome": "No",
-          "amount": 99288.17,
-          "z": 2.82,
-          "q": null,
-          "open_markets": 4,
-          "trade_depth": 0,
-          "wallet_age_days": null,
-          "fresh": false,
-          "tags": [
-            "contrarian_whale"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0x1cbf495ed072b485b1ae628b7f98d0d9bd73107a"
-        },
-        {
-          "wallet": "0x2a69660046d7acc4ab204d7cc5ba78b0776cd2f7",
-          "name": "UpTheBlues",
-          "outcome": "No",
-          "amount": 77184.25,
-          "z": 2.01,
-          "q": null,
-          "open_markets": 100,
-          "trade_depth": 4001,
-          "wallet_age_days": 0.6,
-          "fresh": false,
-          "tags": [
-            "contrarian_whale"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0x2a69660046d7acc4ab204d7cc5ba78b0776cd2f7"
-        }
-      ],
-      "rank": 2
-    },
-    {
-      "conditionId": "0x536b507838dcdac8966510d84abb8f1c51362d632ab2023b94e810ba6fdf5cb7",
-      "question": "Will Augusto Cury win the 2026 Brazilian presidential election?",
-      "event_title": "Brazil Presidential Election",
-      "slug": "will-augusto-cury-win-the-2026-brazilian-presidential-election",
-      "url": "https://polymarket.com/event/brazil-presidential-election",
+      "conditionId": "0x5dc212b712dcf514432221436140eec9717aea8f9fbead457c858d14ee519b90",
+      "question": "US announces end of Iranian blockade by August 7, 2026?",
+      "event_title": "US announces end of Iranian blockade by...?",
+      "slug": "us-announces-end-of-iranian-blockade-by-august-7-2026-20260727171523690",
+      "url": "https://polymarket.com/event/us-announces-end-of-iranian-blockade-byptptpt-20260713152715080",
       "sports_ish": false,
-      "volume24hr": 1444877.66,
-      "liquidity": 281740.02,
-      "endDate": "2026-10-04T00:00:00Z",
-      "days_to_end": 37.4,
+      "volume24hr": 2973354.96,
+      "liquidity": 0.0,
+      "endDate": "2026-08-08T03:59:00Z",
+      "days_to_end": -20.4,
       "outcomes": [
         "Yes",
         "No"
       ],
       "prices": [
-        0.0165,
-        0.9835
+        0.0,
+        1.0
       ],
-      "unusual_score": 16.39,
+      "unusual_score": 20.69,
       "tags": [
         "concentrated",
         "contrarian_whale",
@@ -208,14 +144,115 @@
         "potential_insider"
       ],
       "smart_gap": null,
-      "holders_scanned": 65,
+      "holders_scanned": 70,
       "flagged": [
+        {
+          "wallet": "0xc84f7e76ec28ef20e7773b7b4926bfb7378be0c5",
+          "name": "BrightStars",
+          "outcome": "Yes",
+          "amount": 112237.04,
+          "z": 5.29,
+          "q": null,
+          "open_markets": 54,
+          "trade_depth": 1001,
+          "wallet_age_days": 133.9,
+          "fresh": false,
+          "tags": [
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0xc84f7e76ec28ef20e7773b7b4926bfb7378be0c5"
+        },
+        {
+          "wallet": "0x9aae69c680c0dfdce3baa6fc6134c07a59ee4e13",
+          "name": "luketakes",
+          "outcome": "No",
+          "amount": 500.0,
+          "z": 4.84,
+          "q": null,
+          "open_markets": 2,
+          "trade_depth": 1,
+          "wallet_age_days": 23.6,
+          "fresh": true,
+          "tags": [
+            "potential_insider",
+            "concentrated",
+            "fresh_wallet",
+            "momentum"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0x9aae69c680c0dfdce3baa6fc6134c07a59ee4e13"
+        },
+        {
+          "wallet": "0x1cc16713196d456f86fa9c7387dd326a7f73b8df",
+          "name": "Wickier",
+          "outcome": "Yes",
+          "amount": 50827.25,
+          "z": 2.11,
+          "q": null,
+          "open_markets": 47,
+          "trade_depth": 2001,
+          "wallet_age_days": 719.8,
+          "fresh": false,
+          "tags": [
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0x1cc16713196d456f86fa9c7387dd326a7f73b8df"
+        }
+      ],
+      "rank": 2
+    },
+    {
+      "conditionId": "0xac02cbb049e46d6a3627c0fdf52fa554982a9025d45968207b362acb6ca4b830",
+      "question": "Will the Fed decrease interest rates by 25 bps after the September 2026 meeting?",
+      "event_title": "Fed Decision in September?",
+      "slug": "will-the-fed-decrease-interest-rates-by-25-bps-after-the-september-2026-meeting-586",
+      "url": "https://polymarket.com/event/fed-decision-in-september-762",
+      "sports_ish": false,
+      "volume24hr": 857353.47,
+      "liquidity": 473720.13,
+      "endDate": "2026-09-16T00:00:00Z",
+      "days_to_end": 18.4,
+      "outcomes": [
+        "Yes",
+        "No"
+      ],
+      "prices": [
+        0.014,
+        0.986
+      ],
+      "unusual_score": 19.43,
+      "tags": [
+        "contrarian_whale",
+        "fresh_wallet",
+        "momentum",
+        "potential_insider"
+      ],
+      "smart_gap": null,
+      "holders_scanned": 80,
+      "flagged": [
+        {
+          "wallet": "0x3750ad9b4033b972f775b671d26cc2f0bd17cbdd",
+          "name": "shaoqi767",
+          "outcome": "Yes",
+          "amount": 2830249.09,
+          "z": 5.41,
+          "q": null,
+          "open_markets": 5,
+          "trade_depth": 1,
+          "wallet_age_days": 0.2,
+          "fresh": true,
+          "tags": [
+            "potential_insider",
+            "fresh_wallet",
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0x3750ad9b4033b972f775b671d26cc2f0bd17cbdd"
+        },
         {
           "wallet": "0xa5ef39c3d3e10d0b270233af41cac69796b12966",
           "name": "",
           "outcome": "No",
-          "amount": 2932852.32,
-          "z": 4.9,
+          "amount": 5304802.94,
+          "z": 5.28,
           "q": null,
           "open_markets": 100,
           "trade_depth": 0,
@@ -227,58 +264,204 @@
           "polymarket_profile": "https://polymarket.com/profile/0xa5ef39c3d3e10d0b270233af41cac69796b12966"
         },
         {
-          "wallet": "0xdd9ed02bb67b2ec504be24b98febd651fdac49b3",
-          "name": "Binotto",
-          "outcome": "Yes",
-          "amount": 288079.58,
-          "z": 3.36,
+          "wallet": "0x3a8aa345d5db7ec5138298c8c4f4540259be7699",
+          "name": "TheReturnOfDarthMaul",
+          "outcome": "No",
+          "amount": 3088868.95,
+          "z": 2.93,
           "q": null,
-          "open_markets": 100,
-          "trade_depth": 4001,
-          "wallet_age_days": 217.0,
+          "open_markets": 69,
+          "trade_depth": 2001,
+          "wallet_age_days": 158.7,
           "fresh": false,
           "tags": [
-            "contrarian_whale"
+            "momentum"
           ],
-          "polymarket_profile": "https://polymarket.com/profile/0xdd9ed02bb67b2ec504be24b98febd651fdac49b3"
-        },
-        {
-          "wallet": "0xc50f627bf0977096b7357f49e5b5c2498a2f3ad3",
-          "name": "rafa.pandolfo",
-          "outcome": "Yes",
-          "amount": 251318.61,
-          "z": 2.81,
-          "q": null,
-          "open_markets": 6,
-          "trade_depth": 501,
-          "wallet_age_days": 204.0,
-          "fresh": false,
-          "tags": [
-            "contrarian_whale"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0xc50f627bf0977096b7357f49e5b5c2498a2f3ad3"
-        },
-        {
-          "wallet": "0x48c8a1e228365a293af57d9ca6092889b5c9bc38",
-          "name": "0x950681D3643A5834ae200C4B0FaD0AAd959c098D-17675",
-          "outcome": "Yes",
-          "amount": 239983.77,
-          "z": 2.64,
-          "q": null,
-          "open_markets": 1,
-          "trade_depth": 1,
-          "wallet_age_days": 0.2,
-          "fresh": true,
-          "tags": [
-            "potential_insider",
-            "concentrated",
-            "fresh_wallet",
-            "contrarian_whale"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0x48c8a1e228365a293af57d9ca6092889b5c9bc38"
+          "polymarket_profile": "https://polymarket.com/profile/0x3a8aa345d5db7ec5138298c8c4f4540259be7699"
         }
       ],
       "rank": 3
+    },
+    {
+      "conditionId": "0xccf2b4f4ee94200fb3e05bfd45c1fb8a43bb0bf5cf69d78508c969d72b3a7f2b",
+      "question": "US announces end of Iranian blockade by August 22, 2026?",
+      "event_title": "US announces end of Iranian blockade by...?",
+      "slug": "us-announces-end-of-iranian-blockade-by-august-22-2026",
+      "url": "https://polymarket.com/event/us-announces-end-of-iranian-blockade-byptptpt-20260713152715080",
+      "sports_ish": false,
+      "volume24hr": 1478691.87,
+      "liquidity": 0.0,
+      "endDate": "2026-08-23T03:59:00Z",
+      "days_to_end": -5.4,
+      "outcomes": [
+        "Yes",
+        "No"
+      ],
+      "prices": [
+        0.0,
+        1.0
+      ],
+      "unusual_score": 19.39,
+      "tags": [
+        "contrarian_whale",
+        "fresh_wallet",
+        "momentum",
+        "potential_insider"
+      ],
+      "smart_gap": null,
+      "holders_scanned": 80,
+      "flagged": [
+        {
+          "wallet": "0x84b9cf0f7b526c20088bbca340718b5081dc7e83",
+          "name": "Aec",
+          "outcome": "No",
+          "amount": 119.05,
+          "z": 4.14,
+          "q": null,
+          "open_markets": 30,
+          "trade_depth": 101,
+          "wallet_age_days": 520.4,
+          "fresh": false,
+          "tags": [
+            "momentum"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0x84b9cf0f7b526c20088bbca340718b5081dc7e83"
+        },
+        {
+          "wallet": "0xc84f7e76ec28ef20e7773b7b4926bfb7378be0c5",
+          "name": "BrightStars",
+          "outcome": "Yes",
+          "amount": 86186.54,
+          "z": 3.98,
+          "q": null,
+          "open_markets": 54,
+          "trade_depth": 1001,
+          "wallet_age_days": 133.9,
+          "fresh": false,
+          "tags": [
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0xc84f7e76ec28ef20e7773b7b4926bfb7378be0c5"
+        },
+        {
+          "wallet": "0x8c8fbac0334056404939736cd0012231da221f7a",
+          "name": "666lambofgod13",
+          "outcome": "No",
+          "amount": 108.78,
+          "z": 3.73,
+          "q": null,
+          "open_markets": 4,
+          "trade_depth": 26,
+          "wallet_age_days": 632.9,
+          "fresh": true,
+          "tags": [
+            "potential_insider",
+            "fresh_wallet",
+            "momentum"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0x8c8fbac0334056404939736cd0012231da221f7a"
+        },
+        {
+          "wallet": "0x74471a007ddcc488f6d57b5e86dfb35a8d48a16d",
+          "name": "tetrose",
+          "outcome": "Yes",
+          "amount": 69998.98,
+          "z": 3.14,
+          "q": null,
+          "open_markets": 100,
+          "trade_depth": 2001,
+          "wallet_age_days": 209.6,
+          "fresh": false,
+          "tags": [
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0x74471a007ddcc488f6d57b5e86dfb35a8d48a16d"
+        },
+        {
+          "wallet": "0x162f6fff88a52864f2ecc9833e58089d5254798d",
+          "name": "Valen9",
+          "outcome": "Yes",
+          "amount": 57066.61,
+          "z": 2.47,
+          "q": null,
+          "open_markets": 77,
+          "trade_depth": 1001,
+          "wallet_age_days": 129.9,
+          "fresh": false,
+          "tags": [
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0x162f6fff88a52864f2ecc9833e58089d5254798d"
+        }
+      ],
+      "rank": 4
+    },
+    {
+      "conditionId": "0x0a061d09daa5ac4221fa7ea0d7abf84ab2ac42af0817a001d4c0dd3262be2cd8",
+      "question": "Will Bitcoin reach $67,500 in August?",
+      "event_title": "What price will Bitcoin hit in August?",
+      "slug": "will-bitcoin-reach-67pt5k-in-august-2026",
+      "url": "https://polymarket.com/event/what-price-will-bitcoin-hit-in-august-2026",
+      "sports_ish": false,
+      "volume24hr": 738567.91,
+      "liquidity": 0.0,
+      "endDate": "2026-09-01T04:00:00Z",
+      "days_to_end": 3.6,
+      "outcomes": [
+        "Yes",
+        "No"
+      ],
+      "prices": [
+        1.0,
+        0.0
+      ],
+      "unusual_score": 19.09,
+      "tags": [
+        "closing_soon",
+        "concentrated",
+        "contrarian_whale",
+        "momentum",
+        "potential_insider"
+      ],
+      "smart_gap": null,
+      "holders_scanned": 80,
+      "flagged": [
+        {
+          "wallet": "0xb525452e1849a629c5a12ed0a20cb49baa50033e",
+          "name": "astrasport",
+          "outcome": "Yes",
+          "amount": 731.9,
+          "z": 6.23,
+          "q": null,
+          "open_markets": 2,
+          "trade_depth": 0,
+          "wallet_age_days": null,
+          "fresh": false,
+          "tags": [
+            "potential_insider",
+            "concentrated",
+            "momentum"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0xb525452e1849a629c5a12ed0a20cb49baa50033e"
+        },
+        {
+          "wallet": "0xc487a65e48552b964a46df520eed1029aec8b127",
+          "name": "KyeZX",
+          "outcome": "No",
+          "amount": 43715.68,
+          "z": 4.91,
+          "q": null,
+          "open_markets": 19,
+          "trade_depth": 251,
+          "wallet_age_days": 86.4,
+          "fresh": false,
+          "tags": [
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0xc487a65e48552b964a46df520eed1029aec8b127"
+        }
+      ],
+      "rank": 5
     },
     {
       "conditionId": "0xfd13c67069e83a4a8ba1ba425f259185bcbae282c4f91074646e3c5cf97b7ae3",
@@ -290,7 +473,7 @@
       "volume24hr": 1031665.66,
       "liquidity": 0.0,
       "endDate": "2026-09-01T04:00:00Z",
-      "days_to_end": 4.5,
+      "days_to_end": 3.6,
       "outcomes": [
         "Yes",
         "No"
@@ -319,7 +502,7 @@
           "q": null,
           "open_markets": 27,
           "trade_depth": 4001,
-          "wallet_age_days": 411.0,
+          "wallet_age_days": 411.9,
           "fresh": false,
           "tags": [
             "contrarian_whale"
@@ -335,7 +518,7 @@
           "q": null,
           "open_markets": 11,
           "trade_depth": 1,
-          "wallet_age_days": 6.0,
+          "wallet_age_days": 7.0,
           "fresh": true,
           "tags": [
             "potential_insider",
@@ -345,87 +528,203 @@
           "polymarket_profile": "https://polymarket.com/profile/0xc8dcd6466701a882e6360acf41889d86684c610a"
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
-      "conditionId": "0x7840fceeb6fdd5696d74bb46d0ea8ecc08ece146f8148c748f6b54fee92e715d",
-      "question": "Counter-Strike: MOUZ vs 9z (BO3) - BLAST Open Porto Group B",
-      "event_title": "Counter-Strike: MOUZ vs 9z (BO3) - BLAST Open Porto Group B",
-      "slug": "cs2-mouz-9z-2026-08-27",
-      "url": "https://polymarket.com/event/cs2-mouz-9z-2026-08-27",
+      "conditionId": "0x1a7a1c64e0252b17f609aa98cbb29be849e3e49cdd58092fe9b07194356451ea",
+      "question": "Rams vs. Chargers",
+      "event_title": "Rams vs. Chargers",
+      "slug": "nfl-la-lac-2026-08-28",
+      "url": "https://polymarket.com/event/nfl-la-lac-2026-08-28",
       "sports_ish": true,
-      "volume24hr": 2337028.63,
-      "liquidity": 764661.96,
-      "endDate": "2026-08-27T18:00:00Z",
-      "days_to_end": 0.1,
+      "volume24hr": 1070369.94,
+      "liquidity": 0.0,
+      "endDate": "2026-08-28T02:00:00Z",
+      "days_to_end": -0.5,
       "outcomes": [
-        "MOUZ",
-        "9z"
+        "Rams",
+        "Chargers"
       ],
       "prices": [
-        0.9995,
-        0.0005
+        1.0,
+        0.0
       ],
-      "unusual_score": 12.9,
+      "unusual_score": 12.68,
       "tags": [
-        "closing_soon",
+        "concentrated",
         "contrarian_whale",
-        "momentum",
-        "smart_money"
+        "fresh_wallet",
+        "momentum"
       ],
-      "smart_gap": -52.7,
-      "holders_scanned": 80,
+      "smart_gap": null,
+      "holders_scanned": 50,
       "flagged": [
         {
-          "wallet": "0x6d20c35f65d9899b6d6b74f8466e824580f9a165",
-          "name": "Djdjdjekekek",
-          "outcome": "9z",
-          "amount": 1128897.07,
-          "z": 6.19,
+          "wallet": "0x2c3928af89565c352afe8e2a1b25deed77a056dc",
+          "name": "Dragontree",
+          "outcome": "Chargers",
+          "amount": 6899.77,
+          "z": 3.23,
           "q": null,
-          "open_markets": 7,
+          "open_markets": 42,
           "trade_depth": 2001,
-          "wallet_age_days": 62.2,
+          "wallet_age_days": 293.5,
           "fresh": false,
           "tags": [
             "contrarian_whale"
           ],
-          "polymarket_profile": "https://polymarket.com/profile/0x6d20c35f65d9899b6d6b74f8466e824580f9a165"
+          "polymarket_profile": "https://polymarket.com/profile/0x2c3928af89565c352afe8e2a1b25deed77a056dc"
         },
         {
-          "wallet": "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
-          "name": "0x2c335066FE58fe9237c3d3Dc7b275C2a034a0563-17599",
-          "outcome": "MOUZ",
-          "amount": 791030.9,
-          "z": 5.77,
-          "q": 3,
-          "open_markets": 98,
+          "wallet": "0x6d3c5bd13984b2de47c3a88ddc455309aab3d294",
+          "name": "VeryLucky888",
+          "outcome": "Chargers",
+          "amount": 5988.4,
+          "z": 2.68,
+          "q": null,
+          "open_markets": 100,
           "trade_depth": 4001,
-          "wallet_age_days": 27.2,
+          "wallet_age_days": 19.3,
           "fresh": false,
           "tags": [
-            "momentum"
+            "contrarian_whale"
           ],
-          "polymarket_profile": "https://polymarket.com/profile/0x2c335066fe58fe9237c3d3dc7b275c2a034a0563"
+          "polymarket_profile": "https://polymarket.com/profile/0x6d3c5bd13984b2de47c3a88ddc455309aab3d294"
         },
         {
-          "wallet": "0xcd30f4698c6f5f3829893e68e183a8e5ea18f316",
-          "name": "SPCEXBUYER",
-          "outcome": "MOUZ",
-          "amount": 306171.71,
-          "z": 2.04,
+          "wallet": "0x26b46988d027c6c03cfa12a7c0c6d778be49b8a9",
+          "name": "kkookkoo",
+          "outcome": "Chargers",
+          "amount": 5904.6,
+          "z": 2.63,
           "q": null,
           "open_markets": 100,
           "trade_depth": 2001,
-          "wallet_age_days": 39.0,
+          "wallet_age_days": 88.1,
+          "fresh": false,
+          "tags": [
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0x26b46988d027c6c03cfa12a7c0c6d778be49b8a9"
+        },
+        {
+          "wallet": "0xa4d04882935bd2543308c3eaffdc499f6136f9e5",
+          "name": "adamj05",
+          "outcome": "Rams",
+          "amount": 270.49,
+          "z": 2.39,
+          "q": null,
+          "open_markets": 9,
+          "trade_depth": 26,
+          "wallet_age_days": 16.8,
+          "fresh": true,
+          "tags": [
+            "fresh_wallet",
+            "momentum"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0xa4d04882935bd2543308c3eaffdc499f6136f9e5"
+        },
+        {
+          "wallet": "0x2dd7c1664c60be9ce733f9a9441f1420f4fc89aa",
+          "name": "FNanalytics",
+          "outcome": "Chargers",
+          "amount": 5000.0,
+          "z": 2.08,
+          "q": null,
+          "open_markets": 3,
+          "trade_depth": 101,
+          "wallet_age_days": 38.5,
+          "fresh": false,
+          "tags": [
+            "concentrated",
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0x2dd7c1664c60be9ce733f9a9441f1420f4fc89aa"
+        }
+      ],
+      "rank": 7
+    },
+    {
+      "conditionId": "0x536b507838dcdac8966510d84abb8f1c51362d632ab2023b94e810ba6fdf5cb7",
+      "question": "Will Augusto Cury win the 2026 Brazilian presidential election?",
+      "event_title": "Brazil Presidential Election",
+      "slug": "will-augusto-cury-win-the-2026-brazilian-presidential-election",
+      "url": "https://polymarket.com/event/brazil-presidential-election",
+      "sports_ish": false,
+      "volume24hr": 875486.11,
+      "liquidity": 217158.15,
+      "endDate": "2026-10-04T00:00:00Z",
+      "days_to_end": 36.4,
+      "outcomes": [
+        "Yes",
+        "No"
+      ],
+      "prices": [
+        0.037,
+        0.963
+      ],
+      "unusual_score": 11.32,
+      "tags": [
+        "concentrated",
+        "contrarian_whale",
+        "fresh_wallet",
+        "momentum"
+      ],
+      "smart_gap": null,
+      "holders_scanned": 80,
+      "flagged": [
+        {
+          "wallet": "0xa5ef39c3d3e10d0b270233af41cac69796b12966",
+          "name": "",
+          "outcome": "No",
+          "amount": 2994428.27,
+          "z": 6.24,
+          "q": null,
+          "open_markets": 100,
+          "trade_depth": 0,
+          "wallet_age_days": null,
           "fresh": false,
           "tags": [
             "momentum"
           ],
-          "polymarket_profile": "https://polymarket.com/profile/0xcd30f4698c6f5f3829893e68e183a8e5ea18f316"
+          "polymarket_profile": "https://polymarket.com/profile/0xa5ef39c3d3e10d0b270233af41cac69796b12966"
+        },
+        {
+          "wallet": "0xc50f627bf0977096b7357f49e5b5c2498a2f3ad3",
+          "name": "rafa.pandolfo",
+          "outcome": "Yes",
+          "amount": 355022.72,
+          "z": 4.1,
+          "q": null,
+          "open_markets": 7,
+          "trade_depth": 501,
+          "wallet_age_days": 205.0,
+          "fresh": false,
+          "tags": [
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0xc50f627bf0977096b7357f49e5b5c2498a2f3ad3"
+        },
+        {
+          "wallet": "0x48c8a1e228365a293af57d9ca6092889b5c9bc38",
+          "name": "0x950681D3643A5834ae200C4B0FaD0AAd959c098D-17675",
+          "outcome": "Yes",
+          "amount": 239983.77,
+          "z": 2.45,
+          "q": null,
+          "open_markets": 1,
+          "trade_depth": 1,
+          "wallet_age_days": 1.2,
+          "fresh": true,
+          "tags": [
+            "concentrated",
+            "fresh_wallet",
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0x48c8a1e228365a293af57d9ca6092889b5c9bc38"
         }
       ],
-      "rank": 5
+      "rank": 8
     },
     {
       "conditionId": "0xfd105823dbf627e8a57aa1924703ef23138050d9d8da4a98a5136ea2ad98acd4",
@@ -437,7 +736,7 @@
       "volume24hr": 1516226.87,
       "liquidity": 0.0,
       "endDate": "2026-09-01T04:00:00Z",
-      "days_to_end": 4.5,
+      "days_to_end": 3.6,
       "outcomes": [
         "Yes",
         "No"
@@ -446,7 +745,7 @@
         1.0,
         0.0
       ],
-      "unusual_score": 10.95,
+      "unusual_score": 11.05,
       "tags": [
         "closing_soon",
         "contrarian_whale",
@@ -464,7 +763,7 @@
           "q": null,
           "open_markets": 49,
           "trade_depth": 501,
-          "wallet_age_days": 148.4,
+          "wallet_age_days": 135.5,
           "fresh": false,
           "tags": [
             "momentum"
@@ -476,11 +775,11 @@
           "name": "0xe35B9F24aDE9AaB323cd0d876B0174FDe5D0b542-17850",
           "outcome": "No",
           "amount": 50865.01,
-          "z": 4.32,
+          "z": 4.36,
           "q": null,
-          "open_markets": 97,
+          "open_markets": 100,
           "trade_depth": 501,
-          "wallet_age_days": 19.2,
+          "wallet_age_days": 9.0,
           "fresh": false,
           "tags": [
             "contrarian_whale"
@@ -492,11 +791,11 @@
           "name": "endlesssss",
           "outcome": "No",
           "amount": 33571.39,
-          "z": 2.61,
+          "z": 2.65,
           "q": null,
           "open_markets": 100,
           "trade_depth": 2001,
-          "wallet_age_days": 168.2,
+          "wallet_age_days": 168.1,
           "fresh": false,
           "tags": [
             "contrarian_whale"
@@ -508,283 +807,16 @@
           "name": "boyau",
           "outcome": "No",
           "amount": 30366.95,
-          "z": 2.29,
+          "z": 2.33,
           "q": null,
-          "open_markets": 43,
+          "open_markets": 45,
           "trade_depth": 2001,
-          "wallet_age_days": 113.2,
+          "wallet_age_days": 114.1,
           "fresh": false,
           "tags": [
             "contrarian_whale"
           ],
           "polymarket_profile": "https://polymarket.com/profile/0xe734e7bf7cfb9e464681f71822f6c2f6be514f0c"
-        }
-      ],
-      "rank": 6
-    },
-    {
-      "conditionId": "0x0ac399394bfc4b713183fa763bc7a7f7656b4e97af7516d041f560b50e334c6b",
-      "question": "Counter-Strike: MOUZ vs 9z - Map 2 Winner",
-      "event_title": "Counter-Strike: MOUZ vs 9z (BO3) - BLAST Open Porto Group B",
-      "slug": "cs2-mouz-9z-2026-08-27-game2",
-      "url": "https://polymarket.com/event/cs2-mouz-9z-2026-08-27",
-      "sports_ish": true,
-      "volume24hr": 1246301.32,
-      "liquidity": 637053.57,
-      "endDate": "2026-08-27T18:00:00Z",
-      "days_to_end": 0.1,
-      "outcomes": [
-        "MOUZ",
-        "9z"
-      ],
-      "prices": [
-        0.9995,
-        0.0005
-      ],
-      "unusual_score": 10.44,
-      "tags": [
-        "closing_soon",
-        "contrarian_whale",
-        "momentum"
-      ],
-      "smart_gap": null,
-      "holders_scanned": 80,
-      "flagged": [
-        {
-          "wallet": "0x6d20c35f65d9899b6d6b74f8466e824580f9a165",
-          "name": "Djdjdjekekek",
-          "outcome": "9z",
-          "amount": 399999.67,
-          "z": 6.22,
-          "q": null,
-          "open_markets": 7,
-          "trade_depth": 2001,
-          "wallet_age_days": 62.2,
-          "fresh": false,
-          "tags": [
-            "contrarian_whale"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0x6d20c35f65d9899b6d6b74f8466e824580f9a165"
-        },
-        {
-          "wallet": "0x7bc14171ccb0d3e6bac219ec6a76211826e28db4",
-          "name": "coali10",
-          "outcome": "MOUZ",
-          "amount": 100000.0,
-          "z": 4.1,
-          "q": null,
-          "open_markets": 100,
-          "trade_depth": 501,
-          "wallet_age_days": 57.8,
-          "fresh": false,
-          "tags": [
-            "momentum"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0x7bc14171ccb0d3e6bac219ec6a76211826e28db4"
-        },
-        {
-          "wallet": "0x67ac9e1ad7d7e74ef0215d14fc8edb538e4fedf1",
-          "name": "fkcvffcjt",
-          "outcome": "MOUZ",
-          "amount": 65221.17,
-          "z": 2.42,
-          "q": null,
-          "open_markets": 21,
-          "trade_depth": 4001,
-          "wallet_age_days": 165.8,
-          "fresh": false,
-          "tags": [
-            "momentum"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0x67ac9e1ad7d7e74ef0215d14fc8edb538e4fedf1"
-        },
-        {
-          "wallet": "0x731a241767938bb23d1b2fac4c9cd2f3cea9033f",
-          "name": "CoinTrick",
-          "outcome": "MOUZ",
-          "amount": 64000.0,
-          "z": 2.36,
-          "q": null,
-          "open_markets": 4,
-          "trade_depth": 4001,
-          "wallet_age_days": 141.7,
-          "fresh": false,
-          "tags": [
-            "momentum"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0x731a241767938bb23d1b2fac4c9cd2f3cea9033f"
-        }
-      ],
-      "rank": 7
-    },
-    {
-      "conditionId": "0x5db999fad322cea2914535aae5517060c3f80ad6d8c0231cde2124a434d16846",
-      "question": "Will the U.S. invade Iran before 2027?",
-      "event_title": "Will the U.S. invade Iran before 2027?",
-      "slug": "will-the-us-invade-iran-before-2027",
-      "url": "https://polymarket.com/event/will-the-us-invade-iran-before-2027",
-      "sports_ish": false,
-      "volume24hr": 2294275.88,
-      "liquidity": 992739.78,
-      "endDate": "2026-12-31T00:00:00Z",
-      "days_to_end": 125.4,
-      "outcomes": [
-        "Yes",
-        "No"
-      ],
-      "prices": [
-        0.125,
-        0.875
-      ],
-      "unusual_score": 10.12,
-      "tags": [
-        "contrarian_whale",
-        "momentum"
-      ],
-      "smart_gap": null,
-      "holders_scanned": 80,
-      "flagged": [
-        {
-          "wallet": "0x88c4919de76e526d55a32c1f8afb439dd1f1129a",
-          "name": "RenanPresidente.",
-          "outcome": "No",
-          "amount": 913474.25,
-          "z": 4.62,
-          "q": null,
-          "open_markets": 46,
-          "trade_depth": 4001,
-          "wallet_age_days": 163.5,
-          "fresh": false,
-          "tags": [
-            "momentum"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0x88c4919de76e526d55a32c1f8afb439dd1f1129a"
-        },
-        {
-          "wallet": "0x0a854897a06d4999e5b2dde5693609f1428ffe9d",
-          "name": "TheQuietRisk",
-          "outcome": "Yes",
-          "amount": 1056378.99,
-          "z": 4.45,
-          "q": null,
-          "open_markets": 7,
-          "trade_depth": 1001,
-          "wallet_age_days": 403.0,
-          "fresh": false,
-          "tags": [
-            "contrarian_whale"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0x0a854897a06d4999e5b2dde5693609f1428ffe9d"
-        },
-        {
-          "wallet": "0x8c80d213c0cbad777d06ee3f58f6ca4bc03102c3",
-          "name": "SecondWindCapital",
-          "outcome": "Yes",
-          "amount": 819220.77,
-          "z": 3.3,
-          "q": null,
-          "open_markets": 52,
-          "trade_depth": 251,
-          "wallet_age_days": 238.9,
-          "fresh": false,
-          "tags": [
-            "contrarian_whale"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0x8c80d213c0cbad777d06ee3f58f6ca4bc03102c3"
-        },
-        {
-          "wallet": "0x7f9e2d1df78614564a70becc7fa14aa9a6623a0e",
-          "name": "nojnn",
-          "outcome": "No",
-          "amount": 587451.9,
-          "z": 2.71,
-          "q": null,
-          "open_markets": 60,
-          "trade_depth": 4001,
-          "wallet_age_days": 170.0,
-          "fresh": false,
-          "tags": [
-            "momentum"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0x7f9e2d1df78614564a70becc7fa14aa9a6623a0e"
-        }
-      ],
-      "rank": 8
-    },
-    {
-      "conditionId": "0xae7dd99bf126b033b77af2553a98b97e1190fd7bdddd5a792ca2791ae23e4d13",
-      "question": "Will Tereza Cristina win the 2026 Brazilian presidential election?",
-      "event_title": "Brazil Presidential Election",
-      "slug": "will-tereza-cristina-win-the-2026-brazilian-presidential-election",
-      "url": "https://polymarket.com/event/brazil-presidential-election",
-      "sports_ish": false,
-      "volume24hr": 4010569.61,
-      "liquidity": 645692.8,
-      "endDate": "2026-10-04T00:00:00Z",
-      "days_to_end": 37.4,
-      "outcomes": [
-        "Yes",
-        "No"
-      ],
-      "prices": [
-        0.0005,
-        0.9995
-      ],
-      "unusual_score": 9.76,
-      "tags": [
-        "contrarian_whale",
-        "momentum"
-      ],
-      "smart_gap": null,
-      "holders_scanned": 80,
-      "flagged": [
-        {
-          "wallet": "0xa5ef39c3d3e10d0b270233af41cac69796b12966",
-          "name": "",
-          "outcome": "No",
-          "amount": 2932852.32,
-          "z": 6.24,
-          "q": null,
-          "open_markets": 100,
-          "trade_depth": 0,
-          "wallet_age_days": null,
-          "fresh": false,
-          "tags": [
-            "momentum"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0xa5ef39c3d3e10d0b270233af41cac69796b12966"
-        },
-        {
-          "wallet": "0xb886580698ede4b18de3e446b2d8da8bcedd81b3",
-          "name": "0xB886580698eDE4b18DE3E446b2D8Da8bCEdd81B3-17675",
-          "outcome": "Yes",
-          "amount": 548447.09,
-          "z": 4.27,
-          "q": null,
-          "open_markets": 100,
-          "trade_depth": 2001,
-          "wallet_age_days": 197.6,
-          "fresh": false,
-          "tags": [
-            "contrarian_whale"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0xb886580698ede4b18de3e446b2d8da8bcedd81b3"
-        },
-        {
-          "wallet": "0x8a815b830d6ecfb203abd27334ef8d621e2558b0",
-          "name": "Yelowyolo",
-          "outcome": "Yes",
-          "amount": 499991.93,
-          "z": 3.84,
-          "q": null,
-          "open_markets": 96,
-          "trade_depth": 251,
-          "wallet_age_days": 313.1,
-          "fresh": false,
-          "tags": [
-            "contrarian_whale"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0x8a815b830d6ecfb203abd27334ef8d621e2558b0"
         }
       ],
       "rank": 9
@@ -797,9 +829,9 @@
       "url": "https://polymarket.com/event/brazil-presidential-election",
       "sports_ish": false,
       "volume24hr": 4954741.12,
-      "liquidity": 1865881.33,
+      "liquidity": 1915668.47,
       "endDate": "2026-10-04T00:00:00Z",
-      "days_to_end": 37.4,
+      "days_to_end": 36.4,
       "outcomes": [
         "Yes",
         "No"
@@ -808,7 +840,7 @@
         0.0005,
         0.9995
       ],
-      "unusual_score": 9.69,
+      "unusual_score": 9.68,
       "tags": [
         "contrarian_whale",
         "momentum"
@@ -820,7 +852,7 @@
           "wallet": "0xa5ef39c3d3e10d0b270233af41cac69796b12966",
           "name": "",
           "outcome": "No",
-          "amount": 2932852.32,
+          "amount": 2994428.27,
           "z": 6.08,
           "q": null,
           "open_markets": 100,
@@ -837,11 +869,11 @@
           "name": "JustCrazy",
           "outcome": "Yes",
           "amount": 402201.46,
-          "z": 4.35,
+          "z": 4.34,
           "q": null,
           "open_markets": 100,
           "trade_depth": 2001,
-          "wallet_age_days": 245.6,
+          "wallet_age_days": 246.6,
           "fresh": false,
           "tags": [
             "contrarian_whale"
@@ -853,11 +885,11 @@
           "name": "Yelowyolo",
           "outcome": "Yes",
           "amount": 349995.54,
-          "z": 3.68,
+          "z": 3.67,
           "q": null,
           "open_markets": 96,
           "trade_depth": 251,
-          "wallet_age_days": 313.1,
+          "wallet_age_days": 314.0,
           "fresh": false,
           "tags": [
             "contrarian_whale"
@@ -868,84 +900,6 @@
       "rank": 10
     },
     {
-      "conditionId": "0x101d084cd035070abde58d8a3113b78e11ba68028b0d9e7e38ea7d780797aecc",
-      "question": "Will Camilo Santana win the 2026 Brazilian presidential election?",
-      "event_title": "Brazil Presidential Election",
-      "slug": "will-camilo-santana-win-the-2026-brazilian-presidential-election",
-      "url": "https://polymarket.com/event/brazil-presidential-election",
-      "sports_ish": false,
-      "volume24hr": 5155525.6,
-      "liquidity": 475275.84,
-      "endDate": "2026-10-04T00:00:00Z",
-      "days_to_end": 37.4,
-      "outcomes": [
-        "Yes",
-        "No"
-      ],
-      "prices": [
-        0.0005,
-        0.9995
-      ],
-      "unusual_score": 9.01,
-      "tags": [
-        "contrarian_whale",
-        "momentum"
-      ],
-      "smart_gap": null,
-      "holders_scanned": 80,
-      "flagged": [
-        {
-          "wallet": "0xa5ef39c3d3e10d0b270233af41cac69796b12966",
-          "name": "",
-          "outcome": "No",
-          "amount": 2932852.32,
-          "z": 6.24,
-          "q": null,
-          "open_markets": 100,
-          "trade_depth": 0,
-          "wallet_age_days": null,
-          "fresh": false,
-          "tags": [
-            "momentum"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0xa5ef39c3d3e10d0b270233af41cac69796b12966"
-        },
-        {
-          "wallet": "0xb886580698ede4b18de3e446b2d8da8bcedd81b3",
-          "name": "0xB886580698eDE4b18DE3E446b2D8Da8bCEdd81B3-17675",
-          "outcome": "Yes",
-          "amount": 510140.78,
-          "z": 4.68,
-          "q": null,
-          "open_markets": 100,
-          "trade_depth": 2001,
-          "wallet_age_days": 197.6,
-          "fresh": false,
-          "tags": [
-            "contrarian_whale"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0xb886580698ede4b18de3e446b2d8da8bcedd81b3"
-        },
-        {
-          "wallet": "0x6062a52aa0bbd83a1ca11af2e950d506906a92dc",
-          "name": "JosephofEgypt",
-          "outcome": "Yes",
-          "amount": 305891.83,
-          "z": 2.53,
-          "q": null,
-          "open_markets": 12,
-          "trade_depth": 251,
-          "wallet_age_days": 219.9,
-          "fresh": false,
-          "tags": [
-            "contrarian_whale"
-          ],
-          "polymarket_profile": "https://polymarket.com/profile/0x6062a52aa0bbd83a1ca11af2e950d506906a92dc"
-        }
-      ],
-      "rank": 11
-    },
-    {
       "conditionId": "0xa59bb6bb91e5c1e4d533864520fbd3bb75d6d0ebb813b4cd8a8b88479bfa8966",
       "question": "Will Carlos Roberto Massa J\u00fanior win the 2026 Brazilian presidential election?",
       "event_title": "Brazil Presidential Election",
@@ -953,9 +907,9 @@
       "url": "https://polymarket.com/event/brazil-presidential-election",
       "sports_ish": false,
       "volume24hr": 10429490.26,
-      "liquidity": 1836019.24,
+      "liquidity": 1884312.95,
       "endDate": "2026-10-04T00:00:00Z",
-      "days_to_end": 37.4,
+      "days_to_end": 36.4,
       "outcomes": [
         "Yes",
         "No"
@@ -976,7 +930,7 @@
           "wallet": "0xa5ef39c3d3e10d0b270233af41cac69796b12966",
           "name": "",
           "outcome": "No",
-          "amount": 2932852.32,
+          "amount": 2994428.27,
           "z": 6.24,
           "q": null,
           "open_markets": 100,
@@ -997,7 +951,7 @@
           "q": null,
           "open_markets": 100,
           "trade_depth": 4001,
-          "wallet_age_days": 217.0,
+          "wallet_age_days": 218.0,
           "fresh": false,
           "tags": [
             "contrarian_whale"
@@ -1005,7 +959,7 @@
           "polymarket_profile": "https://polymarket.com/profile/0xdd9ed02bb67b2ec504be24b98febd651fdac49b3"
         }
       ],
-      "rank": 12
+      "rank": 11
     },
     {
       "conditionId": "0x70f1a7d2cd490b640676d5e31470bcbe16fef40087de1af8b6f6e44e299b5784",
@@ -1015,9 +969,9 @@
       "url": "https://polymarket.com/event/brazil-presidential-election",
       "sports_ish": false,
       "volume24hr": 7984786.19,
-      "liquidity": 2007815.33,
+      "liquidity": 2056217.56,
       "endDate": "2026-10-04T00:00:00Z",
-      "days_to_end": 37.4,
+      "days_to_end": 36.4,
       "outcomes": [
         "Yes",
         "No"
@@ -1038,7 +992,7 @@
           "wallet": "0xa5ef39c3d3e10d0b270233af41cac69796b12966",
           "name": "",
           "outcome": "No",
-          "amount": 2932852.32,
+          "amount": 2994428.27,
           "z": 6.24,
           "q": null,
           "open_markets": 100,
@@ -1055,11 +1009,11 @@
           "name": "Binotto",
           "outcome": "Yes",
           "amount": 1037343.67,
-          "z": 6.12,
+          "z": 6.11,
           "q": null,
           "open_markets": 100,
           "trade_depth": 4001,
-          "wallet_age_days": 217.0,
+          "wallet_age_days": 218.0,
           "fresh": false,
           "tags": [
             "contrarian_whale"
@@ -1067,7 +1021,131 @@
           "polymarket_profile": "https://polymarket.com/profile/0xdd9ed02bb67b2ec504be24b98febd651fdac49b3"
         }
       ],
+      "rank": 12
+    },
+    {
+      "conditionId": "0xa055e1cf533c2fcb1f1c89c20c41c8aa25526dcf27c3ff6be69c230fd8898282",
+      "question": "US announces end of Iranian blockade by August 15, 2026?",
+      "event_title": "US announces end of Iranian blockade by...?",
+      "slug": "us-announces-end-of-iranian-blockade-by-august-15-2026-20260713152715083-347-987-697-628-574-676",
+      "url": "https://polymarket.com/event/us-announces-end-of-iranian-blockade-byptptpt-20260713152715080",
+      "sports_ish": false,
+      "volume24hr": 3291960.57,
+      "liquidity": 0.0,
+      "endDate": "2026-08-16T03:59:00Z",
+      "days_to_end": -12.4,
+      "outcomes": [
+        "Yes",
+        "No"
+      ],
+      "prices": [
+        0.0,
+        1.0
+      ],
+      "unusual_score": 7.77,
+      "tags": [
+        "contrarian_whale",
+        "momentum"
+      ],
+      "smart_gap": null,
+      "holders_scanned": 80,
+      "flagged": [
+        {
+          "wallet": "0x9e3ed7b661a903fc97afcf49e0f014ebe869f882",
+          "name": "0x9e3ed7b661a903fc97afcf49e0f014ebe869f882-17834",
+          "outcome": "No",
+          "amount": 1869.14,
+          "z": 5.92,
+          "q": null,
+          "open_markets": 95,
+          "trade_depth": 4001,
+          "wallet_age_days": 0.3,
+          "fresh": false,
+          "tags": [
+            "momentum"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0x9e3ed7b661a903fc97afcf49e0f014ebe869f882"
+        },
+        {
+          "wallet": "0xc84f7e76ec28ef20e7773b7b4926bfb7378be0c5",
+          "name": "BrightStars",
+          "outcome": "Yes",
+          "amount": 240405.84,
+          "z": 5.77,
+          "q": null,
+          "open_markets": 54,
+          "trade_depth": 1001,
+          "wallet_age_days": 133.9,
+          "fresh": false,
+          "tags": [
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0xc84f7e76ec28ef20e7773b7b4926bfb7378be0c5"
+        }
+      ],
       "rank": 13
+    },
+    {
+      "conditionId": "0x7e2122d54359f590e9ffdf59092f8e052f5f718181188fef5534e62402f0bab3",
+      "question": "Will Bitcoin reach $77,500 in August?",
+      "event_title": "What price will Bitcoin hit in August?",
+      "slug": "will-bitcoin-reach-77pt5k-in-august-2026",
+      "url": "https://polymarket.com/event/what-price-will-bitcoin-hit-in-august-2026",
+      "sports_ish": false,
+      "volume24hr": 834330.28,
+      "liquidity": 0.0,
+      "endDate": "2026-09-01T04:00:00Z",
+      "days_to_end": 3.6,
+      "outcomes": [
+        "Yes",
+        "No"
+      ],
+      "prices": [
+        1.0,
+        0.0
+      ],
+      "unusual_score": 7.15,
+      "tags": [
+        "closing_soon",
+        "contrarian_whale"
+      ],
+      "smart_gap": null,
+      "holders_scanned": 42,
+      "flagged": [
+        {
+          "wallet": "0x6765c1c000e3b99c7fffea752c561cb868f1fa0d",
+          "name": "JanAMEX",
+          "outcome": "No",
+          "amount": 25043.7,
+          "z": 5.32,
+          "q": null,
+          "open_markets": 27,
+          "trade_depth": 4001,
+          "wallet_age_days": 411.9,
+          "fresh": false,
+          "tags": [
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0x6765c1c000e3b99c7fffea752c561cb868f1fa0d"
+        },
+        {
+          "wallet": "0xb4fc3b8dfa7e5966df6d7ed8932e87eb46aaa926",
+          "name": "endlesssss",
+          "outcome": "No",
+          "amount": 11250.0,
+          "z": 2.06,
+          "q": null,
+          "open_markets": 100,
+          "trade_depth": 2001,
+          "wallet_age_days": 168.1,
+          "fresh": false,
+          "tags": [
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0xb4fc3b8dfa7e5966df6d7ed8932e87eb46aaa926"
+        }
+      ],
+      "rank": 14
     },
     {
       "conditionId": "0x919c9bc428d2d19400437852066582b11bb7b00ad78529a0069cde76766b9faf",
@@ -1077,9 +1155,9 @@
       "url": "https://polymarket.com/event/brazil-presidential-election",
       "sports_ish": false,
       "volume24hr": 2388855.25,
-      "liquidity": 777895.82,
+      "liquidity": 826738.35,
       "endDate": "2026-10-04T00:00:00Z",
-      "days_to_end": 37.4,
+      "days_to_end": 36.4,
       "outcomes": [
         "Yes",
         "No"
@@ -1101,11 +1179,11 @@
           "name": "0xB886580698eDE4b18DE3E446b2D8Da8bCEdd81B3-17675",
           "outcome": "Yes",
           "amount": 895437.33,
-          "z": 6.04,
+          "z": 6.03,
           "q": null,
           "open_markets": 100,
           "trade_depth": 2001,
-          "wallet_age_days": 197.6,
+          "wallet_age_days": 198.1,
           "fresh": false,
           "tags": [
             "contrarian_whale"
@@ -1116,7 +1194,7 @@
           "wallet": "0xa5ef39c3d3e10d0b270233af41cac69796b12966",
           "name": "",
           "outcome": "No",
-          "amount": 2932852.32,
+          "amount": 2994428.27,
           "z": 4.24,
           "q": null,
           "open_markets": 100,
@@ -1129,7 +1207,7 @@
           "polymarket_profile": "https://polymarket.com/profile/0xa5ef39c3d3e10d0b270233af41cac69796b12966"
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "conditionId": "0xc4bde1d397625e1990fec7f787b9eb2e5727c666d0480c4e9c96b0dbd12602c6",
@@ -1141,7 +1219,7 @@
       "volume24hr": 1061886.18,
       "liquidity": 0.0,
       "endDate": "2026-09-01T04:00:00Z",
-      "days_to_end": 4.5,
+      "days_to_end": 3.6,
       "outcomes": [
         "Yes",
         "No"
@@ -1167,7 +1245,7 @@
           "q": null,
           "open_markets": 4,
           "trade_depth": 51,
-          "wallet_age_days": 138.9,
+          "wallet_age_days": 139.8,
           "fresh": false,
           "tags": [
             "contrarian_whale"
@@ -1183,7 +1261,7 @@
           "q": null,
           "open_markets": 27,
           "trade_depth": 4001,
-          "wallet_age_days": 411.0,
+          "wallet_age_days": 411.9,
           "fresh": false,
           "tags": [
             "contrarian_whale"
@@ -1191,20 +1269,306 @@
           "polymarket_profile": "https://polymarket.com/profile/0x6765c1c000e3b99c7fffea752c561cb868f1fa0d"
         }
       ],
-      "rank": 15
+      "rank": 16
+    },
+    {
+      "conditionId": "0xc2c2b58b5c2f091aa57cb802990c0fea28c137a16c2eea768c03148f4e5edc76",
+      "question": "49ers vs. Raiders",
+      "event_title": "49ers vs. Raiders",
+      "slug": "nfl-sf-lv-2026-08-28",
+      "url": "https://polymarket.com/event/nfl-sf-lv-2026-08-28",
+      "sports_ish": true,
+      "volume24hr": 2235416.95,
+      "liquidity": 0.0,
+      "endDate": "2026-08-28T00:00:00Z",
+      "days_to_end": -0.6,
+      "outcomes": [
+        "49ers",
+        "Raiders"
+      ],
+      "prices": [
+        1.0,
+        0.0
+      ],
+      "unusual_score": 6.14,
+      "tags": [
+        "contrarian_whale"
+      ],
+      "smart_gap": null,
+      "holders_scanned": 44,
+      "flagged": [
+        {
+          "wallet": "0x7bc14171ccb0d3e6bac219ec6a76211826e28db4",
+          "name": "coali10",
+          "outcome": "Raiders",
+          "amount": 150000.0,
+          "z": 5.05,
+          "q": null,
+          "open_markets": 100,
+          "trade_depth": 501,
+          "wallet_age_days": 58.6,
+          "fresh": false,
+          "tags": [
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0x7bc14171ccb0d3e6bac219ec6a76211826e28db4"
+        },
+        {
+          "wallet": "0xf68a281980f8c13828e84e147e3822381d6e5b1b",
+          "name": "Nooserac",
+          "outcome": "Raiders",
+          "amount": 75000.0,
+          "z": 2.32,
+          "q": null,
+          "open_markets": 99,
+          "trade_depth": 4001,
+          "wallet_age_days": 159.9,
+          "fresh": false,
+          "tags": [
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0xf68a281980f8c13828e84e147e3822381d6e5b1b"
+        }
+      ],
+      "rank": 17
+    },
+    {
+      "conditionId": "0x5bd7f96d38645c7dabffa94c6f48e741f86655ba0dbd48cd4e7f9bbdde2774cc",
+      "question": "Will Bitcoin reach $70,000 in August?",
+      "event_title": "What price will Bitcoin hit in August?",
+      "slug": "will-bitcoin-reach-70k-in-august-2026",
+      "url": "https://polymarket.com/event/what-price-will-bitcoin-hit-in-august-2026",
+      "sports_ish": false,
+      "volume24hr": 897286.07,
+      "liquidity": 0.0,
+      "endDate": "2026-09-01T04:00:00Z",
+      "days_to_end": 3.6,
+      "outcomes": [
+        "Yes",
+        "No"
+      ],
+      "prices": [
+        1.0,
+        0.0
+      ],
+      "unusual_score": 5.57,
+      "tags": [
+        "closing_soon",
+        "contrarian_whale"
+      ],
+      "smart_gap": null,
+      "holders_scanned": 45,
+      "flagged": [
+        {
+          "wallet": "0x5188fa0e8a77e87bc6a58e6781fdfc4e165cc804",
+          "name": "AllByMyseIf",
+          "outcome": "No",
+          "amount": 37305.05,
+          "z": 5.48,
+          "q": null,
+          "open_markets": 100,
+          "trade_depth": 4001,
+          "wallet_age_days": 306.0,
+          "fresh": false,
+          "tags": [
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0x5188fa0e8a77e87bc6a58e6781fdfc4e165cc804"
+        }
+      ],
+      "rank": 18
+    },
+    {
+      "conditionId": "0x8b0e301fc552e953579c625ce9adb7409d1852d5bf4879efee849decc1c9dc91",
+      "question": "US announces end of Iranian blockade by July 31, 2026?",
+      "event_title": "US announces end of Iranian blockade by...?",
+      "slug": "us-announces-end-of-iranian-blockade-by-july-31-2026-20260713152715082-212",
+      "url": "https://polymarket.com/event/us-announces-end-of-iranian-blockade-byptptpt-20260713152715080",
+      "sports_ish": false,
+      "volume24hr": 1106597.14,
+      "liquidity": 0.0,
+      "endDate": "2026-08-01T03:59:00Z",
+      "days_to_end": -27.4,
+      "outcomes": [
+        "Yes",
+        "No"
+      ],
+      "prices": [
+        0.0,
+        1.0
+      ],
+      "unusual_score": 5.0,
+      "tags": [
+        "contrarian_whale"
+      ],
+      "smart_gap": null,
+      "holders_scanned": 46,
+      "flagged": [
+        {
+          "wallet": "0xc84f7e76ec28ef20e7773b7b4926bfb7378be0c5",
+          "name": "BrightStars",
+          "outcome": "Yes",
+          "amount": 180417.48,
+          "z": 6.18,
+          "q": null,
+          "open_markets": 54,
+          "trade_depth": 1001,
+          "wallet_age_days": 133.9,
+          "fresh": false,
+          "tags": [
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0xc84f7e76ec28ef20e7773b7b4926bfb7378be0c5"
+        }
+      ],
+      "rank": 19
+    },
+    {
+      "conditionId": "0xe7cbfaad207bdf8881bc057a5f1b98df829f5478fdb056fb5b19730434b34707",
+      "question": "US announces end of Iranian blockade by August 9, 2026?",
+      "event_title": "US announces end of Iranian blockade by...?",
+      "slug": "us-announces-end-of-iranian-blockade-by-august-9-2026",
+      "url": "https://polymarket.com/event/us-announces-end-of-iranian-blockade-byptptpt-20260713152715080",
+      "sports_ish": false,
+      "volume24hr": 697452.68,
+      "liquidity": 0.0,
+      "endDate": "2026-08-10T03:59:00Z",
+      "days_to_end": -18.4,
+      "outcomes": [
+        "Yes",
+        "No"
+      ],
+      "prices": [
+        0.0,
+        1.0
+      ],
+      "unusual_score": 5.0,
+      "tags": [
+        "contrarian_whale"
+      ],
+      "smart_gap": null,
+      "holders_scanned": 43,
+      "flagged": [
+        {
+          "wallet": "0xc84f7e76ec28ef20e7773b7b4926bfb7378be0c5",
+          "name": "BrightStars",
+          "outcome": "Yes",
+          "amount": 177722.77,
+          "z": 6.07,
+          "q": null,
+          "open_markets": 54,
+          "trade_depth": 1001,
+          "wallet_age_days": 133.9,
+          "fresh": false,
+          "tags": [
+            "contrarian_whale"
+          ],
+          "polymarket_profile": "https://polymarket.com/profile/0xc84f7e76ec28ef20e7773b7b4926bfb7378be0c5"
+        }
+      ],
+      "rank": 20
     }
   ],
   "potential_insiders": [
     {
       "rank": 1,
-      "z": 5.42,
-      "name": "kilian7kilian",
-      "wallet": "0x14c7111afa871fb215339f365043d7b2837b9ccf",
-      "outcome": "Legacy",
-      "amount": 492160.08,
-      "open_markets": 7,
+      "z": 6.23,
+      "name": "astrasport",
+      "wallet": "0xb525452e1849a629c5a12ed0a20cb49baa50033e",
+      "outcome": "Yes",
+      "amount": 731.9,
+      "open_markets": 2,
+      "trade_depth": 0,
+      "wallet_age_days": null,
+      "fresh": false,
+      "q": null,
+      "tags": [
+        "potential_insider",
+        "concentrated",
+        "momentum"
+      ],
+      "market": "Will Bitcoin reach $67,500 in August?",
+      "unusual_score": 19.09,
+      "url": "https://polymarket.com/event/what-price-will-bitcoin-hit-in-august-2026",
+      "polymarket_profile": "https://polymarket.com/profile/0xb525452e1849a629c5a12ed0a20cb49baa50033e"
+    },
+    {
+      "rank": 2,
+      "z": 5.41,
+      "name": "shaoqi767",
+      "wallet": "0x3750ad9b4033b972f775b671d26cc2f0bd17cbdd",
+      "outcome": "Yes",
+      "amount": 2830249.09,
+      "open_markets": 5,
+      "trade_depth": 1,
+      "wallet_age_days": 0.2,
+      "fresh": true,
+      "q": null,
+      "tags": [
+        "potential_insider",
+        "fresh_wallet",
+        "contrarian_whale"
+      ],
+      "market": "Will the Fed decrease interest rates by 25 bps after the September 2026 meeting?",
+      "unusual_score": 19.43,
+      "url": "https://polymarket.com/event/fed-decision-in-september-762",
+      "polymarket_profile": "https://polymarket.com/profile/0x3750ad9b4033b972f775b671d26cc2f0bd17cbdd"
+    },
+    {
+      "rank": 3,
+      "z": 4.84,
+      "name": "luketakes",
+      "wallet": "0x9aae69c680c0dfdce3baa6fc6134c07a59ee4e13",
+      "outcome": "No",
+      "amount": 500.0,
+      "open_markets": 2,
+      "trade_depth": 1,
+      "wallet_age_days": 23.6,
+      "fresh": true,
+      "q": null,
+      "tags": [
+        "potential_insider",
+        "concentrated",
+        "fresh_wallet",
+        "momentum"
+      ],
+      "market": "US announces end of Iranian blockade by August 7, 2026?",
+      "unusual_score": 20.69,
+      "url": "https://polymarket.com/event/us-announces-end-of-iranian-blockade-byptptpt-20260713152715080",
+      "polymarket_profile": "https://polymarket.com/profile/0x9aae69c680c0dfdce3baa6fc6134c07a59ee4e13"
+    },
+    {
+      "rank": 4,
+      "z": 3.98,
+      "name": "asd147",
+      "wallet": "0xa16a1302ca05463f30faebeb5c045767fde233a1",
+      "outcome": "Spirit",
+      "amount": 120000.0,
+      "open_markets": 3,
+      "trade_depth": 4001,
+      "wallet_age_days": 30.6,
+      "fresh": false,
+      "q": null,
+      "tags": [
+        "potential_insider",
+        "concentrated",
+        "momentum"
+      ],
+      "market": "Counter-Strike: G2 vs Spirit - Map 2 Winner",
+      "unusual_score": 23.81,
+      "url": "https://polymarket.com/event/cs2-g2-ts7-2026-08-28",
+      "polymarket_profile": "https://polymarket.com/profile/0xa16a1302ca05463f30faebeb5c045767fde233a1"
+    },
+    {
+      "rank": 5,
+      "z": 3.73,
+      "name": "666lambofgod13",
+      "wallet": "0x8c8fbac0334056404939736cd0012231da221f7a",
+      "outcome": "No",
+      "amount": 108.78,
+      "open_markets": 4,
       "trade_depth": 26,
-      "wallet_age_days": 1.8,
+      "wallet_age_days": 632.9,
       "fresh": true,
       "q": null,
       "tags": [
@@ -1212,13 +1576,13 @@
         "fresh_wallet",
         "momentum"
       ],
-      "market": "Counter-Strike: Legacy vs FUT Esports (BO3) - BLAST Open Porto Group B",
-      "unusual_score": 22.55,
-      "url": "https://polymarket.com/event/cs2-lgc-fut-2026-08-27",
-      "polymarket_profile": "https://polymarket.com/profile/0x14c7111afa871fb215339f365043d7b2837b9ccf"
+      "market": "US announces end of Iranian blockade by August 22, 2026?",
+      "unusual_score": 19.39,
+      "url": "https://polymarket.com/event/us-announces-end-of-iranian-blockade-byptptpt-20260713152715080",
+      "polymarket_profile": "https://polymarket.com/profile/0x8c8fbac0334056404939736cd0012231da221f7a"
     },
     {
-      "rank": 2,
+      "rank": 6,
       "z": 3.29,
       "name": "nope130",
       "wallet": "0xc8dcd6466701a882e6360acf41889d86684c610a",
@@ -1226,7 +1590,7 @@
       "amount": 2369.66,
       "open_markets": 11,
       "trade_depth": 1,
-      "wallet_age_days": 6.0,
+      "wallet_age_days": 7.0,
       "fresh": true,
       "q": null,
       "tags": [
@@ -1240,27 +1604,90 @@
       "polymarket_profile": "https://polymarket.com/profile/0xc8dcd6466701a882e6360acf41889d86684c610a"
     },
     {
-      "rank": 3,
-      "z": 2.64,
+      "rank": 7,
+      "z": 3.16,
+      "name": "CoinTrick",
+      "wallet": "0x731a241767938bb23d1b2fac4c9cd2f3cea9033f",
+      "outcome": "Spirit",
+      "amount": 98000.0,
+      "open_markets": 2,
+      "trade_depth": 4001,
+      "wallet_age_days": 142.0,
+      "fresh": false,
+      "q": null,
+      "tags": [
+        "potential_insider",
+        "concentrated",
+        "momentum"
+      ],
+      "market": "Counter-Strike: G2 vs Spirit - Map 2 Winner",
+      "unusual_score": 23.81,
+      "url": "https://polymarket.com/event/cs2-g2-ts7-2026-08-28",
+      "polymarket_profile": "https://polymarket.com/profile/0x731a241767938bb23d1b2fac4c9cd2f3cea9033f"
+    },
+    {
+      "rank": 8,
+      "z": 2.45,
       "name": "0x950681D3643A5834ae200C4B0FaD0AAd959c098D-17675",
       "wallet": "0x48c8a1e228365a293af57d9ca6092889b5c9bc38",
       "outcome": "Yes",
       "amount": 239983.77,
       "open_markets": 1,
       "trade_depth": 1,
-      "wallet_age_days": 0.2,
+      "wallet_age_days": 1.2,
       "fresh": true,
       "q": null,
       "tags": [
-        "potential_insider",
         "concentrated",
         "fresh_wallet",
         "contrarian_whale"
       ],
       "market": "Will Augusto Cury win the 2026 Brazilian presidential election?",
-      "unusual_score": 16.39,
+      "unusual_score": 11.32,
       "url": "https://polymarket.com/event/brazil-presidential-election",
       "polymarket_profile": "https://polymarket.com/profile/0x48c8a1e228365a293af57d9ca6092889b5c9bc38"
+    },
+    {
+      "rank": 9,
+      "z": 2.39,
+      "name": "adamj05",
+      "wallet": "0xa4d04882935bd2543308c3eaffdc499f6136f9e5",
+      "outcome": "Rams",
+      "amount": 270.49,
+      "open_markets": 9,
+      "trade_depth": 26,
+      "wallet_age_days": 16.8,
+      "fresh": true,
+      "q": null,
+      "tags": [
+        "fresh_wallet",
+        "momentum"
+      ],
+      "market": "Rams vs. Chargers",
+      "unusual_score": 12.68,
+      "url": "https://polymarket.com/event/nfl-la-lac-2026-08-28",
+      "polymarket_profile": "https://polymarket.com/profile/0xa4d04882935bd2543308c3eaffdc499f6136f9e5"
+    },
+    {
+      "rank": 10,
+      "z": 2.08,
+      "name": "FNanalytics",
+      "wallet": "0x2dd7c1664c60be9ce733f9a9441f1420f4fc89aa",
+      "outcome": "Chargers",
+      "amount": 5000.0,
+      "open_markets": 3,
+      "trade_depth": 101,
+      "wallet_age_days": 38.5,
+      "fresh": false,
+      "q": null,
+      "tags": [
+        "concentrated",
+        "contrarian_whale"
+      ],
+      "market": "Rams vs. Chargers",
+      "unusual_score": 12.68,
+      "url": "https://polymarket.com/event/nfl-la-lac-2026-08-28",
+      "polymarket_profile": "https://polymarket.com/profile/0x2dd7c1664c60be9ce733f9a9441f1420f4fc89aa"
     }
   ],
   "sources": {

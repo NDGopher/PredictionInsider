@@ -15,6 +15,7 @@ Usage:
 from __future__ import annotations
 
 import json
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -26,6 +27,75 @@ from take_book_daily import scan_open  # noqa: E402
 
 OUT_JSON = OUTPUT_DIR / "ranked_play_board.json"
 OUT_MD = ROOT / "RANKED_PLAYS.md"
+
+OTHER_SPORTS = re.compile(r"politic|crypto|finance|culture|weather", re.I)
+LONG_TITLE = re.compile(
+    r"worlds?\s+20\d{2}|champion|mvp|ballon|nomination|win the 20\d{2}|"
+    r"before 20\d{2}|control the (senate|house)|midterm|presidential election",
+    re.I,
+)
+
+
+def play_lane(sport: str, submarket: str) -> str:
+    sm = str(submarket or "")
+    s = str(sport or "")
+    if sm == "Futures" or sm.lower().startswith("future"):
+        return "futures"
+    if OTHER_SPORTS.search(s) or s.upper() in ("POLITICS", "OTHER"):
+        return "other"
+    return "sports"
+
+
+def market_timing(title: str, event_dt, now: datetime) -> str:
+    """live | upcoming | long | unknown — for sports vs macro separation in UI."""
+    t = (title or "").lower()
+    if LONG_TITLE.search(title or ""):
+        return "long"
+    if event_dt is not None:
+        try:
+            import pandas as pd
+
+            if pd.isna(event_dt):
+                event_dt = None
+            else:
+                ed = pd.Timestamp(event_dt).to_pydatetime()
+                if ed.tzinfo is None:
+                    ed = ed.replace(tzinfo=timezone.utc)
+                hours = (ed - now).total_seconds() / 3600.0
+                if hours < 0:
+                    return "live"
+                if hours <= 6:
+                    return "live"
+                if hours <= 72:
+                    return "upcoming"
+                if hours <= 24 * 14:
+                    return "upcoming"
+                return "long"
+        except Exception:
+            pass
+    if " vs " in t or " vs. " in t:
+        return "upcoming"
+    return "unknown"
+
+
+def effective_lane(sport: str, submarket: str, title: str, timing: str) -> str:
+    base = play_lane(sport, submarket)
+    if base in ("other", "futures"):
+        return base
+    if timing == "long" or LONG_TITLE.search(title or ""):
+        return "futures"
+    return "sports"
+
+
+def enrich_row(row: dict, now: datetime) -> None:
+    sport = str(row.get("sport") or "")
+    subm = str(row.get("submarket") or "Moneyline")
+    title = str(row.get("title") or row.get("play") or "")
+    timing = market_timing(title, row.get("event_dt"), now)
+    lane = effective_lane(sport, subm, title, timing)
+    row["timing"] = timing
+    row["lane"] = lane
+    row["submarket"] = subm
 
 
 def scan_books(uni: dict) -> list[dict]:
@@ -266,11 +336,14 @@ def main() -> int:
                 "url": f"https://polymarket.com/event/{slug}" if slug else None,
                 "tier": "watch",
                 "bucket": b.get("bucket", "watch"),
+                "event_dt": grp["event_dt"].iloc[0] if "event_dt" in grp.columns else None,
             }
+            enrich_row(row, now)
             all_rows.append(row)
             seen_keys.add(key)
 
     for row in all_rows:
+        enrich_row(row, now)
         row["grade"] = grade_row(row)
         row["why"] = why_for(row, str(row.get("bucket") or "watch"))
 
@@ -283,12 +356,17 @@ def main() -> int:
         "near": sum(1 for r in all_rows if r.get("tier") == "near"),
         "watch": sum(1 for r in all_rows if r.get("tier") == "watch"),
     }
+    lane_counts = {
+        "sports": sum(1 for r in all_rows if r.get("lane") == "sports"),
+        "other": sum(1 for r in all_rows if r.get("lane") == "other"),
+        "futures": sum(1 for r in all_rows if r.get("lane") == "futures"),
+    }
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "method": "Live+bench+watch CSV open scan. Grade=Q with tier penalty. Sorted like OddsJam play board.",
+        "method": "Live+bench+watch CSV open scan. Grade=Q with tier penalty. Lanes: sports (live/upcoming) vs politics/other vs futures.",
         "rule": "asof_live_q60_sport_rel2",
         "books_scanned": len(books),
-        "counts": counts,
+        "counts": {**counts, **lane_counts},
         "plays": all_rows[:120],
     }
     OUT_JSON.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")

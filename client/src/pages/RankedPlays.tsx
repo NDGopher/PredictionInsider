@@ -3,8 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ExternalLink, ListOrdered, RefreshCw, Users } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "wouter";
+import { effectiveLane, laneLabel, type PlayLane } from "@/lib/playLane";
 
 interface RankedPlay {
   id: string;
@@ -16,6 +17,8 @@ interface RankedPlay {
   rel?: number;
   sport?: string;
   submarket?: string;
+  lane?: PlayLane;
+  timing?: "live" | "upcoming" | "long" | "unknown";
   playLabel?: string;
   pick?: string;
   marketQuestion?: string;
@@ -83,12 +86,17 @@ export default function RankedPlays() {
     refetchInterval: 12_000,
   });
   const [tab, setTab] = useState<"all" | "take" | "near" | "watch">("all");
-  const ranked = (data?.ranked || []).filter((p) => {
-    if (tab === "take") return p.list === "take";
-    if (tab === "near") return p.list === "near";
-    if (tab === "watch") return p.list === "watch";
-    return true;
-  });
+  const [laneTab, setLaneTab] = useState<PlayLane>("sports");
+  const ranked = useMemo(() => {
+    const rows = data?.ranked || [];
+    const inLane = rows.filter(
+      (p) => (p.lane ?? effectiveLane({ sport: p.sport, submarket: p.submarket, title: p.marketQuestion || p.playLabel, timing: p.timing })) === laneTab,
+    );
+    if (tab === "take") return inLane.filter((p) => p.list === "take");
+    if (tab === "near") return inLane.filter((p) => p.list === "near");
+    if (tab === "watch") return inLane.filter((p) => p.list === "watch");
+    return inLane;
+  }, [data?.ranked, tab, laneTab]);
   const disc = data?.discovery;
   const top = disc?.topComposite || [];
 
@@ -112,6 +120,21 @@ export default function RankedPlays() {
           </Button>
           <Link href="/" className="text-xs text-primary">Take these →</Link>
         </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {(["sports", "other", "futures"] as const).map((lane) => (
+          <button
+            key={lane}
+            type="button"
+            onClick={() => setLaneTab(lane)}
+            className={`text-xs px-3 py-1 rounded-full border ${
+              laneTab === lane ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"
+            }`}
+          >
+            {laneLabel(lane)}
+          </button>
+        ))}
       </div>
 
       <div className="flex flex-wrap gap-2">

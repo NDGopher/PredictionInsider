@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ChevronDown, ChevronUp, ExternalLink, Flame, PauseCircle, Radio } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
+import { effectiveLane, laneLabel, timingLabel, type PlayLane } from "@/lib/playLane";
 
 interface PriceFmt {
   price: number;
@@ -27,7 +28,8 @@ interface TakePlay {
   submarket: string;
   playLabel?: string;
   pick?: string;
-  lane?: "sports" | "other" | "futures";
+  lane?: PlayLane;
+  timing?: "live" | "upcoming" | "long" | "unknown";
   outcomeLabel?: string;
   currentPrice: number;
   avgEntryPrice: number;
@@ -423,17 +425,18 @@ export default function TakeBookFeed() {
 
   const liveAll = (data?.live || []).filter((p) => p.valid !== false);
   const rankedAll = data?.ranked || [];
-  const rankedSports = rankedAll.filter((p) => p.lane !== "futures" && p.submarket !== "Futures");
+  const resolveLane = (p: TakePlay): PlayLane =>
+    p.lane ?? effectiveLane({ sport: p.sport, submarket: p.submarket, title: p.marketQuestion, timing: p.timing });
   const nearAll = [
-    ...rankedSports.filter((p) => p.list === "near"),
-    ...(data?.near || []).filter((p) => !rankedSports.some((r) => r.id === p.id)),
-    ...(data?.csvOpen?.near || []).filter((p) => !rankedSports.some((r) => r.id === p.id)),
+    ...rankedAll.filter((p) => p.list === "near"),
+    ...(data?.near || []).filter((p) => !rankedAll.some((r) => r.id === p.id)),
+    ...(data?.csvOpen?.near || []).filter((p) => !rankedAll.some((r) => r.id === p.id)),
   ];
-  const [laneTab, setLaneTab] = useState<"sports" | "other">("sports");
-  const inLane = (p: TakePlay) => p.lane !== "futures" && p.submarket !== "Futures" && (p.lane || "sports") === laneTab;
+  const [laneTab, setLaneTab] = useState<PlayLane>("sports");
+  const inLane = (p: TakePlay) => resolveLane(p) === laneTab;
   const live = liveAll.filter(inLane);
   const near = nearAll.filter(inLane).slice(0, 8);
-  const gradedTop = rankedSports.filter(inLane).slice(0, 8);
+  const gradedTop = rankedAll.filter(inLane).slice(0, 8);
   const realized = data?.realizedBacktest;
   const w30 = realized?.last30d ?? data?.health?.windows?.last_30d;
   const w60 = realized?.last60d ?? data?.health?.windows?.last_60d;
@@ -464,8 +467,9 @@ export default function TakeBookFeed() {
             {" "}Graded 0–100 on every open. Only TAKE rows fire alerts.
           </p>
           <div className="flex flex-wrap gap-2 mt-2">
-            {(["sports", "other"] as const).map((tab) => {
-              const st = tab === "sports" ? data?.lanes?.sports : data?.lanes?.other;
+            {(["sports", "other", "futures"] as const).map((tab) => {
+              const st = tab === "sports" ? data?.lanes?.sports : tab === "other" ? data?.lanes?.other : undefined;
+              const nInTab = rankedAll.filter((p) => resolveLane(p) === tab).length;
               return (
                 <button
                   key={tab}
@@ -475,15 +479,25 @@ export default function TakeBookFeed() {
                     laneTab === tab ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"
                   }`}
                 >
-                  {tab === "sports" ? "Sports (ML / spread / total)" : "Politics"}
-                  {st?.n ? ` · n=${st.n} ${st.roi_2c}% ROI` : ""}
+                  {laneLabel(tab)}
+                  {st?.n ? ` · backtest n=${st.n}` : nInTab ? ` · ${nInTab} open` : ""}
                 </button>
               );
             })}
           </div>
+          {laneTab === "sports" && (
+            <p className="text-[11px] text-muted-foreground mt-1 max-w-2xl">
+              Game lines (ML / spread / total) with live or upcoming timing. Season futures and politics are on other tabs.
+            </p>
+          )}
           {laneTab === "other" && (
             <p className="text-[11px] text-muted-foreground mt-1 max-w-2xl">
-              Same Q/size gates, separate from the sports copy tape. Futures are not shown (historical n=5, −37% after 2¢).
+              Politics, macro, crypto, culture — same Q/size gates, separate from sports copy tape.
+            </p>
+          )}
+          {laneTab === "futures" && (
+            <p className="text-[11px] text-muted-foreground mt-1 max-w-2xl">
+              Season titles, elections, long-dated markets — shown for context; Sniper product does not fire on these.
             </p>
           )}
         </div>
