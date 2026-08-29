@@ -1,0 +1,382 @@
+{
+  "wallet": "0x1b20a00709dfe648afd26b326394b5e031f83ab0",
+  "username": "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+  "total_profit": 859778.43,
+  "raw_realized_pnl": 859778.43,
+  "dashboard_pnl": 859778.43,
+  "total_risked": 2480873.44,
+  "overall_roi": 34.66,
+  "redeemed_only_roi": 34.66,
+  "last_30d": {
+    "n": 51,
+    "pnl": 859778.43,
+    "cost": 2480873.44,
+    "roi": 34.66,
+    "wins": 24,
+    "win_rate": 47.1,
+    "first": "2026-07-27",
+    "last": "2026-08-17"
+  },
+  "last_60d": {
+    "n": 51,
+    "pnl": 859778.43,
+    "cost": 2480873.44,
+    "roi": 34.66,
+    "wins": 24,
+    "win_rate": 47.1,
+    "first": "2026-07-27",
+    "last": "2026-08-17"
+  },
+  "last_90d": {
+    "n": 51,
+    "pnl": 859778.43,
+    "cost": 2480873.44,
+    "roi": 34.66,
+    "wins": 24,
+    "win_rate": 47.1,
+    "first": "2026-07-27",
+    "last": "2026-08-17"
+  },
+  "last_event_date": "2026-08-17",
+  "days_since_last_event": 7,
+  "possibly_quit": false,
+  "win_rate": 51.39,
+  "avg_bet_size": 34456.58,
+  "median_market_stake": 12787.59,
+  "mean_market_stake": 34456.58,
+  "markets_traded": 72,
+  "total_events": 51,
+  "pseudo_sharpe": 7.89,
+  "profitable_days": 13,
+  "total_days": 17,
+  "hedge_count": 0,
+  "hedge_risk": 0.0,
+  "hedge_profit": 0.0,
+  "bond_count": 0,
+  "bond_risk": 0.0,
+  "bond_profit": 0.0,
+  "open_count": 0,
+  "open_risk": 0.0,
+  "open_value": 0.0,
+  "open_pnl": 0.0,
+  "sport_stats": {
+    "MLB": {
+      "net_profit": 966138.78,
+      "roi": 56.09,
+      "win_rate": 55.1,
+      "events": 49,
+      "avg_bet": 35155.55,
+      "median_bet": 12610.38
+    },
+    "OTHER": {
+      "net_profit": -194659.33,
+      "roi": -59.91,
+      "win_rate": 20.0,
+      "events": 5,
+      "avg_bet": 64985.92,
+      "median_bet": 49277.23
+    },
+    "SOCCER (Other)": {
+      "net_profit": 75797.03,
+      "roi": 18.64,
+      "win_rate": 53.33,
+      "events": 15,
+      "avg_bet": 27104.5,
+      "median_bet": 14922.54
+    },
+    "WNBA": {
+      "net_profit": 12501.96,
+      "roi": 46.73,
+      "win_rate": 33.33,
+      "events": 3,
+      "avg_bet": 8918.11,
+      "median_bet": 6066.06
+    }
+  },
+  "market_stats": {
+    "Moneyline / Match": {
+      "net_profit": 200224.69,
+      "roi": 13.85,
+      "win_rate": 42.42,
+      "events": 33,
+      "avg_bet": 43805.64,
+      "median_bet": 20020.71
+    },
+    "Totals (O/U)": {
+      "net_profit": 659553.74,
+      "roi": 63.71,
+      "win_rate": 58.97,
+      "events": 39,
+      "avg_bet": 26545.83,
+      "median_bet": 8579.56
+    }
+  },
+  "sport_market_stats": {
+    "MLB|Moneyline / Match": {
+      "net_profit": 476906.45,
+      "roi": 47.72,
+      "win_rate": 52.17,
+      "events": 23,
+      "avg_bet": 43451.21,
+      "median_bet": 20302.66
+    },
+    "MLB|Totals (O/U)": {
+      "net_profit": 489232.33,
+      "roi": 67.64,
+      "win_rate": 57.69,
+      "events": 26,
+      "avg_bet": 27817.08,
+      "median_bet": 3315.24
+    },
+    "Other|Moneyline / Match": {
+      "net_profit": -194659.33,
+      "roi": -59.91,
+      "win_rate": 20.0,
+      "events": 5,
+      "avg_bet": 64985.92,
+      "median_bet": 49277.23
+    },
+    "Soccer|Moneyline / Match": {
+      "net_profit": -100590.44,
+      "roi": -100.0,
+      "win_rate": 0.0,
+      "events": 3,
+      "avg_bet": 33530.15,
+      "median_bet": 18500.0
+    },
+    "Soccer|Totals (O/U)": {
+      "net_profit": 176387.47,
+      "roi": 57.65,
+      "win_rate": 66.67,
+      "events": 12,
+      "avg_bet": 25498.09,
+      "median_bet": 12861.27
+    },
+    "WNBA|Moneyline / Match": {
+      "net_profit": 18568.02,
+      "roi": 89.75,
+      "win_rate": 50.0,
+      "events": 2,
+      "avg_bet": 10344.13,
+      "median_bet": 10344.13
+    },
+    "WNBA|Totals (O/U)": {
+      "net_profit": -6066.06,
+      "roi": -100.0,
+      "win_rate": 0.0,
+      "events": 1,
+      "avg_bet": 6066.06,
+      "median_bet": 6066.06
+    }
+  },
+  "price_stats": {
+    "Favorite (60-80c)": {
+      "net_profit": -200236.11,
+      "roi": -98.94,
+      "win_rate": 33.33,
+      "events": 3
+    },
+    "Flip (40-60c)": {
+      "net_profit": 1004407.28,
+      "roi": 56.98,
+      "win_rate": 58.0,
+      "events": 50
+    },
+    "Longshot (0-20c)": {
+      "net_profit": -3.24,
+      "roi": -100.65,
+      "win_rate": 0.0,
+      "events": 1
+    },
+    "Underdog (20-40c)": {
+      "net_profit": 55610.5,
+      "roi": 10.78,
+      "win_rate": 38.89,
+      "events": 18
+    }
+  },
+  "side_stats": {
+    "Specific Selection": {
+      "net_profit": 859781.67,
+      "roi": 34.66,
+      "positions": 71
+    },
+    "Yes": {
+      "net_profit": -3.24,
+      "roi": -100.65,
+      "positions": 1
+    }
+  },
+  "monthly_pnl": {
+    "2026-07": 409291.69,
+    "2026-08": 450486.74
+  },
+  "top_wins": [
+    {
+      "title": "Pittsburgh Pirates vs. Cincinnati Reds: O/U 9.5",
+      "slug": "mlb-pit-cin-2026-07-30-total-9pt5",
+      "eventSlug": "mlb-pit-cin-2026-07-30",
+      "sport_type": "MLB",
+      "outcome": "Under",
+      "conditionId": "0xc7528bd267396d7122421f5de76f690dee616ef3b6cf5262bc7820be7118d776",
+      "total_pnl": 293797.46,
+      "total_cost": 285156.5,
+      "avg_price": 0.4925,
+      "status": "closed"
+    },
+    {
+      "title": "San Francisco Giants vs. San Diego Padres",
+      "slug": "mlb-sf-sd-2026-07-30",
+      "eventSlug": "mlb-sf-sd-2026-07-30",
+      "sport_type": "MLB",
+      "outcome": "San Francisco Giants",
+      "conditionId": "0xa465e5118544b6d4c309728b8666ad2e35c1423d1f1411de5bcc4c3ae04be7ca",
+      "total_pnl": 260183.39,
+      "total_cost": 179783.96,
+      "avg_price": 0.4086,
+      "status": "closed"
+    },
+    {
+      "title": "Boston Red Sox vs. Los Angeles Dodgers",
+      "slug": "mlb-bos-lad-2026-08-02",
+      "eventSlug": "mlb-bos-lad-2026-08-02",
+      "sport_type": "MLB",
+      "outcome": "Boston Red Sox",
+      "conditionId": "0x3c6d94d69450d7a4c235efde3d2f4aa13f157cba253a4292971659999b92fd4c",
+      "total_pnl": 160882.51,
+      "total_cost": 99111.82,
+      "avg_price": 0.3812,
+      "status": "closed"
+    },
+    {
+      "title": "Toronto Blue Jays vs. Houston Astros",
+      "slug": "mlb-tor-hou-2026-08-03",
+      "eventSlug": "mlb-tor-hou-2026-08-03",
+      "sport_type": "MLB",
+      "outcome": "Toronto Blue Jays",
+      "conditionId": "0x1a2c7fb272ed5d001198dd17e771b73636170cd81ba54350f0834dd8ecfbc9d8",
+      "total_pnl": 138659.19,
+      "total_cost": 108778.31,
+      "avg_price": 0.4396,
+      "status": "closed"
+    },
+    {
+      "title": "St. Louis Cardinals vs. New York Yankees",
+      "slug": "mlb-stl-nyy-2026-08-03",
+      "eventSlug": "mlb-stl-nyy-2026-08-03",
+      "sport_type": "MLB",
+      "outcome": "St. Louis Cardinals",
+      "conditionId": "0x89f9c8590912a8a1a89ee8d1077e3f4854b165508d28a190ca40e18e317c1a89",
+      "total_pnl": 136000.0,
+      "total_cost": 64000.0,
+      "avg_price": 0.32,
+      "status": "closed"
+    }
+  ],
+  "top_losses": [
+    {
+      "title": "UFC Fight Night: Gilbert Urbina vs. Vlasto Cepo (Middleweight, Prelims)",
+      "slug": "ufc-gil3-vcepo-2026-08-01",
+      "eventSlug": "ufc-gil3-vcepo-2026-08-01",
+      "sport_type": "OTHER",
+      "outcome": "Vlasto Cepo",
+      "conditionId": "0xfc68443ea655514550f322c8778bdf44488fd536b098efac4e5cb86b42b78a1e",
+      "total_pnl": -199656.08,
+      "total_cost": 199651.76,
+      "avg_price": 0.7397,
+      "status": "closed"
+    },
+    {
+      "title": "Milwaukee Brewers vs. San Francisco Giants",
+      "slug": "mlb-mil-sf-2026-07-29",
+      "eventSlug": "mlb-mil-sf-2026-07-29",
+      "sport_type": "MLB",
+      "outcome": "Milwaukee Brewers",
+      "conditionId": "0xeb24a4ebd21a1351b50151b8213cea02ea0e822f5aee2c4d5d72c452235db1b0",
+      "total_pnl": -150763.8,
+      "total_cost": 150750.0,
+      "avg_price": 0.5025,
+      "status": "closed"
+    },
+    {
+      "title": "St. Louis Cardinals vs. Toronto Blue Jays",
+      "slug": "mlb-stl-tor-2026-08-01",
+      "eventSlug": "mlb-stl-tor-2026-08-01",
+      "sport_type": "MLB",
+      "outcome": "St. Louis Cardinals",
+      "conditionId": "0x78bdd0292451fd2041616eb96114f931c661f262a51c3c1306913b7d33ca6e1f",
+      "total_pnl": -115906.5,
+      "total_cost": 115883.44,
+      "avg_price": 0.3971,
+      "status": "closed"
+    },
+    {
+      "title": "Seattle Mariners vs. Los Angeles Dodgers",
+      "slug": "mlb-sea-lad-2026-07-29",
+      "eventSlug": "mlb-sea-lad-2026-07-29",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "Seattle Mariners",
+      "conditionId": "0x4ce50471918585278e00ccfd154fb675dfd6b759ebec4d1c7784a8827362f3db",
+      "total_pnl": -75999.93,
+      "total_cost": 75999.93,
+      "avg_price": 0.38,
+      "status": "closed"
+    },
+    {
+      "title": "Toronto Blue Jays vs. Washington Nationals: O/U 8.5",
+      "slug": "mlb-tor-wsh-2026-07-28-total-8pt5",
+      "eventSlug": "mlb-tor-wsh-2026-07-28",
+      "sport_type": "MLB",
+      "outcome": "Under",
+      "conditionId": "0xc1dc6e3d75ad31cfdbad714db394d9b96897d485d9b8ecce2503017b2795a39b",
+      "total_pnl": -69999.84,
+      "total_cost": 69989.94,
+      "avg_price": 0.4666,
+      "status": "closed"
+    }
+  ],
+  "top_sport": "MLB",
+  "best_price_bucket": "Flip (40-60c)",
+  "best_market": "Totals (O/U)",
+  "quality_score": 85,
+  "tier": "S-Tier",
+  "tags": [
+    "\u2b50\u2b50\u2b50 S-Tier",
+    "\u26be MLB Expert",
+    "\ud83d\udcc8 Steady Performer",
+    "\ud83d\udc0b Mega Whale",
+    "\ud83d\udcc8 Moneyline Pro",
+    "\ud83d\udcca O/U Specialist"
+  ],
+  "tail_guide": "How to Tail 0x1b20a00709DfE648AFd26b326394b5e031f83ab0 [S-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   MLB \u2014 56.1% ROI, 49 markets, +$966,139\n\n\ud83d\udcc8 Stick to Moneylines (13.8% ROI over 33 markets)\n\ud83c\udfaf Best price zone: Flip (40-60c) (57.0% ROI, 50 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 100% of edge from 'Specific' side \u2014 copy that side only\n\u26a1 Typical market stake ~$12,788 (median per market) \u2014 alert at 3\u00d7 for high conviction\n   (Mean $34,457 \u2014 some very large markets; size to the median unless you match their whale plays)",
+  "do_not_tail_sports": [],
+  "auto_tail_sports": [
+    "MLB"
+  ],
+  "do_not_tail_market_types": [],
+  "do_not_tail_sides": [],
+  "score_breakdown": {
+    "sharpe_score": 29.6,
+    "roi_score": 25,
+    "wr_score": 3.4,
+    "cons_score": 7.6,
+    "vol_score": 4.8,
+    "base_score": 70.4,
+    "flip_bonus": 15,
+    "leakage_penalty": 0,
+    "midzone_roi": 33.9,
+    "directional_roi": 34.66,
+    "roi_dashboard": 34.66,
+    "roi_redeemed_only": 34.66,
+    "last_60d_roi": 34.66,
+    "last_60d_pnl": 859778.43,
+    "recency_penalty": 0,
+    "roi_for_quality": 34.66,
+    "hedge_risk_frac": 0.0,
+    "hedge_profit_share": 0.0,
+    "markets_traded": 72,
+    "median_market_stake": 12787.59,
+    "mean_market_stake": 34456.58,
+    "pnl_sum_check_ok": true
+  }
+}

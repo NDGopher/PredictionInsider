@@ -15,7 +15,7 @@ USAGE:
   # Skip fetching — just re-analyze existing CSVs (e.g. after you dropped CSVs in output/)
   python3 pnl_analysis/run_full_pipeline.py --analyze-only --ingest
 
-  # DAILY RUN: only merge NEW trades into existing CSVs, then re-analyze all and ingest (no full re-fetch).
+  # DAILY RUN: overlay newest closed + current open onto existing unique CSVs, re-analyze, ingest.
   python3 pnl_analysis/run_full_pipeline.py --incremental --ingest
 
   # Skip re-fetch for whales (use existing CSV, still analyze). Use per-trader script for full refresh.
@@ -92,7 +92,9 @@ parser.add_argument("--traders", type=str, default="",
 parser.add_argument("--stale-days", type=float, default=0,
                     help="Only re-fetch traders whose CSV is older than N days (0 = always re-fetch)")
 parser.add_argument("--incremental", action="store_true",
-                    help="Fetch only recent activity (2 pages closed + 1 open), merge into existing CSV, then re-analyze all. Use for daily runs.")
+                    help="Overlay newest closed + current open onto the existing unique CSV, then re-analyze. Daily default.")
+parser.add_argument("--deep-incremental", action="store_true",
+                    help="Repair overlay: 80 pages × winner/loser/recent closed sorts. Use when a book looks winner-capped.")
 parser.add_argument("--skip-if-rows-over", type=int, default=0,
                     help="Skip re-fetch for traders whose CSV already has more than N rows (use existing CSV, still analyze). 0 = disabled. Use 250000 to avoid re-fetching whales in batch.")
 parser.add_argument("--full-open", action="store_true",
@@ -103,7 +105,8 @@ ANALYZE_ONLY  = args.analyze_only
 INGEST        = args.ingest
 STALE_DAYS    = args.stale_days
 FULL_OPEN     = bool(getattr(args, "full_open", False))
-INCREMENTAL   = bool(getattr(args, "incremental", False) or FULL_OPEN)
+INCREMENTAL   = bool(getattr(args, "incremental", False) or FULL_OPEN or getattr(args, "deep_incremental", False))
+DEEP_INCREMENTAL = bool(getattr(args, "deep_incremental", False))
 SKIP_IF_ROWS_OVER = getattr(args, "skip_if_rows_over", 0)
 FILTER_NAMES  = set(n.strip() for n in args.traders.split(",") if n.strip())
 MM_WALLET     = "0xd9e0aaca471f489be338fd0f91a26e8669a805f2"
@@ -397,6 +400,101 @@ def _csv_closed_open_counts(csv_path: Path) -> tuple[int, int]:
             return (0, 0)
 
 
+def _row_position_key(row: dict):
+    key = row.get("asset") or row.get("id")
+    if key:
+        return ("asset", str(key))
+    cid = row.get("conditionId")
+    out = row.get("outcome")
+    if cid and out is not None:
+        return ("cid", str(cid), str(out).strip().lower())
+    return None
+
+
+def _existing_position_keys(df: pd.DataFrame) -> set:
+    keys: set = set()
+    if df is None or df.empty:
+        return keys
+    if "asset" in df.columns:
+        for v in df["asset"].dropna().astype(str):
+            if v and v.lower() not in {"nan", "none"}:
+                keys.add(("asset", v))
+    if "id" in df.columns:
+        for v in df["id"].dropna().astype(str):
+            if v and v.lower() not in {"nan", "none"}:
+                keys.add(("asset", v))
+    if "conditionId" in df.columns and "outcome" in df.columns:
+        for cid, out in zip(df["conditionId"].astype(str), df["outcome"].astype(str)):
+            if cid and cid.lower() not in {"nan", "none"}:
+                keys.add(("cid", cid, out.strip().lower()))
+    return keys
+
+
+def fetch_closed_since_existing(address: str, known: set, max_pages: int = 80) -> pd.DataFrame:
+    """Newest closed first, stop when a page is already on disk (caught up since last fetch)."""
+    page_limit = 50
+    params = {
+        "user": address,
+        "limit": page_limit,
+        "offset": 0,
+        "sortBy": "TIMESTAMP",
+        "sortDirection": "DESC",
+    }
+    all_data: list[dict] = []
+    seen: set = set()
+    page = 0
+    caught_up = False
+    while page < max_pages:
+        label = f"closed-positions offset={params['offset']} since-last"
+        data = _get_json_list_with_retry(
+            "https://data-api.polymarket.com/closed-positions", params, label
+        )
+        if data is None or not data:
+            break
+        new_n = 0
+        page_all_known = True
+        for row in data:
+            if not isinstance(row, dict):
+                continue
+            key = _row_position_key(row)
+            if key is None or key in seen:
+                continue
+            seen.add(key)
+            if key in known or (
+                row.get("asset") and ("asset", str(row.get("asset"))) in known
+            ) or (
+                row.get("conditionId")
+                and (
+                    "cid",
+                    str(row.get("conditionId")),
+                    str(row.get("outcome") or "").strip().lower(),
+                )
+                in known
+            ):
+                continue
+            page_all_known = False
+            all_data.append(row)
+            new_n += 1
+        if page_all_known or new_n == 0:
+            caught_up = True
+            print(
+                f"    [caught-up] closed after {page + 1} page(s), "
+                f"{len(all_data):,} new since last fetch"
+            )
+            break
+        if len(data) < page_limit:
+            break
+        params["offset"] += page_limit
+        page += 1
+        time.sleep(PAGE_SLEEP_SEC)
+    if not caught_up and page >= max_pages:
+        print(
+            f"    [warn] still seeing new closed after {max_pages} pages "
+            f"({len(all_data):,} new) — book may need --deep-incremental"
+        )
+    return pd.DataFrame(all_data)
+
+
 def _position_dedupe_key(df: pd.DataFrame):
     """Prefer `asset`. The positions API has no `id`; null ids would collapse every open row."""
     if df is None or df.empty:
@@ -439,11 +537,11 @@ def _merge_position_frames(existing: pd.DataFrame, new_df: pd.DataFrame) -> pd.D
 
 
 def fetch_recent_and_merge(address, username):
-    """
-    Incremental: fetch recent closed (up to 80 pages) + the full open book
-    (unless this is the confirmed MM wallet). Overlay onto existing CSV.
-    Rows with the same position id (or asset on older CSVs) keep the newest API copy.
-    Returns path to updated CSV or None if no existing CSV.
+    """Overlay newest activity onto an existing unique CSV. Does not re-download the book.
+
+    Daily path: newest closed until we hit rows already in the CSV, plus the
+    current open book. Dedupes on asset/id. Repair path (--deep-incremental):
+    winner+loser+recent closed sorts.
     """
     csv_path = csv_path_for(address, username)
     if not csv_path.exists():
@@ -459,16 +557,37 @@ def fetch_recent_and_merge(address, username):
         return collect_and_save(address, username)
 
     prev_closed, prev_open = _csv_closed_open_counts(csv_path)
-    closed_pages = 80
     is_mm = address.lower() == MM_WALLET
-    df_closed = fetch_closed_positions_complete(address, max_pages=closed_pages)
-    time.sleep(PAGE_SLEEP_SEC)
-    if is_mm:
-        print(f"    🔄 Incremental: {closed_pages} closed pages + 2 open (MM skip full book)…")
-        df_open = fetch_positions(address, "positions", max_pages=2)
+    thin_book = prev_closed < MIN_PREV_CLOSED_TO_GUARD
+    deep = DEEP_INCREMENTAL or thin_book
+
+    if deep:
+        closed_pages = 80
+        print(
+            f"    🔄 Unique overlay: {closed_pages} pages × 3 closed sorts "
+            f"+ open ({prev_open:,} existing open)"
+            + (" — thin book, repairing" if thin_book and not DEEP_INCREMENTAL else "")
+        )
+        df_closed = fetch_closed_positions_complete(address, max_pages=closed_pages)
+        time.sleep(PAGE_SLEEP_SEC)
+        if is_mm:
+            df_open = fetch_positions(address, "positions", max_pages=2)
+        else:
+            df_open = fetch_open_positions_complete(address)
     else:
-        print(f"    🔄 Full-open merge: {closed_pages} closed pages + unique open ({prev_open:,} existing open)…")
-        df_open = fetch_open_positions_complete(address)
+        print(
+            f"    🔄 Since last fetch: newest closed until caught up "
+            f"+ current open ({prev_closed:,} closed / {prev_open:,} open on disk)"
+        )
+        known = _existing_position_keys(existing)
+        df_closed = fetch_closed_since_existing(address, known)
+        time.sleep(PAGE_SLEEP_SEC)
+        if is_mm:
+            df_open = fetch_positions(address, "positions", max_pages=2)
+        elif FULL_OPEN:
+            df_open = fetch_open_positions_complete(address)
+        else:
+            df_open = fetch_positions(address, "positions")
     if df_closed.empty and df_open.empty:
         return csv_path
     if df_closed.empty and prev_closed >= MIN_PREV_CLOSED_TO_GUARD:
@@ -491,7 +610,11 @@ def fetch_recent_and_merge(address, username):
     combined.to_csv(csv_path, index=False, quoting=csv_module.QUOTE_ALL)
     n_after = len(combined)
     n_open = int((combined["status"].astype(str).str.lower() == "open").sum()) if "status" in combined.columns else 0
-    print(f"    📄 Incremental merge -> {csv_path.name} ({n_before:,} -> {n_after:,} rows, {n_open:,} open)")
+    added = n_after - n_before
+    print(
+        f"    📄 Incremental merge -> {csv_path.name} "
+        f"({n_before:,} -> {n_after:,} rows, {added:+,} new, {n_open:,} open)"
+    )
     return csv_path
 
 
@@ -830,7 +953,14 @@ def main():
 
     print(f"{'='*70}")
     print(f"Polymarket Pipeline — {len(traders)} trader(s)")
-    mode = "analyze-only" if ANALYZE_ONLY else "incremental (merge recent + re-analyze)" if INCREMENTAL else (f"fetch (stale>{STALE_DAYS:.0f}d)" if STALE_DAYS else "fetch all")
+    if ANALYZE_ONLY:
+        mode = "analyze-only"
+    elif INCREMENTAL:
+        mode = "deep unique overlay" if DEEP_INCREMENTAL else "since-last-fetch overlay + current opens"
+    elif STALE_DAYS:
+        mode = f"fetch (stale>{STALE_DAYS:.0f}d)"
+    else:
+        mode = "fetch all"
     if SKIP_IF_ROWS_OVER:
         mode += f", skip re-fetch if rows>{SKIP_IF_ROWS_OVER:,}"
     print(f"Mode: {mode}{' + ingest' if INGEST else ''}")

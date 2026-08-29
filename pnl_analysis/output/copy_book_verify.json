@@ -1,29 +1,250 @@
 {
-  "generated_at": "2026-08-18T17:53:18.827545+00:00",
+  "generated_at": "2026-08-24T18:27:12.701319+00:00",
   "max_age_hours": null,
-  "ok": true,
+  "ok": false,
   "counts": {
-    "checked": 27,
-    "passed": 27,
-    "failed": 0
+    "checked": 48,
+    "passed": 35,
+    "failed": 13
   },
-  "failed": [],
-  "traders": [
+  "failed": [
     {
       "username": "Supah9ga",
-      "wallet": "0x57cd939930fd119067ca9dc42b22b3e15708a0fb",
+      "bucket": "bench",
+      "errors": [
+        "PnL mismatch CSV $922,468.91 vs JSON $1,967,685.26 (tol $4,612.34)"
+      ]
+    },
+    {
+      "username": "WTSA",
+      "bucket": "bench",
+      "errors": [
+        "missing CSV WTSA_0x04d552.csv"
+      ]
+    },
+    {
+      "username": "DLEK",
+      "bucket": "bench",
+      "errors": [
+        "PnL mismatch CSV $961,550.30 vs JSON $1,362,508.69 (tol $4,807.75)"
+      ]
+    },
+    {
+      "username": "Vetch",
+      "bucket": "bench",
+      "errors": [
+        "PnL mismatch CSV $218,154.01 vs JSON $321,364.91 (tol $1,090.77)"
+      ]
+    },
+    {
+      "username": "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+      "bucket": "bench",
+      "errors": [
+        "missing CSV 0x5966Db1fE50763C9e3C014d756369BAd07E1F804_0x5966db.csv"
+      ]
+    },
+    {
+      "username": "HedgeMaster88",
+      "bucket": "bench",
+      "errors": [
+        "PnL mismatch CSV $927,148.00 vs JSON $931,922.76 (tol $4,635.74)"
+      ]
+    },
+    {
+      "username": "ckw",
+      "bucket": "bench",
+      "errors": [
+        "PnL mismatch CSV $861,781.57 vs JSON $839,271.82 (tol $4,308.91)"
+      ]
+    },
+    {
+      "username": "Bienville",
+      "bucket": "bench",
+      "errors": [
+        "missing CSV Bienville_0x9f1380.csv"
+      ]
+    },
+    {
+      "username": "JhonAlexanderHinestroza",
+      "bucket": "bench",
+      "errors": [
+        "PnL mismatch CSV $399,694.44 vs JSON $177,411.32 (tol $1,998.47)"
+      ]
+    },
+    {
+      "username": "0xheavy888",
+      "bucket": "bench",
+      "errors": [
+        "PnL mismatch CSV $728,816.20 vs JSON $626,186.75 (tol $3,644.08)"
+      ]
+    },
+    {
+      "username": "TTdes",
+      "bucket": "bench",
+      "errors": [
+        "PnL mismatch CSV $73,379.24 vs JSON $143,113.17 (tol $366.90)"
+      ]
+    },
+    {
+      "username": "JuniorB",
+      "bucket": "bench",
+      "errors": [
+        "PnL mismatch CSV $121,388.53 vs JSON $136,485.10 (tol $606.94)"
+      ]
+    },
+    {
+      "username": "Andromeda1",
+      "bucket": "bench",
+      "errors": [
+        "PnL mismatch CSV $461,200.16 vs JSON $482,002.41 (tol $2,306.00)"
+      ]
+    }
+  ],
+  "traders": [
+    {
+      "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+      "wallet": "0x8a3ab8120807bd64a3de48695110e390fa2ceb9a",
       "bucket": "live",
       "ok": true,
       "errors": [],
       "warnings": [],
+      "csv": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a_0x8a3ab8.csv",
+      "json": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a_0x8a3ab8.json",
+      "csv_age_hours": 0.12,
+      "json_age_hours": 0.12,
+      "csv_rows": 486,
+      "csv_dashboard_pnl": 708972.9,
+      "json_dashboard_pnl": 708972.9,
+      "overall_roi": 15.52,
+      "win_rate": 54.24,
+      "sports": [
+        "ESPORTS",
+        "MLB",
+        "NBA",
+        "OTHER",
+        "SOCCER (EPL)",
+        "SOCCER (LaLiga)",
+        "SOCCER (Other)",
+        "SOCCER (UCL)",
+        "TENNIS",
+        "WNBA"
+      ],
+      "markets": [
+        "Futures",
+        "Map / Game",
+        "Moneyline / Match",
+        "Spread",
+        "Totals (O/U)"
+      ]
+    },
+    {
+      "username": "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+      "wallet": "0x1b20a00709dfe648afd26b326394b5e031f83ab0",
+      "bucket": "live",
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "csv": "0x1b20a00709DfE648AFd26b326394b5e031f83ab0_0x1b20a0.csv",
+      "json": "0x1b20a00709DfE648AFd26b326394b5e031f83ab0_0x1b20a0.json",
+      "csv_age_hours": 0.11,
+      "json_age_hours": 0.11,
+      "csv_rows": 72,
+      "csv_dashboard_pnl": 859778.43,
+      "json_dashboard_pnl": 859778.43,
+      "overall_roi": 34.66,
+      "win_rate": 51.39,
+      "sports": [
+        "MLB",
+        "OTHER",
+        "SOCCER (Other)",
+        "WNBA"
+      ],
+      "markets": [
+        "Moneyline / Match",
+        "Totals (O/U)"
+      ]
+    },
+    {
+      "username": "HongYunX",
+      "wallet": "0xc72d7dcdb23597d143a83536fb97b1d7db7efc21",
+      "bucket": "live",
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "csv": "HongYunX_0xc72d7d.csv",
+      "json": "HongYunX_0xc72d7d.json",
+      "csv_age_hours": 0.11,
+      "json_age_hours": 0.11,
+      "csv_rows": 330,
+      "csv_dashboard_pnl": 458500.16,
+      "json_dashboard_pnl": 458500.16,
+      "overall_roi": 10.31,
+      "win_rate": 60.91,
+      "sports": [
+        "OTHER",
+        "SOCCER (EPL)",
+        "SOCCER (LaLiga)",
+        "SOCCER (Other)",
+        "SOCCER (UCL)"
+      ],
+      "markets": [
+        "Draw",
+        "Futures",
+        "Moneyline / Match",
+        "Spread",
+        "Totals (O/U)"
+      ]
+    },
+    {
+      "username": "SDTrading",
+      "wallet": "0x16bb9951a36fce71e2ef57890b786145e0ba8492",
+      "bucket": "live",
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "csv": "SDTrading_0x16bb99.csv",
+      "json": "SDTrading_0x16bb99.json",
+      "csv_age_hours": 0.11,
+      "json_age_hours": 0.11,
+      "csv_rows": 1019,
+      "csv_dashboard_pnl": -14627.35,
+      "json_dashboard_pnl": -14627.35,
+      "overall_roi": -0.15,
+      "win_rate": 48.62,
+      "sports": [
+        "MLB",
+        "NBA",
+        "NFL",
+        "NHL",
+        "OTHER",
+        "SOCCER (LaLiga)",
+        "SOCCER (Other)",
+        "TENNIS"
+      ],
+      "markets": [
+        "Futures",
+        "Moneyline / Match",
+        "Spread",
+        "Totals (O/U)"
+      ]
+    },
+    {
+      "username": "Supah9ga",
+      "wallet": "0x57cd939930fd119067ca9dc42b22b3e15708a0fb",
+      "bucket": "bench",
+      "ok": false,
+      "errors": [
+        "PnL mismatch CSV $922,468.91 vs JSON $1,967,685.26 (tol $4,612.34)"
+      ],
+      "warnings": [],
       "csv": "Supah9ga_0x57cd93.csv",
       "json": "Supah9ga_0x57cd93.json",
-      "csv_age_hours": 0.09,
-      "json_age_hours": 0.09,
-      "csv_rows": 685,
-      "csv_dashboard_pnl": 2001694.32,
-      "json_dashboard_pnl": 2001694.32,
-      "overall_roi": 21.87,
+      "csv_age_hours": 29.06,
+      "json_age_hours": 29.06,
+      "csv_rows": 550,
+      "csv_dashboard_pnl": 922468.91,
+      "json_dashboard_pnl": 1967685.26,
+      "overall_roi": 21.53,
       "win_rate": 52.23,
       "sports": [
         "ESPORTS",
@@ -49,233 +270,21 @@
       ]
     },
     {
-      "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
-      "wallet": "0x8a3ab8120807bd64a3de48695110e390fa2ceb9a",
-      "bucket": "live",
-      "ok": true,
-      "errors": [],
-      "warnings": [],
-      "csv": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a_0x8a3ab8.csv",
-      "json": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a_0x8a3ab8.json",
-      "csv_age_hours": 0.07,
-      "json_age_hours": 0.07,
-      "csv_rows": 469,
-      "csv_dashboard_pnl": 670157.28,
-      "json_dashboard_pnl": 670157.28,
-      "overall_roi": 14.95,
-      "win_rate": 53.86,
-      "sports": [
-        "ESPORTS",
-        "MLB",
-        "NBA",
-        "OTHER",
-        "SOCCER (EPL)",
-        "SOCCER (LaLiga)",
-        "SOCCER (Other)",
-        "SOCCER (UCL)",
-        "TENNIS",
-        "WNBA"
-      ],
-      "markets": [
-        "Futures",
-        "Map / Game",
-        "Moneyline / Match",
-        "Spread",
-        "Totals (O/U)"
-      ]
-    },
-    {
-      "username": "JhonAlexanderHinestroza",
-      "wallet": "0x44c58184f89a5c2f699dc8943009cb3d75a08d45",
-      "bucket": "live",
-      "ok": true,
-      "errors": [],
-      "warnings": [],
-      "csv": "JhonAlexanderHinestroza_0x44c581.csv",
-      "json": "JhonAlexanderHinestroza_0x44c581.json",
-      "csv_age_hours": 0.43,
-      "json_age_hours": 0.43,
-      "csv_rows": 2358,
-      "csv_dashboard_pnl": 177411.32,
-      "json_dashboard_pnl": 177411.32,
-      "overall_roi": 1.48,
-      "win_rate": 51.84,
-      "sports": [
-        "ESPORTS",
-        "NFL",
-        "NHL",
-        "OTHER",
-        "SOCCER (EPL)",
-        "SOCCER (LaLiga)",
-        "SOCCER (Other)",
-        "SOCCER (UCL)"
-      ],
-      "markets": [
-        "Draw",
-        "Futures",
-        "Map / Game",
-        "Moneyline / Match",
-        "Spread",
-        "Totals (O/U)"
-      ]
-    },
-    {
-      "username": "TTdes",
-      "wallet": "0x25867077c891354137bbaf7fde12eec6949cc893",
-      "bucket": "live",
-      "ok": true,
-      "errors": [],
-      "warnings": [],
-      "csv": "TTdes_0x258670.csv",
-      "json": "TTdes_0x258670.json",
-      "csv_age_hours": 0.1,
-      "json_age_hours": 0.1,
-      "csv_rows": 1318,
-      "csv_dashboard_pnl": 147246.04,
-      "json_dashboard_pnl": 147246.04,
-      "overall_roi": 7.27,
-      "win_rate": 53.82,
-      "sports": [
-        "MLB",
-        "NHL",
-        "OTHER",
-        "POLITICS",
-        "SOCCER (EPL)",
-        "SOCCER (LaLiga)",
-        "SOCCER (Other)",
-        "SOCCER (UCL)",
-        "TENNIS"
-      ],
-      "markets": [
-        "Draw",
-        "Futures",
-        "Moneyline / Match",
-        "Spread",
-        "Totals (O/U)"
-      ]
-    },
-    {
-      "username": "0x20D6436849F930584892730C7F96eBB2Ac763856",
-      "wallet": "0x20d6436849f930584892730c7f96ebb2ac763856",
-      "bucket": "live",
-      "ok": true,
-      "errors": [],
-      "warnings": [],
-      "csv": "0x20D6436849F930584892730C7F96eBB2Ac763856_0x20d643.csv",
-      "json": "0x20D6436849F930584892730C7F96eBB2Ac763856_0x20d643.json",
-      "csv_age_hours": 0.3,
-      "json_age_hours": 0.3,
-      "csv_rows": 1860,
-      "csv_dashboard_pnl": 308622.33,
-      "json_dashboard_pnl": 308622.33,
-      "overall_roi": 1.85,
-      "win_rate": 51.3,
-      "sports": [
-        "MLB",
-        "NBA",
-        "NFL",
-        "NHL",
-        "OTHER",
-        "SOCCER (EPL)",
-        "SOCCER (LaLiga)",
-        "SOCCER (Other)",
-        "SOCCER (UCL)",
-        "TENNIS",
-        "WNBA"
-      ],
-      "markets": [
-        "Draw",
-        "Futures",
-        "Moneyline / Match",
-        "Spread",
-        "Totals (O/U)"
-      ]
-    },
-    {
-      "username": "0xheavy888",
-      "wallet": "0xec981ed70ae69c5cbcac08c1ba063e734f6bafcd",
-      "bucket": "live",
-      "ok": true,
-      "errors": [],
-      "warnings": [],
-      "csv": "0xheavy888_0xec981e.csv",
-      "json": "0xheavy888_0xec981e.json",
-      "csv_age_hours": 0.2,
-      "json_age_hours": 0.2,
-      "csv_rows": 11735,
-      "csv_dashboard_pnl": 626186.75,
-      "json_dashboard_pnl": 626186.75,
-      "overall_roi": 2.22,
-      "win_rate": 50.64,
-      "sports": [
-        "ESPORTS",
-        "MLB",
-        "NBA",
-        "NFL",
-        "OTHER",
-        "POLITICS",
-        "SOCCER (EPL)",
-        "SOCCER (LaLiga)",
-        "SOCCER (Other)",
-        "TENNIS",
-        "WNBA"
-      ],
-      "markets": [
-        "Draw",
-        "Futures",
-        "Map / Game",
-        "Moneyline / Match",
-        "Spread",
-        "Totals (O/U)"
-      ]
-    },
-    {
-      "username": "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
-      "wallet": "0x5966db1fe50763c9e3c014d756369bad07e1f804",
-      "bucket": "bench",
-      "ok": true,
-      "errors": [],
-      "warnings": [],
-      "csv": "0x5966Db1fE50763C9e3C014d756369BAd07E1F804_0x5966db.csv",
-      "json": "0x5966Db1fE50763C9e3C014d756369BAd07E1F804_0x5966db.json",
-      "csv_age_hours": 0.07,
-      "json_age_hours": 0.06,
-      "csv_rows": 190,
-      "csv_dashboard_pnl": 3458340.21,
-      "json_dashboard_pnl": 3458340.21,
-      "overall_roi": 25.47,
-      "win_rate": 58.24,
-      "sports": [
-        "ESPORTS",
-        "MLB",
-        "NBA",
-        "OTHER",
-        "SOCCER (EPL)",
-        "SOCCER (LaLiga)",
-        "SOCCER (Other)",
-        "SOCCER (UCL)",
-        "TENNIS"
-      ],
-      "markets": [
-        "Moneyline / Match",
-        "Spread",
-        "Totals (O/U)"
-      ]
-    },
-    {
       "username": "WTSA",
       "wallet": "0x04d5524a0a5af2eca6e39e03defc261d42fe66d8",
       "bucket": "bench",
-      "ok": true,
-      "errors": [],
+      "ok": false,
+      "errors": [
+        "missing CSV WTSA_0x04d552.csv"
+      ],
       "warnings": [],
       "csv": "WTSA_0x04d552.csv",
       "json": "WTSA_0x04d552.json",
-      "csv_age_hours": 0.0,
-      "json_age_hours": 0.0,
-      "csv_rows": 133,
-      "csv_dashboard_pnl": 1154301.49,
-      "json_dashboard_pnl": 1154301.49,
+      "csv_age_hours": null,
+      "json_age_hours": 29.06,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": 1154695.26,
       "overall_roi": 20.21,
       "win_rate": 53.44,
       "sports": [
@@ -292,17 +301,19 @@
       "username": "DLEK",
       "wallet": "0x6e82b93eb57b01a63027bd0c6d2f3f04934a752c",
       "bucket": "bench",
-      "ok": true,
-      "errors": [],
+      "ok": false,
+      "errors": [
+        "PnL mismatch CSV $961,550.30 vs JSON $1,362,508.69 (tol $4,807.75)"
+      ],
       "warnings": [],
       "csv": "DLEK_0x6e82b9.csv",
       "json": "DLEK_0x6e82b9.json",
-      "csv_age_hours": 0.45,
-      "json_age_hours": 0.45,
-      "csv_rows": 1624,
-      "csv_dashboard_pnl": 1433484.09,
-      "json_dashboard_pnl": 1433484.09,
-      "overall_roi": 7.67,
+      "csv_age_hours": 29.06,
+      "json_age_hours": 29.06,
+      "csv_rows": 1571,
+      "csv_dashboard_pnl": 961550.3,
+      "json_dashboard_pnl": 1362508.69,
+      "overall_roi": 7.28,
       "win_rate": 55.62,
       "sports": [
         "MLB",
@@ -324,52 +335,23 @@
       ]
     },
     {
-      "username": "HedgeMaster88",
-      "wallet": "0x036c159d5a348058a81066a76b89f35926d4178d",
-      "bucket": "bench",
-      "ok": true,
-      "errors": [],
-      "warnings": [],
-      "csv": "HedgeMaster88_0x036c15.csv",
-      "json": "HedgeMaster88_0x036c15.json",
-      "csv_age_hours": 0.07,
-      "json_age_hours": 0.07,
-      "csv_rows": 252,
-      "csv_dashboard_pnl": 931922.76,
-      "json_dashboard_pnl": 931922.76,
-      "overall_roi": 19.07,
-      "win_rate": 53.39,
-      "sports": [
-        "OTHER",
-        "SOCCER (EPL)",
-        "SOCCER (LaLiga)",
-        "SOCCER (Other)",
-        "SOCCER (UCL)"
-      ],
-      "markets": [
-        "Draw",
-        "Futures",
-        "Moneyline / Match",
-        "Spread",
-        "Totals (O/U)"
-      ]
-    },
-    {
       "username": "Vetch",
       "wallet": "0x9c82c60829df081d593055ee5fa288870c051f13",
       "bucket": "bench",
-      "ok": true,
-      "errors": [],
+      "ok": false,
+      "errors": [
+        "PnL mismatch CSV $218,154.01 vs JSON $321,364.91 (tol $1,090.77)"
+      ],
       "warnings": [],
       "csv": "Vetch_0x9c82c6.csv",
       "json": "Vetch_0x9c82c6.json",
-      "csv_age_hours": 0.1,
-      "json_age_hours": 0.1,
-      "csv_rows": 723,
-      "csv_dashboard_pnl": 321366.97,
-      "json_dashboard_pnl": 321366.97,
+      "csv_age_hours": 29.06,
+      "json_age_hours": 29.06,
+      "csv_rows": 615,
+      "csv_dashboard_pnl": 218154.01,
+      "json_dashboard_pnl": 321364.91,
       "overall_roi": 11.24,
-      "win_rate": 60.87,
+      "win_rate": 60.79,
       "sports": [
         "ESPORTS",
         "NBA",
@@ -391,18 +373,88 @@
       ]
     },
     {
+      "username": "0x5966Db1fE50763C9e3C014d756369BAd07E1F804",
+      "wallet": "0x5966db1fe50763c9e3c014d756369bad07e1f804",
+      "bucket": "bench",
+      "ok": false,
+      "errors": [
+        "missing CSV 0x5966Db1fE50763C9e3C014d756369BAd07E1F804_0x5966db.csv"
+      ],
+      "warnings": [],
+      "csv": "0x5966Db1fE50763C9e3C014d756369BAd07E1F804_0x5966db.csv",
+      "json": "0x5966Db1fE50763C9e3C014d756369BAd07E1F804_0x5966db.json",
+      "csv_age_hours": null,
+      "json_age_hours": 29.06,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": 3458340.21,
+      "overall_roi": 25.47,
+      "win_rate": 58.24,
+      "sports": [
+        "ESPORTS",
+        "MLB",
+        "NBA",
+        "OTHER",
+        "SOCCER (EPL)",
+        "SOCCER (LaLiga)",
+        "SOCCER (Other)",
+        "SOCCER (UCL)",
+        "TENNIS"
+      ],
+      "markets": [
+        "Moneyline / Match",
+        "Spread",
+        "Totals (O/U)"
+      ]
+    },
+    {
+      "username": "HedgeMaster88",
+      "wallet": "0x036c159d5a348058a81066a76b89f35926d4178d",
+      "bucket": "bench",
+      "ok": false,
+      "errors": [
+        "PnL mismatch CSV $927,148.00 vs JSON $931,922.76 (tol $4,635.74)"
+      ],
+      "warnings": [],
+      "csv": "HedgeMaster88_0x036c15.csv",
+      "json": "HedgeMaster88_0x036c15.json",
+      "csv_age_hours": 29.06,
+      "json_age_hours": 29.06,
+      "csv_rows": 252,
+      "csv_dashboard_pnl": 927148.0,
+      "json_dashboard_pnl": 931922.76,
+      "overall_roi": 19.07,
+      "win_rate": 53.39,
+      "sports": [
+        "OTHER",
+        "SOCCER (EPL)",
+        "SOCCER (LaLiga)",
+        "SOCCER (Other)",
+        "SOCCER (UCL)"
+      ],
+      "markets": [
+        "Draw",
+        "Futures",
+        "Moneyline / Match",
+        "Spread",
+        "Totals (O/U)"
+      ]
+    },
+    {
       "username": "ckw",
       "wallet": "0x92672c80d36dcd08172aa1e51dface0f20b70f9a",
       "bucket": "bench",
-      "ok": true,
-      "errors": [],
+      "ok": false,
+      "errors": [
+        "PnL mismatch CSV $861,781.57 vs JSON $839,271.82 (tol $4,308.91)"
+      ],
       "warnings": [],
       "csv": "ckw_0x92672c.csv",
       "json": "ckw_0x92672c.json",
-      "csv_age_hours": 0.32,
-      "json_age_hours": 0.32,
-      "csv_rows": 2567,
-      "csv_dashboard_pnl": 839271.82,
+      "csv_age_hours": 29.06,
+      "json_age_hours": 29.06,
+      "csv_rows": 2393,
+      "csv_dashboard_pnl": 861781.57,
       "json_dashboard_pnl": 839271.82,
       "overall_roi": 2.29,
       "win_rate": 54.93,
@@ -434,15 +486,17 @@
       "username": "Bienville",
       "wallet": "0x9f138019d5481fdc5c59b93b0ae4b9b817cce0fd",
       "bucket": "bench",
-      "ok": true,
-      "errors": [],
+      "ok": false,
+      "errors": [
+        "missing CSV Bienville_0x9f1380.csv"
+      ],
       "warnings": [],
       "csv": "Bienville_0x9f1380.csv",
       "json": "Bienville_0x9f1380.json",
-      "csv_age_hours": 0.24,
-      "json_age_hours": 0.24,
-      "csv_rows": 3201,
-      "csv_dashboard_pnl": 391644.56,
+      "csv_age_hours": null,
+      "json_age_hours": 29.06,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
       "json_dashboard_pnl": 391644.56,
       "overall_roi": 2.12,
       "win_rate": 50.15,
@@ -466,18 +520,134 @@
       ]
     },
     {
+      "username": "JhonAlexanderHinestroza",
+      "wallet": "0x44c58184f89a5c2f699dc8943009cb3d75a08d45",
+      "bucket": "bench",
+      "ok": false,
+      "errors": [
+        "PnL mismatch CSV $399,694.44 vs JSON $177,411.32 (tol $1,998.47)"
+      ],
+      "warnings": [],
+      "csv": "JhonAlexanderHinestroza_0x44c581.csv",
+      "json": "JhonAlexanderHinestroza_0x44c581.json",
+      "csv_age_hours": 29.06,
+      "json_age_hours": 29.06,
+      "csv_rows": 1259,
+      "csv_dashboard_pnl": 399694.44,
+      "json_dashboard_pnl": 177411.32,
+      "overall_roi": 1.48,
+      "win_rate": 51.84,
+      "sports": [
+        "ESPORTS",
+        "NFL",
+        "NHL",
+        "OTHER",
+        "SOCCER (EPL)",
+        "SOCCER (LaLiga)",
+        "SOCCER (Other)",
+        "SOCCER (UCL)"
+      ],
+      "markets": [
+        "Draw",
+        "Futures",
+        "Map / Game",
+        "Moneyline / Match",
+        "Spread",
+        "Totals (O/U)"
+      ]
+    },
+    {
+      "username": "0xheavy888",
+      "wallet": "0xec981ed70ae69c5cbcac08c1ba063e734f6bafcd",
+      "bucket": "bench",
+      "ok": false,
+      "errors": [
+        "PnL mismatch CSV $728,816.20 vs JSON $626,186.75 (tol $3,644.08)"
+      ],
+      "warnings": [],
+      "csv": "0xheavy888_0xec981e.csv",
+      "json": "0xheavy888_0xec981e.json",
+      "csv_age_hours": 29.06,
+      "json_age_hours": 29.06,
+      "csv_rows": 6746,
+      "csv_dashboard_pnl": 728816.2,
+      "json_dashboard_pnl": 626186.75,
+      "overall_roi": 2.22,
+      "win_rate": 50.64,
+      "sports": [
+        "ESPORTS",
+        "MLB",
+        "NBA",
+        "NFL",
+        "OTHER",
+        "POLITICS",
+        "SOCCER (EPL)",
+        "SOCCER (LaLiga)",
+        "SOCCER (Other)",
+        "TENNIS",
+        "WNBA"
+      ],
+      "markets": [
+        "Draw",
+        "Futures",
+        "Map / Game",
+        "Moneyline / Match",
+        "Spread",
+        "Totals (O/U)"
+      ]
+    },
+    {
+      "username": "TTdes",
+      "wallet": "0x25867077c891354137bbaf7fde12eec6949cc893",
+      "bucket": "bench",
+      "ok": false,
+      "errors": [
+        "PnL mismatch CSV $73,379.24 vs JSON $143,113.17 (tol $366.90)"
+      ],
+      "warnings": [],
+      "csv": "TTdes_0x258670.csv",
+      "json": "TTdes_0x258670.json",
+      "csv_age_hours": 29.06,
+      "json_age_hours": 29.06,
+      "csv_rows": 1154,
+      "csv_dashboard_pnl": 73379.24,
+      "json_dashboard_pnl": 143113.17,
+      "overall_roi": 7.06,
+      "win_rate": 53.64,
+      "sports": [
+        "MLB",
+        "NHL",
+        "OTHER",
+        "POLITICS",
+        "SOCCER (EPL)",
+        "SOCCER (LaLiga)",
+        "SOCCER (Other)",
+        "SOCCER (UCL)",
+        "TENNIS"
+      ],
+      "markets": [
+        "Draw",
+        "Futures",
+        "Moneyline / Match",
+        "Spread",
+        "Totals (O/U)"
+      ]
+    },
+    {
       "username": "JuniorB",
       "wallet": "0x9ac5c8496bc84f642bac181499bf64405a5c6a3d",
       "bucket": "bench",
-      "ok": true,
-      "errors": [],
+      "ok": false,
+      "errors": [
+        "PnL mismatch CSV $121,388.53 vs JSON $136,485.10 (tol $606.94)"
+      ],
       "warnings": [],
       "csv": "JuniorB_0x9ac5c8.csv",
       "json": "JuniorB_0x9ac5c8.json",
-      "csv_age_hours": 0.31,
-      "json_age_hours": 0.31,
-      "csv_rows": 1354,
-      "csv_dashboard_pnl": 136485.1,
+      "csv_age_hours": 29.06,
+      "json_age_hours": 29.06,
+      "csv_rows": 1333,
+      "csv_dashboard_pnl": 121388.53,
       "json_dashboard_pnl": 136485.1,
       "overall_roi": 4.71,
       "win_rate": 58.16,
@@ -506,57 +676,20 @@
       "username": "Andromeda1",
       "wallet": "0x39932ca2b7a1b8ab6cbf0b8f7419261b950ccded",
       "bucket": "bench",
-      "ok": true,
-      "errors": [],
+      "ok": false,
+      "errors": [
+        "PnL mismatch CSV $461,200.16 vs JSON $482,002.41 (tol $2,306.00)"
+      ],
       "warnings": [],
       "csv": "Andromeda1_0x39932c.csv",
       "json": "Andromeda1_0x39932c.json",
-      "csv_age_hours": 0.17,
-      "json_age_hours": 0.17,
-      "csv_rows": 3261,
-      "csv_dashboard_pnl": 482002.41,
+      "csv_age_hours": 29.06,
+      "json_age_hours": 29.06,
+      "csv_rows": 2320,
+      "csv_dashboard_pnl": 461200.16,
       "json_dashboard_pnl": 482002.41,
       "overall_roi": 3.32,
       "win_rate": 55.72,
-      "sports": [
-        "ESPORTS",
-        "MLB",
-        "NBA",
-        "NFL",
-        "NHL",
-        "OTHER",
-        "SOCCER (EPL)",
-        "SOCCER (LaLiga)",
-        "SOCCER (Other)",
-        "SOCCER (UCL)",
-        "TENNIS",
-        "WNBA"
-      ],
-      "markets": [
-        "Draw",
-        "Futures",
-        "Map / Game",
-        "Moneyline / Match",
-        "Spread",
-        "Totals (O/U)"
-      ]
-    },
-    {
-      "username": "CoryLahey",
-      "wallet": "0x5c3a1a602848565bb16165fcd460b00c3d43020b",
-      "bucket": "watch",
-      "ok": true,
-      "errors": [],
-      "warnings": [],
-      "csv": "CoryLahey_0x5c3a1a.csv",
-      "json": "CoryLahey_0x5c3a1a.json",
-      "csv_age_hours": 0.16,
-      "json_age_hours": 0.16,
-      "csv_rows": 1731,
-      "csv_dashboard_pnl": 1647052.81,
-      "json_dashboard_pnl": 1647052.81,
-      "overall_roi": 4.61,
-      "win_rate": 59.4,
       "sports": [
         "ESPORTS",
         "MLB",
@@ -586,16 +719,18 @@
       "bucket": "watch",
       "ok": true,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "watch: PnL mismatch CSV $1,394,208.46 vs JSON $1,696,469.01 (tol $6,971.04)"
+      ],
       "csv": "ShucksIt69_0x84dbb7.csv",
       "json": "ShucksIt69_0x84dbb7.json",
-      "csv_age_hours": 0.37,
-      "json_age_hours": 0.37,
-      "csv_rows": 2567,
-      "csv_dashboard_pnl": 1527083.75,
-      "json_dashboard_pnl": 1527083.75,
-      "overall_roi": 4.15,
-      "win_rate": 53.19,
+      "csv_age_hours": 29.06,
+      "json_age_hours": 29.06,
+      "csv_rows": 2200,
+      "csv_dashboard_pnl": 1394208.46,
+      "json_dashboard_pnl": 1696469.01,
+      "overall_roi": 4.62,
+      "win_rate": 53.22,
       "sports": [
         "MLB",
         "NBA",
@@ -616,21 +751,59 @@
       ]
     },
     {
+      "username": "SineNooneEI",
+      "wallet": "0x38337de21ff0bb0a11a40761507d51e318d633d1",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV SineNooneEI_0x38337d.csv"
+      ],
+      "csv": "SineNooneEI_0x38337d.csv",
+      "json": "SineNooneEI_0x38337d.json",
+      "csv_age_hours": null,
+      "json_age_hours": 29.06,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": 743877.76,
+      "overall_roi": 5.01,
+      "win_rate": 53.75,
+      "sports": [
+        "ESPORTS",
+        "MLB",
+        "NBA",
+        "NHL",
+        "OTHER",
+        "SOCCER (EPL)",
+        "SOCCER (Other)",
+        "TENNIS"
+      ],
+      "markets": [
+        "Futures",
+        "Map / Game",
+        "Moneyline / Match",
+        "Spread",
+        "Totals (O/U)"
+      ]
+    },
+    {
       "username": "UAEVALORANTFAN",
       "wallet": "0xc65ca4755436f82d8eb461e65781584b8cadea39",
       "bucket": "watch",
       "ok": true,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "watch: PnL mismatch CSV $178,599.01 vs JSON $393,644.88 (tol $893.00)"
+      ],
       "csv": "UAEVALORANTFAN_0xc65ca4.csv",
       "json": "UAEVALORANTFAN_0xc65ca4.json",
-      "csv_age_hours": 0.14,
-      "json_age_hours": 0.14,
-      "csv_rows": 1222,
-      "csv_dashboard_pnl": 423169.61,
-      "json_dashboard_pnl": 423169.61,
-      "overall_roi": 3.42,
-      "win_rate": 55.25,
+      "csv_age_hours": 29.06,
+      "json_age_hours": 29.06,
+      "csv_rows": 983,
+      "csv_dashboard_pnl": 178599.01,
+      "json_dashboard_pnl": 393644.88,
+      "overall_roi": 3.18,
+      "win_rate": 55.29,
       "sports": [
         "ESPORTS",
         "MLB",
@@ -654,18 +827,78 @@
       ]
     },
     {
+      "username": "predictionlegend",
+      "wallet": "0x3eb095d871501a1d7a3cb086a22d174b52356a68",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV predictionlegend_0x3eb095.csv"
+      ],
+      "csv": "predictionlegend_0x3eb095.csv",
+      "json": "predictionlegend_0x3eb095.json",
+      "csv_age_hours": null,
+      "json_age_hours": 29.06,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": 242858.17,
+      "overall_roi": 63.53,
+      "win_rate": 50.0,
+      "sports": [
+        "OTHER",
+        "SOCCER (LaLiga)",
+        "SOCCER (Other)"
+      ],
+      "markets": [
+        "Moneyline / Match",
+        "Spread",
+        "Totals (O/U)"
+      ]
+    },
+    {
+      "username": "bigspending",
+      "wallet": "0x86dab59a8a6e7f9947282d2117aab3429b706428",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV bigspending_0x86dab5.csv"
+      ],
+      "csv": "bigspending_0x86dab5.csv",
+      "json": "bigspending_0x86dab5.json",
+      "csv_age_hours": null,
+      "json_age_hours": 29.06,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": 130585.75,
+      "overall_roi": 24.89,
+      "win_rate": 64.52,
+      "sports": [
+        "OTHER",
+        "SOCCER (Other)",
+        "SOCCER (UCL)"
+      ],
+      "markets": [
+        "Moneyline / Match",
+        "Spread",
+        "Totals (O/U)"
+      ]
+    },
+    {
       "username": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
       "wallet": "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87",
       "bucket": "watch",
       "ok": true,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "watch: missing CSV 0xE30E74595517de48f1FB19f4553dd3d9F1E96B87_0xe30e74.csv"
+      ],
       "csv": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87_0xe30e74.csv",
       "json": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87_0xe30e74.json",
-      "csv_age_hours": 0.07,
-      "json_age_hours": 0.07,
-      "csv_rows": 116,
-      "csv_dashboard_pnl": 1107705.78,
+      "csv_age_hours": null,
+      "json_age_hours": 29.06,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
       "json_dashboard_pnl": 1107705.78,
       "overall_roi": 12.47,
       "win_rate": 55.1,
@@ -684,99 +917,61 @@
       ]
     },
     {
-      "username": "ShortFlutterStock",
-      "wallet": "0x13414a77a4be48988851c73dfd824d0168e70853",
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
       "bucket": "watch",
       "ok": true,
       "errors": [],
-      "warnings": [],
-      "csv": "ShortFlutterStock_0x13414a.csv",
-      "json": "ShortFlutterStock_0x13414a.json",
-      "csv_age_hours": 0.39,
-      "json_age_hours": 0.39,
-      "csv_rows": 6382,
-      "csv_dashboard_pnl": 419827.42,
-      "json_dashboard_pnl": 419827.42,
-      "overall_roi": 1.0,
-      "win_rate": 57.35,
-      "sports": [
-        "ESPORTS",
-        "MLB",
-        "NBA",
-        "NFL",
-        "NHL",
-        "OTHER",
-        "POLITICS",
-        "SOCCER (EPL)",
-        "SOCCER (LaLiga)",
-        "SOCCER (Other)",
-        "TENNIS",
-        "WNBA"
+      "warnings": [
+        "watch: missing CSV HVAB_0x8546a6.csv"
       ],
-      "markets": [
-        "Draw",
-        "Futures",
-        "Map / Game",
-        "Moneyline / Match",
-        "Spread",
-        "Totals (O/U)"
-      ]
-    },
-    {
-      "username": "fengdubiying",
-      "wallet": "0x17db3fcd93ba12d38382a0cade24b200185c5f6d",
-      "bucket": "watch",
-      "ok": true,
-      "errors": [],
-      "warnings": [],
-      "csv": "fengdubiying_0x17db3f.csv",
-      "json": "fengdubiying_0x17db3f.json",
-      "csv_age_hours": 0.07,
-      "json_age_hours": 0.07,
-      "csv_rows": 124,
-      "csv_dashboard_pnl": 3033760.17,
-      "json_dashboard_pnl": 3033760.17,
-      "overall_roi": 28.15,
-      "win_rate": 71.43,
+      "csv": "HVAB_0x8546a6.csv",
+      "json": "HVAB_0x8546a6.json",
+      "csv_age_hours": null,
+      "json_age_hours": 29.06,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": 284790.33,
+      "overall_roi": 10.31,
+      "win_rate": 81.84,
       "sports": [
         "ESPORTS",
-        "NBA",
-        "NHL",
         "OTHER",
-        "POLITICS",
-        "SOCCER (LaLiga)",
+        "SOCCER (EPL)",
+        "SOCCER (Other)",
         "TENNIS"
       ],
       "markets": [
         "Futures",
-        "Map / Game",
-        "Moneyline / Match"
+        "Moneyline / Match",
+        "Totals (O/U)"
       ]
     },
     {
-      "username": "asparagus2012",
-      "wallet": "0x476e1322d1a412fa0325527b8c3bc5e707b1396d",
+      "username": "sainttroplay",
+      "wallet": "0x9319a045cdd0c2180e5eb7ad44374383db9a6410",
       "bucket": "watch",
       "ok": true,
       "errors": [],
-      "warnings": [],
-      "csv": "asparagus2012_0x476e13.csv",
-      "json": "asparagus2012_0x476e13.json",
-      "csv_age_hours": 0.06,
-      "json_age_hours": 0.06,
-      "csv_rows": 16,
-      "csv_dashboard_pnl": 3547038.05,
-      "json_dashboard_pnl": 3547038.05,
-      "overall_roi": 249.97,
-      "win_rate": 68.75,
+      "warnings": [
+        "watch: missing CSV sainttroplay_0x9319a0.csv"
+      ],
+      "csv": "sainttroplay_0x9319a0.csv",
+      "json": "sainttroplay_0x9319a0.json",
+      "csv_age_hours": null,
+      "json_age_hours": 29.06,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": 3509865.86,
+      "overall_roi": 77.2,
+      "win_rate": 83.33,
       "sports": [
         "OTHER",
+        "SOCCER (LaLiga)",
         "SOCCER (Other)"
       ],
       "markets": [
-        "Futures",
         "Moneyline / Match",
-        "Spread",
         "Totals (O/U)"
       ]
     },
@@ -786,13 +981,15 @@
       "bucket": "watch",
       "ok": true,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "watch: PnL mismatch CSV $2,029,967.88 vs JSON $-3,369,975.64 (tol $10,149.84)"
+      ],
       "csv": "S-Works_0xee00ba.csv",
       "json": "S-Works_0xee00ba.json",
-      "csv_age_hours": 0.26,
-      "json_age_hours": 0.26,
-      "csv_rows": 10188,
-      "csv_dashboard_pnl": -3369975.64,
+      "csv_age_hours": 29.06,
+      "json_age_hours": 29.06,
+      "csv_rows": 9519,
+      "csv_dashboard_pnl": 2029967.88,
       "json_dashboard_pnl": -3369975.64,
       "overall_roi": -2.27,
       "win_rate": 67.69,
@@ -822,38 +1019,29 @@
       ]
     },
     {
-      "username": "TutiFromFactsOfLife",
-      "wallet": "0xc660ae71765d0d9eaf5fa8328c1c959841d2bd28",
+      "username": "musholius722",
+      "wallet": "0x4b341d4612437b6e5b5fbcf98e5b675dbacf48a8",
       "bucket": "watch",
       "ok": true,
       "errors": [],
-      "warnings": [],
-      "csv": "TutiFromFactsOfLife_0xc660ae.csv",
-      "json": "TutiFromFactsOfLife_0xc660ae.json",
-      "csv_age_hours": 0.35,
-      "json_age_hours": 0.35,
-      "csv_rows": 2545,
-      "csv_dashboard_pnl": -590519.45,
-      "json_dashboard_pnl": -590519.45,
-      "overall_roi": -1.66,
-      "win_rate": 50.31,
+      "warnings": [
+        "watch: missing CSV musholius722_0x4b341d.csv"
+      ],
+      "csv": "musholius722_0x4b341d.csv",
+      "json": "musholius722_0x4b341d.json",
+      "csv_age_hours": null,
+      "json_age_hours": 29.06,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": 210464.89,
+      "overall_roi": 60.63,
+      "win_rate": 50.0,
       "sports": [
         "MLB",
-        "NBA",
-        "NFL",
-        "NHL",
-        "OTHER",
-        "SOCCER (EPL)",
-        "SOCCER (LaLiga)",
-        "SOCCER (Other)",
-        "SOCCER (UCL)",
-        "TENNIS"
+        "OTHER"
       ],
       "markets": [
-        "Draw",
-        "Moneyline / Match",
-        "Spread",
-        "Totals (O/U)"
+        "Moneyline / Match"
       ]
     },
     {
@@ -862,13 +1050,15 @@
       "bucket": "watch",
       "ok": true,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "watch: PnL mismatch CSV $257,608.74 vs JSON $560,478.90 (tol $1,288.04)"
+      ],
       "csv": "bloodmaster_0x58f8f1.csv",
       "json": "bloodmaster_0x58f8f1.json",
-      "csv_age_hours": 0.11,
-      "json_age_hours": 0.11,
-      "csv_rows": 3532,
-      "csv_dashboard_pnl": 560478.9,
+      "csv_age_hours": 29.06,
+      "json_age_hours": 29.06,
+      "csv_rows": 2736,
+      "csv_dashboard_pnl": 257608.74,
       "json_dashboard_pnl": 560478.9,
       "overall_roi": 4.32,
       "win_rate": 88.73,
@@ -894,30 +1084,194 @@
       ]
     },
     {
-      "username": "KeyTransporter",
-      "wallet": "0x94f199fb7789f1aef7fff6b758d6b375100f4c7a",
+      "username": "ShortFlutterStock",
+      "wallet": "0x13414a77a4be48988851c73dfd824d0168e70853",
       "bucket": "watch",
       "ok": true,
       "errors": [],
-      "warnings": [],
-      "csv": "KeyTransporter_0x94f199.csv",
-      "json": "KeyTransporter_0x94f199.json",
-      "csv_age_hours": 0.06,
-      "json_age_hours": 0.06,
-      "csv_rows": 15,
-      "csv_dashboard_pnl": 5711459.8,
-      "json_dashboard_pnl": 5711459.8,
-      "overall_roi": 45.71,
-      "win_rate": 76.92,
+      "warnings": [
+        "watch: PnL mismatch CSV $1,327,661.79 vs JSON $419,827.42 (tol $6,638.31)"
+      ],
+      "csv": "ShortFlutterStock_0x13414a.csv",
+      "json": "ShortFlutterStock_0x13414a.json",
+      "csv_age_hours": 29.06,
+      "json_age_hours": 29.06,
+      "csv_rows": 3669,
+      "csv_dashboard_pnl": 1327661.79,
+      "json_dashboard_pnl": 419827.42,
+      "overall_roi": 1.0,
+      "win_rate": 57.35,
       "sports": [
+        "ESPORTS",
+        "MLB",
+        "NBA",
+        "NFL",
+        "NHL",
         "OTHER",
+        "POLITICS",
         "SOCCER (EPL)",
         "SOCCER (LaLiga)",
+        "SOCCER (Other)",
+        "TENNIS",
+        "WNBA"
+      ],
+      "markets": [
+        "Draw",
+        "Futures",
+        "Map / Game",
+        "Moneyline / Match",
+        "Spread",
+        "Totals (O/U)"
+      ]
+    },
+    {
+      "username": "3edmond.dantes",
+      "wallet": "0x983eedfbd75803602e4a6e6ea9aab6dc6b9c6748",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV 3edmond.dantes_0x983eed.csv"
+      ],
+      "csv": "3edmond.dantes_0x983eed.csv",
+      "json": "3edmond.dantes_0x983eed.json",
+      "csv_age_hours": null,
+      "json_age_hours": 29.06,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": 292265.8,
+      "overall_roi": 25.37,
+      "win_rate": 50.0,
+      "sports": [
+        "SOCCER (LaLiga)",
+        "SOCCER (UCL)"
+      ],
+      "markets": [
+        "Moneyline / Match"
+      ]
+    },
+    {
+      "username": "theowalcott",
+      "wallet": "0x7ad71d79a3bb90d0a87a06500fa0fe11663842aa",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV theowalcott_0x7ad71d.csv"
+      ],
+      "csv": "theowalcott_0x7ad71d.csv",
+      "json": "theowalcott_0x7ad71d.json",
+      "csv_age_hours": null,
+      "json_age_hours": 29.06,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": -22805.1,
+      "overall_roi": -0.71,
+      "win_rate": 56.47,
+      "sports": [
+        "OTHER",
         "SOCCER (Other)",
         "SOCCER (UCL)"
       ],
       "markets": [
         "Moneyline / Match",
+        "Spread",
+        "Totals (O/U)"
+      ]
+    },
+    {
+      "username": "Sassy-Bucket",
+      "wallet": "0x4bff30af91642dc7d2b19a8664378fe55c45fc26",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV Sassy-Bucket_0x4bff30.csv"
+      ],
+      "csv": "Sassy-Bucket_0x4bff30.csv",
+      "json": "Sassy-Bucket_0x4bff30.json",
+      "csv_age_hours": null,
+      "json_age_hours": 29.06,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": -3712700.7,
+      "overall_roi": -7.83,
+      "win_rate": 46.5,
+      "sports": [
+        "MLB",
+        "NBA",
+        "NHL",
+        "OTHER",
+        "SOCCER (LaLiga)",
+        "SOCCER (Other)",
+        "WNBA"
+      ],
+      "markets": [
+        "Draw",
+        "Moneyline / Match",
+        "Spread",
+        "Totals (O/U)"
+      ]
+    },
+    {
+      "username": "fengdubiying",
+      "wallet": "0x17db3fcd93ba12d38382a0cade24b200185c5f6d",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV fengdubiying_0x17db3f.csv"
+      ],
+      "csv": "fengdubiying_0x17db3f.csv",
+      "json": "fengdubiying_0x17db3f.json",
+      "csv_age_hours": null,
+      "json_age_hours": 29.06,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": 3033760.17,
+      "overall_roi": 28.15,
+      "win_rate": 71.43,
+      "sports": [
+        "ESPORTS",
+        "NBA",
+        "NHL",
+        "OTHER",
+        "POLITICS",
+        "SOCCER (LaLiga)",
+        "TENNIS"
+      ],
+      "markets": [
+        "Futures",
+        "Map / Game",
+        "Moneyline / Match"
+      ]
+    },
+    {
+      "username": "asparagus2012",
+      "wallet": "0x476e1322d1a412fa0325527b8c3bc5e707b1396d",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV asparagus2012_0x476e13.csv"
+      ],
+      "csv": "asparagus2012_0x476e13.csv",
+      "json": "asparagus2012_0x476e13.json",
+      "csv_age_hours": null,
+      "json_age_hours": 29.06,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": 3547038.05,
+      "overall_roi": 249.97,
+      "win_rate": 68.75,
+      "sports": [
+        "OTHER",
+        "SOCCER (Other)"
+      ],
+      "markets": [
+        "Futures",
+        "Moneyline / Match",
+        "Spread",
         "Totals (O/U)"
       ]
     },
@@ -927,13 +1281,15 @@
       "bucket": "watch",
       "ok": true,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "watch: PnL mismatch CSV $87.98 vs JSON $-2,917,655.07 (tol $1.00)"
+      ],
       "csv": "norrisfan_0xe72bb5.csv",
       "json": "norrisfan_0xe72bb5.json",
-      "csv_age_hours": 0.08,
-      "json_age_hours": 0.08,
-      "csv_rows": 1331,
-      "csv_dashboard_pnl": -2917655.07,
+      "csv_age_hours": 29.06,
+      "json_age_hours": 29.06,
+      "csv_rows": 639,
+      "csv_dashboard_pnl": 87.98,
       "json_dashboard_pnl": -2917655.07,
       "overall_roi": -15.66,
       "win_rate": 43.19,
@@ -959,6 +1315,305 @@
         "Spread",
         "Totals (O/U)"
       ]
+    },
+    {
+      "username": "TennisLove",
+      "wallet": "0x2f44fa076c8d2976ac6bea0ddfd9502bad2b93c2",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV TennisLove_0x2f44fa.csv"
+      ],
+      "csv": "TennisLove_0x2f44fa.csv",
+      "json": "TennisLove_0x2f44fa.json",
+      "csv_age_hours": null,
+      "json_age_hours": 29.06,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": 232502.86,
+      "overall_roi": 40.56,
+      "win_rate": 100.0,
+      "sports": [
+        "OTHER",
+        "TENNIS"
+      ],
+      "markets": [
+        "Moneyline / Match",
+        "Spread"
+      ]
+    },
+    {
+      "username": "KeyTransporter",
+      "wallet": "0x94f199fb7789f1aef7fff6b758d6b375100f4c7a",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV KeyTransporter_0x94f199.csv"
+      ],
+      "csv": "KeyTransporter_0x94f199.csv",
+      "json": "KeyTransporter_0x94f199.json",
+      "csv_age_hours": null,
+      "json_age_hours": 29.06,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": 5711459.8,
+      "overall_roi": 45.71,
+      "win_rate": 76.92,
+      "sports": [
+        "OTHER",
+        "SOCCER (EPL)",
+        "SOCCER (LaLiga)",
+        "SOCCER (Other)",
+        "SOCCER (UCL)"
+      ],
+      "markets": [
+        "Moneyline / Match",
+        "Totals (O/U)"
+      ]
+    },
+    {
+      "username": "00xaaxaxaxsasdasddasdjj233j2j32h4h35",
+      "wallet": "0x1f7105a18d9f36aef7c83e5df210e57cf487b2e4",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV 00xaaxaxaxsasdasddasdjj233j2j32h4h35_0x1f7105.csv",
+        "watch: missing analysis JSON 00xaaxaxaxsasdasddasdjj233j2j32h4h35_0x1f7105.json"
+      ],
+      "csv": "00xaaxaxaxsasdasddasdjj233j2j32h4h35_0x1f7105.csv",
+      "json": "00xaaxaxaxsasdasddasdjj233j2j32h4h35_0x1f7105.json",
+      "csv_age_hours": null,
+      "json_age_hours": null,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": null,
+      "overall_roi": null,
+      "win_rate": null,
+      "sports": [],
+      "markets": []
+    },
+    {
+      "username": "0xBc43c8bfBC4d77c2FC9011adaD38Ba43b88996d3",
+      "wallet": "0xbc43c8bfbc4d77c2fc9011adad38ba43b88996d3",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV 0xBc43c8bfBC4d77c2FC9011adaD38Ba43b88996d3_0xbc43c8.csv",
+        "watch: missing analysis JSON 0xBc43c8bfBC4d77c2FC9011adaD38Ba43b88996d3_0xbc43c8.json"
+      ],
+      "csv": "0xBc43c8bfBC4d77c2FC9011adaD38Ba43b88996d3_0xbc43c8.csv",
+      "json": "0xBc43c8bfBC4d77c2FC9011adaD38Ba43b88996d3_0xbc43c8.json",
+      "csv_age_hours": null,
+      "json_age_hours": null,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": null,
+      "overall_roi": null,
+      "win_rate": null,
+      "sports": [],
+      "markets": []
+    },
+    {
+      "username": "ic4cream",
+      "wallet": "0x27f738fe203827445690339104aae35b20bc44b0",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV ic4cream_0x27f738.csv",
+        "watch: missing analysis JSON ic4cream_0x27f738.json"
+      ],
+      "csv": "ic4cream_0x27f738.csv",
+      "json": "ic4cream_0x27f738.json",
+      "csv_age_hours": null,
+      "json_age_hours": null,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": null,
+      "overall_roi": null,
+      "win_rate": null,
+      "sports": [],
+      "markets": []
+    },
+    {
+      "username": "kekasaur",
+      "wallet": "0xf5f92940519a72da460b1c2a606bc1230f0e87b0",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV kekasaur_0xf5f929.csv",
+        "watch: missing analysis JSON kekasaur_0xf5f929.json"
+      ],
+      "csv": "kekasaur_0xf5f929.csv",
+      "json": "kekasaur_0xf5f929.json",
+      "csv_age_hours": null,
+      "json_age_hours": null,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": null,
+      "overall_roi": null,
+      "win_rate": null,
+      "sports": [],
+      "markets": []
+    },
+    {
+      "username": "Kosherlocks",
+      "wallet": "0x82398835fe16616214d928ba87127e28fc1cd9a3",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV Kosherlocks_0x823988.csv",
+        "watch: missing analysis JSON Kosherlocks_0x823988.json"
+      ],
+      "csv": "Kosherlocks_0x823988.csv",
+      "json": "Kosherlocks_0x823988.json",
+      "csv_age_hours": null,
+      "json_age_hours": null,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": null,
+      "overall_roi": null,
+      "win_rate": null,
+      "sports": [],
+      "markets": []
+    },
+    {
+      "username": "murgionsek",
+      "wallet": "0x91dda263d251e7f771ea333f8cb6b6066761600b",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV murgionsek_0x91dda2.csv",
+        "watch: missing analysis JSON murgionsek_0x91dda2.json"
+      ],
+      "csv": "murgionsek_0x91dda2.csv",
+      "json": "murgionsek_0x91dda2.json",
+      "csv_age_hours": null,
+      "json_age_hours": null,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": null,
+      "overall_roi": null,
+      "win_rate": null,
+      "sports": [],
+      "markets": []
+    },
+    {
+      "username": "plonker2026",
+      "wallet": "0x0a39b3b29ab3b7dd753aa96fde4ecab3f2dbb0b9",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV plonker2026_0x0a39b3.csv",
+        "watch: missing analysis JSON plonker2026_0x0a39b3.json"
+      ],
+      "csv": "plonker2026_0x0a39b3.csv",
+      "json": "plonker2026_0x0a39b3.json",
+      "csv_age_hours": null,
+      "json_age_hours": null,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": null,
+      "overall_roi": null,
+      "win_rate": null,
+      "sports": [],
+      "markets": []
+    },
+    {
+      "username": "ripley86alien",
+      "wallet": "0x168a51f1cac0ad3b166797069382495a8aa10d24",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV ripley86alien_0x168a51.csv",
+        "watch: missing analysis JSON ripley86alien_0x168a51.json"
+      ],
+      "csv": "ripley86alien_0x168a51.csv",
+      "json": "ripley86alien_0x168a51.json",
+      "csv_age_hours": null,
+      "json_age_hours": null,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": null,
+      "overall_roi": null,
+      "win_rate": null,
+      "sports": [],
+      "markets": []
+    },
+    {
+      "username": "saftey-first",
+      "wallet": "0xbdea99acf04cb6863252d43b13db89d5c7681db5",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV saftey-first_0xbdea99.csv",
+        "watch: missing analysis JSON saftey-first_0xbdea99.json"
+      ],
+      "csv": "saftey-first_0xbdea99.csv",
+      "json": "saftey-first_0xbdea99.json",
+      "csv_age_hours": null,
+      "json_age_hours": null,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": null,
+      "overall_roi": null,
+      "win_rate": null,
+      "sports": [],
+      "markets": []
+    },
+    {
+      "username": "takeormake",
+      "wallet": "0xa38a455bbdd4b68486548b7e19da99903f4f821d",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV takeormake_0xa38a45.csv",
+        "watch: missing analysis JSON takeormake_0xa38a45.json"
+      ],
+      "csv": "takeormake_0xa38a45.csv",
+      "json": "takeormake_0xa38a45.json",
+      "csv_age_hours": null,
+      "json_age_hours": null,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": null,
+      "overall_roi": null,
+      "win_rate": null,
+      "sports": [],
+      "markets": []
+    },
+    {
+      "username": "vito3corleone",
+      "wallet": "0x34dd4a4b70eaf79a17878f7938263c801d4dfd83",
+      "bucket": "watch",
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "watch: missing CSV vito3corleone_0x34dd4a.csv",
+        "watch: missing analysis JSON vito3corleone_0x34dd4a.json"
+      ],
+      "csv": "vito3corleone_0x34dd4a.csv",
+      "json": "vito3corleone_0x34dd4a.json",
+      "csv_age_hours": null,
+      "json_age_hours": null,
+      "csv_rows": 0,
+      "csv_dashboard_pnl": null,
+      "json_dashboard_pnl": null,
+      "overall_roi": null,
+      "win_rate": null,
+      "sports": [],
+      "markets": []
     }
   ]
 }

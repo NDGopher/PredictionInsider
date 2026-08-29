@@ -33,6 +33,19 @@ MEDIAN_JOIN_MAX = 15_000.0
 WR_LO = 48.0
 WR_HI = 75.0
 LIVE_RECENCY = {"HOT", "WARM"}
+# Unique closed+open book — Polydata month curves are discovery, not copy truth.
+LIVE_MIN_ROI = 5.0
+LIVE_MIN_EVENTS = 40
+LIVE_MAX_LAST60_ROI = -5.0
+LIVE_MIN_LAST60_N = 20
+# One print in 30d is HOT recency, not a live book (Supah9ga n=1, −$4k).
+LIVE_MIN_LAST30_N = 8
+
+# Unique book can look fine while asof_live_q60 loses money (see TAIL_DIGEST).
+# Keep on BENCH until the take-slice recovers — do not $100-tail these tonight.
+TAKE_RULE_BLEED_BENCH = {
+    "TTdes",  # NHL ML take slice deeply red in last digest
+}
 
 # Reasons that mean "do not fetch / do not copy" vs size that is just unjoinable.
 HARD_REASON_PREFIXES = (
@@ -65,6 +78,9 @@ HARD_SKIP_USERNAMES = {
     "LynxTitan",
     "Cannae",
     "BoomLaLa",
+    "HOG993",
+    "betterfasterstronger",
+    "mentionmarket",
 }
 
 HARD_SKIP_WALLETS = {
@@ -125,9 +141,27 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
     pd_trades = int(pd.get("trades") or 0)
     wr = _f(our.get("win_rate")) or 0.0
     median = _f(our.get("median_stake")) or 0.0
+    roi = _f(our.get("roi"))
+    try:
+        events = int(our.get("events") or 0)
+    except (TypeError, ValueError):
+        events = 0
+    last_60_roi = _f(our.get("last_60d_roi"))
+    try:
+        last_60_n = int(our.get("last_60d_n") or 0)
+    except (TypeError, ValueError):
+        last_60_n = 0
+    try:
+        last_30_n = int(our.get("last_30d_n") or 0)
+    except (TypeError, ValueError):
+        last_30_n = 0
     matched = bool(acc.get("matched") or lane == "take_book")
     take_book = bool(row.get("take_book") or lane == "take_book")
     extra = extra_status.get(wallet, "")
+    # Auto-promote writes status=take_book (or live) — treat as copy-eligible matched books.
+    if extra in {"take_book", "live", "auto_live"}:
+        take_book = True
+        matched = True
 
     reasons: list[str] = []
     if username in HARD_SKIP_USERNAMES or wallet in HARD_SKIP_WALLETS:
@@ -144,7 +178,9 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
         reasons.append(f"median=${median:,.0f}_unjoinable")
     if closed > CLOSED_MAX_COPY:
         reasons.append(f"closed={closed}>12k")
-    if row.get("market_maker"):
+    # Ranks may flag Polydata bot_class/high tpd as MM. Unique-book gates are copy truth.
+    # Only 100k+ fills is an uncopyable tape (RN1). Take-book whales like WTSA stay bench.
+    if row.get("market_maker") and pd_trades >= PD_TRADES_BOT:
         reasons.append("market_maker")
     if row.get("winner_capped"):
         reasons.append("winner_capped")
@@ -158,14 +194,52 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
         and lane not in {"kicked", "reference"}
     )
     live = joinable and matched and recency in LIVE_RECENCY
+    # Plain discovery watch stays off live until auto_promote flips status → take_book.
+    # Once status is take_book/live, this block does not apply.
+    if live and extra == "watch":
+        reasons.append("extra_watch_pending_auto_promote")
+        live = False
+    last_30_roi = _f(our.get("last_30d_roi"))
+    # Turnaround: lifetime unique ROI can be flat/red while last-30d is strongly green
+    # (SDTrading-style). Allow live when HOT/WARM + joinable + last30 gates fire.
+    turnaround_ok = (
+        last_30_n >= 30
+        and last_30_roi is not None
+        and last_30_roi >= 8.0
+        and (roi is None or roi < LIVE_MIN_ROI)
+    )
+    if live and (roi is None or roi < LIVE_MIN_ROI):
+        if turnaround_ok and extra in {"take_book", "live", "auto_live"}:
+            reasons.append(f"turnaround_last30_roi={last_30_roi}%_n={last_30_n}")
+        else:
+            reasons.append(f"unique_roi={roi}_lt_{LIVE_MIN_ROI}")
+            live = False
+    if live and events < LIVE_MIN_EVENTS and not turnaround_ok:
+        reasons.append(f"events={events}<{LIVE_MIN_EVENTS}")
+        live = False
+    if live and last_60_n >= LIVE_MIN_LAST60_N and last_60_roi is not None and last_60_roi < LIVE_MAX_LAST60_ROI:
+        reasons.append(f"last60d_roi={last_60_roi}%_n={last_60_n}")
+        live = False
+    if live and last_30_n < LIVE_MIN_LAST30_N:
+        reasons.append(f"quiet_30d_n={last_30_n}<{LIVE_MIN_LAST30_N}")
+        live = False
+    if live and (
+        username in TAKE_RULE_BLEED_BENCH
+        or wallet in {a.lower() for a in TAKE_RULE_BLEED_BENCH if a.startswith("0x")}
+    ):
+        reasons.append("take_rule_bleed")
+        live = False
     bench = False
-    if not live and not hard and lane not in {"kicked", "reference"}:
+    # Discovery watch stays watch (fetch + screen) until auto-promoted to take_book.
+    if extra != "watch" and not live and not hard and lane not in {"kicked", "reference"}:
         if take_book or (matched and CLOSED_MIN <= closed <= CLOSED_MAX_COPY and WR_LO <= wr <= WR_HI):
             bench = True
             if recency in {"DROP", "DARK"}:
                 reasons.append(f"stale_{recency}")
             elif not joinable and median >= MEDIAN_JOIN_MAX:
                 reasons.append("unjoinable_keep_book")
+            elif roi is not None and roi < LIVE_MIN_ROI and not turnaround_ok:
+                reasons.append(f"unique_roi={roi}_bench")
             elif not matched:
                 reasons.append("unmatched_pd")
             else:
@@ -181,6 +255,10 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
         bucket = "kicked"
     elif lane == "reference":
         bucket = "reference"
+    elif closed < 1 and extra not in {"watch", "take_book"} and not take_book:
+        # Roster names with no unique book yet — do not put them on daily watch/verify.
+        reasons.append("no_csv_book")
+        bucket = "skip"
     else:
         bucket = "watch"
 
@@ -197,6 +275,13 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
         "pd_trades": pd_trades,
         "win_rate": round(wr, 2),
         "median_stake": round(median, 2),
+        "unique_roi": round(roi, 2) if roi is not None else None,
+        "events": events,
+        "last_30d_n": last_30_n,
+        "last_30d_roi": _f(our.get("last_30d_roi")),
+        "last_60d_n": last_60_n,
+        "last_60d_roi": last_60_roi,
+        "extra_status": extra or None,
         "last_event_date": our.get("last_event_date"),
         "reasons": reasons,
         # Live + bench + watch stay on the daily fetch so ranks/PnL stay current.
@@ -229,8 +314,12 @@ def build_universe() -> dict[str, Any]:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "method": (
             "Live copy = Polydata-matched, joinable (40–12k closed, WR 48–75, median <$15k), "
-            "HOT/WARM. Skip = 100k+ Polydata trades, 50k+ CSV rows, MM, kicked grinders. "
-            "Bench = matched but stale/cold — keep full books, do not fire live. "
+            "HOT/WARM, unique-book ROI ≥5%, ≥40 events, ≥8 settled prints in 30d. "
+            "extra_traders status=watch stays discovery until auto_promote flips to take_book. "
+            "Auto-promote is automatic when joinable + HOT/WARM + (unique ROI≥5% or turnaround last30). "
+            "Skip = 100k+ Polydata trades, 50k+ CSV rows, MM, kicked grinders, no CSV. "
+            "Bench = take-book 12 who are stale, quiet, whale-sized, unique ROI too low, "
+            "or take-rule bleed (unique green / asof_live_q60 red). "
             "Futures are not a copy lane (n=5, −37% after 2¢)."
         ),
         "rules": {
@@ -241,6 +330,10 @@ def build_universe() -> dict[str, Any]:
             "median_join_max": MEDIAN_JOIN_MAX,
             "wr": [WR_LO, WR_HI],
             "live_recency": sorted(LIVE_RECENCY),
+            "live_min_roi": LIVE_MIN_ROI,
+            "live_min_events": LIVE_MIN_EVENTS,
+            "live_min_last30_n": LIVE_MIN_LAST30_N,
+            "take_rule_bleed_bench": sorted(TAKE_RULE_BLEED_BENCH),
         },
         "take_book_matched": [{"username": t.get("username"), "wallet": str(t.get("wallet") or "").lower()} for t in take],
         "counts": {k: len(v) for k, v in buckets.items()},
@@ -296,15 +389,18 @@ def should_skip_pipeline(username: str, wallet: str, csv_rows: int = 0) -> str |
     """Return skip reason for daily fetch, or None to process."""
     w = (wallet or "").lower()
     u = username or ""
+    extra = load_extra_status()
     if u in HARD_SKIP_USERNAMES or w in HARD_SKIP_WALLETS:
         return "mega_or_mm"
     if csv_rows >= CSV_ROWS_BOT:
         return f"csv_rows={csv_rows}"
+    if extra.get(w) in {"kicked", "kick", "grinder"}:
+        return "extra_kicked"
+    # extra_traders watch/take_book must fetch even before copy_universe lists them.
+    if extra.get(w) in {"watch", "take_book"}:
+        return None
     uni = _load_json(OUT_PATH)
     if not isinstance(uni, dict):
-        extra = load_extra_status()
-        if extra.get(w) in {"kicked", "kick", "grinder"}:
-            return "extra_kicked"
         return None
     refresh = {
         str(t.get("username") or "")
@@ -316,9 +412,6 @@ def should_skip_pipeline(username: str, wallet: str, csv_rows: int = 0) -> str |
         return None
     if u in skip_names:
         return "not_copy_focus"
-    extra = load_extra_status()
-    if extra.get(w) in {"kicked", "kick", "grinder"}:
-        return "extra_kicked"
     return "not_copy_focus"
 
 
@@ -331,7 +424,10 @@ def main() -> int:
         f"skip={counts.get('skip')} kicked={counts.get('kicked')}"
     )
     for t in payload.get("live") or []:
-        print(f"  LIVE  {t['username']:<32} closed={t['closed']:<5} wr={t['win_rate']} rec={t['recency']}")
+        print(
+            f"  LIVE  {t['username']:<32} closed={t['closed']:<5} wr={t['win_rate']} "
+            f"roi={t.get('unique_roi')} rec={t['recency']}"
+        )
     for t in payload.get("bench") or []:
         print(f"  BENCH {t['username']:<32} closed={t['closed']:<5} wr={t['win_rate']} rec={t['recency']} {t.get('reasons')}")
     for t in payload.get("watch") or []:

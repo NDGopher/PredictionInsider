@@ -1,8 +1,11 @@
 /**
  * Keep the take book alive with no browser open: rebuild signals, refresh asks,
  * follow paper tickets through kickoff and resolution.
+ * Hot-wallet discovery (UW-style) + elite continuous grade/promote run alongside.
  */
 import { runTakeTicketLifecycle } from "./takeTicketLifecycle";
+import { startHotWalletDiscoverLoop } from "./hotWalletDiscoverLoop";
+import { startEliteContinuousLoop } from "./eliteContinuousLoop";
 
 const SIGNALS_MS = 60_000;
 const TAKES_MS = 30_000;
@@ -77,4 +80,6 @@ export function startTakeBookLiveLoop(): void {
   setInterval(() => { void tickSignals(); }, SIGNALS_MS);
   setInterval(() => { void tickTakes(); }, TAKES_MS);
   setInterval(() => { void tickLife(); }, LIFE_MS);
+  startHotWalletDiscoverLoop();
+  startEliteContinuousLoop();
 }

@@ -58,7 +58,17 @@ app.use((req, res, next) => {
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+        const bulky =
+          path === "/api/take-plays" ||
+          path === "/api/signals" ||
+          path.startsWith("/api/elite") ||
+          path === "/api/insider-ranks";
+        if (bulky) {
+          const keys = Object.keys(capturedJsonResponse);
+          logLine += ` :: {${keys.slice(0, 6).join(", ")}…}`;
+        } else {
+          logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+        }
       }
 
       log(logLine);
@@ -122,6 +132,6 @@ app.use((req, res, next) => {
   ) {
     exec(`cmd /c start "" "${runtime.url}"`);
   }
-  import("./scheduledPipeline").then((m) => m.runScheduledPipelineIfNeeded());
+  import("./scheduledPipeline").then((m) => m.startScheduledPipelineLoop());
   import("./takeBookLiveLoop").then((m) => m.startTakeBookLiveLoop());
 })();

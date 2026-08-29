@@ -1,0 +1,396 @@
+{
+  "generated_at": "2026-08-29T14:34:08.610368+00:00",
+  "method": "Market-first hot wallet discovery (Unusual Whales / OddsJam pattern): scan top-volume Polymarket holders \u2192 Z\u22652 alerts \u2192 light Q on alerts only \u2192 enqueue to extra_traders watch. Sports vs macro lanes via sports_ish. Never runs full pipeline on cold/stale roster wallets.",
+  "params": {
+    "from_json": true,
+    "quick": false,
+    "fetch": false,
+    "min_z": 2.0,
+    "min_light_q": 22,
+    "max_sports_watch": 8,
+    "max_macro_watch": 4,
+    "max_score": 15
+  },
+  "counts": {
+    "candidates": 8,
+    "scored": 8,
+    "accepted": 0,
+    "enqueued": 0,
+    "enqueued_sports": 0,
+    "enqueued_macro": 0,
+    "csv_fetched": 0,
+    "watch_roster": 3
+  },
+  "enqueued": [],
+  "watch_roster": [
+    {
+      "username": "FNanalytics",
+      "wallet": "0x2dd7c1664c60be9ce733f9a9441f1420f4fc89aa",
+      "source": "unusual_flow_sports",
+      "status": "watch",
+      "discovered_at": "2026-08-29T14:27:19.333994+00:00",
+      "discovery": {
+        "z": 2.08,
+        "lane": "sports",
+        "market": "Rams vs. Chargers",
+        "tags": [
+          "concentrated",
+          "contrarian_whale"
+        ],
+        "light_q": 100,
+        "light_n": 150,
+        "light_roi": 30.0
+      },
+      "notes": "Hot discovery Z=2.08 on Rams vs. Chargers. light_q=100 n=150 WR=72.0 ROI=30.0%. Unique CSV + take-rule required before live. tags=concentrated,contrarian_whale"
+    },
+    {
+      "username": "hot_d3a0b4",
+      "wallet": "0xd3a0b4e941b557d33a8efd5a51c581e7c79cf136",
+      "source": "unusual_flow_sports",
+      "status": "watch",
+      "discovered_at": "2026-08-29T14:28:29.655978+00:00",
+      "discovery": {
+        "z": 5.74,
+        "lane": "sports",
+        "market": "Will TSG 1899 Hoffenheim win on 2026-08-29?",
+        "tags": [
+          "potential_insider",
+          "concentrated",
+          "fresh_wallet",
+          "contrarian_whale"
+        ],
+        "light_q": 0,
+        "light_n": 0,
+        "light_roi": null
+      },
+      "notes": "Hot discovery Z=5.74 on Will TSG 1899 Hoffenheim win on 2026-08-29?. light_q=0 n=0 WR=None ROI=None%. Unique CSV + take-rule required before live. tags=potential_insider,concentrated,fresh_wallet,contrarian_whale"
+    },
+    {
+      "username": "Weaseloftheweek",
+      "wallet": "0x5dab5ed9691fab220535891d9c7f5c28eed322e1",
+      "source": "unusual_flow_sports",
+      "status": "watch",
+      "discovered_at": "2026-08-29T14:28:29.656009+00:00",
+      "discovery": {
+        "z": 4.66,
+        "lane": "sports",
+        "market": "LoL: Top Esports vs LGD Gaming (BO5) - LPL Playoffs",
+        "tags": [
+          "potential_insider",
+          "concentrated",
+          "contrarian_whale"
+        ],
+        "light_q": 59,
+        "light_n": 129,
+        "light_roi": -5.2
+      },
+      "notes": "Hot discovery Z=4.66 on LoL: Top Esports vs LGD Gaming (BO5) - LPL Playoffs. light_q=59 n=129 WR=46.5 ROI=-5.2%. Unique CSV + take-rule required before live. tags=potential_insider,concentrated,contrarian_whale"
+    }
+  ],
+  "results": [
+    {
+      "wallet": "0x0a3eca3e32911696ad6bae04796ac1b37d31ddba",
+      "username": "sukhpatter77",
+      "z": 6.24,
+      "amount": 10086.67,
+      "outcome": "No",
+      "tags": [
+        "potential_insider",
+        "concentrated",
+        "fresh_wallet",
+        "momentum"
+      ],
+      "q_known": null,
+      "fresh": true,
+      "open_markets": 2,
+      "trade_depth": 26,
+      "sports_ish": false,
+      "lane": "other",
+      "market": "Strait of Hormuz traffic returns to normal by August 15?",
+      "unusual_score": 36.42,
+      "url": "https://polymarket.com/event/strait-of-hormuz-traffic-returns-to-normal-by-august-31-20260702154212320",
+      "polymarket_profile": "https://polymarket.com/profile/0x0a3eca3e32911696ad6bae04796ac1b37d31ddba",
+      "light": {
+        "light_q": 23,
+        "n": 29,
+        "win_rate": 79.3,
+        "roi_pct": 2.0,
+        "realized": 1251.61,
+        "invested": 61399.83,
+        "reasons": [
+          "sus_high_wr"
+        ]
+      },
+      "action": "skip:sus_high_wr",
+      "gate_reasons": [
+        "sus_high_wr"
+      ]
+    },
+    {
+      "wallet": "0xd3a0b4e941b557d33a8efd5a51c581e7c79cf136",
+      "username": "0xd3A0b4E941B557D33A8EFd5a51c581e7c79cF136-17879",
+      "z": 5.74,
+      "amount": 479499.99,
+      "outcome": "No",
+      "tags": [
+        "potential_insider",
+        "concentrated",
+        "fresh_wallet",
+        "contrarian_whale"
+      ],
+      "q_known": 4,
+      "fresh": true,
+      "open_markets": 1,
+      "trade_depth": 1,
+      "sports_ish": true,
+      "lane": "sports",
+      "market": "Will TSG 1899 Hoffenheim win on 2026-08-29?",
+      "unusual_score": 31.13,
+      "url": "https://polymarket.com/event/bun-koe-hof-2026-08-29",
+      "polymarket_profile": "https://polymarket.com/profile/0xd3a0b4e941b557d33a8efd5a51c581e7c79cf136",
+      "light": {
+        "light_q": 4,
+        "n": -1,
+        "win_rate": null,
+        "roi_pct": null,
+        "realized": null,
+        "invested": null,
+        "reasons": [
+          "known_q"
+        ]
+      },
+      "action": "skip:already_watch",
+      "gate_reasons": [
+        "already_watch"
+      ]
+    },
+    {
+      "wallet": "0x3750ad9b4033b972f775b671d26cc2f0bd17cbdd",
+      "username": "shaoqi767",
+      "z": 5.32,
+      "amount": 2930249.03,
+      "outcome": "Yes",
+      "tags": [
+        "potential_insider",
+        "fresh_wallet",
+        "contrarian_whale"
+      ],
+      "q_known": null,
+      "fresh": true,
+      "open_markets": 5,
+      "trade_depth": 1,
+      "sports_ish": false,
+      "lane": "other",
+      "market": "Will the Fed decrease interest rates by 25 bps after the September 2026 meeting?",
+      "unusual_score": 19.13,
+      "url": "https://polymarket.com/event/fed-decision-in-september-762",
+      "polymarket_profile": "https://polymarket.com/profile/0x3750ad9b4033b972f775b671d26cc2f0bd17cbdd",
+      "light": {
+        "light_q": 48,
+        "n": 2,
+        "win_rate": 50.0,
+        "roi_pct": 1.6,
+        "realized": 315.69,
+        "invested": 19498.54,
+        "reasons": [
+          "thin_sample_n=2"
+        ]
+      },
+      "action": "skip:thin_sample",
+      "gate_reasons": [
+        "thin_sample"
+      ]
+    },
+    {
+      "wallet": "0x5dab5ed9691fab220535891d9c7f5c28eed322e1",
+      "username": "Weaseloftheweek",
+      "z": 4.66,
+      "amount": 333489.3,
+      "outcome": "Top Esports",
+      "tags": [
+        "potential_insider",
+        "concentrated",
+        "contrarian_whale"
+      ],
+      "q_known": null,
+      "fresh": false,
+      "open_markets": 1,
+      "trade_depth": 251,
+      "sports_ish": true,
+      "lane": "sports",
+      "market": "LoL: Top Esports vs LGD Gaming (BO5) - LPL Playoffs",
+      "unusual_score": 27.75,
+      "url": "https://polymarket.com/event/lol-tes-lgd-2026-08-29",
+      "polymarket_profile": "https://polymarket.com/profile/0x5dab5ed9691fab220535891d9c7f5c28eed322e1",
+      "light": {
+        "light_q": 59,
+        "n": 129,
+        "win_rate": 46.5,
+        "roi_pct": -5.2,
+        "realized": -790067.96,
+        "invested": 15265409.17,
+        "reasons": []
+      },
+      "action": "skip:already_watch",
+      "gate_reasons": [
+        "already_watch"
+      ]
+    },
+    {
+      "wallet": "0xfa87a158110370eb6dbe678843c055a6b144c2a0",
+      "username": "asdfadfasdf1",
+      "z": 4.18,
+      "amount": 500000.0,
+      "outcome": "Yes",
+      "tags": [
+        "potential_insider",
+        "fresh_wallet",
+        "contrarian_whale"
+      ],
+      "q_known": null,
+      "fresh": true,
+      "open_markets": 5,
+      "trade_depth": 26,
+      "sports_ish": false,
+      "lane": "other",
+      "market": "Will Pete Hegseth win the 2028 US Presidential Election?",
+      "unusual_score": 17.93,
+      "url": "https://polymarket.com/event/presidential-election-winner-2028",
+      "polymarket_profile": "https://polymarket.com/profile/0xfa87a158110370eb6dbe678843c055a6b144c2a0",
+      "light": {
+        "light_q": 25,
+        "n": 2,
+        "win_rate": 100.0,
+        "roi_pct": 11.6,
+        "realized": 8899.75,
+        "invested": 76648.47,
+        "reasons": [
+          "thin_sample_n=2",
+          "sus_high_wr"
+        ]
+      },
+      "action": "skip:sus_high_wr",
+      "gate_reasons": [
+        "sus_high_wr"
+      ]
+    },
+    {
+      "wallet": "0xfe240aa6f08533c1aa8cfb39839cf6cce19fff73",
+      "username": "axiscapital28",
+      "z": 4.08,
+      "amount": 237724.71,
+      "outcome": "Yes",
+      "tags": [
+        "potential_insider",
+        "concentrated",
+        "fresh_wallet",
+        "contrarian_whale"
+      ],
+      "q_known": null,
+      "fresh": true,
+      "open_markets": 1,
+      "trade_depth": 1,
+      "sports_ish": false,
+      "lane": "other",
+      "market": "Strait of Hormuz traffic returns to normal by August 15?",
+      "unusual_score": 36.42,
+      "url": "https://polymarket.com/event/strait-of-hormuz-traffic-returns-to-normal-by-august-31-20260702154212320",
+      "polymarket_profile": "https://polymarket.com/profile/0xfe240aa6f08533c1aa8cfb39839cf6cce19fff73",
+      "light": {
+        "light_q": 46,
+        "n": 2,
+        "win_rate": 100.0,
+        "roi_pct": 88.4,
+        "realized": 43620.23,
+        "invested": 49327.14,
+        "reasons": [
+          "thin_sample_n=2",
+          "sus_high_wr"
+        ]
+      },
+      "action": "skip:sus_high_wr",
+      "gate_reasons": [
+        "sus_high_wr"
+      ]
+    },
+    {
+      "wallet": "0x9468bb7e53c8a5f13cc283f2aed950ebf9865d4b",
+      "username": "myzbsq",
+      "z": 2.99,
+      "amount": 227143.78,
+      "outcome": "Top Esports",
+      "tags": [
+        "potential_insider",
+        "fresh_wallet",
+        "contrarian_whale"
+      ],
+      "q_known": null,
+      "fresh": true,
+      "open_markets": 14,
+      "trade_depth": 26,
+      "sports_ish": true,
+      "lane": "sports",
+      "market": "LoL: Top Esports vs LGD Gaming (BO5) - LPL Playoffs",
+      "unusual_score": 27.75,
+      "url": "https://polymarket.com/event/lol-tes-lgd-2026-08-29",
+      "polymarket_profile": "https://polymarket.com/profile/0x9468bb7e53c8a5f13cc283f2aed950ebf9865d4b",
+      "light": {
+        "light_q": 46,
+        "n": 2,
+        "win_rate": 100.0,
+        "roi_pct": 65.5,
+        "realized": 1615435.05,
+        "invested": 2467108.07,
+        "reasons": [
+          "thin_sample_n=2",
+          "sus_high_wr"
+        ]
+      },
+      "action": "skip:sus_high_wr",
+      "gate_reasons": [
+        "sus_high_wr"
+      ]
+    },
+    {
+      "wallet": "0x0bb8a71b7ed93265c8045640fb3aa1eb93ad253e",
+      "username": "anykey",
+      "z": 2.61,
+      "amount": 983332.8,
+      "outcome": "Yes",
+      "tags": [
+        "potential_insider",
+        "fresh_wallet",
+        "contrarian_whale"
+      ],
+      "q_known": null,
+      "fresh": true,
+      "open_markets": 7,
+      "trade_depth": 26,
+      "sports_ish": false,
+      "lane": "other",
+      "market": "Will the Fed increase interest rates by 50+ bps after the September 2026 meeting?",
+      "unusual_score": 14.79,
+      "url": "https://polymarket.com/event/fed-decision-in-september-762",
+      "polymarket_profile": "https://polymarket.com/profile/0x0bb8a71b7ed93265c8045640fb3aa1eb93ad253e",
+      "light": {
+        "light_q": 0,
+        "n": 0,
+        "win_rate": null,
+        "roi_pct": null,
+        "realized": 0.0,
+        "invested": 0.0,
+        "reasons": [
+          "no_closed_sample"
+        ]
+      },
+      "action": "skip:thin_sample",
+      "gate_reasons": [
+        "thin_sample"
+      ]
+    }
+  ],
+  "sources": {
+    "unusual_flow": "/workspace/pnl_analysis/output/unusual_flow.json",
+    "extra_traders": "/workspace/pnl_analysis/extra_traders.json"
+  }
+}

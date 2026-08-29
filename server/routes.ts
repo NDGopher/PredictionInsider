@@ -2,13 +2,13 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { Pool } from "pg";
 import {
-  seedCuratedTraders, startPeriodicRefresh, startCanonicalPNLRefresh, runAnalysisForTrader,
+  seedCuratedTraders, runAnalysisForTrader,
   resolveUsernameToWallet, generateTraderCSV, curatedWalletSet, curatedWalletToUsername,
   settleUnresolvedTrades, fetchFullTradeHistory, computeTraderProfile,
   settleAllUnresolvedTradesGlobal, fetchAllActivity, computeTraderProfileFromActivity,
   CURATED_TRADERS, DISCOVERED_ELITES, KNOWN_ALIASES, MARKET_MAKER_WALLETS, SIGNAL_KICK_WALLETS, TRADER_CATEGORY_FILTERS, getEffectiveCategoryFilter, classifySport, classifySportFull, patchProfileWithCanonicalPNL, fetchCanonicalPNL,
   runCanonicalPNLRefreshForAll, computeMarketOFI, syncTraderPositions,
-  runDailyRefreshForCurated, scheduleDailyRefresh, getDailyRefreshState
+  runDailyRefreshForCurated, getDailyRefreshState
 } from "./eliteAnalysis";
 import {
   annotateSignal,
@@ -19,7 +19,8 @@ import {
   signalMatchesStrategy,
   type TailStrategyFilters,
 } from "./tailStrategies";
-import { collectTakePlays, enrichTakePlaysWithBook, loadLaneBacktest, loadTakeHealthFile, loadTrustedCopyBooks, mapCsvOpenRows, takeStrategyCard, type TakePlayBundle } from "./takePlays";
+import { loadPredictionInsiders } from "./predictionInsiders";
+import { collectTakePlays, enrichTakePlaysWithBook, loadCopyDiscovery, loadLaneBacktest, loadMmResearch, loadRankedPlayBoard, loadRealizedTakeBacktest, loadTakeHealthFile, loadTrustedCopyBooks, mapCsvOpenRows, mergeRankedPlays, takeStrategyCard, type TakePlayBundle } from "./takePlays";
 import { syncTakeBookAlerts, telegramConfigured } from "./telegramTakeAlerts";
 import { cancelUnfilledTake, paperLogTakePlays } from "./paperTakeBets";
 import { americanFromPrice } from "./oddsFormat";
@@ -77,8 +78,8 @@ function setCache(key: string, data: unknown, ttlMs: number) {
 }
 /** Drop elite signals cache so the next GET /api/signals recomputes (e.g. after fresh live trades). */
 function invalidateEliteSignalsCache() {
-  delete cache["signals-elite-v59-vip-premium-sp"];
-  delete cache["signals-elite-v59-vip-premium-all"];
+  delete cache["signals-elite-v60-vip-premium-sp"];
+  delete cache["signals-elite-v60-vip-premium-all"];
 }
 const seenSignalIds = new Set<string>();
 
@@ -2188,24 +2189,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       );
     }
 
-    // startPeriodicRefresh() intentionally disabled — CSV analysis is the ONLY source of truth
-    startCanonicalPNLRefresh(); // runs 30s after startup, then every 24h (canonical PNL only)
-    scheduleDailyRefresh();     // armed: runs full incremental analysis at 3 AM UTC daily
-
-    // Auto-sync activity for all wallets on every server start (incremental, safe)
-    try {
-      const { rows } = await elitePool.query(
-        `SELECT wallet FROM elite_traders WHERE wallet NOT LIKE 'pending-%' ORDER BY wallet`
-      );
-      if (rows.length > 0) {
-        console.log(`[Startup] Syncing activity for ${rows.length} wallets...`);
-        runActivitySyncForAll(rows.map((r: any) => r.wallet), "Startup").catch((e: Error) =>
-          console.error("[Startup] Activity sync error:", e.message)
-        );
-      }
-    } catch (e: any) {
-      console.error("[Startup] Failed to start activity sync:", e?.message ?? e);
-    }
+    // CSV unique-book ingest is the only PnL source of truth. Do not re-fetch
+    // closed-positions from the API on every boot (that was the old Elite path).
+    console.log("[Startup] Elite API refresh skipped — PnL/ROI come from Python unique books + ingest.");
+    // startCanonicalPNLRefresh();
+    // scheduleDailyRefresh();
+    // runActivitySyncForAll on boot disabled — it was 60 wallets of [Elite/PNL] on every skip start.
   }).catch((e: Error) => console.error("[Elite] Seed error:", e?.message ?? e));
 
   // ── GET /api/elite/traders ─────────────────────────────────────────────────
@@ -3528,7 +3517,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const tierFilter = (req.query.tier as string)?.toUpperCase(); // HIGH | MED | SINGLE
       const hasFilter = minConfidence != null || minQuality != null || (tierFilter && ["HIGH", "MED", "SINGLE"].includes(tierFilter));
       const forceRefresh = req.query.refresh === "1" || req.query.refresh === "true";
-      const cKey = hasFilter ? null : `signals-elite-v59-vip-premium-${sportsOnly ? "sp" : "all"}`;
+      const cKey = hasFilter ? null : `signals-elite-v60-vip-premium-${sportsOnly ? "sp" : "all"}`;
       const hit  = !forceRefresh && cKey ? getCache<unknown>(cKey) : null;
       if (hit) { res.json(hit); return; }
 
@@ -6123,7 +6112,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         strategies.find((s) => s.recommended) ||
         strategies[0] ||
         null;
-      const cached = getCache<SignalsResponse>("signals-elite-v59-vip-premium-sp");
+      const cached = getCache<SignalsResponse>("signals-elite-v60-vip-premium-sp");
       const filters: TailStrategyFilters | undefined = selected?.filters;
       const livePlays = (cached?.signals && filters)
         ? cached.signals
@@ -6191,11 +6180,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const file = loadTailStrategiesFile();
       const card = takeStrategyCard();
       const health = loadTakeHealthFile();
-      const cached = getCache<SignalsResponse>("signals-elite-v59-vip-premium-sp");
+      const board = loadRankedPlayBoard();
+      const cached = getCache<SignalsResponse>("signals-elite-v60-vip-premium-sp");
       const bundle = collectTakePlays(cached?.signals || []);
       await enrichTakePlaysWithBook(bundle);
       void enqueueTakeBookSync(bundle);
       const stats = card?.join_max_plus_2c || {};
+      const realized = loadRealizedTakeBacktest(health);
+      const ranked = mergeRankedPlays(bundle, health, board);
       res.json({
         generatedAt: file?.generated_at || null,
         asOf: file?.as_of || health?.as_of || null,
@@ -6205,7 +6197,25 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         strategyId: card?.id || null,
         strategyName: card?.name || null,
         rule: card?.rule || null,
-        backtest: stats,
+        backtest: realized?.last30d?.n
+          ? {
+              n: realized.last30d.n,
+              win_rate: realized.last30d.win_rate,
+              roi: realized.last30d.roi_2c,
+              source: realized.source,
+            }
+          : stats,
+        realizedBacktest: realized,
+        dataProvenance:
+          "Open plays: live CSV positions + CLOB ask. Grades: Q from as-of walkforward on unique book. "
+          + "Sport ROI: hold-to-res lane stats at signal time. Rolling ROI: resolved take-slice from asof_fullbook_plays.csv.",
+        rankedBoard: board
+          ? {
+              generatedAt: board.generated_at,
+              booksScanned: board.books_scanned,
+              counts: board.counts,
+            }
+          : null,
         health: health
           ? {
               status: health.status,
@@ -6229,10 +6239,134 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         telegramConfigured: telegramConfigured(),
         copyBooks: loadTrustedCopyBooks(),
         lanes: loadLaneBacktest(),
+        ranked,
+        discovery: loadCopyDiscovery(),
       });
     } catch (err: unknown) {
       console.error("take-plays error:", err);
       res.status(500).json({ error: formatApiError(err), live: [], near: [] });
+    }
+  });
+
+  // ── GET /api/prediction-insiders ──────────────────────────────────────────
+  // OddsJam-style unified board: ranked plays + trader excellence + discovery.
+  app.get("/api/prediction-insiders", async (_req, res) => {
+    try {
+      res.setHeader("Cache-Control", "no-store");
+      const health = loadTakeHealthFile();
+      const cached = getCache<SignalsResponse>("signals-elite-v60-vip-premium-sp");
+      const bundle = collectTakePlays(cached?.signals || []);
+      await enrichTakePlaysWithBook(bundle);
+      const payload = loadPredictionInsiders(bundle, health);
+      res.json(payload);
+    } catch (err: unknown) {
+      console.error("prediction-insiders error:", err);
+      res.status(500).json({ error: formatApiError(err), plays: [], traders: [] });
+    }
+  });
+
+  // ── GET/POST /api/hot-wallet-discover ─────────────────────────────────────
+  // UW-style market-first discovery status + manual trigger (no cold full pipeline).
+  app.get("/api/hot-wallet-discover", async (_req, res) => {
+    try {
+      res.setHeader("Cache-Control", "no-store");
+      const { hotWalletDiscoverStatus } = await import("./hotWalletDiscoverLoop");
+      const { loadHotWalletDiscoveries } = await import("./predictionInsiders");
+      res.json({ status: hotWalletDiscoverStatus(), board: loadHotWalletDiscoveries() });
+    } catch (err: unknown) {
+      console.error("hot-wallet-discover GET error:", err);
+      res.status(500).json({ error: formatApiError(err) });
+    }
+  });
+
+  app.post("/api/hot-wallet-discover", async (_req, res) => {
+    try {
+      res.setHeader("Cache-Control", "no-store");
+      const { triggerHotWalletDiscover, hotWalletDiscoverStatus } = await import("./hotWalletDiscoverLoop");
+      const started = triggerHotWalletDiscover({ quick: true, fetch: true });
+      res.json({ started, status: hotWalletDiscoverStatus() });
+    } catch (err: unknown) {
+      console.error("hot-wallet-discover POST error:", err);
+      res.status(500).json({ error: formatApiError(err) });
+    }
+  });
+
+  // ── GET/POST /api/elite-continuous ────────────────────────────────────────
+  // Continuous grade / promote / ranked-board micro-loop status + manual tick.
+  app.get("/api/elite-continuous", async (_req, res) => {
+    try {
+      res.setHeader("Cache-Control", "no-store");
+      const { eliteContinuousStatus } = await import("./eliteContinuousLoop");
+      const { scheduledPipelineStatus } = await import("./scheduledPipeline");
+      const { hotWalletDiscoverStatus } = await import("./hotWalletDiscoverLoop");
+      let lastTick: unknown = null;
+      try {
+        const fs = await import("fs");
+        const path = await import("path");
+        const p = path.join(process.cwd(), "pnl_analysis/output/elite_continuous_status.json");
+        if (fs.existsSync(p)) lastTick = JSON.parse(fs.readFileSync(p, "utf8"));
+      } catch (err) {
+        console.error("[elite-continuous] read status:", err);
+      }
+      res.json({
+        elite: eliteContinuousStatus(),
+        hotDiscover: hotWalletDiscoverStatus(),
+        scheduledPipeline: scheduledPipelineStatus(),
+        lastTick,
+      });
+    } catch (err: unknown) {
+      console.error("elite-continuous GET error:", err);
+      res.status(500).json({ error: formatApiError(err) });
+    }
+  });
+
+  app.post("/api/elite-continuous", async (req, res) => {
+    try {
+      res.setHeader("Cache-Control", "no-store");
+      const { triggerEliteTick, eliteContinuousStatus } = await import("./eliteContinuousLoop");
+      const modeRaw = String((req.body as { mode?: string } | undefined)?.mode || "micro");
+      const mode =
+        modeRaw === "promote" || modeRaw === "after-hot" || modeRaw === "full-lite"
+          ? modeRaw
+          : "micro";
+      const started = triggerEliteTick(mode);
+      res.json({ started, mode, status: eliteContinuousStatus() });
+    } catch (err: unknown) {
+      console.error("elite-continuous POST error:", err);
+      res.status(500).json({ error: formatApiError(err) });
+    }
+  });
+
+  // ── GET /api/copy-discovery ───────────────────────────────────────────────
+  // Live/bench/watch roster + adaptive promote/demote proposals (auto-promote applied by pipeline).
+  app.get("/api/copy-discovery", async (_req, res) => {
+    try {
+      res.setHeader("Cache-Control", "no-store");
+      res.json(loadCopyDiscovery());
+    } catch (err: unknown) {
+      console.error("copy-discovery error:", err);
+      res.status(500).json({ error: formatApiError(err) });
+    }
+  });
+
+  // ── GET /api/mm-research ──────────────────────────────────────────────────
+  // Market-making research JSON (not live quoting).
+  app.get("/api/mm-research", async (_req, res) => {
+    try {
+      const data = loadMmResearch();
+      if (!data) {
+        res.status(404).json({
+          error: "mm_maker_research.json missing. Run npm run research:mm",
+          books: [],
+          feasibility: { can_we_automate_today: false, verdict: "Research file not built yet." },
+        });
+        return;
+      }
+      res.setHeader("Cache-Control", "no-store");
+      res.json(data);
+    } catch (err: unknown) {
+      console.error("mm-research error:", err);
+      res.status(500).json({ error: formatApiError(err), books: [] });
     }
   });
 

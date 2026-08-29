@@ -474,11 +474,26 @@ def load_trader_markets(csv_path: Path, username: str, wallet: str) -> pd.DataFr
         event_slug=("eventSlug", "first"),
         slug=("slug", "first"),
         end_dt=("end_dt", "min"),
+        first_fill_ts=("timestamp", "min"),
     ).reset_index()
     agg["entry_price"] = agg.set_index(["conditionId", "side"]).index.map(prices)
     agg["username"] = username
     agg["wallet"] = wallet.lower()
     agg["entry_price"] = agg["entry_price"].clip(0.02, 0.98)
+    # Polymarket CSV timestamps are usually unix seconds (sometimes ms).
+    fill_num = pd.to_numeric(agg["first_fill_ts"], errors="coerce")
+    unit = "s"
+    sample = fill_num.dropna()
+    if len(sample) > 0:
+        med = float(sample.median())
+        if med > 1e14:
+            unit = "ns"
+        elif med > 1e11:
+            unit = "ms"
+    try:
+        agg["first_fill_ts"] = pd.to_datetime(fill_num, unit=unit, utc=True, errors="coerce")
+    except Exception:
+        agg["first_fill_ts"] = pd.NaT
     return agg
 
 
