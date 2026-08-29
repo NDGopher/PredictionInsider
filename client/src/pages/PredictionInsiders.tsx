@@ -118,9 +118,24 @@ interface UnusualFlowInsider {
   fresh?: boolean;
   q?: number | null;
   tags?: string[];
+  sports_ish?: boolean;
+  lane?: string;
   market?: string;
   unusual_score?: number;
   url?: string;
+  polymarket_profile?: string;
+}
+
+interface HotWalletResult {
+  wallet?: string;
+  username?: string;
+  z?: number;
+  lane?: string;
+  sports_ish?: boolean;
+  market?: string;
+  tags?: string[];
+  action?: string;
+  light?: { light_q?: number; n?: number; win_rate?: number | null; roi_pct?: number | null };
   polymarket_profile?: string;
 }
 
@@ -138,6 +153,8 @@ interface PredictionInsidersResponse {
     booksScanned?: number;
     unusualMarkets?: number;
     potentialInsiders?: number;
+    hotEnqueued?: number;
+    hotCandidates?: number;
   };
   plays?: RankedPlay[];
   traders?: ExcellenceTrader[];
@@ -152,6 +169,20 @@ interface PredictionInsidersResponse {
     method?: string;
     markets?: UnusualFlowMarket[];
     potential_insiders?: UnusualFlowInsider[];
+  } | null;
+  hotDiscoveries?: {
+    generated_at?: string;
+    method?: string;
+    counts?: {
+      candidates?: number;
+      scored?: number;
+      enqueued?: number;
+      enqueued_sports?: number;
+      enqueued_macro?: number;
+      csv_fetched?: number;
+    };
+    enqueued?: Array<{ username?: string; wallet?: string; source?: string; notes?: string }>;
+    results?: HotWalletResult[];
   } | null;
 }
 
@@ -406,8 +437,8 @@ export default function PredictionInsiders() {
           </div>
           <h1 className="text-2xl font-bold tracking-tight">Sniper plays · rankings · unusual flow</h1>
           <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-            Sniper TAKE stays strict (1–2 quality plays when gates clear). Rankings mirror OddsJam grades.
-            Unusual Flow mirrors Unusual Whales / Hashdive: holder Z-scores, concentration, smart gap — free Polymarket data.
+            Sniper TAKE stays strict. Unusual Flow + hot discovery mirror Unusual Whales:
+            market-first Z-scores → light Q on alerts only → watch enqueue (no cold full pipeline).
             {data?.rule ? ` Rule: ${data.rule}` : ""}
           </p>
         </div>
@@ -416,7 +447,7 @@ export default function PredictionInsiders() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-9 gap-2">
         {[
           { label: "Plays ranked", value: counts.plays ?? 0 },
           { label: "TAKE", value: counts.take ?? 0, tone: "text-emerald-400" },
@@ -425,6 +456,7 @@ export default function PredictionInsiders() {
           { label: "Traders", value: counts.traders ?? 0 },
           { label: "Unusual mkts", value: counts.unusualMarkets ?? 0 },
           { label: "Z-alerts", value: counts.potentialInsiders ?? 0, tone: "text-amber-400" },
+          { label: "Hot enqueued", value: counts.hotEnqueued ?? 0, tone: "text-emerald-400" },
           { label: "Books scanned", value: counts.booksScanned ?? 0 },
         ].map((s) => (
           <Card key={s.label}>
@@ -598,6 +630,91 @@ export default function PredictionInsiders() {
           </TabsContent>
 
           <TabsContent value="discover" className="space-y-4 mt-4">
+            <Card>
+              <CardContent className="p-4 space-y-3">
+                <div className="font-medium text-sm flex items-center gap-2">
+                  <Radar className="w-4 h-4 text-emerald-400" />
+                  Hot wallet discoveries ({data?.counts?.hotEnqueued ?? data?.hotDiscoveries?.enqueued?.length ?? 0})
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  UW/OddsJam pattern: top markets → holder Z≥2 → light Q on alerts only → watch.
+                  Sports and politics/macro stay separate. Full CSV only after enqueue — never a cold roster pipeline.
+                  {data?.hotDiscoveries?.generated_at
+                    ? ` Last pass ${String(data.hotDiscoveries.generated_at).slice(0, 19)} UTC.`
+                    : ""}
+                </p>
+                <div className="flex flex-wrap gap-3 text-[11px] text-muted-foreground">
+                  <span>Candidates: {data?.hotDiscoveries?.counts?.candidates ?? data?.counts?.hotCandidates ?? 0}</span>
+                  <span>Scored: {data?.hotDiscoveries?.counts?.scored ?? 0}</span>
+                  <span className="text-emerald-400">Sports +{data?.hotDiscoveries?.counts?.enqueued_sports ?? 0}</span>
+                  <span className="text-amber-400">Macro +{data?.hotDiscoveries?.counts?.enqueued_macro ?? 0}</span>
+                  <span>CSV fetched: {data?.hotDiscoveries?.counts?.csv_fetched ?? 0}</span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-left text-muted-foreground border-b border-border/50">
+                        <th className="py-1.5 pr-2">Trader</th>
+                        <th className="py-1.5 pr-2">Lane</th>
+                        <th className="py-1.5 pr-2">Z</th>
+                        <th className="py-1.5 pr-2">Light Q</th>
+                        <th className="py-1.5 pr-2">Action</th>
+                        <th className="py-1.5 pr-2">Market</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(data?.hotDiscoveries?.results || []).slice(0, 25).map((r) => (
+                        <tr key={`${r.wallet}-${r.market}`} className="border-b border-border/30">
+                          <td className="py-1.5 pr-2 font-medium">
+                            {r.username || r.wallet?.slice(0, 10)}
+                            {r.polymarket_profile || r.wallet ? (
+                              <a
+                                href={r.polymarket_profile || `https://polymarket.com/profile/${r.wallet}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="ml-1 text-primary inline-flex"
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            ) : null}
+                          </td>
+                          <td className="py-1.5 pr-2">
+                            <Badge
+                              variant="outline"
+                              className={
+                                r.lane === "sports" || r.sports_ish
+                                  ? "text-emerald-400 border-emerald-500/30"
+                                  : "text-amber-400 border-amber-500/30"
+                              }
+                            >
+                              {r.lane === "sports" || r.sports_ish ? "Sports" : "Politics/other"}
+                            </Badge>
+                          </td>
+                          <td className="py-1.5 pr-2 tabular-nums">{r.z ?? "—"}</td>
+                          <td className="py-1.5 pr-2 tabular-nums">{r.light?.light_q ?? "—"}</td>
+                          <td className="py-1.5 pr-2">
+                            <span className={r.action === "enqueue" ? "text-emerald-400" : "text-muted-foreground"}>
+                              {r.action || "—"}
+                            </span>
+                          </td>
+                          <td className="py-1.5 pr-2 text-muted-foreground max-w-[220px] truncate">
+                            {r.market || "—"}
+                          </td>
+                        </tr>
+                      ))}
+                      {(data?.hotDiscoveries?.results || []).length === 0 && (
+                        <tr>
+                          <td colSpan={6} className="py-3 text-muted-foreground">
+                            No hot pass yet — loop runs every 10m, or POST /api/hot-wallet-discover.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardContent className="p-4 space-y-2">
                 <div className="font-medium text-sm">Live copy roster</div>

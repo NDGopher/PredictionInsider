@@ -1,0 +1,176 @@
+{
+  "wallet": "0xd3a0b4e941b557d33a8efd5a51c581e7c79cf136",
+  "username": "hot_d3a0b4",
+  "total_profit": -117976.58,
+  "raw_realized_pnl": 0.0,
+  "dashboard_pnl": -117976.58,
+  "total_risked": 269019.08,
+  "overall_roi": -43.85,
+  "redeemed_only_roi": 0.0,
+  "last_30d": {
+    "n": 0,
+    "pnl": 0.0,
+    "cost": 0.0,
+    "roi": 0.0,
+    "wins": 0,
+    "win_rate": 0.0,
+    "first": null,
+    "last": null
+  },
+  "last_60d": {
+    "n": 0,
+    "pnl": 0.0,
+    "cost": 0.0,
+    "roi": 0.0,
+    "wins": 0,
+    "win_rate": 0.0,
+    "first": null,
+    "last": null
+  },
+  "last_90d": {
+    "n": 0,
+    "pnl": 0.0,
+    "cost": 0.0,
+    "roi": 0.0,
+    "wins": 0,
+    "win_rate": 0.0,
+    "first": null,
+    "last": null
+  },
+  "last_event_date": null,
+  "days_since_last_event": null,
+  "possibly_quit": false,
+  "win_rate": 0.0,
+  "avg_bet_size": 269019.08,
+  "median_market_stake": 269019.08,
+  "mean_market_stake": 269019.08,
+  "markets_traded": 1,
+  "total_events": 1,
+  "pseudo_sharpe": 0.0,
+  "profitable_days": 0,
+  "total_days": 1,
+  "hedge_count": 0,
+  "hedge_risk": 0.0,
+  "hedge_profit": 0.0,
+  "bond_count": 0,
+  "bond_risk": 0.0,
+  "bond_profit": 0.0,
+  "open_count": 1,
+  "open_risk": 269019.08,
+  "open_value": 151042.5,
+  "open_pnl": -117976.58,
+  "sport_stats": {
+    "SOCCER (Other)": {
+      "net_profit": -117976.58,
+      "roi": -43.85,
+      "win_rate": 0.0,
+      "events": 1,
+      "avg_bet": 269019.08,
+      "median_bet": 269019.08
+    }
+  },
+  "market_stats": {
+    "Moneyline / Match": {
+      "net_profit": -117976.58,
+      "roi": -43.85,
+      "win_rate": 0.0,
+      "events": 1,
+      "avg_bet": 269019.08,
+      "median_bet": 269019.08
+    }
+  },
+  "sport_market_stats": {
+    "Soccer|Moneyline / Match": {
+      "net_profit": -117976.58,
+      "roi": -43.85,
+      "win_rate": 0.0,
+      "events": 1,
+      "avg_bet": 269019.08,
+      "median_bet": 269019.08
+    }
+  },
+  "price_stats": {
+    "Flip (40-60c)": {
+      "net_profit": -117976.58,
+      "roi": -43.85,
+      "win_rate": 0.0,
+      "events": 1
+    }
+  },
+  "side_stats": {
+    "No": {
+      "net_profit": -117976.58,
+      "roi": -43.85,
+      "positions": 1
+    }
+  },
+  "monthly_pnl": {
+    "2026-08": -117976.58
+  },
+  "top_wins": [
+    {
+      "title": "Will TSG 1899 Hoffenheim win on 2026-08-29?",
+      "slug": "bun-koe-hof-2026-08-29-hof",
+      "eventSlug": "bun-koe-hof-2026-08-29",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "No",
+      "conditionId": "0x3a8e841f9c30f229819bd4073fa0a54aca967568a5b2b8b46139f6419511c6f2",
+      "total_pnl": -117976.58,
+      "total_cost": 269019.08,
+      "avg_price": 0.561,
+      "status": "open"
+    }
+  ],
+  "top_losses": [
+    {
+      "title": "Will TSG 1899 Hoffenheim win on 2026-08-29?",
+      "slug": "bun-koe-hof-2026-08-29-hof",
+      "eventSlug": "bun-koe-hof-2026-08-29",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "No",
+      "conditionId": "0x3a8e841f9c30f229819bd4073fa0a54aca967568a5b2b8b46139f6419511c6f2",
+      "total_pnl": -117976.58,
+      "total_cost": 269019.08,
+      "avg_price": 0.561,
+      "status": "open"
+    }
+  ],
+  "top_sport": "OTHER",
+  "best_price_bucket": null,
+  "best_market": "Moneyline / Match",
+  "quality_score": 4,
+  "tier": "C-Tier",
+  "tags": [
+    "\u2b50 C-Tier",
+    "\ud83d\udc0b Mega Whale"
+  ],
+  "tail_guide": "How to Tail hot_d3a0b4 [C-Tier]\n\n\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\u26a1 Typical market stake ~$269,019 (median per market) \u2014 alert at 3\u00d7 for high conviction",
+  "do_not_tail_sports": [],
+  "auto_tail_sports": [],
+  "do_not_tail_market_types": [],
+  "do_not_tail_sides": [],
+  "score_breakdown": {
+    "sharpe_score": 0.0,
+    "roi_score": 0,
+    "wr_score": 0,
+    "cons_score": 0.0,
+    "vol_score": 4.1,
+    "base_score": 4.1,
+    "flip_bonus": 0,
+    "leakage_penalty": 0,
+    "midzone_roi": 0,
+    "directional_roi": -43.85,
+    "roi_dashboard": -43.85,
+    "roi_redeemed_only": 0.0,
+    "last_60d_roi": 0.0,
+    "last_60d_pnl": 0.0,
+    "recency_penalty": 0,
+    "roi_for_quality": -43.85,
+    "hedge_risk_frac": 0.0,
+    "hedge_profit_share": 0.0,
+    "markets_traded": 1,
+    "median_market_stake": 269019.08,
+    "mean_market_stake": 269019.08,
+    "pnl_sum_check_ok": true
+  }
+}

@@ -6265,6 +6265,32 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  // ── GET/POST /api/hot-wallet-discover ─────────────────────────────────────
+  // UW-style market-first discovery status + manual trigger (no cold full pipeline).
+  app.get("/api/hot-wallet-discover", async (_req, res) => {
+    try {
+      res.setHeader("Cache-Control", "no-store");
+      const { hotWalletDiscoverStatus } = await import("./hotWalletDiscoverLoop");
+      const { loadHotWalletDiscoveries } = await import("./predictionInsiders");
+      res.json({ status: hotWalletDiscoverStatus(), board: loadHotWalletDiscoveries() });
+    } catch (err: unknown) {
+      console.error("hot-wallet-discover GET error:", err);
+      res.status(500).json({ error: formatApiError(err) });
+    }
+  });
+
+  app.post("/api/hot-wallet-discover", async (_req, res) => {
+    try {
+      res.setHeader("Cache-Control", "no-store");
+      const { triggerHotWalletDiscover, hotWalletDiscoverStatus } = await import("./hotWalletDiscoverLoop");
+      const started = triggerHotWalletDiscover({ quick: true, fetch: true });
+      res.json({ started, status: hotWalletDiscoverStatus() });
+    } catch (err: unknown) {
+      console.error("hot-wallet-discover POST error:", err);
+      res.status(500).json({ error: formatApiError(err) });
+    }
+  });
+
   // ── GET /api/copy-discovery ───────────────────────────────────────────────
   // Live/bench/watch roster + adaptive promote/demote proposals (auto-promote applied by pipeline).
   app.get("/api/copy-discovery", async (_req, res) => {

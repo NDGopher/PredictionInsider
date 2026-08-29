@@ -136,10 +136,58 @@ export interface UnusualFlowInsider {
   fresh?: boolean;
   q?: number | null;
   tags?: string[];
+  sports_ish?: boolean;
+  lane?: string;
   market?: string;
   unusual_score?: number;
   url?: string;
   polymarket_profile?: string;
+}
+
+export interface HotWalletLight {
+  light_q?: number;
+  n?: number;
+  win_rate?: number | null;
+  roi_pct?: number | null;
+}
+
+export interface HotWalletResult {
+  wallet?: string;
+  username?: string;
+  z?: number;
+  lane?: string;
+  sports_ish?: boolean;
+  market?: string;
+  tags?: string[];
+  action?: string;
+  gate_reasons?: string[];
+  light?: HotWalletLight;
+  polymarket_profile?: string;
+  url?: string;
+}
+
+export interface HotWalletDiscoveries {
+  generated_at?: string;
+  method?: string;
+  counts?: {
+    candidates?: number;
+    scored?: number;
+    accepted?: number;
+    enqueued?: number;
+    enqueued_sports?: number;
+    enqueued_macro?: number;
+    csv_fetched?: number;
+  };
+  enqueued?: Array<{
+    wallet?: string;
+    username?: string;
+    source?: string;
+    status?: string;
+    notes?: string;
+    discovered_at?: string;
+    discovery?: Record<string, unknown>;
+  }>;
+  results?: HotWalletResult[];
 }
 
 export interface UnusualFlowBoard {
@@ -169,6 +217,8 @@ export interface PredictionInsidersBundle {
     booksScanned: number;
     unusualMarkets: number;
     potentialInsiders: number;
+    hotEnqueued: number;
+    hotCandidates: number;
   };
   plays: AnnotatedTakePlay[];
   traders: ExcellenceTrader[];
@@ -176,6 +226,7 @@ export interface PredictionInsidersBundle {
   discovery: CopyDiscoveryBundle;
   rankedBoard: RankedPlayBoardFile | null;
   unusualFlow: UnusualFlowBoard | null;
+  hotDiscoveries: HotWalletDiscoveries | null;
 }
 
 function loadJson<T>(rel: string): T | null {
@@ -187,6 +238,10 @@ function loadJson<T>(rel: string): T | null {
     console.error(`[prediction-insiders] failed to read ${rel}:`, err);
     return null;
   }
+}
+
+export function loadHotWalletDiscoveries(): HotWalletDiscoveries | null {
+  return loadJson<HotWalletDiscoveries>("pnl_analysis/output/hot_wallet_discoveries.json");
 }
 
 function num(v: unknown): number | null {
@@ -268,6 +323,7 @@ export function loadPredictionInsiders(
   );
   const polyFile = loadJson<{ sports_survivors?: PolydataFind[] }>("pnl_analysis/output/polydata_boards.json");
   const unusualFlow = loadJson<UnusualFlowBoard>("pnl_analysis/output/unusual_flow.json");
+  const hotDiscoveries = loadHotWalletDiscoveries();
 
   const insiderByWallet = new Map<string, { insider_score?: number }>();
   for (const t of ranksFile?.traders || []) {
@@ -284,9 +340,12 @@ export function loadPredictionInsiders(
   const counts = board?.counts || {};
   const unusualMarkets = unusualFlow?.markets?.length ?? 0;
   const potentialInsiders = unusualFlow?.potential_insiders?.length ?? 0;
+  const hotEnqueued = hotDiscoveries?.counts?.enqueued ?? hotDiscoveries?.enqueued?.length ?? 0;
+  const hotCandidates = hotDiscoveries?.counts?.candidates ?? 0;
   return {
     generatedAt:
-      board?.generated_at
+      hotDiscoveries?.generated_at
+      || board?.generated_at
       || unusualFlow?.generated_at
       || digestFile?.generated_at
       || health?.generated_at
@@ -294,7 +353,8 @@ export function loadPredictionInsiders(
     rule: board?.rule || "asof_live_q60_sport_rel2",
     method:
       "Sniper TAKE (as-of Q60+sport+2×) + OddsJam-style graded opens + "
-      + "UW/Hashdive-style unusual flow (holder Z-score, concentration, smart gap) from free Polymarket APIs.",
+      + "UW/Hashdive-style unusual flow (holder Z-score) + hot-wallet discovery "
+      + "(Z→light Q→watch enqueue only — no cold full pipeline).",
     counts: {
       plays: plays.length,
       take: counts.take ?? plays.filter((p) => p.list === "take").length,
@@ -305,6 +365,8 @@ export function loadPredictionInsiders(
       booksScanned: board?.books_scanned ?? 0,
       unusualMarkets,
       potentialInsiders,
+      hotEnqueued,
+      hotCandidates,
     },
     plays,
     traders,
@@ -312,5 +374,6 @@ export function loadPredictionInsiders(
     discovery: loadCopyDiscovery(),
     rankedBoard: board,
     unusualFlow,
+    hotDiscoveries,
   };
 }

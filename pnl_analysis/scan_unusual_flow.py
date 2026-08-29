@@ -562,6 +562,8 @@ def main() -> int:
                     "fresh": f.get("fresh"),
                     "q": f.get("q"),
                     "tags": tags,
+                    "sports_ish": bool(m.get("sports_ish")),
+                    "lane": "sports" if m.get("sports_ish") else "other",
                     "market": m.get("question"),
                     "unusual_score": m.get("unusual_score"),
                     "url": m.get("url"),

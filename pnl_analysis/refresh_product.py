@@ -20,6 +20,10 @@ STEPS: list[tuple[str, list[str]]] = [
     ("take-book health", [sys.executable, str(ROOT / "take_book_daily.py")]),
     ("ranked play board (live+bench+watch)", [sys.executable, str(ROOT / "scan_ranked_opens.py")]),
     ("unusual flow Z-score board (UW/Hashdive)", [sys.executable, str(ROOT / "scan_unusual_flow.py"), "--events", "20", "--max-markets", "30"]),
+    (
+        "hot-wallet discovery (Z→light Q→watch enqueue)",
+        [sys.executable, str(ROOT / "discover_hot_wallets.py"), "--from-json", "--fetch", "--fetch-limit", "4"],
+    ),
     ("copy universe", [sys.executable, str(ROOT / "copy_roster.py")]),
     ("insider ranks", [sys.executable, str(ROOT / "build_insider_ranks.py"), "--offline"]),
     ("working copy model", [sys.executable, str(ROOT / "rebuild_working_model.py")]),
