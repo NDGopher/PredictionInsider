@@ -237,6 +237,30 @@ export interface PredictionInsidersBundle {
   rankedBoard: RankedPlayBoardFile | null;
   unusualFlow: UnusualFlowBoard | null;
   hotDiscoveries: HotWalletDiscoveries | null;
+  trust?: {
+    takeHealth?: TakeHealthFileLite | null;
+    walkforward?: WalkforwardTrust | null;
+    bankroll?: BankrollTrust | null;
+  };
+}
+
+export interface TakeHealthFileLite {
+  status?: string;
+  pause_reason?: string | null;
+  windows?: Record<string, { n?: number; win_rate?: number | null; roi_2c?: number | null }>;
+  generated_at?: string;
+}
+
+export interface WalkforwardTrust {
+  generated_at?: string;
+  best_at_2c_slip_n50?: { id?: string; n?: number; roi?: number; win_rate?: number };
+  calibration_by_grade_band?: Array<{ band?: string; n?: number; roi?: number }>;
+}
+
+export interface BankrollTrust {
+  generated_at?: string;
+  flat_100?: { n?: number; roi_on_start?: number; sharpe_daily_roi?: number; max_dd_pct?: number };
+  sizing?: { kelly_half?: { avg_stake?: number; roi_on_start?: number } };
 }
 
 function loadJson<T>(rel: string): T | null {
@@ -400,5 +424,17 @@ export function loadPredictionInsiders(
     rankedBoard: board,
     unusualFlow,
     hotDiscoveries,
+    trust: {
+      takeHealth: health
+        ? {
+            status: health.status,
+            pause_reason: health.pause_reason,
+            windows: health.windows,
+            generated_at: health.generated_at,
+          }
+        : loadJson<TakeHealthFileLite>("pnl_analysis/output/take_health.json"),
+      walkforward: loadJson<WalkforwardTrust>("pnl_analysis/output/walkforward_tail_backtest.json"),
+      bankroll: loadJson<BankrollTrust>("pnl_analysis/output/take_book_bankroll.json"),
+    },
   };
 }

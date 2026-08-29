@@ -231,7 +231,9 @@ export function formatTakeTelegram(p: AnnotatedTakePlay, paused: boolean): strin
     lineFor("Their VWAP", p.avgEntryPrice),
     lineFor("Take cap ", p.takeCap) + "  (VWAP + 2¢, max pay)",
     lineFor("Live ask ", p.liveAsk ?? p.currentPrice) + "  ← paper at this",
-    "Stake $100 · hold to resolution · skip NFL",
+    `Stake $${Math.round(p.stakeUsd ?? 100)} · slip +${p.slipCents ?? 2}¢ · hold to resolution · skip NFL`
+      + (p.askDepthUsd != null ? ` · depth ~$${Math.round(p.askDepthUsd)}` : ""),
+    "Checklist: confirm size · max slip · cancel if not filled in 2m",
     "This card is deleted when you can no longer bet it. CLV + result go to the pinned tape.",
     p.url || "",
   ];
@@ -247,7 +249,7 @@ export async function sendTelegramText(text: string): Promise<number | null> {
 }
 
 export function isUnfillableReason(reason: string): boolean {
-  return /ask|outside|locked|resolved|no live ask|cap/i.test(reason);
+  return /ask|outside|locked|resolved|no live ask|cap|thin book|depth/i.test(reason);
 }
 
 export function telegramConfigured(): boolean {

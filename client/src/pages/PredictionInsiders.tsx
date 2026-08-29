@@ -186,6 +186,23 @@ interface PredictionInsidersResponse {
     watch_roster?: Array<{ username?: string; wallet?: string; source?: string; notes?: string }>;
     results?: HotWalletResult[];
   } | null;
+  trust?: {
+    takeHealth?: {
+      status?: string;
+      pause_reason?: string | null;
+      windows?: Record<string, { n?: number; win_rate?: number | null; roi_2c?: number | null }>;
+      generated_at?: string;
+    } | null;
+    walkforward?: {
+      generated_at?: string;
+      best_at_2c_slip_n50?: { id?: string; n?: number; roi?: number; win_rate?: number };
+    } | null;
+    bankroll?: {
+      generated_at?: string;
+      flat_100?: { n?: number; roi_on_start?: number; sharpe_daily_roi?: number; max_dd_pct?: number };
+      sizing?: { kelly_half?: { avg_stake?: number; roi_on_start?: number } };
+    } | null;
+  };
 }
 
 function gradeTone(g: number): string {
@@ -714,6 +731,71 @@ export default function PredictionInsiders() {
           </TabsContent>
 
           <TabsContent value="discover" className="space-y-4 mt-4">
+            <Card>
+              <CardContent className="p-4 space-y-2">
+                <div className="font-medium text-sm flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-amber-400" />
+                  Trust surface · real ROI
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Golden rule: ROI from as-of CSV / take-health windows — never live API PnL guesses.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                  <div className="border border-border/40 rounded-md p-2 space-y-0.5">
+                    <div className="font-medium">Take health</div>
+                    <div className="text-muted-foreground">
+                      {data?.trust?.takeHealth?.status || "—"}
+                      {data?.trust?.takeHealth?.pause_reason
+                        ? ` · ${data.trust.takeHealth.pause_reason}`
+                        : ""}
+                    </div>
+                    {(["last_30d", "last_60d", "all"] as const).map((k) => {
+                      const w = data?.trust?.takeHealth?.windows?.[k];
+                      if (!w?.n) return null;
+                      return (
+                        <div key={k} className="tabular-nums text-muted-foreground">
+                          {k.replace("last_", "")}: n={w.n} · {w.roi_2c ?? "—"}% ROI
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="border border-border/40 rounded-md p-2 space-y-0.5">
+                    <div className="font-medium">Walk-forward</div>
+                    <div className="text-muted-foreground">
+                      {data?.trust?.walkforward?.best_at_2c_slip_n50?.id || "best @ +2¢"}
+                    </div>
+                    {data?.trust?.walkforward?.best_at_2c_slip_n50?.n != null ? (
+                      <div className="tabular-nums text-muted-foreground">
+                        n={data.trust.walkforward.best_at_2c_slip_n50.n} ·{" "}
+                        {data.trust.walkforward.best_at_2c_slip_n50.roi ?? "—"}% ROI ·{" "}
+                        {data.trust.walkforward.best_at_2c_slip_n50.win_rate ?? "—"}% WR
+                      </div>
+                    ) : (
+                      <div className="text-muted-foreground">Run walkforward backtest for bands</div>
+                    )}
+                  </div>
+                  <div className="border border-border/40 rounded-md p-2 space-y-0.5">
+                    <div className="font-medium">Bankroll / sizing</div>
+                    {data?.trust?.bankroll?.flat_100?.n != null ? (
+                      <>
+                        <div className="tabular-nums text-muted-foreground">
+                          Flat $100: n={data.trust.bankroll.flat_100.n} ·{" "}
+                          {data.trust.bankroll.flat_100.roi_on_start ?? "—"}% · Sharpe{" "}
+                          {data.trust.bankroll.flat_100.sharpe_daily_roi ?? "—"}
+                        </div>
+                        <div className="tabular-nums text-muted-foreground">
+                          Half-Kelly avg stake $
+                          {Math.round(data.trust.bankroll.sizing?.kelly_half?.avg_stake ?? 100)}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-muted-foreground">Bankroll file missing — default $100</div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardContent className="p-4 space-y-2">
                 <div className="font-medium text-sm flex items-center gap-2">

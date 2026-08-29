@@ -7,6 +7,10 @@ const TTL_MS = 8_000;
 export interface ClobQuote {
   ask: number | null;
   bid: number | null;
+  /** Shares available at or better than best ask (CLOB size units ≈ $1 when price~1). */
+  askDepth: number | null;
+  /** Approximate USD depth at ask price (askDepth * ask). */
+  askDepthUsd: number | null;
   fetchedAt: number;
   source: "book" | "price" | "none";
 }
@@ -52,6 +56,22 @@ function minAsk(book: Record<string, unknown>): number | null {
   return best;
 }
 
+/** Sum size on asks within `cushion` of best ask (default 2¢). */
+function askDepthNearBest(book: Record<string, unknown>, bestAsk: number, cushion = 0.02): number {
+  const asks = book.asks;
+  if (!Array.isArray(asks) || asks.length === 0) return 0;
+  let depth = 0;
+  const lim = bestAsk + cushion;
+  for (const row of asks) {
+    const rec = row as Record<string, unknown>;
+    const px = parsePx(rec.price);
+    const sz = parsePx(rec.size);
+    if (px == null || sz == null || px > lim) continue;
+    depth += sz;
+  }
+  return depth;
+}
+
 function maxBid(book: Record<string, unknown>): number | null {
   const bids = book.bids;
   if (!Array.isArray(bids) || bids.length === 0) return null;
@@ -67,7 +87,14 @@ function maxBid(book: Record<string, unknown>): number | null {
 
 export async function fetchClobQuote(tokenId: string): Promise<ClobQuote> {
   const id = tokenId.trim();
-  const empty: ClobQuote = { ask: null, bid: null, fetchedAt: Date.now(), source: "none" };
+  const empty: ClobQuote = {
+    ask: null,
+    bid: null,
+    askDepth: null,
+    askDepthUsd: null,
+    fetchedAt: Date.now(),
+    source: "none",
+  };
   if (!id) return empty;
   const hit = cache.get(id);
   if (hit && Date.now() - hit.ts < TTL_MS) return hit.quote;
@@ -75,12 +102,18 @@ export async function fetchClobQuote(tokenId: string): Promise<ClobQuote> {
   const bookRaw = await clobGet(`${CLOB_API}/book?token_id=${encodeURIComponent(id)}`);
   let ask: number | null = null;
   let bid: number | null = null;
+  let askDepth: number | null = null;
+  let askDepthUsd: number | null = null;
   let source: ClobQuote["source"] = "none";
   if (bookRaw && typeof bookRaw === "object") {
     const book = bookRaw as Record<string, unknown>;
     ask = minAsk(book);
     bid = maxBid(book);
-    if (ask != null) source = "book";
+    if (ask != null) {
+      source = "book";
+      askDepth = askDepthNearBest(book, ask);
+      askDepthUsd = askDepth * ask;
+    }
   }
 
   if (ask == null) {
@@ -94,7 +127,7 @@ export async function fetchClobQuote(tokenId: string): Promise<ClobQuote> {
     }
   }
 
-  const quote: ClobQuote = { ask, bid, fetchedAt: Date.now(), source };
+  const quote: ClobQuote = { ask, bid, askDepth, askDepthUsd, fetchedAt: Date.now(), source };
   cache.set(id, { quote, ts: Date.now() });
   return quote;
 }

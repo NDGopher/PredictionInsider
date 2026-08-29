@@ -55,6 +55,12 @@ interface TakePlay {
   rank?: number;
   list?: "take" | "near" | "watch";
   url?: string;
+  laneMode?: "sniper" | "explorer" | "graded";
+  stakeUsd?: number;
+  slipCents?: number;
+  askDepthUsd?: number | null;
+  consensusVoters?: number;
+  consensusTraders?: string[];
 }
 
 interface TakeHealth {
@@ -254,6 +260,16 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
             <Badge variant="outline" className="tabular-nums">#{play.rank}</Badge>
           ) : null}
           {take ? <Badge>TAKE</Badge> : <Badge variant="outline">NEAR</Badge>}
+          {play.laneMode === "explorer" ? (
+            <Badge variant="outline" className="text-sky-400 border-sky-500/40">Explorer</Badge>
+          ) : take ? (
+            <Badge variant="outline" className="text-emerald-400 border-emerald-500/40">Sniper</Badge>
+          ) : null}
+          {(play.consensusVoters ?? 0) >= 2 ? (
+            <Badge variant="outline" className="text-amber-400 border-amber-500/40">
+              Consensus {play.consensusVoters}
+            </Badge>
+          ) : null}
           <Badge className={`tabular-nums ${gradeTone(grade)}`}>{grade}/100</Badge>
           <Badge>{play.submarket}</Badge>
           <Badge variant="outline">{play.sport || "—"}</Badge>
@@ -274,11 +290,29 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
           <PriceRow label="Live ask" price={play.liveAsk ?? play.currentPrice} fmt={play.liveFmt} hint="pay this" />
           <PriceRow label="Their VWAP" price={play.avgEntryPrice} fmt={play.vwapFmt} />
         </div>
+        <div className="flex flex-wrap gap-3 text-[11px] tabular-nums">
+          <span>
+            Stake <span className="font-semibold text-foreground">${Math.round(play.stakeUsd ?? 100)}</span>
+          </span>
+          <span>Slip +{play.slipCents ?? 2}¢</span>
+          {play.askDepthUsd != null ? (
+            <span>Depth ~${Math.round(play.askDepthUsd)}</span>
+          ) : null}
+        </div>
         <WhyBlock play={play} take={take} />
         <div className="text-[11px] text-muted-foreground">
           Decimal = 1/price · American next to it. {play.traders.join(", ") || "matched book"}
           {play.sportRoi != null ? ` · sport ROI ${play.sportRoi.toFixed(0)}%` : ""}
+          {play.consensusTraders?.length ? ` · consensus ${play.consensusTraders.join(", ")}` : ""}
         </div>
+        {take && (
+          <div className="text-[11px] text-muted-foreground border border-border/40 rounded-md p-2 space-y-0.5">
+            <div className="font-medium text-foreground">Paper → live checklist</div>
+            <div>1. Size ${Math.round(play.stakeUsd ?? 100)} (or less)</div>
+            <div>2. Max pay = take cap · cancel if ask walks</div>
+            <div>3. Hold to resolution · skip NFL</div>
+          </div>
+        )}
         {!take && play.misses.length > 0 && (
           <div className="text-xs text-amber-500">Missing: {play.misses.join(" · ")}</div>
         )}
@@ -352,23 +386,42 @@ function GradedPlayRow({ play, compact }: { play: TakePlay; compact?: boolean })
 }
 
 function GradedBoard({ plays, board }: { plays: TakePlay[]; board?: TakePlaysResponse["rankedBoard"] }) {
-  if (!plays.length) return null;
-  const counts = board?.counts;
+  const [boardFilter, setBoardFilter] = useState<"all" | "take" | "near" | "watch" | "explorer">("all");
+  const filtered = plays.filter((p) => {
+    if (boardFilter === "all") return true;
+    if (boardFilter === "explorer") return p.laneMode === "explorer";
+    return p.list === boardFilter;
+  });
   return (
     <Card data-testid="card-graded-board">
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="p-4 space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Graded board · 0–100</div>
-            <div className="text-[11px] text-muted-foreground mt-0.5">
-              {board?.booksScanned ?? "—"} CSV books scanned
-              {counts ? ` · ${counts.take ?? 0} TAKE · ${counts.near ?? 0} NEAR · ${counts.watch ?? 0} watch` : ""}
-            </div>
+          <div className="text-xs font-medium">
+            Graded board
+            {board?.counts ? (
+              <span className="text-muted-foreground font-normal">
+                {" "}· {board.counts.take ?? 0} TAKE · {board.counts.near ?? 0} NEAR · {board.counts.watch ?? 0} WATCH
+              </span>
+            ) : null}
           </div>
           <Link href="/insiders" className="text-xs text-primary">Full board →</Link>
         </div>
+        <div className="flex flex-wrap gap-1.5">
+          {(["all", "take", "near", "watch", "explorer"] as const).map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setBoardFilter(f)}
+              className={`text-[10px] px-2 py-0.5 rounded border ${
+                boardFilter === f ? "border-primary text-primary" : "border-border text-muted-foreground"
+              }`}
+            >
+              {f === "explorer" ? "Explorer" : f}
+            </button>
+          ))}
+        </div>
         <div className="divide-y divide-border/40">
-          {plays.slice(0, 8).map((p) => (
+          {filtered.slice(0, 8).map((p) => (
             <GradedPlayRow key={p.id} play={p} compact />
           ))}
         </div>
@@ -449,7 +502,8 @@ export default function TakeBookFeed() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
         <div>
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-            Recommended plays · graded 0–100 · $100 · live ask · decimal + American
+            Recommended plays · graded 0–100 · sized stake · live ask · decimal + American
+            · Sniper TAKE vs labeled Explorer · consensus when 2+ wallets agree
           </div>
           <h2 className="text-xl font-semibold tracking-tight flex items-center gap-2">
             <Flame className="w-5 h-5 text-primary" />
@@ -522,6 +576,16 @@ export default function TakeBookFeed() {
           <Link href="/insiders" className="text-xs text-primary">Prediction Insiders →</Link>
           <Link href="/bets" className="text-xs text-primary">My Bets →</Link>
         </div>
+        {data?.telegramConfigured ? (
+          <Card data-testid="card-paper-live-checklist">
+            <CardContent className="p-3 text-[11px] text-muted-foreground space-y-1">
+              <div className="font-medium text-foreground text-xs">Paper → live (Telegram TAKE)</div>
+              <div>1. Confirm stake on the card (half-Kelly sized when bankroll file is present)</div>
+              <div>2. Do not pay above take cap · cancel if ask walks past slip</div>
+              <div>3. Hold to resolution · skip NFL · book paused = paper only</div>
+            </CardContent>
+          </Card>
+        ) : null}
       </div>
 
       <DiscoveryStrip discovery={data?.discovery} />

@@ -29,17 +29,22 @@ MODES: dict[str, list[tuple[str, list[str]]]] = {
     "micro": [
         ("ranked play board", [sys.executable, str(ROOT / "scan_ranked_opens.py")]),
         ("take-book health", [sys.executable, str(ROOT / "take_book_daily.py")]),
+        ("telegram ops alerts", [sys.executable, str(ROOT / "telegram_ops_alerts.py")]),
     ],
     "promote": [
         ("adaptive multi-strategy lab", [sys.executable, str(ROOT / "adaptive_copy_lab.py")]),
         ("auto-promote / demote", [sys.executable, str(ROOT / "auto_promote.py")]),
+        ("kick failed hot watches", [sys.executable, str(ROOT / "kick_failed_hot_watches.py")]),
         ("copy universe", [sys.executable, str(ROOT / "copy_roster.py")]),
         ("ranked play board", [sys.executable, str(ROOT / "scan_ranked_opens.py")]),
         ("take-book health", [sys.executable, str(ROOT / "take_book_daily.py")]),
+        ("telegram ops alerts", [sys.executable, str(ROOT / "telegram_ops_alerts.py")]),
     ],
     "after-hot": [
+        ("kick failed hot watches", [sys.executable, str(ROOT / "kick_failed_hot_watches.py")]),
         ("copy universe", [sys.executable, str(ROOT / "copy_roster.py")]),
         ("ranked play board", [sys.executable, str(ROOT / "scan_ranked_opens.py")]),
+        ("telegram ops alerts", [sys.executable, str(ROOT / "telegram_ops_alerts.py")]),
     ],
     "full-lite": [],  # filled below
 }

@@ -172,8 +172,23 @@ def fetch_hot_markets(events: int, sports_bias: bool) -> list[dict[str, Any]]:
                     "url": f"https://polymarket.com/event/{ev.get('slug') or m.get('slug') or ''}",
                 }
             )
-    # Prefer liquid markets; cap to keep holder fetches bounded
+    # Prefer liquid markets; sports-bias: pull sports ahead of macro (~70% slots)
     markets.sort(key=lambda x: (-float(x["volume24hr"]), -float(x["liquidity"])))
+    if sports_bias:
+        sports = [m for m in markets if m.get("sports_ish")]
+        other = [m for m in markets if not m.get("sports_ish")]
+        # Interleave: take sports first up to 70% of list length, then fill with other
+        target = max(len(sports), int(round(len(markets) * 0.70))) if markets else 0
+        ordered = sports[:target] + other + sports[target:]
+        seen: set[str] = set()
+        deduped: list[dict[str, Any]] = []
+        for m in ordered:
+            cid = str(m.get("conditionId") or "")
+            if not cid or cid in seen:
+                continue
+            seen.add(cid)
+            deduped.append(m)
+        markets = deduped
     return markets
 
 

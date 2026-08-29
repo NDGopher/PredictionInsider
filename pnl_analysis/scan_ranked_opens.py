@@ -319,6 +319,7 @@ def main() -> int:
                 "wallet": w,
                 "title": title,
                 "slug": slug,
+                "conditionId": str(cid or ""),
                 "side": side,
                 "sport": sport,
                 "sport_family": fam,

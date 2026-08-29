@@ -78,8 +78,8 @@ function setCache(key: string, data: unknown, ttlMs: number) {
 }
 /** Drop elite signals cache so the next GET /api/signals recomputes (e.g. after fresh live trades). */
 function invalidateEliteSignalsCache() {
-  delete cache["signals-elite-v59-vip-premium-sp"];
-  delete cache["signals-elite-v59-vip-premium-all"];
+  delete cache["signals-elite-v60-vip-premium-sp"];
+  delete cache["signals-elite-v60-vip-premium-all"];
 }
 const seenSignalIds = new Set<string>();
 
@@ -3517,7 +3517,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const tierFilter = (req.query.tier as string)?.toUpperCase(); // HIGH | MED | SINGLE
       const hasFilter = minConfidence != null || minQuality != null || (tierFilter && ["HIGH", "MED", "SINGLE"].includes(tierFilter));
       const forceRefresh = req.query.refresh === "1" || req.query.refresh === "true";
-      const cKey = hasFilter ? null : `signals-elite-v59-vip-premium-${sportsOnly ? "sp" : "all"}`;
+      const cKey = hasFilter ? null : `signals-elite-v60-vip-premium-${sportsOnly ? "sp" : "all"}`;
       const hit  = !forceRefresh && cKey ? getCache<unknown>(cKey) : null;
       if (hit) { res.json(hit); return; }
 
@@ -6112,7 +6112,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         strategies.find((s) => s.recommended) ||
         strategies[0] ||
         null;
-      const cached = getCache<SignalsResponse>("signals-elite-v59-vip-premium-sp");
+      const cached = getCache<SignalsResponse>("signals-elite-v60-vip-premium-sp");
       const filters: TailStrategyFilters | undefined = selected?.filters;
       const livePlays = (cached?.signals && filters)
         ? cached.signals
@@ -6181,7 +6181,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const card = takeStrategyCard();
       const health = loadTakeHealthFile();
       const board = loadRankedPlayBoard();
-      const cached = getCache<SignalsResponse>("signals-elite-v59-vip-premium-sp");
+      const cached = getCache<SignalsResponse>("signals-elite-v60-vip-premium-sp");
       const bundle = collectTakePlays(cached?.signals || []);
       await enrichTakePlaysWithBook(bundle);
       void enqueueTakeBookSync(bundle);
@@ -6254,7 +6254,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     try {
       res.setHeader("Cache-Control", "no-store");
       const health = loadTakeHealthFile();
-      const cached = getCache<SignalsResponse>("signals-elite-v59-vip-premium-sp");
+      const cached = getCache<SignalsResponse>("signals-elite-v60-vip-premium-sp");
       const bundle = collectTakePlays(cached?.signals || []);
       await enrichTakePlaysWithBook(bundle);
       const payload = loadPredictionInsiders(bundle, health);

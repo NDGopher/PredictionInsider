@@ -15,9 +15,15 @@ import {
 } from "./tailStrategies";
 
 export const TAKE_STRATEGY_ID = "asof_live_q60_sport_rel2";
+/** Labeled Explorer — wider submarket expert lane; never auto-Telegram TAKE. */
+export const EXPLORER_STRATEGY_ID = "asof_q60_sub_rel2";
 export const TAKE_PRICE_LO = 0.1;
 export const TAKE_PRICE_HI = 0.88;
 export const TAKE_CUSHION = 0.02;
+/** Minimum CLOB ask depth (USD) to keep a Sniper TAKE live. */
+export const MIN_ASK_DEPTH_USD = 75;
+export const DEFAULT_FLAT_STAKE = 100;
+export const BANKROLL_START = 10_000;
 
 export interface TakeHealthFile {
   generated_at?: string;
@@ -77,6 +83,17 @@ export interface AnnotatedTakePlay {
   rank?: number;
   /** take | near | watch — OddsJam-style tier from ranked play board */
   list?: "take" | "near" | "watch";
+  /** sniper = product TAKE; explorer = labeled wider lane (not Telegram) */
+  laneMode?: "sniper" | "explorer" | "graded";
+  /** Suggested stake USD (flat $100 or half-Kelly from bankroll file). */
+  stakeUsd?: number;
+  /** Assumed slip vs VWAP in cents (product = +2¢). */
+  slipCents?: number;
+  /** CLOB ask depth in USD near best ask. */
+  askDepthUsd?: number | null;
+  /** Number of high-Q wallets on same condition+side (consensus). */
+  consensusVoters?: number;
+  consensusTraders?: string[];
 }
 
 export interface TakePlayBundle {
@@ -160,7 +177,42 @@ function takeCapFromVwap(vwap: number): number {
   return Math.min(TAKE_PRICE_HI, Math.max(TAKE_PRICE_LO, vwap + TAKE_CUSHION));
 }
 
-function validityForAsk(ask: number | null, takeCap: number, quoteSource: AnnotatedTakePlay["quoteSource"]): {
+function loadBankrollSizing(): { flatStake: number; halfKellyAvg?: number; startBank: number } {
+  const file = loadJson<{
+    flat_100?: { n?: number };
+    sizing?: { kelly_half?: { avg_stake?: number } };
+    assumptions?: { flat_stake?: number; start_bank?: number };
+  }>("pnl_analysis/output/take_book_bankroll.json");
+  const flat = Number(file?.assumptions?.flat_stake || DEFAULT_FLAT_STAKE);
+  const half = Number(file?.sizing?.kelly_half?.avg_stake);
+  return {
+    flatStake: Number.isFinite(flat) && flat > 0 ? flat : DEFAULT_FLAT_STAKE,
+    halfKellyAvg: Number.isFinite(half) && half > 0 ? half : undefined,
+    startBank: Number(file?.assumptions?.start_bank || BANKROLL_START),
+  };
+}
+
+/** Suggest stake: prefer half-Kelly average when available, else flat $100. Cap 25% bank. */
+export function suggestedStakeUsd(opts: { q: number; rel: number; take: boolean }): number {
+  const sizing = loadBankrollSizing();
+  let stake = sizing.flatStake;
+  if (opts.take && sizing.halfKellyAvg != null) {
+    // Scale half-Kelly by conviction: higher Q/rel → closer to avg Kelly stake
+    const qFactor = Math.min(1.25, Math.max(0.6, opts.q / 60));
+    const relFactor = Math.min(1.35, Math.max(0.75, opts.rel / 2));
+    stake = sizing.halfKellyAvg * qFactor * relFactor;
+  }
+  const cap = sizing.startBank * 0.25;
+  return Math.round(Math.min(cap, Math.max(1, stake)) * 100) / 100;
+}
+
+function validityForAsk(
+  ask: number | null,
+  takeCap: number,
+  quoteSource: AnnotatedTakePlay["quoteSource"],
+  askDepthUsd: number | null | undefined,
+  stakeUsd: number,
+): {
   valid: boolean;
   reason: string | null;
 } {
@@ -176,17 +228,29 @@ function validityForAsk(ask: number | null, takeCap: number, quoteSource: Annota
   if (ask > takeCap + 0.001) {
     return { valid: false, reason: `live ask ${ask.toFixed(3)} > take cap ${takeCap.toFixed(3)}` };
   }
+  const minDepth = Math.max(MIN_ASK_DEPTH_USD, stakeUsd * 0.75);
+  if (quoteSource === "clob" && askDepthUsd != null && askDepthUsd < minDepth) {
+    return {
+      valid: false,
+      reason: `thin book depth $${askDepthUsd.toFixed(0)} < $${minDepth.toFixed(0)} needed`,
+    };
+  }
   return { valid: true, reason: null };
 }
 
 function applyQuote(row: AnnotatedTakePlay): void {
+  if (row.stakeUsd == null) {
+    row.stakeUsd = suggestedStakeUsd({ q: row.q, rel: row.rel, take: row.take });
+  }
+  if (row.slipCents == null) row.slipCents = 2;
+  if (row.laneMode == null) row.laneMode = row.take ? "sniper" : "graded";
   const ask = row.liveAsk;
   const takePrice = ask != null && ask > 0 ? ask : row.currentPrice || row.avgEntryPrice;
   row.takePrice = takePrice;
   row.takeFmt = takePrice > 0 ? formatPriceQuote(row.takeCap) : null;
   row.liveFmt = ask != null && ask > 0 ? formatPriceQuote(ask) : (row.currentPrice > 0 ? formatPriceQuote(row.currentPrice) : null);
   row.vwapFmt = row.avgEntryPrice > 0 ? formatPriceQuote(row.avgEntryPrice) : null;
-  const gate = validityForAsk(ask, row.takeCap, row.quoteSource);
+  const gate = validityForAsk(ask, row.takeCap, row.quoteSource, row.askDepthUsd, row.stakeUsd || DEFAULT_FLAT_STAKE);
   if (row.take && !gate.valid) {
     row.valid = false;
     row.invalidReason = gate.reason;
@@ -370,6 +434,7 @@ export async function enrichTakePlaysWithBook(bundle: TakePlayBundle): Promise<T
     if (q && q.ask != null) {
       row.liveAsk = q.ask;
       row.liveBid = q.bid;
+      row.askDepthUsd = q.askDepthUsd ?? null;
       row.quoteSource = "clob";
       row.quoteAt = q.fetchedAt;
       row.currentPrice = q.ask;
@@ -398,6 +463,7 @@ export async function enrichTakePlaysWithBook(bundle: TakePlayBundle): Promise<T
     if (q && q.ask != null) {
       row.liveAsk = q.ask;
       row.liveBid = q.bid;
+      row.askDepthUsd = q.askDepthUsd ?? null;
       row.quoteSource = "clob";
       row.quoteAt = q.fetchedAt;
       row.currentPrice = q.ask;
@@ -528,6 +594,9 @@ export function mapCsvOpenRow(row: Record<string, unknown>): AnnotatedTakePlay {
     url: row.url ? String(row.url) : undefined,
     take: misses.length === 0,
     close: misses.length > 0 && misses.length <= 2,
+    conditionId: row.conditionId ? String(row.conditionId) : undefined,
+    stakeUsd: suggestedStakeUsd({ q: num(row.q), rel: num(row.rel), take: misses.length === 0 }),
+    slipCents: 2,
   };
   applyQuote(play);
   play.why = buildTakeWhy({
@@ -689,10 +758,20 @@ export function mergeRankedPlays(
   const byId = new Map<string, AnnotatedTakePlay>();
   const add = (row: AnnotatedTakePlay, list: "take" | "near" | "watch") => {
     row.list = list;
+    if (row.stakeUsd == null) {
+      row.stakeUsd = suggestedStakeUsd({ q: row.q, rel: row.rel, take: list === "take" });
+    }
+    if (row.slipCents == null) row.slipCents = 2;
+    if (row.laneMode == null) {
+      row.laneMode = list === "take" ? "sniper" : "graded";
+    }
     const prev = byId.get(row.id);
     if (!prev || row.grade > prev.grade) byId.set(row.id, row);
   };
-  for (const p of bundle.live) add(p, "take");
+  for (const p of bundle.live) {
+    p.laneMode = "sniper";
+    add(p, "take");
+  }
   for (const p of bundle.near) add(p, "near");
   for (const raw of board?.plays || []) {
     const row = mapCsvOpenRow(raw);
@@ -703,6 +782,19 @@ export function mergeRankedPlays(
     else if (raw.bucket && !row.why.some((w) => w.includes("bucket"))) {
       row.why = [`Roster bucket: ${String(raw.bucket)}`, ...row.why];
     }
+    // Explorer: Q≥60, sub_ok / high rel, not NFL — labeled separately from Sniper TAKE
+    const explorer =
+      list !== "take"
+      && row.q >= 60
+      && row.rel >= 2
+      && !(row.sport || "").toUpperCase().includes("NFL")
+      && row.lane === "sports";
+    if (explorer) {
+      row.laneMode = "explorer";
+      if (!row.why.some((w) => w.toLowerCase().includes("explorer"))) {
+        row.why = ["Explorer lane (sub/sport expert · not Sniper Telegram TAKE)", ...row.why];
+      }
+    }
     row.take = list === "take";
     row.close = list === "near";
     add(row, list);
@@ -710,6 +802,34 @@ export function mergeRankedPlays(
   for (const raw of health?.near_open || []) {
     add(mapCsvOpenRow(raw), "near");
   }
+
+  // Consensus: group by conditionId + side among graded sports opens
+  const groups = new Map<string, AnnotatedTakePlay[]>();
+  for (const p of byId.values()) {
+    const cid = (p.conditionId || p.slug || p.marketQuestion || "").toLowerCase();
+    if (!cid) continue;
+    const key = `${cid}|${(p.side || "").toUpperCase()}`;
+    const arr = groups.get(key) || [];
+    arr.push(p);
+    groups.set(key, arr);
+  }
+  for (const members of groups.values()) {
+    if (members.length < 2) continue;
+    const traders = [...new Set(members.flatMap((m) => m.traders || []))];
+    if (traders.length < 2) continue;
+    for (const m of members) {
+      m.consensusVoters = traders.length;
+      m.consensusTraders = traders;
+      if (!m.why.some((w) => w.toLowerCase().includes("consensus"))) {
+        m.why = [`Consensus ${traders.length} wallets: ${traders.slice(0, 4).join(", ")}`, ...m.why];
+      }
+      // Mild grade boost for multi-wallet agreement (not enough to invent TAKE)
+      if (m.list !== "take") {
+        m.grade = Math.min(100, m.grade + Math.min(6, traders.length * 2));
+      }
+    }
+  }
+
   return [...byId.values()]
     .sort((a, b) => b.grade - a.grade || b.rel - a.rel || b.q - a.q)
     .map((p, i) => ({ ...p, rank: i + 1 }));

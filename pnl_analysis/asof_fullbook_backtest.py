@@ -6,13 +6,13 @@ Win = token resolved to $1. Fill = their VWAP and +2¢. Grade / sport-lane /
 submarket / relative size use only markets that had already resolved.
 
 Forward / look-ahead notes (important for OddsJam-style honesty):
-  - Features (Q, lane ROI, median stake) are as-of (endDate − KNOWLEDGE_LAG),
-    so the *current* market's outcome is never in the snapshot.
+  - Features (Q, lane ROI, median stake) are as-of (first_fill − KNOWLEDGE_LAG)
+    when a fill timestamp exists, else (endDate − KNOWLEDGE_LAG).
+    The *current* market's outcome is never in the snapshot.
   - Labels are resolution outcomes only — we never peek at future PnL.
-  - Caveat: as-of is tied to resolution day, not the exact entry timestamp.
-    Early entries can still use features that resolved after the bet was placed
-    but before endDate−1d. Live opens use `now − KNOWLEDGE_LAG` (true forward).
+  - Live opens use `now − KNOWLEDGE_LAG` (true forward).
   - Product Sniper rule: asof_live_q60_sport_rel2 (Q≥60, sport +5%, rel≥2×).
+  - Explorer (labeled, non-Telegram): asof_q60_sub_rel2.
 
 Writes:
   pnl_analysis/output/asof_fullbook_backtest.json
@@ -320,7 +320,25 @@ def collect_plays(trusted: list[dict], extra_books: list[dict] | None = None) ->
             end_dt = pd.Timestamp(r.end_dt).to_pydatetime()
             if end_dt.tzinfo is None:
                 end_dt = end_dt.replace(tzinfo=timezone.utc)
-            as_of = end_dt - KNOWLEDGE_LAG
+            # Prefer first-fill as-of so features match what we would have known
+            # when the position was opened (not resolution day − 1d).
+            fill_raw = getattr(r, "first_fill_ts", None)
+            fill_dt = None
+            if fill_raw is not None and not (isinstance(fill_raw, float) and np.isnan(fill_raw)):
+                try:
+                    fill_ts = pd.Timestamp(fill_raw)
+                    if not pd.isna(fill_ts):
+                        fill_dt = fill_ts.to_pydatetime()
+                        if fill_dt.tzinfo is None:
+                            fill_dt = fill_dt.replace(tzinfo=timezone.utc)
+                except (TypeError, ValueError):
+                    fill_dt = None
+            if fill_dt is not None:
+                as_of = fill_dt - KNOWLEDGE_LAG
+                # Never use knowledge after the game has resolved
+                as_of = min(as_of, end_dt - KNOWLEDGE_LAG)
+            else:
+                as_of = end_dt - KNOWLEDGE_LAG
             snap = lookup_snap(snaps, as_of)
             n_prior = int(snap["n"]) if snap else 0
             if n_prior < WARMUP:
