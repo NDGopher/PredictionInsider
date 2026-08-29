@@ -573,6 +573,31 @@ def main() -> int:
     enq_sports = sum(1 for r in new_rows if r.get("source") == "unusual_flow_sports")
     enq_macro = sum(1 for r in new_rows if r.get("source") == "unusual_flow_macro")
 
+    # Cumulative unusual-flow watches still on the roster (for UI badge)
+    watch_roster: list[dict[str, Any]] = []
+    try:
+        data = json.loads(EXTRA_TRADERS_PATH.read_text(encoding="utf-8")) if EXTRA_TRADERS_PATH.exists() else []
+        if isinstance(data, list):
+            for r in data:
+                if not isinstance(r, dict):
+                    continue
+                src = str(r.get("source") or "")
+                st = str(r.get("status") or "")
+                if src.startswith("unusual_flow") and st in {"watch", "take_book"}:
+                    watch_roster.append(
+                        {
+                            "username": r.get("username"),
+                            "wallet": r.get("wallet"),
+                            "source": src,
+                            "status": st,
+                            "discovered_at": r.get("discovered_at"),
+                            "discovery": r.get("discovery"),
+                            "notes": r.get("notes"),
+                        }
+                    )
+    except Exception as exc:
+        print(f"[hot-discover] watch_roster: {exc}")
+
     fetched = 0
     fetch_rc = 0
     if args.fetch and new_rows:
@@ -609,8 +634,10 @@ def main() -> int:
             "enqueued_sports": enq_sports,
             "enqueued_macro": enq_macro,
             "csv_fetched": fetched,
+            "watch_roster": len(watch_roster),
         },
         "enqueued": new_rows,
+        "watch_roster": watch_roster,
         "results": results,
         "sources": {
             "unusual_flow": str(UNUSUAL_JSON),

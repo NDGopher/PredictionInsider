@@ -177,8 +177,18 @@ export interface HotWalletDiscoveries {
     enqueued_sports?: number;
     enqueued_macro?: number;
     csv_fetched?: number;
+    watch_roster?: number;
   };
   enqueued?: Array<{
+    wallet?: string;
+    username?: string;
+    source?: string;
+    status?: string;
+    notes?: string;
+    discovered_at?: string;
+    discovery?: Record<string, unknown>;
+  }>;
+  watch_roster?: Array<{
     wallet?: string;
     username?: string;
     source?: string;
@@ -242,6 +252,17 @@ function loadJson<T>(rel: string): T | null {
 
 export function loadHotWalletDiscoveries(): HotWalletDiscoveries | null {
   return loadJson<HotWalletDiscoveries>("pnl_analysis/output/hot_wallet_discoveries.json");
+}
+
+/** Count wallets currently on watch from unusual-flow hot discovery (cumulative). */
+export function countUnusualFlowWatches(): number {
+  const extra = loadJson<Array<{ source?: string; status?: string }>>("pnl_analysis/extra_traders.json");
+  if (!Array.isArray(extra)) return 0;
+  return extra.filter((r) => {
+    const src = String(r.source || "");
+    const st = String(r.status || "");
+    return src.startsWith("unusual_flow") && (st === "watch" || st === "take_book");
+  }).length;
 }
 
 function num(v: unknown): number | null {
@@ -340,7 +361,11 @@ export function loadPredictionInsiders(
   const counts = board?.counts || {};
   const unusualMarkets = unusualFlow?.markets?.length ?? 0;
   const potentialInsiders = unusualFlow?.potential_insiders?.length ?? 0;
-  const hotEnqueued = hotDiscoveries?.counts?.enqueued ?? hotDiscoveries?.enqueued?.length ?? 0;
+  const hotWatchCount = countUnusualFlowWatches();
+  const hotEnqueued =
+    hotWatchCount > 0
+      ? hotWatchCount
+      : (hotDiscoveries?.counts?.enqueued ?? hotDiscoveries?.enqueued?.length ?? 0);
   const hotCandidates = hotDiscoveries?.counts?.candidates ?? 0;
   return {
     generatedAt:

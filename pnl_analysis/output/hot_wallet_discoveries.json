@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-08-29T14:28:41.415636+00:00",
+  "generated_at": "2026-08-29T14:34:08.610368+00:00",
   "method": "Market-first hot wallet discovery (Unusual Whales / OddsJam pattern): scan top-volume Polymarket holders \u2192 Z\u22652 alerts \u2192 light Q on alerts only \u2192 enqueue to extra_traders watch. Sports vs macro lanes via sports_ish. Never runs full pipeline on cold/stale roster wallets.",
   "params": {
-    "from_json": false,
-    "quick": true,
-    "fetch": true,
+    "from_json": true,
+    "quick": false,
+    "fetch": false,
     "min_z": 2.0,
     "min_light_q": 22,
     "max_sports_watch": 8,
@@ -14,19 +14,40 @@
   "counts": {
     "candidates": 8,
     "scored": 8,
-    "accepted": 2,
-    "enqueued": 2,
-    "enqueued_sports": 2,
+    "accepted": 0,
+    "enqueued": 0,
+    "enqueued_sports": 0,
     "enqueued_macro": 0,
-    "csv_fetched": 2
+    "csv_fetched": 0,
+    "watch_roster": 3
   },
-  "enqueued": [
+  "enqueued": [],
+  "watch_roster": [
     {
-      "wallet": "0xd3a0b4e941b557d33a8efd5a51c581e7c79cf136",
-      "username": "hot_d3a0b4",
+      "username": "FNanalytics",
+      "wallet": "0x2dd7c1664c60be9ce733f9a9441f1420f4fc89aa",
       "source": "unusual_flow_sports",
       "status": "watch",
-      "notes": "Hot discovery Z=5.74 on Will TSG 1899 Hoffenheim win on 2026-08-29?. light_q=0 n=0 WR=None ROI=None%. Unique CSV + take-rule required before live. tags=potential_insider,concentrated,fresh_wallet,contrarian_whale",
+      "discovered_at": "2026-08-29T14:27:19.333994+00:00",
+      "discovery": {
+        "z": 2.08,
+        "lane": "sports",
+        "market": "Rams vs. Chargers",
+        "tags": [
+          "concentrated",
+          "contrarian_whale"
+        ],
+        "light_q": 100,
+        "light_n": 150,
+        "light_roi": 30.0
+      },
+      "notes": "Hot discovery Z=2.08 on Rams vs. Chargers. light_q=100 n=150 WR=72.0 ROI=30.0%. Unique CSV + take-rule required before live. tags=concentrated,contrarian_whale"
+    },
+    {
+      "username": "hot_d3a0b4",
+      "wallet": "0xd3a0b4e941b557d33a8efd5a51c581e7c79cf136",
+      "source": "unusual_flow_sports",
+      "status": "watch",
       "discovered_at": "2026-08-29T14:28:29.655978+00:00",
       "discovery": {
         "z": 5.74,
@@ -41,14 +62,14 @@
         "light_q": 0,
         "light_n": 0,
         "light_roi": null
-      }
+      },
+      "notes": "Hot discovery Z=5.74 on Will TSG 1899 Hoffenheim win on 2026-08-29?. light_q=0 n=0 WR=None ROI=None%. Unique CSV + take-rule required before live. tags=potential_insider,concentrated,fresh_wallet,contrarian_whale"
     },
     {
-      "wallet": "0x5dab5ed9691fab220535891d9c7f5c28eed322e1",
       "username": "Weaseloftheweek",
+      "wallet": "0x5dab5ed9691fab220535891d9c7f5c28eed322e1",
       "source": "unusual_flow_sports",
       "status": "watch",
-      "notes": "Hot discovery Z=4.66 on LoL: Top Esports vs LGD Gaming (BO5) - LPL Playoffs. light_q=59 n=129 WR=46.5 ROI=-5.2%. Unique CSV + take-rule required before live. tags=potential_insider,concentrated,contrarian_whale",
       "discovered_at": "2026-08-29T14:28:29.656009+00:00",
       "discovery": {
         "z": 4.66,
@@ -62,7 +83,8 @@
         "light_q": 59,
         "light_n": 129,
         "light_roi": -5.2
-      }
+      },
+      "notes": "Hot discovery Z=4.66 on LoL: Top Esports vs LGD Gaming (BO5) - LPL Playoffs. light_q=59 n=129 WR=46.5 ROI=-5.2%. Unique CSV + take-rule required before live. tags=potential_insider,concentrated,contrarian_whale"
     }
   ],
   "results": [
@@ -116,7 +138,7 @@
         "fresh_wallet",
         "contrarian_whale"
       ],
-      "q_known": null,
+      "q_known": 4,
       "fresh": true,
       "open_markets": 1,
       "trade_depth": 1,
@@ -127,19 +149,19 @@
       "url": "https://polymarket.com/event/bun-koe-hof-2026-08-29",
       "polymarket_profile": "https://polymarket.com/profile/0xd3a0b4e941b557d33a8efd5a51c581e7c79cf136",
       "light": {
-        "light_q": 0,
-        "n": 0,
+        "light_q": 4,
+        "n": -1,
         "win_rate": null,
         "roi_pct": null,
-        "realized": 0.0,
-        "invested": 0.0,
+        "realized": null,
+        "invested": null,
         "reasons": [
-          "no_closed_sample"
+          "known_q"
         ]
       },
-      "action": "enqueue",
+      "action": "skip:already_watch",
       "gate_reasons": [
-        "fresh_sports_hot_thin_book"
+        "already_watch"
       ]
     },
     {
@@ -209,11 +231,9 @@
         "invested": 15265409.17,
         "reasons": []
       },
-      "action": "enqueue",
+      "action": "skip:already_watch",
       "gate_reasons": [
-        "z=4.66",
-        "light_q=59",
-        "sports_lane"
+        "already_watch"
       ]
     },
     {

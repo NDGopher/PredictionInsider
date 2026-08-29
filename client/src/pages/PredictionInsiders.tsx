@@ -180,8 +180,10 @@ interface PredictionInsidersResponse {
       enqueued_sports?: number;
       enqueued_macro?: number;
       csv_fetched?: number;
+      watch_roster?: number;
     };
     enqueued?: Array<{ username?: string; wallet?: string; source?: string; notes?: string }>;
+    watch_roster?: Array<{ username?: string; wallet?: string; source?: string; notes?: string }>;
     results?: HotWalletResult[];
   } | null;
 }
@@ -634,7 +636,7 @@ export default function PredictionInsiders() {
               <CardContent className="p-4 space-y-3">
                 <div className="font-medium text-sm flex items-center gap-2">
                   <Radar className="w-4 h-4 text-emerald-400" />
-                  Hot wallet discoveries ({data?.counts?.hotEnqueued ?? data?.hotDiscoveries?.enqueued?.length ?? 0})
+                  Hot wallet discoveries ({data?.counts?.hotEnqueued ?? data?.hotDiscoveries?.counts?.watch_roster ?? 0})
                 </div>
                 <p className="text-[11px] text-muted-foreground">
                   UW/OddsJam pattern: top markets → holder Z≥2 → light Q on alerts only → watch.
@@ -643,11 +645,17 @@ export default function PredictionInsiders() {
                     ? ` Last pass ${String(data.hotDiscoveries.generated_at).slice(0, 19)} UTC.`
                     : ""}
                 </p>
+                {(data?.hotDiscoveries?.watch_roster?.length ?? 0) > 0 && (
+                  <div className="text-xs">
+                    <span className="text-muted-foreground">On watch from hot discovery: </span>
+                    {(data?.hotDiscoveries?.watch_roster || []).map((w) => w.username).filter(Boolean).join(", ")}
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-3 text-[11px] text-muted-foreground">
                   <span>Candidates: {data?.hotDiscoveries?.counts?.candidates ?? data?.counts?.hotCandidates ?? 0}</span>
                   <span>Scored: {data?.hotDiscoveries?.counts?.scored ?? 0}</span>
-                  <span className="text-emerald-400">Sports +{data?.hotDiscoveries?.counts?.enqueued_sports ?? 0}</span>
-                  <span className="text-amber-400">Macro +{data?.hotDiscoveries?.counts?.enqueued_macro ?? 0}</span>
+                  <span className="text-emerald-400">Roster watches: {data?.counts?.hotEnqueued ?? data?.hotDiscoveries?.counts?.watch_roster ?? 0}</span>
+                  <span>This pass +{data?.hotDiscoveries?.counts?.enqueued ?? 0}</span>
                   <span>CSV fetched: {data?.hotDiscoveries?.counts?.csv_fetched ?? 0}</span>
                 </div>
                 <div className="overflow-x-auto">
