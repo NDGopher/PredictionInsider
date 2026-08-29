@@ -6291,6 +6291,52 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  // ── GET/POST /api/elite-continuous ────────────────────────────────────────
+  // Continuous grade / promote / ranked-board micro-loop status + manual tick.
+  app.get("/api/elite-continuous", async (_req, res) => {
+    try {
+      res.setHeader("Cache-Control", "no-store");
+      const { eliteContinuousStatus } = await import("./eliteContinuousLoop");
+      const { scheduledPipelineStatus } = await import("./scheduledPipeline");
+      const { hotWalletDiscoverStatus } = await import("./hotWalletDiscoverLoop");
+      let lastTick: unknown = null;
+      try {
+        const fs = await import("fs");
+        const path = await import("path");
+        const p = path.join(process.cwd(), "pnl_analysis/output/elite_continuous_status.json");
+        if (fs.existsSync(p)) lastTick = JSON.parse(fs.readFileSync(p, "utf8"));
+      } catch (err) {
+        console.error("[elite-continuous] read status:", err);
+      }
+      res.json({
+        elite: eliteContinuousStatus(),
+        hotDiscover: hotWalletDiscoverStatus(),
+        scheduledPipeline: scheduledPipelineStatus(),
+        lastTick,
+      });
+    } catch (err: unknown) {
+      console.error("elite-continuous GET error:", err);
+      res.status(500).json({ error: formatApiError(err) });
+    }
+  });
+
+  app.post("/api/elite-continuous", async (req, res) => {
+    try {
+      res.setHeader("Cache-Control", "no-store");
+      const { triggerEliteTick, eliteContinuousStatus } = await import("./eliteContinuousLoop");
+      const modeRaw = String((req.body as { mode?: string } | undefined)?.mode || "micro");
+      const mode =
+        modeRaw === "promote" || modeRaw === "after-hot" || modeRaw === "full-lite"
+          ? modeRaw
+          : "micro";
+      const started = triggerEliteTick(mode);
+      res.json({ started, mode, status: eliteContinuousStatus() });
+    } catch (err: unknown) {
+      console.error("elite-continuous POST error:", err);
+      res.status(500).json({ error: formatApiError(err) });
+    }
+  });
+
   // ── GET /api/copy-discovery ───────────────────────────────────────────────
   // Live/bench/watch roster + adaptive promote/demote proposals (auto-promote applied by pipeline).
   app.get("/api/copy-discovery", async (_req, res) => {

@@ -42,6 +42,8 @@
     "model:unusual": "python pnl_analysis/scan_unusual_flow.py",
     "model:hot-discover": "python pnl_analysis/discover_hot_wallets.py --quick --fetch",
     "model:hot-discover:full": "python pnl_analysis/discover_hot_wallets.py --fetch",
+    "model:elite-micro": "python pnl_analysis/elite_continuous_tick.py --mode micro",
+    "model:elite-promote": "python pnl_analysis/elite_continuous_tick.py --mode promote",
     "model:fetch-watch": "python pnl_analysis/fetch_watch_csvs.py",
     "research:mm": "python pnl_analysis/mm_maker_research.py",
     "backtest:take-health": "python pnl_analysis/take_book_daily.py"

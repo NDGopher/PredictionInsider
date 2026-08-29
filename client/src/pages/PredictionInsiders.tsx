@@ -384,6 +384,88 @@ function InsiderAlertRow({ r }: { r: UnusualFlowInsider }) {
   );
 }
 
+interface EliteContinuousResponse {
+  elite?: {
+    busy?: boolean;
+    lastMode?: string | null;
+    lastStartedAt?: number | null;
+    lastFinishedAt?: number | null;
+    lastExitCode?: number | null;
+    microIntervalMs?: number;
+    promoteIntervalMs?: number;
+  };
+  hotDiscover?: {
+    busy?: boolean;
+    lastFinishedAt?: number | null;
+    lastExitCode?: number | null;
+    intervalMs?: number;
+  };
+  scheduledPipeline?: {
+    busy?: boolean;
+    lastFinishedAt?: number | null;
+    lastCheckAt?: number | null;
+    smartRefreshMs?: number;
+  };
+  lastTick?: {
+    mode?: string;
+    ok?: boolean;
+    finished_at?: string;
+    failed?: string[];
+  } | null;
+}
+
+function fmtAgo(ts: number | null | undefined): string {
+  if (ts == null) return "never";
+  const s = Math.max(0, Math.round((Date.now() - ts) / 1000));
+  if (s < 60) return `${s}s ago`;
+  if (s < 3600) return `${Math.round(s / 60)}m ago`;
+  return `${Math.round(s / 3600)}h ago`;
+}
+
+function EliteHeartbeat() {
+  const { data } = useQuery<EliteContinuousResponse>({
+    queryKey: ["/api/elite-continuous"],
+    refetchInterval: 15_000,
+  });
+  const e = data?.elite;
+  const h = data?.hotDiscover;
+  const p = data?.scheduledPipeline;
+  const tick = data?.lastTick;
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]" data-testid="elite-heartbeat">
+      <div className="border border-border/40 rounded-md p-2 space-y-0.5">
+        <div className="font-medium">Hot discover</div>
+        <div className="text-muted-foreground">
+          every {Math.round((h?.intervalMs ?? 600_000) / 60_000)}m · last {fmtAgo(h?.lastFinishedAt ?? null)}
+          {h?.busy ? " · running" : ""}
+        </div>
+      </div>
+      <div className="border border-border/40 rounded-md p-2 space-y-0.5">
+        <div className="font-medium">Grade / promote</div>
+        <div className="text-muted-foreground">
+          micro {Math.round((e?.microIntervalMs ?? 900_000) / 60_000)}m · promote{" "}
+          {Math.round((e?.promoteIntervalMs ?? 2_700_000) / 60_000)}m
+        </div>
+        <div className="text-muted-foreground">
+          last {e?.lastMode || tick?.mode || "—"} {fmtAgo(e?.lastFinishedAt ?? null)}
+          {e?.busy ? " · running" : ""}
+          {tick?.ok === false ? " · warn" : ""}
+        </div>
+      </div>
+      <div className="border border-border/40 rounded-md p-2 space-y-0.5">
+        <div className="font-medium">Full pipeline</div>
+        <div className="text-muted-foreground">
+          check hourly · smart {Math.round((p?.smartRefreshMs ?? 21_600_000) / 3_600_000)}h
+        </div>
+        <div className="text-muted-foreground">
+          last {fmtAgo(p?.lastFinishedAt ?? p?.lastCheckAt ?? null)}
+          {p?.busy ? " · running" : ""}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PredictionInsiders() {
   const { data, isLoading, error, refetch, dataUpdatedAt } = useQuery<PredictionInsidersResponse>({
     queryKey: ["/api/prediction-insiders"],
@@ -632,6 +714,20 @@ export default function PredictionInsiders() {
           </TabsContent>
 
           <TabsContent value="discover" className="space-y-4 mt-4">
+            <Card>
+              <CardContent className="p-4 space-y-2">
+                <div className="font-medium text-sm flex items-center gap-2">
+                  <Radar className="w-4 h-4 text-primary" />
+                  Automation heartbeat
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Always-on while the server runs: hot discover 10m · grade micro 15m · promote 45m · full pipeline when ingest is stale.
+                  See <code className="text-[10px]">pnl_analysis/ELITE_AUTOMATION.md</code>.
+                </p>
+                <EliteHeartbeat />
+              </CardContent>
+            </Card>
+
             <Card>
               <CardContent className="p-4 space-y-3">
                 <div className="font-medium text-sm flex items-center gap-2">

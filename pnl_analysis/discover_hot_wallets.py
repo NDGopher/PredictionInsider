@@ -437,6 +437,7 @@ def fetch_new_csvs(usernames: list[str], limit: int) -> int:
         str(ROOT / "run_full_pipeline.py"),
         "--incremental",
         "--full-open",
+        "--ingest",
         "--traders",
         ",".join(batch),
     ]

@@ -132,6 +132,6 @@ app.use((req, res, next) => {
   ) {
     exec(`cmd /c start "" "${runtime.url}"`);
   }
-  import("./scheduledPipeline").then((m) => m.runScheduledPipelineIfNeeded());
+  import("./scheduledPipeline").then((m) => m.startScheduledPipelineLoop());
   import("./takeBookLiveLoop").then((m) => m.startTakeBookLiveLoop());
 })();

@@ -2,13 +2,15 @@
  * Market-first hot wallet discovery loop (Unusual Whales / OddsJam pattern).
  *
  * Every HOT_MS: spawn discover_hot_wallets.py --quick --fetch
- *   top markets → Z-score → light Q on alerts only → enqueue watch
+ *   top markets → Z-score → light Q on alerts only → enqueue watch → CSV+ingest
  *
- * Does NOT re-run the full cold-roster pipeline.
+ * On successful enqueue/fetch: trigger elite after-hot tick (roster + ranked board).
  */
 import { spawn } from "child_process";
+import fs from "fs";
 import { join } from "path";
 import { resolvePythonCommand } from "./resolvePython";
+import { triggerEliteTick } from "./eliteContinuousLoop";
 
 /** 10 minutes — UW-style cadence without hammering public APIs */
 const HOT_MS = 10 * 60_000;
@@ -35,6 +37,22 @@ export function hotWalletDiscoverStatus(): {
     lastError,
     intervalMs: HOT_MS,
   };
+}
+
+function readHotDiscoverCounts(): { enqueued: number; csvFetched: number } {
+  try {
+    const p = join(process.cwd(), "pnl_analysis/output/hot_wallet_discoveries.json");
+    if (!fs.existsSync(p)) return { enqueued: 0, csvFetched: 0 };
+    const data = JSON.parse(fs.readFileSync(p, "utf8")) as {
+      counts?: { enqueued?: number; csv_fetched?: number };
+    };
+    return {
+      enqueued: Number(data.counts?.enqueued || 0),
+      csvFetched: Number(data.counts?.csv_fetched || 0),
+    };
+  } catch {
+    return { enqueued: 0, csvFetched: 0 };
+  }
 }
 
 /**
@@ -84,6 +102,16 @@ export function triggerHotWalletDiscover(opts?: {
     lastExitCode = code;
     if (code === 0) {
       console.log("[hot-discover] finished ok");
+      const { enqueued, csvFetched } = readHotDiscoverCounts();
+      if (enqueued > 0 || csvFetched > 0) {
+        console.log(
+          `[hot-discover] follow-up after-hot (enqueued=${enqueued} csv=${csvFetched})`,
+        );
+        // Defer slightly so ingest flush settles
+        setTimeout(() => {
+          triggerEliteTick("after-hot");
+        }, 3_000);
+      }
     } else {
       lastError = stderr.slice(-400) || `exit ${code}`;
       console.warn(`[hot-discover] exited ${code}: ${lastError}`);
@@ -101,8 +129,7 @@ export function triggerHotWalletDiscover(opts?: {
 
 export function startHotWalletDiscoverLoop(): void {
   const mins = Math.round(HOT_MS / 60_000);
-  console.log(`[hot-discover] loop on — every ${mins}m (Z→light Q→watch, no cold full pipeline)`);
-  // First pass after warmup so take-plays / signals settle first
+  console.log(`[hot-discover] loop on — every ${mins}m (Z→light Q→watch→ingest, then after-hot grade)`);
   setTimeout(() => {
     triggerHotWalletDiscover({ quick: true, fetch: true });
   }, 45_000);
