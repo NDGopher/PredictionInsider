@@ -25,7 +25,7 @@
     "username": "WTSA",
     "source": "sports_leaderboard",
     "status": "take_book",
-    "notes": "On the live take book. S-Tier Q=72 ROI=57.7% (104 events)"
+    "notes": "Matched sports whale. Unique +$1.15M / 20% ROI, last 30d +$1.01M. Median $28k — 10% copy needs ~$56k bankroll. Keep on bench, not $100 live."
   },
   {
     "wallet": "0x9ee8bbc36d378af72e5f6b8e2ea2eb67c05a89de",
@@ -39,14 +39,14 @@
     "username": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
     "source": "sports_leaderboard",
     "status": "watch",
-    "notes": "B-Tier Q=46 ROI=38.0% (95 events). Tracked, not on the take book."
+    "notes": "B-Tier tennis/soccer. Unique +$1.11M / 12.5% ROI, last 30d +$612k / 22%. Median $40k unjoinable — watch whale, not $100 copy."
   },
   {
     "wallet": "0x5268527977f700f9bf9b6d5cd843859e4e70135d",
     "username": "HomeRunHazard",
     "source": "sports_leaderboard",
     "status": "kicked",
-    "notes": "KICK: ~1% ROI on $124M / 24k markets (96.9% WR moneylines). Favorite/bond grinder — do not tail."
+    "notes": "KICK: ~1% ROI on huge volume (MLB/tennis grinder). Outsized holds +2% ROI. Equity curve is volume, not edge."
   },
   {
     "wallet": "0xfe787d2da716d60e8acff57fb87eb13cd4d10319",
@@ -80,8 +80,8 @@
     "wallet": "0x0e604be17c231a33dc01e38a722c7fe3984e3bad",
     "username": "0xwise",
     "source": "sports_leaderboard",
-    "status": "watch",
-    "notes": "Screen only: honest hold ROI +60% (n=151). Do not tail until unique full-open grade."
+    "status": "kicked",
+    "notes": "KICK 2026-08-18 unique book: +$10k / 3.7% ROI, WR 31.5% on 160 events. Screen hold-ROI was fake. Do not tail."
   },
   {
     "wallet": "0x17db3fcd93ba12d38382a0cade24b200185c5f6d",
@@ -110,5 +110,224 @@
     "source": "polydata_smart_score",
     "status": "watch",
     "notes": "SS 83 sports #28. PnL $3.55M vs $3.56M but only 15 closed — too thin to tail."
+  },
+  {
+    "wallet": "0x4bff30af91642dc7d2b19a8664378fe55c45fc26",
+    "username": "Sassy-Bucket",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "PD month sports #3. Unique lifetime −$3.53M / −7.6% ROI, median $43k. Last 30d +$1.01M / 16% but outsized lifetime −6% and take-rule n=0. Watch whale — not $100 copy."
+  },
+  {
+    "wallet": "0x16bb9951a36fce71e2ef57890b786145e0ba8492",
+    "username": "SDTrading",
+    "source": "polydata_month_sports",
+    "status": "take_book",
+    "notes": "[auto-promote 2026-08-23] auto_live regime=turnaround last30=14.4% n=208 (4 red months → 1 green; last30 14.4% n=208) | PD month curve looks elite. Unique lifetime −$26k / −0.3% ROI (last 30d +$447k / 14%). Median $4.9k is joinable but take-rule n=0 and outsized lifetime ROI ~0%. Do not live. 10% copy would need ~$10k bankroll and would not fire Take these.",
+    "auto_promoted_at": "2026-08-23T13:36:39.683282+00:00",
+    "auto_promote_reason": "auto_live regime=turnaround last30=14.4% n=208 (4 red months → 1 green; last30 14.4% n=208)",
+    "regime": "turnaround"
+  },
+  {
+    "wallet": "0x7ad71d79a3bb90d0a87a06500fa0fe11663842aa",
+    "username": "theowalcott",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Soccer. Unique +$336k / 14% ROI on 65 markets, median $27k unjoinable. Take n=5. Watch whale, not live."
+  },
+  {
+    "wallet": "0x38337de21ff0bb0a11a40761507d51e318d633d1",
+    "username": "SineNooneEI",
+    "source": "polydata_month_overall",
+    "status": "watch",
+    "notes": "Esports specialist (tennis secondary). Unique +$793k / 5.4% ROI, median $6.8k joinable, last 30d +11%. Take-rule n=14 ROI −18% — do not live."
+  },
+  {
+    "wallet": "0x9319a045cdd0c2180e5eb7ad44374383db9a6410",
+    "username": "sainttroplay",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "PD month sports #1 is 6 closed soccer tickets, median $651k, 83% WR. Uncopyable whale, not a book."
+  },
+  {
+    "wallet": "0x1b20a00709dfe648afd26b326394b5e031f83ab0",
+    "username": "0x1b20a00709DfE648AFd26b326394b5e031f83ab0",
+    "source": "polydata_month_sports",
+    "status": "take_book",
+    "notes": "[auto-promote 2026-08-23] auto_live unique_roi=34.66% awaiting_take_prints n=11 | MLB unique +$860k / 34.7% ROI on 51 events / 72 closed, median $12.8k. Take-rule n=0. Thin S-Tier — watch, never auto-live.",
+    "auto_promoted_at": "2026-08-23T13:36:39.683282+00:00",
+    "auto_promote_reason": "auto_live unique_roi=34.66% awaiting_take_prints n=11",
+    "regime": "hot"
+  },
+  {
+    "wallet": "0x983eedfbd75803602e4a6e6ea9aab6dc6b9c6748",
+    "username": "3edmond.dantes",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Auto from Polydata month sports #12 PnL/vol=14.2%. Unique book + take-rule required before live."
+  },
+  {
+    "wallet": "0x3eb095d871501a1d7a3cb086a22d174b52356a68",
+    "username": "predictionlegend",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Auto from Polydata month sports #14 PnL/vol=30.3%. Unique book + take-rule required before live."
+  },
+  {
+    "wallet": "0x2f44fa076c8d2976ac6bea0ddfd9502bad2b93c2",
+    "username": "TennisLove",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Unique 6 closed tennis tickets, 100% WR, median ~$99k. S-Tier Q is sample-size theater — lottery whale, not a book. Never live."
+  },
+  {
+    "wallet": "0x4b341d4612437b6e5b5fbcf98e5b675dbacf48a8",
+    "username": "musholius722",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Unique 2 closed tickets, A-Tier Q=66 / 60.6% ROI, median $174k. Lottery whale, not a book. Watch only."
+  },
+  {
+    "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+    "username": "HVAB",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Tennis unique +$281k / 10.5% ROI, 386 events, WR 82.0%, median $896. Take-rule n=27 +9.8% after 2¢ — edge is real but WR is outside the 48–75 copy band. Watch specialist, not $100 live."
+  },
+  {
+    "wallet": "0x13fa4ce1b8a27dd0b7a72db6205a50ee6ff0954c",
+    "username": "betterfasterstronger",
+    "source": "polydata_month_sports",
+    "status": "kicked",
+    "notes": "KICK 2026-08-18 unique book: −$1.64M / broken cost basis (ROI −76250%). Not a copy-sharp."
+  },
+  {
+    "wallet": "0xc3acf5878a03523d09a3ac859943445d7baeb964",
+    "username": "mentionmarket",
+    "source": "polydata_month_sports",
+    "status": "kicked",
+    "notes": "KICK 2026-08-18 unique book: −$3.16M / −19.9% ROI, last 60d −39.8%. Polydata month PnL/vol was 28% on a dumpster lifetime. Do not copy."
+  },
+  {
+    "wallet": "0x86dab59a8a6e7f9947282d2117aab3429b706428",
+    "username": "bigspending",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Unique +$166k / 33.9% ROI on 27 events / 19 closed. Thin S-Tier — watch, never auto-live."
+  },
+  {
+    "wallet": "0xc72d7dcdb23597d143a83536fb97b1d7db7efc21",
+    "username": "HongYunX",
+    "source": "polydata_month_sports",
+    "status": "take_book",
+    "notes": "[auto-promote 2026-08-23] auto_live unique_roi=9.43% awaiting_take_prints n=0 | Soccer unique +$416k / 9.4% ROI, 261 events, WR 60.8%, median $3.1k joinable, HOT 54 prints/30d. Take-rule n=0 so far — extra_watch never auto-live. Promote only after take-slice n≥12 and +ROI.",
+    "auto_promoted_at": "2026-08-23T13:36:39.683282+00:00",
+    "auto_promote_reason": "auto_live unique_roi=9.43% awaiting_take_prints n=0",
+    "regime": "hot"
+  },
+  {
+    "wallet": "0xcbba64cddd05171925ffd05d8f8abd38c83fdbff",
+    "username": "HOG993",
+    "source": "polydata_month_sports",
+    "status": "kicked",
+    "notes": "KICK 2026-08-18 unique book: −$95M / −2374% ROI. Last 60d dashboard −3737%. Fade, do not copy."
+  },
+  {
+    "wallet": "0xa4b7b1814b0da33f2b61be4939976898aa476008",
+    "username": "midwicket72",
+    "source": "polydata_month_sports",
+    "status": "kicked",
+    "notes": "KICK 2026-08-18 unique book: +$99k / 0.8% ROI on 17 events. No copy edge. Do not live."
+  },
+  {
+    "wallet": "0x6ac5bb06a9eb05641fd5e82640268b92f3ab4b6e",
+    "username": "0p0jogggg",
+    "source": "sports_leaderboard",
+    "status": "kicked",
+    "notes": "Lakersfan111. Honest unique book −$833k / −0.9% ROI after loser merge (old +$25M JSON was fake). Last event 2026-04-30. Volatile esports — do not tail."
+  },
+  {
+    "wallet": "0x34dd4a4b70eaf79a17878f7938263c801d4dfd83",
+    "username": "vito3corleone",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Auto from Polydata month sports #4 PnL/vol=51.6%. Unique book + take-rule required before live."
+  },
+  {
+    "wallet": "0x168a51f1cac0ad3b166797069382495a8aa10d24",
+    "username": "ripley86alien",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Auto from Polydata month sports #8 PnL/vol=26.3%. Unique book + take-rule required before live."
+  },
+  {
+    "wallet": "0xf5f92940519a72da460b1c2a606bc1230f0e87b0",
+    "username": "kekasaur",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Auto from Polydata month sports #11 PnL/vol=17.3%. Unique book + take-rule required before live."
+  },
+  {
+    "wallet": "0x0a39b3b29ab3b7dd753aa96fde4ecab3f2dbb0b9",
+    "username": "plonker2026",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Auto from Polydata month sports #14 PnL/vol=10.5%. Unique book + take-rule required before live."
+  },
+  {
+    "wallet": "0x91dda263d251e7f771ea333f8cb6b6066761600b",
+    "username": "murgionsek",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Auto from Polydata month sports #19 PnL/vol=20.3%. Unique book + take-rule required before live."
+  },
+  {
+    "wallet": "0x1f7105a18d9f36aef7c83e5df210e57cf487b2e4",
+    "username": "00xaaxaxaxsasdasddasdjj233j2j32h4h35",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Auto from Polydata month sports #26 PnL/vol=5.9%. Unique book + take-rule required before live."
+  },
+  {
+    "wallet": "0x27f738fe203827445690339104aae35b20bc44b0",
+    "username": "ic4cream",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Auto from Polydata month sports #30 PnL/vol=10.9%. Unique book + take-rule required before live."
+  },
+  {
+    "wallet": "0x82398835fe16616214d928ba87127e28fc1cd9a3",
+    "username": "Kosherlocks",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Auto from Polydata month sports #34 PnL/vol=14.0%. Unique book + take-rule required before live."
+  },
+  {
+    "wallet": "0xa38a455bbdd4b68486548b7e19da99903f4f821d",
+    "username": "takeormake",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Auto from Polydata month sports #39 PnL/vol=5.6%. Unique book + take-rule required before live."
+  },
+  {
+    "wallet": "0xbc43c8bfbc4d77c2fc9011adad38ba43b88996d3",
+    "username": "0xBc43c8bfBC4d77c2FC9011adaD38Ba43b88996d3",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Auto from Polydata month sports #40 PnL/vol=11.5%. Unique book + take-rule required before live."
+  },
+  {
+    "wallet": "0xbdea99acf04cb6863252d43b13db89d5c7681db5",
+    "username": "saftey-first",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Auto from Polydata month sports #42 PnL/vol=23.1%. Unique book + take-rule required before live."
+  },
+  {
+    "wallet": "0x10ff6cd4b1b5669d4ca87faebae0c869ad315088",
+    "username": "02-",
+    "source": "polydata_month_sports",
+    "status": "watch",
+    "notes": "Auto from Polydata month sports #44 PnL/vol=10.6%. Unique book + take-rule required before live."
   }
 ]

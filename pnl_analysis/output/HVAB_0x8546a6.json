@@ -1,0 +1,421 @@
+{
+  "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+  "username": "HVAB",
+  "total_profit": 284790.33,
+  "raw_realized_pnl": 285063.17,
+  "dashboard_pnl": 284790.33,
+  "total_risked": 2762048.5,
+  "overall_roi": 10.31,
+  "redeemed_only_roi": 10.32,
+  "last_30d": {
+    "n": 175,
+    "pnl": 213683.29,
+    "cost": 1479370.77,
+    "roi": 14.44,
+    "wins": 139,
+    "win_rate": 79.4,
+    "first": "2026-07-22",
+    "last": "2026-08-20"
+  },
+  "last_60d": {
+    "n": 338,
+    "pnl": 230495.98,
+    "cost": 1955104.08,
+    "roi": 11.79,
+    "wins": 268,
+    "win_rate": 79.3,
+    "first": "2026-06-22",
+    "last": "2026-08-20"
+  },
+  "last_90d": {
+    "n": 435,
+    "pnl": 234201.74,
+    "cost": 2062270.41,
+    "roi": 11.36,
+    "wins": 346,
+    "win_rate": 79.5,
+    "first": "2026-05-31",
+    "last": "2026-08-20"
+  },
+  "last_event_date": "2026-08-21",
+  "days_since_last_event": 0,
+  "possibly_quit": false,
+  "win_rate": 81.84,
+  "avg_bet_size": 5241.69,
+  "median_market_stake": 896.4,
+  "mean_market_stake": 5241.69,
+  "markets_traded": 397,
+  "total_events": 394,
+  "pseudo_sharpe": 8.31,
+  "profitable_days": 73,
+  "total_days": 81,
+  "hedge_count": 200,
+  "hedge_risk": 675618.45,
+  "hedge_profit": 69110.51,
+  "bond_count": 2,
+  "bond_risk": 5480.03,
+  "bond_profit": -113.01,
+  "open_count": 0,
+  "open_risk": 0.0,
+  "open_value": 0.0,
+  "open_pnl": 0.0,
+  "sport_stats": {
+    "ESPORTS": {
+      "net_profit": 11.71,
+      "roi": 18.92,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 61.9,
+      "median_bet": 61.9
+    },
+    "OTHER": {
+      "net_profit": 77017.02,
+      "roi": 12.53,
+      "win_rate": 75.86,
+      "events": 157,
+      "avg_bet": 3915.42,
+      "median_bet": 505.27
+    },
+    "SOCCER (EPL)": {
+      "net_profit": 3.61,
+      "roi": 7.21,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 50.02,
+      "median_bet": 50.02
+    },
+    "SOCCER (Other)": {
+      "net_profit": 879.17,
+      "roi": 6.39,
+      "win_rate": 83.33,
+      "events": 14,
+      "avg_bet": 982.17,
+      "median_bet": 457.38
+    },
+    "TENNIS": {
+      "net_profit": 137881.31,
+      "roi": 9.49,
+      "win_rate": 85.71,
+      "events": 224,
+      "avg_bet": 6483.78,
+      "median_bet": 1547.39
+    }
+  },
+  "market_stats": {
+    "Futures": {
+      "net_profit": 931.79,
+      "roi": 6.02,
+      "win_rate": 90.91,
+      "events": 11,
+      "avg_bet": 1407.6,
+      "median_bet": 820.32
+    },
+    "Moneyline / Match": {
+      "net_profit": 213718.66,
+      "roi": 10.37,
+      "win_rate": 81.92,
+      "events": 367,
+      "avg_bet": 5614.99,
+      "median_bet": 1021.89
+    },
+    "Totals (O/U)": {
+      "net_profit": 1142.38,
+      "roi": 23.98,
+      "win_rate": 73.33,
+      "events": 19,
+      "avg_bet": 250.72,
+      "median_bet": 40.01
+    }
+  },
+  "sport_market_stats": {
+    "Other|Futures": {
+      "net_profit": 28.14,
+      "roi": 3.21,
+      "win_rate": 50.0,
+      "events": 2,
+      "avg_bet": 437.71,
+      "median_bet": 437.71
+    },
+    "Other|Moneyline / Match": {
+      "net_profit": 76357.18,
+      "roi": 12.51,
+      "win_rate": 77.1,
+      "events": 140,
+      "avg_bet": 4358.14,
+      "median_bet": 539.39
+    },
+    "Other|Totals (O/U)": {
+      "net_profit": 631.71,
+      "roi": 17.05,
+      "win_rate": 66.67,
+      "events": 15,
+      "avg_bet": 247.04,
+      "median_bet": 27.73
+    },
+    "Soccer|Moneyline / Match": {
+      "net_profit": 372.11,
+      "roi": 2.92,
+      "win_rate": 80.0,
+      "events": 11,
+      "avg_bet": 1158.4,
+      "median_bet": 1303.95
+    },
+    "Soccer|Totals (O/U)": {
+      "net_profit": 510.67,
+      "roi": 48.26,
+      "win_rate": 100.0,
+      "events": 4,
+      "avg_bet": 264.51,
+      "median_bet": 250.19
+    },
+    "Tennis|Futures": {
+      "net_profit": 891.94,
+      "roi": 6.13,
+      "win_rate": 100.0,
+      "events": 8,
+      "avg_bet": 1818.28,
+      "median_bet": 1270.02
+    },
+    "Tennis|Moneyline / Match": {
+      "net_profit": 136989.37,
+      "roi": 9.53,
+      "win_rate": 85.15,
+      "events": 216,
+      "avg_bet": 6656.58,
+      "median_bet": 1555.4
+    },
+    "eSports|Futures": {
+      "net_profit": 11.71,
+      "roi": 18.92,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 61.9,
+      "median_bet": 61.9
+    }
+  },
+  "price_stats": {
+    "Favorite (60-80c)": {
+      "net_profit": 147943.62,
+      "roi": 26.72,
+      "win_rate": 79.27,
+      "events": 84
+    },
+    "Flip (40-60c)": {
+      "net_profit": 10739.41,
+      "roi": 12.07,
+      "win_rate": 74.55,
+      "events": 58
+    },
+    "Longshot (0-20c)": {
+      "net_profit": -32.96,
+      "roi": -0.58,
+      "win_rate": 58.82,
+      "events": 18
+    },
+    "Safe (80-100c)": {
+      "net_profit": 26270.48,
+      "roi": 1.89,
+      "win_rate": 90.77,
+      "events": 213
+    },
+    "Underdog (20-40c)": {
+      "net_profit": 30872.26,
+      "roi": 73.78,
+      "win_rate": 45.0,
+      "events": 24
+    }
+  },
+  "side_stats": {
+    "No": {
+      "net_profit": 167.47,
+      "roi": 4.05,
+      "positions": 5
+    },
+    "Specific Selection": {
+      "net_profit": 213934.01,
+      "roi": 10.43,
+      "positions": 370
+    },
+    "Yes": {
+      "net_profit": 1691.35,
+      "roi": 6.39,
+      "positions": 22
+    }
+  },
+  "monthly_pnl": {
+    "2026-05": 300.37,
+    "2026-06": 6637.45,
+    "2026-07": 48307.6,
+    "2026-08": 160547.41
+  },
+  "top_wins": [
+    {
+      "title": "Livesport Prague Open, Qualification: Rebeka Masarova vs Valentina Ryser",
+      "slug": "wta-masarov-ryser-2026-07-18",
+      "eventSlug": "wta-masarov-ryser-2026-07-18",
+      "sport_type": "TENNIS",
+      "outcome": "Valentina Ryser",
+      "conditionId": "0xa9295da66703127c706b8786d92616aea97676876ede4fb6124ed5ab9fdeb870",
+      "total_pnl": 23803.06,
+      "total_cost": 19485.88,
+      "avg_price": 0.3598,
+      "status": "closed"
+    },
+    {
+      "title": "Cincinnati Open: Lois Boisson vs Belinda Bencic",
+      "slug": "wta-boisson-bencic-2026-08-15",
+      "eventSlug": "wta-boisson-bencic-2026-08-15",
+      "sport_type": "TENNIS",
+      "outcome": "Lois Boisson",
+      "conditionId": "0x39a4b304b681d530183fb6cac9c80e713c40b927f3da8314ec39f24ece0f2ff7",
+      "total_pnl": 21002.05,
+      "total_cost": 39846.38,
+      "avg_price": 0.6548,
+      "status": "closed"
+    },
+    {
+      "title": "Targu Mures: Kaitlin Quevedo vs Francesca Jones",
+      "slug": "wta-quevedo-jones-2026-08-01",
+      "eventSlug": "wta-quevedo-jones-2026-08-01",
+      "sport_type": "TENNIS",
+      "outcome": "Kaitlin Quevedo",
+      "conditionId": "0x3ccff9c75d27b5ba16cae4bc32742e4027929c24cc14efec45b79ea26c4294fe",
+      "total_pnl": 19610.65,
+      "total_cost": 49550.71,
+      "avg_price": 0.7163,
+      "status": "closed"
+    },
+    {
+      "title": "ITF W100 Landisville, PA Women: Ava Catanzarite vs Martina Okalova",
+      "slug": "itf-catanza-okalova-2026-08-03",
+      "eventSlug": "itf-catanza-okalova-2026-08-03",
+      "sport_type": "OTHER",
+      "outcome": "Martina Okalova",
+      "conditionId": "0x4d591acca1a9b0209cb90c567b9aa7c882647b2e18ec976c424809b6c3ed0ccf",
+      "total_pnl": 18280.05,
+      "total_cost": 60022.4,
+      "avg_price": 0.7585,
+      "status": "closed"
+    },
+    {
+      "title": "Hagen: Alex Molcan vs Chun-Hsin Tseng",
+      "slug": "atp-molcan-tseng-2026-08-03",
+      "eventSlug": "atp-molcan-tseng-2026-08-03",
+      "sport_type": "TENNIS",
+      "outcome": "Chun-Hsin Tseng",
+      "conditionId": "0x290f1249c1fc1f1f437e2bd2c50a4e7a1dfc04bf350320eaa5f0690d2eb9206c",
+      "total_pnl": 17194.35,
+      "total_cost": 57802.5,
+      "avg_price": 0.7707,
+      "status": "closed"
+    }
+  ],
+  "top_losses": [
+    {
+      "title": "Granby: Nicolas Arseneault vs Andres Martin",
+      "slug": "atp-arsenea-marti-2026-07-13",
+      "eventSlug": "atp-arsenea-marti-2026-07-13",
+      "sport_type": "TENNIS",
+      "outcome": "Nicolas Arseneault",
+      "conditionId": "0xbadd20c2ed6022a87d13b8a82eac7f03ffee1f11a65d3665bf0556edded244fa",
+      "total_pnl": -13128.42,
+      "total_cost": 20152.59,
+      "avg_price": 0.9038,
+      "status": "closed"
+    },
+    {
+      "title": "ITF Gandia: Javier Barranco Cosano vs Reda Bennani",
+      "slug": "itf-cosano-bennani-2026-07-18",
+      "eventSlug": "itf-cosano-bennani-2026-07-18",
+      "sport_type": "OTHER",
+      "outcome": "Javier Barranco Cosano",
+      "conditionId": "0xefdbe24f871aa56175e6d5f93453c13455e6f014b27ee72e8957da08b6fd6343",
+      "total_pnl": -3887.61,
+      "total_cost": 23112.08,
+      "avg_price": 0.8595,
+      "status": "closed"
+    },
+    {
+      "title": "Wimbledon ATP: Karen Khachanov vs Flavio Cobolli",
+      "slug": "atp-khachan-cobolli-2026-07-04",
+      "eventSlug": "atp-khachan-cobolli-2026-07-04",
+      "sport_type": "TENNIS",
+      "outcome": "Karen Khachanov",
+      "conditionId": "0xc8a02f1d046942a43372b0afb195c479a5c5116b21808a0ad28160312f9a7d66",
+      "total_pnl": -2007.95,
+      "total_cost": 14971.97,
+      "avg_price": 0.9083,
+      "status": "closed"
+    },
+    {
+      "title": "ITF Vacaria: Lucciana Perez Alarcon vs Daria Egorova",
+      "slug": "itf-alarcon-egorova-2026-07-25",
+      "eventSlug": "itf-alarcon-egorova-2026-07-25",
+      "sport_type": "OTHER",
+      "outcome": "Daria Egorova",
+      "conditionId": "0xadd644066ae9337283314b739bafce128d07daf68c11bd725ed358363dc2011c",
+      "total_pnl": -1211.95,
+      "total_cost": 2015.33,
+      "avg_price": 0.7356,
+      "status": "closed"
+    },
+    {
+      "title": "National Bank Open: Diane Parry vs Kayla Day",
+      "slug": "wta-parry-day-2026-08-03",
+      "eventSlug": "wta-parry-day-2026-08-03",
+      "sport_type": "TENNIS",
+      "outcome": "Diane Parry",
+      "conditionId": "0xc78ae7bdc3915a971cd8d3df747d08eb3c9596ff7f36a0fc02eac264ce96cae2",
+      "total_pnl": -992.52,
+      "total_cost": 8330.84,
+      "avg_price": 0.725,
+      "status": "closed"
+    }
+  ],
+  "top_sport": "TENNIS",
+  "best_price_bucket": "Underdog (20-40c)",
+  "best_market": "Moneyline / Match",
+  "quality_score": 91,
+  "tier": "S-Tier",
+  "tags": [
+    "\u2b50\u2b50\u2b50 S-Tier",
+    "\u2696\ufe0f Hedge / MM-heavy \u2014 quality blends dashboard + directional ROI",
+    "\ud83c\udfbe Tennis Expert",
+    "\ud83d\udc8e Consistent Grinder",
+    "\ud83d\udc0b Big Bettor",
+    "\ud83d\udcc8 Moneyline Pro",
+    "\ud83d\udcca O/U Specialist"
+  ],
+  "tail_guide": "How to Tail HVAB [S-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   TENNIS \u2014 9.5% ROI, 224 markets, +$137,881\n   OTHER \u2014 12.5% ROI, 157 markets, +$77,017\n\n\ud83d\udcc8 Stick to Moneylines (10.4% ROI over 367 markets)\n\ud83c\udfaf Best price zone: Underdog (20-40c) (73.8% ROI, 24 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 99% of edge from 'Specific' side \u2014 copy that side only\n\ud83d\udcb0 Typical market stake ~$896 (median)\n   (Mean $5,242 \u2014 some very large markets; size to the median unless you match their whale plays)",
+  "do_not_tail_sports": [],
+  "auto_tail_sports": [
+    "OTHER",
+    "TENNIS"
+  ],
+  "do_not_tail_market_types": [],
+  "do_not_tail_sides": [],
+  "score_breakdown": {
+    "sharpe_score": 30,
+    "roi_score": 17.2,
+    "wr_score": 15,
+    "cons_score": 9.0,
+    "vol_score": 4.7,
+    "base_score": 76.0,
+    "flip_bonus": 15,
+    "leakage_penalty": 0,
+    "midzone_roi": 42.9,
+    "directional_roi": 10.37,
+    "roi_dashboard": 10.31,
+    "roi_redeemed_only": 10.32,
+    "last_60d_roi": 11.79,
+    "last_60d_pnl": 230495.98,
+    "recency_penalty": 0,
+    "roi_for_quality": 10.34,
+    "hedge_risk_frac": 0.245,
+    "hedge_profit_share": 0.242,
+    "markets_traded": 397,
+    "median_market_stake": 896.4,
+    "mean_market_stake": 5241.69,
+    "pnl_sum_check_ok": true
+  }
+}

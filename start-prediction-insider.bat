@@ -184,8 +184,10 @@ if /i "%MODE%"=="full" (
 )
 if errorlevel 1 (
   echo.
-  echo [ERROR] Pipeline failed ^(often ingest 500 - old Node on port 5000 or wrong DATABASE_URL^).
-  echo Fix: close stray terminals, run this script again ^(it kills port 5000 first^), or check .env.
+  echo [ERROR] Pipeline finished with errors.
+  echo If you already saw "[OK] N traders updated in DB", ingest succeeded — books are in Postgres.
+  echo Remaining warnings are usually take-book CSV or unfetched watch names, not a 500.
+  echo Leave the server window open. Refresh http://127.0.0.1:5000
   pause
   exit /b 1
 )

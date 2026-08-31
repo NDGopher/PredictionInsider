@@ -63,45 +63,13 @@ export function runScheduledPipelineIfNeeded(): void {
           setLastRunTime().then(() =>
             console.log(`[ScheduledPipeline] Finished successfully; next run after ${intervalHours}h without ingest.`)
           );
-          const health = spawn(command, [...prefixArgs, join(process.cwd(), "pnl_analysis", "take_book_daily.py")], {
+          const product = spawn(command, [...prefixArgs, join(process.cwd(), "pnl_analysis", "refresh_product.py")], {
             cwd: process.cwd(),
             stdio: ["ignore", "pipe", "pipe"],
           });
-          health.on("close", (hc) => {
-            if (hc === 0) console.log("[ScheduledPipeline] take_book_daily finished");
-            else console.warn(`[ScheduledPipeline] take_book_daily exited ${hc}`);
-            const ranks = spawn(command, [...prefixArgs, join(process.cwd(), "pnl_analysis", "build_insider_ranks.py"), "--offline"], {
-              cwd: process.cwd(),
-              stdio: ["ignore", "pipe", "pipe"],
-            });
-            ranks.on("close", (rc) => {
-              if (rc === 0) console.log("[ScheduledPipeline] insider ranks rebuilt");
-              else console.warn(`[ScheduledPipeline] insider ranks exited ${rc}`);
-              const roster = spawn(command, [...prefixArgs, join(process.cwd(), "pnl_analysis", "copy_roster.py")], {
-                cwd: process.cwd(),
-                stdio: ["ignore", "pipe", "pipe"],
-              });
-              roster.on("close", (uc) => {
-                if (uc === 0) console.log("[ScheduledPipeline] copy universe rebuilt");
-                else console.warn(`[ScheduledPipeline] copy universe exited ${uc}`);
-                const evolve = spawn(command, [...prefixArgs, join(process.cwd(), "pnl_analysis", "evolve_copy_book.py")], {
-                  cwd: process.cwd(),
-                  stdio: ["ignore", "pipe", "pipe"],
-                });
-                evolve.on("close", (ec) => {
-                  if (ec === 0) console.log("[ScheduledPipeline] copy evolve finished");
-                  else console.warn(`[ScheduledPipeline] copy evolve exited ${ec}`);
-                  const verify = spawn(command, [...prefixArgs, join(process.cwd(), "pnl_analysis", "verify_copy_books.py")], {
-                    cwd: process.cwd(),
-                    stdio: ["ignore", "pipe", "pipe"],
-                  });
-                  verify.on("close", (vc) => {
-                    if (vc === 0) console.log("[ScheduledPipeline] copy books verified");
-                    else console.warn(`[ScheduledPipeline] copy book verify exited ${vc}`);
-                  });
-                });
-              });
-            });
+          product.on("close", (pc) => {
+            if (pc === 0) console.log("[ScheduledPipeline] ranks / copy universe / take-book rebuilt");
+            else console.warn(`[ScheduledPipeline] refresh_product exited ${pc}`);
           });
         } else {
           console.warn(

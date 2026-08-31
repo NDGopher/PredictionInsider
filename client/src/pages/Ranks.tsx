@@ -105,6 +105,7 @@ interface InsiderRankRow {
   extra_status?: string;
   winner_capped?: boolean;
   market_maker?: boolean;
+  copy_bucket?: string | null;
 }
 
 interface SportsBoardRow {
@@ -132,7 +133,7 @@ interface InsiderRanksResponse {
 }
 
 type SortKey = "insider" | "sports" | "our_pnl" | "smart" | "last";
-type FilterKey = "take_book" | "watch" | "kicked" | "roster" | "all";
+type FilterKey = "hot" | "live" | "take_book" | "watch" | "kicked" | "roster" | "all";
 
 function money(v: number | null | undefined): string {
   if (v === null || v === undefined) return "—";
@@ -162,11 +163,21 @@ function recencyClass(band: string | undefined): string {
 }
 
 function laneClass(lane: string | undefined): string {
+  if (lane === "live" || lane === "live copy") return "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
+  if (lane === "bench") return "bg-sky-500/15 text-sky-400 border-sky-500/30";
   if (lane === "take_book") return "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
   if (lane === "watch") return "bg-amber-500/15 text-amber-400 border-amber-500/30";
-  if (lane === "kicked") return "bg-red-500/15 text-red-400 border-red-500/30";
+  if (lane === "kicked" || lane === "skip") return "bg-red-500/15 text-red-400 border-red-500/30";
   if (lane === "reference") return "bg-muted text-muted-foreground";
   return "bg-sky-500/15 text-sky-400 border-sky-500/30";
+}
+
+function displayLane(t: { copy_bucket?: string | null; lane?: string; market_maker?: boolean }): string {
+  if (t.market_maker) return "mm / skip";
+  if (t.copy_bucket === "live") return "live copy";
+  if (t.copy_bucket === "bench") return "bench";
+  if (t.copy_bucket === "skip" || t.copy_bucket === "kicked") return t.copy_bucket;
+  return laneLabel(t.lane);
 }
 
 function laneLabel(lane: string | undefined): string {
@@ -266,7 +277,7 @@ function WindowCell({ label, w }: { label: string; w?: RankWindow | null }) {
 
 export default function Ranks() {
   const [sortBy, setSortBy] = useState<SortKey>("insider");
-  const [filter, setFilter] = useState<FilterKey>("take_book");
+  const [filter, setFilter] = useState<FilterKey>("hot");
   const [open, setOpen] = useState<string | null>(null);
 
   const { data, isLoading, error, dataUpdatedAt } = useQuery<InsiderRanksResponse>({
@@ -282,6 +293,16 @@ export default function Ranks() {
 
   const rows = useMemo(() => {
     let list = [...(data?.traders || [])];
+    if (filter === "hot") {
+      list = list.filter(
+        (t) =>
+          (t.recency_band === "HOT" || t.recency_band === "WARM") &&
+          t.lane !== "kicked" &&
+          t.lane !== "reference" &&
+          !t.market_maker,
+      );
+    }
+    if (filter === "live") list = list.filter((t) => t.copy_bucket === "live");
     if (filter === "take_book") list = list.filter((t) => t.lane === "take_book" || t.copyable);
     if (filter === "watch") list = list.filter((t) => t.lane === "watch");
     if (filter === "kicked") list = list.filter((t) => t.lane === "kicked");
@@ -315,8 +336,9 @@ export default function Ranks() {
           Insider Ranks
         </h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Default view is the live <span className="text-foreground">take book</span> — the 12 matched sports books Take these copies.
-          Kicked names stay under Kicked so you can see what we removed. Elite Traders is retired; this is the roster.
+          <span className="text-foreground">Live copy</span> is who Take these tails at $100.
+          <span className="text-foreground"> Take book</span> is the old 12 we backtested — Capman / kch123 / WTSA whales stay there as history, not live.
+          Hot now is anyone who printed recently (including uncopyable bots). Elite Traders is retired.
         </p>
         <p className="text-[11px] text-muted-foreground mt-1" data-testid="ranks-freshness">
           Built {freshness(data?.generatedAt)} · as of {data?.asOf || "—"}
@@ -375,7 +397,9 @@ export default function Ranks() {
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs text-muted-foreground">Show:</span>
         {([
-          ["take_book", "Take book"],
+          ["hot", "Hot now"],
+          ["live", "Live copy"],
+          ["take_book", "Take book 12"],
           ["watch", "Watch"],
           ["kicked", "Kicked"],
           ["roster", "Roster"],
@@ -486,8 +510,8 @@ export default function Ranks() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={`text-[9px] ${laneClass(t.lane)}`}>
-                            {laneLabel(t.lane)}
+                          <Badge variant="outline" className={`text-[9px] ${laneClass(displayLane(t))}`}>
+                            {displayLane(t)}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right font-semibold tabular-nums">

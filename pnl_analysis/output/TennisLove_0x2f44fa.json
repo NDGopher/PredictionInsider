@@ -1,0 +1,311 @@
+{
+  "wallet": "0x2f44fa076c8d2976ac6bea0ddfd9502bad2b93c2",
+  "username": "TennisLove",
+  "total_profit": 232502.86,
+  "raw_realized_pnl": 230185.85,
+  "dashboard_pnl": 232502.86,
+  "total_risked": 573251.16,
+  "overall_roi": 40.56,
+  "redeemed_only_roi": 40.15,
+  "last_30d": {
+    "n": 2,
+    "pnl": 147425.09,
+    "cost": 290718.73,
+    "roi": 50.71,
+    "wins": 2,
+    "win_rate": 100.0,
+    "first": "2026-08-16",
+    "last": "2026-08-18"
+  },
+  "last_60d": {
+    "n": 2,
+    "pnl": 147425.09,
+    "cost": 290718.73,
+    "roi": 50.71,
+    "wins": 2,
+    "win_rate": 100.0,
+    "first": "2026-08-16",
+    "last": "2026-08-18"
+  },
+  "last_90d": {
+    "n": 2,
+    "pnl": 147425.09,
+    "cost": 290718.73,
+    "roi": 50.71,
+    "wins": 2,
+    "win_rate": 100.0,
+    "first": "2026-08-16",
+    "last": "2026-08-18"
+  },
+  "last_event_date": "2026-08-18",
+  "days_since_last_event": 0,
+  "possibly_quit": false,
+  "win_rate": 100.0,
+  "avg_bet_size": 95541.86,
+  "median_market_stake": 99223.15,
+  "mean_market_stake": 95541.86,
+  "markets_traded": 6,
+  "total_events": 6,
+  "pseudo_sharpe": 18.95,
+  "profitable_days": 6,
+  "total_days": 6,
+  "hedge_count": 0,
+  "hedge_risk": 0.0,
+  "hedge_profit": 0.0,
+  "bond_count": 0,
+  "bond_risk": 0.0,
+  "bond_profit": 0.0,
+  "open_count": 1,
+  "open_risk": 78100.07,
+  "open_value": 80417.08,
+  "open_pnl": 2317.01,
+  "sport_stats": {
+    "OTHER": {
+      "net_profit": 37995.73,
+      "roi": 28.34,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 134079.05,
+      "median_bet": 134079.05
+    },
+    "TENNIS": {
+      "net_profit": 194507.14,
+      "roi": 44.29,
+      "win_rate": 100.0,
+      "events": 5,
+      "avg_bet": 87834.42,
+      "median_bet": 78100.07
+    }
+  },
+  "market_stats": {
+    "Moneyline / Match": {
+      "net_profit": 225433.19,
+      "roi": 41.1,
+      "win_rate": 100.0,
+      "events": 5,
+      "avg_bet": 109704.39,
+      "median_bet": 120346.23
+    },
+    "Spread": {
+      "net_profit": 7069.67,
+      "roi": 28.59,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 24729.22,
+      "median_bet": 24729.22
+    }
+  },
+  "sport_market_stats": {
+    "Other|Moneyline / Match": {
+      "net_profit": 37995.73,
+      "roi": 28.34,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 134079.05,
+      "median_bet": 134079.05
+    },
+    "Tennis|Moneyline / Match": {
+      "net_profit": 187437.46,
+      "roi": 45.23,
+      "win_rate": 100.0,
+      "events": 4,
+      "avg_bet": 103610.72,
+      "median_bet": 99223.15
+    },
+    "Tennis|Spread": {
+      "net_profit": 7069.67,
+      "roi": 28.59,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 24729.22,
+      "median_bet": 24729.22
+    }
+  },
+  "price_stats": {
+    "Favorite (60-80c)": {
+      "net_profit": 120756.48,
+      "roi": 35.67,
+      "win_rate": 100.0,
+      "events": 4
+    },
+    "Flip (40-60c)": {
+      "net_profit": 111746.38,
+      "roi": 47.6,
+      "win_rate": 100.0,
+      "events": 2
+    }
+  },
+  "side_stats": {
+    "Specific Selection": {
+      "net_profit": 232502.86,
+      "roi": 40.56,
+      "positions": 6
+    }
+  },
+  "monthly_pnl": {
+    "2026-08": 232502.86
+  },
+  "top_wins": [
+    {
+      "title": "National Bank Open: Rafael Jodar vs Arthur Fils",
+      "slug": "atp-jodar-fils-2026-08-11",
+      "eventSlug": "atp-jodar-fils-2026-08-11",
+      "sport_type": "TENNIS",
+      "outcome": "Rafael Jodar",
+      "conditionId": "0x8fb8c5b5e504f8b1bbf18ac9aa85aefc65bba1ffc5075c91910d0dd9767c7486",
+      "total_pnl": 109429.37,
+      "total_cost": 156639.68,
+      "avg_price": 0.5881,
+      "status": "closed"
+    },
+    {
+      "title": "National Bank Open: Ben Shelton vs Brandon Nakashima",
+      "slug": "atp-shelton-nakashi-2026-08-13",
+      "eventSlug": "atp-shelton-nakashi-2026-08-13",
+      "sport_type": "TENNIS",
+      "outcome": "Ben Shelton",
+      "conditionId": "0x3a2ef65b2988a853b16ca1b00cabaef5d425e6962b657bba49140f9bc94c7c88",
+      "total_pnl": 50188.42,
+      "total_cost": 120346.23,
+      "avg_price": 0.7049,
+      "status": "closed"
+    },
+    {
+      "title": "UFC 330: Islam Makhachev vs. Ian Machado Garry (Welterweight, Main Card)",
+      "slug": "ufc-isl-ian1-2026-08-15",
+      "eventSlug": "ufc-isl-ian1-2026-08-15",
+      "sport_type": "OTHER",
+      "outcome": "Islam Makhachev",
+      "conditionId": "0xc04094452b0386a73a9a6e07da0370fffb2722e05c837a5246b88c914e78b79f",
+      "total_pnl": 37995.73,
+      "total_cost": 134079.05,
+      "avg_price": 0.7783,
+      "status": "closed"
+    },
+    {
+      "title": "Cincinnati Open: Andrey Rublev vs Pablo Carreno Busta",
+      "slug": "atp-rublev-busta-2026-08-16",
+      "eventSlug": "atp-rublev-busta-2026-08-16",
+      "sport_type": "TENNIS",
+      "outcome": "Andrey Rublev",
+      "conditionId": "0x45d10d03db0e29361840fcae83b8505b5e1c8d4d4cca3979d7742cfb32414c5e",
+      "total_pnl": 25502.66,
+      "total_cost": 59356.91,
+      "avg_price": 0.6987,
+      "status": "closed"
+    },
+    {
+      "title": "Set Handicap: Cilic (-1.5) vs Aguilar (+1.5)",
+      "slug": "atp-aguilar-cilic-2026-08-13-set-handicap-away-1pt5",
+      "eventSlug": "atp-aguilar-cilic-2026-08-13",
+      "sport_type": "TENNIS",
+      "outcome": "Aguilar",
+      "conditionId": "0xe4a34e0e91055f4a0352fe3c5bc3c8c694612cacdc86a00f8101d0196a9ddb24",
+      "total_pnl": 7069.67,
+      "total_cost": 24729.22,
+      "avg_price": 0.7776,
+      "status": "closed"
+    }
+  ],
+  "top_losses": [
+    {
+      "title": "Cincinnati Open: Brandon Nakashima vs Daniil Medvedev",
+      "slug": "atp-nakashi-medvede-2026-08-18",
+      "eventSlug": "atp-nakashi-medvede-2026-08-18",
+      "sport_type": "TENNIS",
+      "outcome": "Daniil Medvedev",
+      "conditionId": "0x2182f29dc74fa806d339b812e387147dc49422fee17cd67252de6c193f86db18",
+      "total_pnl": 2317.01,
+      "total_cost": 78100.07,
+      "avg_price": 0.5584,
+      "status": "open"
+    },
+    {
+      "title": "Set Handicap: Cilic (-1.5) vs Aguilar (+1.5)",
+      "slug": "atp-aguilar-cilic-2026-08-13-set-handicap-away-1pt5",
+      "eventSlug": "atp-aguilar-cilic-2026-08-13",
+      "sport_type": "TENNIS",
+      "outcome": "Aguilar",
+      "conditionId": "0xe4a34e0e91055f4a0352fe3c5bc3c8c694612cacdc86a00f8101d0196a9ddb24",
+      "total_pnl": 7069.67,
+      "total_cost": 24729.22,
+      "avg_price": 0.7776,
+      "status": "closed"
+    },
+    {
+      "title": "Cincinnati Open: Andrey Rublev vs Pablo Carreno Busta",
+      "slug": "atp-rublev-busta-2026-08-16",
+      "eventSlug": "atp-rublev-busta-2026-08-16",
+      "sport_type": "TENNIS",
+      "outcome": "Andrey Rublev",
+      "conditionId": "0x45d10d03db0e29361840fcae83b8505b5e1c8d4d4cca3979d7742cfb32414c5e",
+      "total_pnl": 25502.66,
+      "total_cost": 59356.91,
+      "avg_price": 0.6987,
+      "status": "closed"
+    },
+    {
+      "title": "UFC 330: Islam Makhachev vs. Ian Machado Garry (Welterweight, Main Card)",
+      "slug": "ufc-isl-ian1-2026-08-15",
+      "eventSlug": "ufc-isl-ian1-2026-08-15",
+      "sport_type": "OTHER",
+      "outcome": "Islam Makhachev",
+      "conditionId": "0xc04094452b0386a73a9a6e07da0370fffb2722e05c837a5246b88c914e78b79f",
+      "total_pnl": 37995.73,
+      "total_cost": 134079.05,
+      "avg_price": 0.7783,
+      "status": "closed"
+    },
+    {
+      "title": "National Bank Open: Ben Shelton vs Brandon Nakashima",
+      "slug": "atp-shelton-nakashi-2026-08-13",
+      "eventSlug": "atp-shelton-nakashi-2026-08-13",
+      "sport_type": "TENNIS",
+      "outcome": "Ben Shelton",
+      "conditionId": "0x3a2ef65b2988a853b16ca1b00cabaef5d425e6962b657bba49140f9bc94c7c88",
+      "total_pnl": 50188.42,
+      "total_cost": 120346.23,
+      "avg_price": 0.7049,
+      "status": "closed"
+    }
+  ],
+  "top_sport": "OTHER",
+  "best_price_bucket": null,
+  "best_market": "Moneyline / Match",
+  "quality_score": 84,
+  "tier": "S-Tier",
+  "tags": [
+    "\u2b50\u2b50\u2b50 S-Tier",
+    "\ud83d\udc8e Consistent Grinder",
+    "\ud83d\udc0b Mega Whale"
+  ],
+  "tail_guide": "How to Tail TennisLove [S-Tier]\n\n\n\ud83d\udcc8 Stick to Moneylines (41.1% ROI over 5 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 100% of edge from 'Specific' side \u2014 copy that side only\n\u26a1 Typical market stake ~$99,223 (median per market) \u2014 alert at 3\u00d7 for high conviction",
+  "do_not_tail_sports": [],
+  "auto_tail_sports": [],
+  "do_not_tail_market_types": [],
+  "do_not_tail_sides": [],
+  "score_breakdown": {
+    "sharpe_score": 30,
+    "roi_score": 25,
+    "wr_score": 15,
+    "cons_score": 10.0,
+    "vol_score": 4.3,
+    "base_score": 84.3,
+    "flip_bonus": 0,
+    "leakage_penalty": 0,
+    "midzone_roi": 0,
+    "directional_roi": 40.56,
+    "roi_dashboard": 40.56,
+    "roi_redeemed_only": 40.15,
+    "last_60d_roi": 50.71,
+    "last_60d_pnl": 147425.09,
+    "recency_penalty": 0,
+    "roi_for_quality": 40.56,
+    "hedge_risk_frac": 0.0,
+    "hedge_profit_share": 0.0,
+    "markets_traded": 6,
+    "median_market_stake": 99223.15,
+    "mean_market_stake": 95541.86,
+    "pnl_sum_check_ok": true
+  }
+}

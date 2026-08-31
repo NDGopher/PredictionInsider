@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { ExternalLink, Flame, PauseCircle, Radio } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, Flame, PauseCircle, Radio } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
+import { effectiveLane, laneLabel, type PlayLane } from "@/lib/playLane";
 
 interface PriceFmt {
   price: number;
@@ -27,7 +28,8 @@ interface TakePlay {
   submarket: string;
   playLabel?: string;
   pick?: string;
-  lane?: "sports" | "other" | "futures";
+  lane?: PlayLane;
+  timing?: "live" | "upcoming" | "long" | "unknown";
   outcomeLabel?: string;
   currentPrice: number;
   avgEntryPrice: number;
@@ -41,12 +43,17 @@ interface TakePlay {
   vwapFmt: PriceFmt | null;
   valid: boolean;
   invalidReason: string | null;
+  grade?: number;
   confidence: number;
   q: number;
   rel: number;
   sportRoi: number | null;
   traders: string[];
   misses: string[];
+  why?: string[];
+  scoreBreakdown?: Record<string, number>;
+  rank?: number;
+  list?: "take" | "near" | "watch";
   url?: string;
 }
 
@@ -55,7 +62,24 @@ interface TakeHealth {
   pauseReason?: string | null;
   windows?: Record<string, { n?: number; win_rate?: number | null; roi_2c?: number | null }>;
   proposeDrop?: Array<{ username?: string; reason?: string }>;
+  proposeAdd?: Array<{ username?: string; reason?: string }>;
   generatedAt?: string;
+}
+
+interface DiscoveryBundle {
+  live?: Array<{ username?: string; uniqueRoi?: number; medianStake?: number }>;
+  watch?: Array<{ username?: string; uniqueRoi?: number; joinable?: boolean }>;
+  topComposite?: Array<{
+    username?: string;
+    bucket?: string;
+    compositeScore?: number;
+    takeN?: number;
+    takeRoi?: number;
+    action?: string;
+    why?: string;
+  }>;
+  adaptiveActions?: Array<{ action?: string; username?: string; why?: string }>;
+  method?: string;
 }
 
 interface TakePlaysResponse {
@@ -63,16 +87,27 @@ interface TakePlaysResponse {
   rule?: string | null;
   fill?: string;
   stake?: number;
-  backtest?: { n?: number; win_rate?: number; roi?: number };
+  backtest?: { n?: number; win_rate?: number; roi?: number; source?: string };
+  realizedBacktest?: {
+    source?: string;
+    last30d?: { n?: number; win_rate?: number | null; roi_2c?: number | null };
+    last60d?: { n?: number; win_rate?: number | null; roi_2c?: number | null };
+    last90d?: { n?: number; win_rate?: number | null; roi_2c?: number | null };
+    all?: { n?: number; win_rate?: number | null; roi_2c?: number | null };
+  } | null;
+  dataProvenance?: string;
+  rankedBoard?: { booksScanned?: number; counts?: { take?: number; near?: number; watch?: number } };
   health?: TakeHealth | null;
   paused?: boolean;
   pauseReason?: string | null;
   live?: TakePlay[];
   near?: TakePlay[];
+  ranked?: TakePlay[];
   csvOpen?: { live?: TakePlay[]; near?: TakePlay[] };
   telegramConfigured?: boolean;
   quotesAt?: number | null;
   copyBooks?: Array<{ username: string; wallet: string }>;
+  discovery?: DiscoveryBundle;
   lanes?: {
     sports?: { n?: number; win_rate?: number; roi_2c?: number };
     other?: { n?: number; win_rate?: number; roi_2c?: number };
@@ -104,6 +139,13 @@ function fmtTriple(p: number | null | undefined, fallback?: PriceFmt | null): st
   return `${p.toFixed(3)}  ${decimalFromPrice(p).toFixed(2)}  ${americanLabel(americanFromPrice(p))}`;
 }
 
+function gradeTone(g: number): string {
+  if (g >= 75) return "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
+  if (g >= 60) return "bg-primary/15 text-primary border-primary/30";
+  if (g >= 45) return "bg-amber-500/15 text-amber-400 border-amber-500/30";
+  return "bg-muted text-muted-foreground border-border";
+}
+
 async function saveActualFill(playId: string, cents: string): Promise<void> {
   const n = Number(cents);
   if (!Number.isFinite(n) || n <= 0 || n >= 100) {
@@ -130,6 +172,60 @@ function PriceRow({ label, price, fmt, hint }: { label: string; price: number | 
   );
 }
 
+function WhyBlock({ play, take }: { play: TakePlay; take: boolean }) {
+  const [open, setOpen] = useState(take);
+  const grade = Math.round(play.grade ?? play.confidence ?? 0);
+  const why = play.why?.length ? play.why : play.misses.map((m) => `Missing: ${m}`);
+  const bd = play.scoreBreakdown || {};
+  return (
+    <div className="rounded-md border border-border/60 bg-muted/20 p-2.5 space-y-2">
+      <button
+        type="button"
+        className="flex w-full items-center justify-between gap-2 text-left"
+        onClick={() => setOpen((v) => !v)}
+        data-testid={take ? "button-why-take" : "button-why-near"}
+      >
+        <div className="flex items-center gap-2">
+          <Badge className={`tabular-nums ${gradeTone(grade)}`}>Grade {grade}/100</Badge>
+          <span className="text-xs text-muted-foreground">
+            {take ? "Why this is recommended" : "Why it is close"}
+          </span>
+        </div>
+        {open ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="space-y-2">
+          <ul className="text-xs text-muted-foreground space-y-1 list-disc pl-4">
+            {why.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+          {Object.keys(bd).length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[10px]">
+              {[
+                ["roiPct", "ROI", 40],
+                ["consensusPct", "Consensus", 30],
+                ["valuePct", "Value", 20],
+                ["sizePct", "Size", 10],
+                ["relSizePts", "Rel size", 15],
+                ["qualityBoost", "Quality", 6],
+              ].map(([key, label, max]) => {
+                const val = Number(bd[key as string] || 0);
+                return (
+                  <div key={String(key)} className="rounded border border-border/40 px-1.5 py-1">
+                    <div className="text-muted-foreground">{label}</div>
+                    <div className="font-semibold tabular-nums">{val}/{max}</div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -137,6 +233,7 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
     play.liveAsk != null ? String(Math.round(play.liveAsk * 1000) / 10) : "",
   );
   const href = play.url || (play.slug ? `https://polymarket.com/event/${play.slug}` : undefined);
+  const grade = Math.round(play.grade ?? play.confidence ?? 0);
 
   async function onSaveFill(): Promise<void> {
     try {
@@ -153,7 +250,11 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
     <Card data-testid={take ? "card-take-play" : "card-near-play"}>
       <CardContent className="p-4 space-y-2">
         <div className="flex flex-wrap items-center gap-1.5">
+          {play.rank != null ? (
+            <Badge variant="outline" className="tabular-nums">#{play.rank}</Badge>
+          ) : null}
           {take ? <Badge>TAKE</Badge> : <Badge variant="outline">NEAR</Badge>}
+          <Badge className={`tabular-nums ${gradeTone(grade)}`}>{grade}/100</Badge>
           <Badge>{play.submarket}</Badge>
           <Badge variant="outline">{play.sport || "—"}</Badge>
           <Badge variant="outline">Q {Math.round(play.q)}</Badge>
@@ -173,6 +274,7 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
           <PriceRow label="Live ask" price={play.liveAsk ?? play.currentPrice} fmt={play.liveFmt} hint="pay this" />
           <PriceRow label="Their VWAP" price={play.avgEntryPrice} fmt={play.vwapFmt} />
         </div>
+        <WhyBlock play={play} take={take} />
         <div className="text-[11px] text-muted-foreground">
           Decimal = 1/price · American next to it. {play.traders.join(", ") || "matched book"}
           {play.sportRoi != null ? ` · sport ROI ${play.sportRoi.toFixed(0)}%` : ""}
@@ -205,6 +307,115 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
   );
 }
 
+function gradeTextTone(g: number): string {
+  if (g >= 75) return "text-emerald-400";
+  if (g >= 60) return "text-primary";
+  if (g >= 45) return "text-amber-400";
+  return "text-muted-foreground";
+}
+
+function GradedPlayRow({ play, compact }: { play: TakePlay; compact?: boolean }) {
+  const grade = Math.round(play.grade ?? play.confidence ?? 0);
+  const href = play.url || (play.slug ? `https://polymarket.com/event/${play.slug}` : undefined);
+  const tier = play.list === "take" ? "TAKE" : play.list === "near" ? "NEAR" : "WATCH";
+  return (
+    <div
+      className={`flex flex-wrap items-start gap-2 ${compact ? "py-2 border-b border-border/40 last:border-0" : ""}`}
+      data-testid="graded-play-row"
+    >
+      <div className="flex items-center gap-1.5 shrink-0">
+        <Badge variant="outline" className="tabular-nums text-[10px]">#{play.rank ?? "—"}</Badge>
+        <span className={`text-base font-bold tabular-nums ${gradeTextTone(grade)}`}>{grade}</span>
+        <Badge variant={play.list === "take" ? "default" : play.list === "near" ? "outline" : "secondary"} className="text-[10px]">
+          {tier}
+        </Badge>
+      </div>
+      <div className="flex-1 min-w-0 space-y-0.5">
+        <div className="text-sm font-medium leading-snug">{play.playLabel || play.pick || play.marketQuestion}</div>
+        <div className="text-[10px] text-muted-foreground">
+          {(play.traders || []).join(", ")}
+          {play.q ? ` · Q${Math.round(play.q)}` : ""}
+          {play.rel ? ` · ${play.rel.toFixed(1)}×` : ""}
+          {play.sportRoi != null ? ` · sport ROI ${play.sportRoi.toFixed(0)}%` : ""}
+        </div>
+        {!compact && play.why?.slice(0, 2).map((w) => (
+          <div key={w} className="text-[10px] text-muted-foreground">· {w}</div>
+        ))}
+      </div>
+      {href && (
+        <a href={href} target="_blank" rel="noreferrer" className="text-primary shrink-0">
+          <ExternalLink className="w-3.5 h-3.5" />
+        </a>
+      )}
+    </div>
+  );
+}
+
+function GradedBoard({ plays, board }: { plays: TakePlay[]; board?: TakePlaysResponse["rankedBoard"] }) {
+  if (!plays.length) return null;
+  const counts = board?.counts;
+  return (
+    <Card data-testid="card-graded-board">
+      <CardContent className="p-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Graded board · 0–100</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">
+              {board?.booksScanned ?? "—"} CSV books scanned
+              {counts ? ` · ${counts.take ?? 0} TAKE · ${counts.near ?? 0} NEAR · ${counts.watch ?? 0} watch` : ""}
+            </div>
+          </div>
+          <Link href="/insiders" className="text-xs text-primary">Full board →</Link>
+        </div>
+        <div className="divide-y divide-border/40">
+          {plays.slice(0, 8).map((p) => (
+            <GradedPlayRow key={p.id} play={p} compact />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function DiscoveryStrip({ discovery }: { discovery?: DiscoveryBundle }) {
+  if (!discovery) return null;
+  const live = discovery.live || [];
+  const top = (discovery.topComposite || []).slice(0, 6);
+  const actions = (discovery.adaptiveActions || []).slice(0, 4);
+  return (
+    <Card data-testid="card-copy-discovery">
+      <CardContent className="p-4 space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="text-xs font-medium">Best-of roster · discovery</div>
+          <Link href="/insiders" className="text-xs text-primary">Prediction Insiders →</Link>
+        </div>
+        <div className="text-[11px] text-muted-foreground">
+          Live now: {live.map((t) => t.username).filter(Boolean).join(", ") || "—"}
+          {" · "}
+          Auto-promote on: joinable + HOT + (unique ROI≥5% or turnaround last30). MM is a separate lane.
+        </div>
+        {top.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {top.map((t) => (
+              <Badge key={String(t.username)} variant="outline" className="text-[10px] font-normal">
+                {t.username} · {t.bucket} · score {t.compositeScore}
+                {t.takeN ? ` · take ${t.takeN}/${t.takeRoi}%` : ""}
+              </Badge>
+            ))}
+          </div>
+        )}
+        {actions.length > 0 && (
+          <div className="text-[11px] text-amber-500 space-y-0.5">
+            {actions.map((a) => (
+              <div key={`${a.action}-${a.username}`}>{a.action}: {a.username} — {a.why}</div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function TakeBookFeed() {
   const { data, isLoading, error, refetch } = useQuery<TakePlaysResponse>({
     queryKey: ["/api/take-plays"],
@@ -213,14 +424,24 @@ export default function TakeBookFeed() {
   });
 
   const liveAll = (data?.live || []).filter((p) => p.valid !== false);
-  const nearAll = [...(data?.near || []), ...(data?.csvOpen?.near || [])];
-  const [laneTab, setLaneTab] = useState<"sports" | "other">("sports");
-  const inLane = (p: TakePlay) => p.lane !== "futures" && p.submarket !== "Futures" && (p.lane || "sports") === laneTab;
+  const rankedAll = data?.ranked || [];
+  const resolveLane = (p: TakePlay): PlayLane =>
+    p.lane ?? effectiveLane({ sport: p.sport, submarket: p.submarket, title: p.marketQuestion, timing: p.timing });
+  const nearAll = [
+    ...rankedAll.filter((p) => p.list === "near"),
+    ...(data?.near || []).filter((p) => !rankedAll.some((r) => r.id === p.id)),
+    ...(data?.csvOpen?.near || []).filter((p) => !rankedAll.some((r) => r.id === p.id)),
+  ];
+  const [laneTab, setLaneTab] = useState<PlayLane>("sports");
+  const inLane = (p: TakePlay) => resolveLane(p) === laneTab;
   const live = liveAll.filter(inLane);
   const near = nearAll.filter(inLane).slice(0, 8);
-  const w30 = data?.health?.windows?.last_30d;
-  const w60 = data?.health?.windows?.last_60d;
-  const w90 = data?.health?.windows?.last_90d;
+  const gradedTop = rankedAll.filter(inLane).slice(0, 8);
+  const realized = data?.realizedBacktest;
+  const w30 = realized?.last30d ?? data?.health?.windows?.last_30d;
+  const w60 = realized?.last60d ?? data?.health?.windows?.last_60d;
+  const w90 = realized?.last90d ?? data?.health?.windows?.last_90d;
+  const wall = realized?.all;
   const bt = data?.backtest;
 
   return (
@@ -228,7 +449,7 @@ export default function TakeBookFeed() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
         <div>
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-            Recommended plays · $100 · live ask · decimal + American · auto-drop when invalid
+            Recommended plays · graded 0–100 · $100 · live ask · decimal + American
           </div>
           <h2 className="text-xl font-semibold tracking-tight flex items-center gap-2">
             <Flame className="w-5 h-5 text-primary" />
@@ -236,12 +457,19 @@ export default function TakeBookFeed() {
           </h2>
           <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
             {data?.rule || "As-of Q60 + sport expert + 2× size, no NFL."}
-            {bt?.n ? ` Backtest n=${bt.n} · ${bt.win_rate}% WR · ${bt.roi}% ROI after 2¢.` : ""}
-            {" "}Take these is the only copy rule. Live Signals is a separate, weaker consensus tape.
+            {bt?.n ? (
+              <>
+                {" "}
+                Real take-slice backtest (30d): n={bt.n} · {bt.win_rate}% WR · {bt.roi}% ROI after 2¢
+                {bt.source ? " — from resolved CSV plays." : "."}
+              </>
+            ) : null}
+            {" "}Graded 0–100 on every open. Only TAKE rows fire alerts.
           </p>
           <div className="flex flex-wrap gap-2 mt-2">
-            {(["sports", "other"] as const).map((tab) => {
-              const st = tab === "sports" ? data?.lanes?.sports : data?.lanes?.other;
+            {(["sports", "other", "futures"] as const).map((tab) => {
+              const st = tab === "sports" ? data?.lanes?.sports : tab === "other" ? data?.lanes?.other : undefined;
+              const nInTab = rankedAll.filter((p) => resolveLane(p) === tab).length;
               return (
                 <button
                   key={tab}
@@ -251,15 +479,25 @@ export default function TakeBookFeed() {
                     laneTab === tab ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"
                   }`}
                 >
-                  {tab === "sports" ? "Sports (ML / spread / total)" : "Politics"}
-                  {st?.n ? ` · n=${st.n} ${st.roi_2c}% ROI` : ""}
+                  {laneLabel(tab)}
+                  {st?.n ? ` · backtest n=${st.n}` : nInTab ? ` · ${nInTab} open` : ""}
                 </button>
               );
             })}
           </div>
+          {laneTab === "sports" && (
+            <p className="text-[11px] text-muted-foreground mt-1 max-w-2xl">
+              Game lines (ML / spread / total) with live or upcoming timing. Season futures and politics are on other tabs.
+            </p>
+          )}
           {laneTab === "other" && (
             <p className="text-[11px] text-muted-foreground mt-1 max-w-2xl">
-              Same Q/size gates, separate from the sports copy tape. Futures are not shown (historical n=5, −37% after 2¢).
+              Politics, macro, crypto, culture — same Q/size gates, separate from sports copy tape.
+            </p>
+          )}
+          {laneTab === "futures" && (
+            <p className="text-[11px] text-muted-foreground mt-1 max-w-2xl">
+              Season titles, elections, long-dated markets — shown for context; Sniper product does not fire on these.
             </p>
           )}
         </div>
@@ -274,16 +512,19 @@ export default function TakeBookFeed() {
           {w30?.n ? <Badge variant="outline">30d {w30.n} · {w30.roi_2c}% ROI</Badge> : null}
           {w60?.n ? <Badge variant="outline">60d {w60.n} · {w60.roi_2c}% ROI</Badge> : null}
           {w90?.n ? <Badge variant="outline">90d {w90.n} · {w90.roi_2c}% ROI</Badge> : null}
+          {wall?.n ? <Badge variant="outline">all {wall.n} · {wall.roi_2c}% ROI</Badge> : null}
           {data?.telegramConfigured ? (
             <Badge variant="outline">Telegram on</Badge>
           ) : (
             <Badge variant="outline">Telegram off — set TELEGRAM_BOT_TOKEN</Badge>
           )}
           <Button size="sm" variant="outline" onClick={() => refetch()}>Refresh</Button>
+          <Link href="/insiders" className="text-xs text-primary">Prediction Insiders →</Link>
           <Link href="/bets" className="text-xs text-primary">My Bets →</Link>
-          <Link href="/strategies" className="text-xs text-primary">Research →</Link>
         </div>
       </div>
+
+      <DiscoveryStrip discovery={data?.discovery} />
 
       {data?.pauseReason && (
         <Card>
@@ -297,8 +538,8 @@ export default function TakeBookFeed() {
       {!isLoading && live.length === 0 && (
         <Card>
           <CardContent className="p-6 text-sm text-muted-foreground space-y-1">
-            <div>No live take-book tickets right now. Alerts auto-delete on Telegram when they go invalid.</div>
-            <div>When one prints: Telegram + paper ticket at the live ask. Type the cents you actually paid.</div>
+            <div>No product TAKE tickets right now — gates are strict on purpose.</div>
+            <div>Graded board below shows NEAR/WATCH opens with real CSV entry prices and as-of sport ROI.</div>
           </CardContent>
         </Card>
       )}
@@ -306,6 +547,10 @@ export default function TakeBookFeed() {
       {live.map((p) => (
         <PlayCard key={p.id} play={p} take />
       ))}
+
+      {!isLoading && gradedTop.length > 0 && (
+        <GradedBoard plays={gradedTop} board={data?.rankedBoard} />
+      )}
 
       {near.length > 0 && (
         <div className="space-y-2">

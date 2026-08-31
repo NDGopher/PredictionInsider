@@ -195,6 +195,7 @@ export interface InsiderRankRow {
   untailable_reason?: string;
   market_maker?: boolean;
   winner_capped?: boolean;
+  copy_bucket?: string | null;
 }
 
 export interface InsiderRanksFile {

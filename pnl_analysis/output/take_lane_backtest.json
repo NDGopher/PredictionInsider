@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-08-18T17:53:05.746711+00:00",
+  "generated_at": "2026-08-24T18:22:27.807567+00:00",
   "rule": "asof_live_q60_sport_rel2 (Q>=60, sport ROI>=5%, rel>=2, 10-88c, no NFL, fill VWAP+2c). Futures excluded from product.",
   "all": {
-    "n": 346,
-    "win_rate": 56.94,
-    "roi_2c": 7.46
+    "n": 35,
+    "win_rate": 62.86,
+    "roi_2c": 21.83
   },
   "sports": {
-    "n": 346,
-    "win_rate": 56.94,
-    "roi_2c": 7.46
+    "n": 35,
+    "win_rate": 62.86,
+    "roi_2c": 21.83
   },
   "other": {
     "n": 0,
@@ -17,36 +17,26 @@
     "roi_2c": 0.0
   },
   "futures_excluded": {
-    "n": 6,
-    "win_rate": 50.0,
-    "roi_2c": -24.95
+    "n": 9,
+    "win_rate": 44.44,
+    "roi_2c": -37.5
   },
   "by_submarket": {
-    "Draw": {
-      "n": 2,
-      "win_rate": 100.0,
-      "roi_2c": 77.47
-    },
-    "Map / Game": {
-      "n": 2,
-      "win_rate": 50.0,
-      "roi_2c": 15.63
-    },
     "Moneyline": {
-      "n": 259,
-      "win_rate": 55.6,
-      "roi_2c": 4.3
+      "n": 16,
+      "win_rate": 62.5,
+      "roi_2c": 23.9
     },
     "Spread": {
-      "n": 34,
-      "win_rate": 47.06,
-      "roi_2c": -14.01
+      "n": 16,
+      "win_rate": 56.25,
+      "roi_2c": 2.92
     },
     "Total": {
-      "n": 49,
-      "win_rate": 69.39,
-      "roi_2c": 35.88
+      "n": 3,
+      "win_rate": 100.0,
+      "roi_2c": 111.61
     }
   },
-  "note": "Sports = game ML/spread/total. Other = politics / non-game (no futures). Futures n is too small and \u2212ROI \u2014 not shown and not copied. Live copy list is joinable HOT/WARM books only (see copy_universe.json)."
+  "note": "Sports = game ML/spread/total. Other = politics / non-game (no futures). Live copy list is joinable HOT/WARM unique-ROI books only (see copy_universe.json)."
 }

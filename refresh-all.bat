@@ -1,5 +1,5 @@
 @echo off
-REM One-click: Docker + db:init + dev server + ALWAYS incremental pipeline (merge recent CSVs, re-analyze, ingest).
+REM One-click: Docker + db:init + dev server + incremental fetch/ingest + ranks/copy/take-book rebuild.
 REM For fast start without pipeline: start-prediction-insider.bat skip
 REM Smart mode (pipeline only if stale): start-prediction-insider.bat
 cd /d "%~dp0"

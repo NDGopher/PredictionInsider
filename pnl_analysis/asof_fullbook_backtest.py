@@ -5,6 +5,15 @@ Unlike walkforward_tail_backtest.py this does NOT treat dashboard pnl>0 as a win
 Win = token resolved to $1. Fill = their VWAP and +2¢. Grade / sport-lane /
 submarket / relative size use only markets that had already resolved.
 
+Forward / look-ahead notes (important for OddsJam-style honesty):
+  - Features (Q, lane ROI, median stake) are as-of (endDate − KNOWLEDGE_LAG),
+    so the *current* market's outcome is never in the snapshot.
+  - Labels are resolution outcomes only — we never peek at future PnL.
+  - Caveat: as-of is tied to resolution day, not the exact entry timestamp.
+    Early entries can still use features that resolved after the bet was placed
+    but before endDate−1d. Live opens use `now − KNOWLEDGE_LAG` (true forward).
+  - Product Sniper rule: asof_live_q60_sport_rel2 (Q≥60, sport +5%, rel≥2×).
+
 Writes:
   pnl_analysis/output/asof_fullbook_backtest.json
   pnl_analysis/output/asof_fullbook_plays.csv  (gitignored)
@@ -280,12 +289,24 @@ def collect_plays(trusted: list[dict], extra_books: list[dict] | None = None) ->
         u = str(t.get("username") or "")
         if w:
             allow[w] = u or allow.get(w, w[:10])
-    rows: list[dict] = []
-    print(f"Hold-to-res as-of copy  wallets={len(allow)}  stake=${STAKE:.0f}")
+    pairs: list[tuple[str, str]] = []
+    seen: set[str] = set()
     for wallet, username in roster_traders():
         w = wallet.lower()
-        if w not in allow:
+        if w not in allow or w in seen:
             continue
+        pairs.append((wallet, username))
+        seen.add(w)
+    for t in extra_books or []:
+        w = str(t.get("wallet") or "").lower()
+        u = str(t.get("username") or "") or allow.get(w, w[:10])
+        if w in allow and w not in seen:
+            pairs.append((w, u))
+            seen.add(w)
+    rows: list[dict] = []
+    print(f"Hold-to-res as-of copy  wallets={len(allow)}  stake=${STAKE:.0f}")
+    for wallet, username in pairs:
+        w = wallet.lower()
         csv_p = csv_path_for(wallet, username)
         if not csv_p.exists():
             continue
@@ -321,6 +342,8 @@ def collect_plays(trusted: list[dict], extra_books: list[dict] | None = None) ->
                 "username": username,
                 "wallet": w,
                 "end_dt": end_dt,
+                "conditionId": str(getattr(r, "conditionId", "") or ""),
+                "side": str(getattr(r, "side", "Yes") or "Yes"),
                 "sport": sport,
                 "sport_family": sport_family(sport),
                 "submarket": sub,
