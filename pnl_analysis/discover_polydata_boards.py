@@ -26,11 +26,11 @@ from run_full_pipeline import EXTRA_TRADERS_PATH, OUTPUT_DIR, roster_traders  # 
 API = "https://www.polydata.org/api/leaderboard"
 OUT = OUTPUT_DIR / "polydata_boards.json"
 PAGE = 25
-MAX_OFFSET = 75  # 4 pages
-MIN_VOL = 400_000.0
-MIN_PNL = 80_000.0
+MAX_OFFSET = 150  # 7 pages → ~175 per board (was 4×25=100)
+MIN_VOL = 250_000.0  # was 400k — catch earlier specialists
+MIN_PNL = 40_000.0   # was 80k
 MIN_PNL_VOL = 0.05  # 5% — below this is usually a bonder/grinder/MM
-MAX_AUTO_WATCH = 12  # month sports only; ALL-time is report-only
+MAX_AUTO_WATCH = 50  # was 12 — digestion bottleneck, not "no elites exist"
 
 
 def fetch_board(time_period: str, category: str) -> list[dict[str, Any]]:
@@ -130,12 +130,20 @@ def upsert_watch(survivors: list[dict[str, Any]], known: dict[str, str]) -> int:
     new_rows: list[dict[str, Any]] = []
     eligible = [
         row for row in survivors
-        if row.get("window") == "month"
+        if row.get("window") in {"month", "week"}
         and row.get("category") == "sports"
         and not row.get("on_roster")
         and str(row.get("wallet") or "").lower() not in known
         and str(row.get("wallet") or "").lower() not in by_w
     ]
+    # Prefer month sports (more stable) then week; rank by pnl_vol then pnl
+    eligible.sort(
+        key=lambda r: (
+            0 if r.get("window") == "month" else 1,
+            -float(r.get("pnl_vol") or 0),
+            -float(r.get("pnl") or 0),
+        )
+    )
     for row in eligible[:MAX_AUTO_WATCH]:
         w = str(row.get("wallet") or "").lower()
         u = str(row.get("username") or "").strip()
@@ -207,9 +215,10 @@ def main() -> int:
         "method": (
             "Polydata.org leaderboard API (same as the public week/month/all UI). "
             "Sports boards: keep PnL/vol >= 5%. Sub-5% is usually a favorite/bond "
-            "grinder (ferrari, HomeRunHazard, RN1, swisstony). Up to 12 new "
-            "month-sports survivors are appended to extra_traders.json as watch — "
-            "never auto-live. ALL-time is report-only."
+            "grinder (ferrari, HomeRunHazard, RN1, swisstony). "
+            "Up to 50 new week/month-sports survivors are appended to extra_traders.json as watch — "
+            "never auto-live. ALL-time is report-only. Digestion (CSV fetch) is the bottleneck "
+            "for finding HVAB-class tails — raise fetch --limit in refresh_product accordingly."
         ),
         "gates": {
             "min_vol": MIN_VOL,

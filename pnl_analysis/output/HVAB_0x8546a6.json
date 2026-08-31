@@ -1,57 +1,57 @@
 {
   "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
   "username": "HVAB",
-  "total_profit": 284790.33,
-  "raw_realized_pnl": 285063.17,
-  "dashboard_pnl": 284790.33,
-  "total_risked": 2762048.5,
-  "overall_roi": 10.31,
-  "redeemed_only_roi": 10.32,
+  "total_profit": 434640.9,
+  "raw_realized_pnl": 437314.17,
+  "dashboard_pnl": 434640.9,
+  "total_risked": 3920161.64,
+  "overall_roi": 11.09,
+  "redeemed_only_roi": 11.16,
   "last_30d": {
-    "n": 175,
-    "pnl": 213683.29,
-    "cost": 1479370.77,
-    "roi": 14.44,
-    "wins": 139,
-    "win_rate": 79.4,
-    "first": "2026-07-22",
-    "last": "2026-08-20"
+    "n": 205,
+    "pnl": 395539.72,
+    "cost": 2587183.41,
+    "roi": 15.29,
+    "wins": 165,
+    "win_rate": 80.5,
+    "first": "2026-08-02",
+    "last": "2026-08-31"
   },
   "last_60d": {
-    "n": 338,
-    "pnl": 230495.98,
-    "cost": 1955104.08,
-    "roi": 11.79,
-    "wins": 268,
-    "win_rate": 79.3,
-    "first": "2026-06-22",
-    "last": "2026-08-20"
+    "n": 385,
+    "pnl": 440641.37,
+    "cost": 3206289.79,
+    "roi": 13.74,
+    "wins": 304,
+    "win_rate": 79.0,
+    "first": "2026-07-03",
+    "last": "2026-08-31"
   },
   "last_90d": {
-    "n": 435,
-    "pnl": 234201.74,
-    "cost": 2062270.41,
-    "roi": 11.36,
-    "wins": 346,
-    "win_rate": 79.5,
-    "first": "2026-05-31",
-    "last": "2026-08-20"
+    "n": 526,
+    "pnl": 446076.38,
+    "cost": 3393414.58,
+    "roi": 13.15,
+    "wins": 416,
+    "win_rate": 79.1,
+    "first": "2026-06-04",
+    "last": "2026-08-31"
   },
-  "last_event_date": "2026-08-21",
+  "last_event_date": "2026-09-01",
   "days_since_last_event": 0,
   "possibly_quit": false,
-  "win_rate": 81.84,
-  "avg_bet_size": 5241.69,
-  "median_market_stake": 896.4,
-  "mean_market_stake": 5241.69,
-  "markets_traded": 397,
-  "total_events": 394,
-  "pseudo_sharpe": 8.31,
-  "profitable_days": 73,
-  "total_days": 81,
-  "hedge_count": 200,
-  "hedge_risk": 675618.45,
-  "hedge_profit": 69110.51,
+  "win_rate": 80.97,
+  "avg_bet_size": 5820.68,
+  "median_market_stake": 1013.44,
+  "mean_market_stake": 5820.68,
+  "markets_traded": 461,
+  "total_events": 458,
+  "pseudo_sharpe": 5.03,
+  "profitable_days": 81,
+  "total_days": 90,
+  "hedge_count": 244,
+  "hedge_risk": 1231348.82,
+  "hedge_profit": 50283.65,
   "bond_count": 2,
   "bond_risk": 5480.03,
   "bond_profit": -113.01,
@@ -69,12 +69,12 @@
       "median_bet": 61.9
     },
     "OTHER": {
-      "net_profit": 77017.02,
-      "roi": 12.53,
-      "win_rate": 75.86,
-      "events": 157,
-      "avg_bet": 3915.42,
-      "median_bet": 505.27
+      "net_profit": 80192.8,
+      "roi": 12.68,
+      "win_rate": 77.07,
+      "events": 169,
+      "avg_bet": 3741.46,
+      "median_bet": 511.66
     },
     "SOCCER (EPL)": {
       "net_profit": 3.61,
@@ -85,20 +85,20 @@
       "median_bet": 50.02
     },
     "SOCCER (Other)": {
-      "net_profit": 879.17,
-      "roi": 6.39,
-      "win_rate": 83.33,
-      "events": 14,
-      "avg_bet": 982.17,
-      "median_bet": 457.38
+      "net_profit": 1174.95,
+      "roi": 7.45,
+      "win_rate": 84.62,
+      "events": 15,
+      "avg_bet": 1051.75,
+      "median_bet": 552.66
     },
     "TENNIS": {
-      "net_profit": 137881.31,
-      "roi": 9.49,
-      "win_rate": 85.71,
-      "events": 224,
-      "avg_bet": 6483.78,
-      "median_bet": 1547.39
+      "net_profit": 303087.19,
+      "roi": 14.89,
+      "win_rate": 83.01,
+      "events": 275,
+      "avg_bet": 7400.5,
+      "median_bet": 1653.61
     }
   },
   "market_stats": {
@@ -111,12 +111,12 @@
       "median_bet": 820.32
     },
     "Moneyline / Match": {
-      "net_profit": 213718.66,
-      "roi": 10.37,
-      "win_rate": 81.92,
-      "events": 367,
-      "avg_bet": 5614.99,
-      "median_bet": 1021.89
+      "net_profit": 382396.1,
+      "roi": 14.36,
+      "win_rate": 80.99,
+      "events": 431,
+      "avg_bet": 6178.85,
+      "median_bet": 1188.42
     },
     "Totals (O/U)": {
       "net_profit": 1142.38,
@@ -137,12 +137,12 @@
       "median_bet": 437.71
     },
     "Other|Moneyline / Match": {
-      "net_profit": 76357.18,
-      "roi": 12.51,
-      "win_rate": 77.1,
-      "events": 140,
-      "avg_bet": 4358.14,
-      "median_bet": 539.39
+      "net_profit": 79532.95,
+      "roi": 12.67,
+      "win_rate": 78.32,
+      "events": 152,
+      "avg_bet": 4129.77,
+      "median_bet": 568.1
     },
     "Other|Totals (O/U)": {
       "net_profit": 631.71,
@@ -153,12 +153,12 @@
       "median_bet": 27.73
     },
     "Soccer|Moneyline / Match": {
-      "net_profit": 372.11,
-      "roi": 2.92,
-      "win_rate": 80.0,
-      "events": 11,
-      "avg_bet": 1158.4,
-      "median_bet": 1303.95
+      "net_profit": 667.89,
+      "roi": 4.52,
+      "win_rate": 81.82,
+      "events": 12,
+      "avg_bet": 1230.69,
+      "median_bet": 1315.06
     },
     "Soccer|Totals (O/U)": {
       "net_profit": 510.67,
@@ -177,12 +177,12 @@
       "median_bet": 1270.02
     },
     "Tennis|Moneyline / Match": {
-      "net_profit": 136989.37,
-      "roi": 9.53,
-      "win_rate": 85.15,
-      "events": 216,
-      "avg_bet": 6656.58,
-      "median_bet": 1555.4
+      "net_profit": 302195.25,
+      "roi": 14.96,
+      "win_rate": 82.47,
+      "events": 267,
+      "avg_bet": 7567.76,
+      "median_bet": 1738.34
     },
     "eSports|Futures": {
       "net_profit": 11.71,
@@ -195,46 +195,46 @@
   },
   "price_stats": {
     "Favorite (60-80c)": {
-      "net_profit": 147943.62,
-      "roi": 26.72,
-      "win_rate": 79.27,
-      "events": 84
+      "net_profit": 168521.91,
+      "roi": 24.08,
+      "win_rate": 79.0,
+      "events": 102
     },
     "Flip (40-60c)": {
-      "net_profit": 10739.41,
-      "roi": 12.07,
-      "win_rate": 74.55,
-      "events": 58
+      "net_profit": 12229.9,
+      "roi": 12.7,
+      "win_rate": 73.33,
+      "events": 63
     },
     "Longshot (0-20c)": {
-      "net_profit": -32.96,
-      "roi": -0.58,
-      "win_rate": 58.82,
-      "events": 18
+      "net_profit": -476.6,
+      "roi": -6.7,
+      "win_rate": 57.89,
+      "events": 20
     },
     "Safe (80-100c)": {
-      "net_profit": 26270.48,
-      "roi": 1.89,
-      "win_rate": 90.77,
-      "events": 213
+      "net_profit": 28260.4,
+      "roi": 1.61,
+      "win_rate": 89.52,
+      "events": 249
     },
     "Underdog (20-40c)": {
-      "net_profit": 30872.26,
-      "roi": 73.78,
-      "win_rate": 45.0,
-      "events": 24
+      "net_profit": 175934.65,
+      "roi": 140.47,
+      "win_rate": 43.48,
+      "events": 27
     }
   },
   "side_stats": {
     "No": {
-      "net_profit": 167.47,
-      "roi": 4.05,
-      "positions": 5
+      "net_profit": 463.25,
+      "roi": 7.52,
+      "positions": 6
     },
     "Specific Selection": {
-      "net_profit": 213934.01,
-      "roi": 10.43,
-      "positions": 370
+      "net_profit": 382315.67,
+      "roi": 14.42,
+      "positions": 433
     },
     "Yes": {
       "net_profit": 1691.35,
@@ -246,9 +246,22 @@
     "2026-05": 300.37,
     "2026-06": 6637.45,
     "2026-07": 48307.6,
-    "2026-08": 160547.41
+    "2026-08": 323794.87,
+    "2026-09": 5429.97
   },
   "top_wins": [
+    {
+      "title": "Sion: Lorenzo Giustino vs Benjamin Hassan",
+      "slug": "atp-giustin-hassan-2026-08-21",
+      "eventSlug": "atp-giustin-hassan-2026-08-21",
+      "sport_type": "TENNIS",
+      "outcome": "Benjamin Hassan",
+      "conditionId": "0x797120291e56deddca5eca071b181e112d09aae516beb4e888d88c50d47bdd30",
+      "total_pnl": 145089.51,
+      "total_cost": 83110.94,
+      "avg_price": 0.3642,
+      "status": "closed"
+    },
     {
       "title": "Livesport Prague Open, Qualification: Rebeka Masarova vs Valentina Ryser",
       "slug": "wta-masarov-ryser-2026-07-18",
@@ -296,18 +309,6 @@
       "total_cost": 60022.4,
       "avg_price": 0.7585,
       "status": "closed"
-    },
-    {
-      "title": "Hagen: Alex Molcan vs Chun-Hsin Tseng",
-      "slug": "atp-molcan-tseng-2026-08-03",
-      "eventSlug": "atp-molcan-tseng-2026-08-03",
-      "sport_type": "TENNIS",
-      "outcome": "Chun-Hsin Tseng",
-      "conditionId": "0x290f1249c1fc1f1f437e2bd2c50a4e7a1dfc04bf350320eaa5f0690d2eb9206c",
-      "total_pnl": 17194.35,
-      "total_cost": 57802.5,
-      "avg_price": 0.7707,
-      "status": "closed"
     }
   ],
   "top_losses": [
@@ -348,6 +349,18 @@
       "status": "closed"
     },
     {
+      "title": "US Open ATP: Jaume Munar vs Terence Atmane",
+      "slug": "atp-munar-atmane-2026-08-30",
+      "eventSlug": "atp-munar-atmane-2026-08-30",
+      "sport_type": "TENNIS",
+      "outcome": "Jaume Munar",
+      "conditionId": "0xd8418ecb65af402d08c22f76c9ccd55a068017dea7978aae69f15a6f8470445c",
+      "total_pnl": -1613.61,
+      "total_cost": 15236.51,
+      "avg_price": 0.8006,
+      "status": "closed"
+    },
+    {
       "title": "ITF Vacaria: Lucciana Perez Alarcon vs Daria Egorova",
       "slug": "itf-alarcon-egorova-2026-07-25",
       "eventSlug": "itf-alarcon-egorova-2026-07-25",
@@ -358,35 +371,24 @@
       "total_cost": 2015.33,
       "avg_price": 0.7356,
       "status": "closed"
-    },
-    {
-      "title": "National Bank Open: Diane Parry vs Kayla Day",
-      "slug": "wta-parry-day-2026-08-03",
-      "eventSlug": "wta-parry-day-2026-08-03",
-      "sport_type": "TENNIS",
-      "outcome": "Diane Parry",
-      "conditionId": "0xc78ae7bdc3915a971cd8d3df747d08eb3c9596ff7f36a0fc02eac264ce96cae2",
-      "total_pnl": -992.52,
-      "total_cost": 8330.84,
-      "avg_price": 0.725,
-      "status": "closed"
     }
   ],
   "top_sport": "TENNIS",
   "best_price_bucket": "Underdog (20-40c)",
   "best_market": "Moneyline / Match",
-  "quality_score": 91,
+  "quality_score": 84,
   "tier": "S-Tier",
   "tags": [
     "\u2b50\u2b50\u2b50 S-Tier",
     "\u2696\ufe0f Hedge / MM-heavy \u2014 quality blends dashboard + directional ROI",
     "\ud83c\udfbe Tennis Expert",
-    "\ud83d\udc8e Consistent Grinder",
+    "\ud83c\udfaf Underdog Sniper",
+    "\ud83d\udcc8 Steady Performer",
     "\ud83d\udc0b Big Bettor",
     "\ud83d\udcc8 Moneyline Pro",
     "\ud83d\udcca O/U Specialist"
   ],
-  "tail_guide": "How to Tail HVAB [S-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   TENNIS \u2014 9.5% ROI, 224 markets, +$137,881\n   OTHER \u2014 12.5% ROI, 157 markets, +$77,017\n\n\ud83d\udcc8 Stick to Moneylines (10.4% ROI over 367 markets)\n\ud83c\udfaf Best price zone: Underdog (20-40c) (73.8% ROI, 24 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 99% of edge from 'Specific' side \u2014 copy that side only\n\ud83d\udcb0 Typical market stake ~$896 (median)\n   (Mean $5,242 \u2014 some very large markets; size to the median unless you match their whale plays)",
+  "tail_guide": "How to Tail HVAB [S-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   TENNIS \u2014 14.9% ROI, 275 markets, +$303,087\n   OTHER \u2014 12.7% ROI, 169 markets, +$80,193\n\n\ud83d\udcc8 Stick to Moneylines (14.4% ROI over 431 markets)\n\ud83c\udfaf Best price zone: Underdog (20-40c) (140.5% ROI, 27 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 99% of edge from 'Specific' side \u2014 copy that side only\n\ud83d\udcb0 Typical market stake ~$1,013 (median)\n   (Mean $5,821 \u2014 some very large markets; size to the median unless you match their whale plays)",
   "do_not_tail_sports": [],
   "auto_tail_sports": [
     "OTHER",
@@ -395,27 +397,27 @@
   "do_not_tail_market_types": [],
   "do_not_tail_sides": [],
   "score_breakdown": {
-    "sharpe_score": 30,
-    "roi_score": 17.2,
+    "sharpe_score": 18.9,
+    "roi_score": 20.9,
     "wr_score": 15,
     "cons_score": 9.0,
-    "vol_score": 4.7,
-    "base_score": 76.0,
+    "vol_score": 4.8,
+    "base_score": 68.6,
     "flip_bonus": 15,
     "leakage_penalty": 0,
-    "midzone_roi": 42.9,
-    "directional_roi": 10.37,
-    "roi_dashboard": 10.31,
-    "roi_redeemed_only": 10.32,
-    "last_60d_roi": 11.79,
-    "last_60d_pnl": 230495.98,
+    "midzone_roi": 76.6,
+    "directional_roi": 14.33,
+    "roi_dashboard": 11.09,
+    "roi_redeemed_only": 11.16,
+    "last_60d_roi": 13.74,
+    "last_60d_pnl": 440641.37,
     "recency_penalty": 0,
-    "roi_for_quality": 10.34,
-    "hedge_risk_frac": 0.245,
-    "hedge_profit_share": 0.242,
-    "markets_traded": 397,
-    "median_market_stake": 896.4,
-    "mean_market_stake": 5241.69,
+    "roi_for_quality": 12.53,
+    "hedge_risk_frac": 0.314,
+    "hedge_profit_share": 0.115,
+    "markets_traded": 461,
+    "median_market_stake": 1013.44,
+    "mean_market_stake": 5820.68,
     "pnl_sum_check_ok": true
   }
 }

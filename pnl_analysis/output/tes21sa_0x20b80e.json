@@ -1,0 +1,508 @@
+{
+  "wallet": "0x20b80ebb96e2051540e1d475e4ce122fc282aa04",
+  "username": "tes21sa",
+  "total_profit": 182406.25,
+  "raw_realized_pnl": 352641.31,
+  "dashboard_pnl": 182406.25,
+  "total_risked": 1008090.3,
+  "overall_roi": 18.09,
+  "redeemed_only_roi": 34.98,
+  "last_30d": {
+    "n": 36,
+    "pnl": 254006.4,
+    "cost": 786171.14,
+    "roi": 32.31,
+    "wins": 23,
+    "win_rate": 63.9,
+    "first": "2026-08-03",
+    "last": "2026-08-29"
+  },
+  "last_60d": {
+    "n": 66,
+    "pnl": 178193.54,
+    "cost": 876127.78,
+    "roi": 20.34,
+    "wins": 34,
+    "win_rate": 51.5,
+    "first": "2026-07-04",
+    "last": "2026-08-29"
+  },
+  "last_90d": {
+    "n": 72,
+    "pnl": 178994.95,
+    "cost": 996391.08,
+    "roi": 17.96,
+    "wins": 37,
+    "win_rate": 51.4,
+    "first": "2026-06-27",
+    "last": "2026-08-29"
+  },
+  "last_event_date": "2026-08-29",
+  "days_since_last_event": 2,
+  "possibly_quit": false,
+  "win_rate": 42.31,
+  "avg_bet_size": 11711.82,
+  "median_market_stake": 1658.51,
+  "mean_market_stake": 11711.82,
+  "markets_traded": 79,
+  "total_events": 67,
+  "pseudo_sharpe": 2.83,
+  "profitable_days": 20,
+  "total_days": 42,
+  "hedge_count": 16,
+  "hedge_risk": 82856.83,
+  "hedge_profit": 17766.77,
+  "bond_count": 0,
+  "bond_risk": 0.0,
+  "bond_profit": 0.0,
+  "open_count": 0,
+  "open_risk": 0.0,
+  "open_value": 0.0,
+  "open_pnl": 0.0,
+  "sport_stats": {
+    "ESPORTS": {
+      "net_profit": -3256.0,
+      "roi": -100.0,
+      "win_rate": 0.0,
+      "events": 2,
+      "avg_bet": 1628.0,
+      "median_bet": 1628.0
+    },
+    "MLB": {
+      "net_profit": -3206.45,
+      "roi": -15.46,
+      "win_rate": 62.5,
+      "events": 8,
+      "avg_bet": 2592.71,
+      "median_bet": 2003.38
+    },
+    "OTHER": {
+      "net_profit": -90099.38,
+      "roi": -80.32,
+      "win_rate": 16.67,
+      "events": 24,
+      "avg_bet": 4673.79,
+      "median_bet": 1008.5
+    },
+    "SOCCER (EPL)": {
+      "net_profit": 22373.3,
+      "roi": 31.03,
+      "win_rate": 50.0,
+      "events": 2,
+      "avg_bet": 36056.33,
+      "median_bet": 36056.33
+    },
+    "SOCCER (LaLiga)": {
+      "net_profit": 245860.18,
+      "roi": 91.32,
+      "win_rate": 80.0,
+      "events": 10,
+      "avg_bet": 26921.8,
+      "median_bet": 29617.58
+    },
+    "SOCCER (Other)": {
+      "net_profit": -99892.52,
+      "roi": -34.76,
+      "win_rate": 30.0,
+      "events": 20,
+      "avg_bet": 14370.83,
+      "median_bet": 1154.08
+    },
+    "SOCCER (UCL)": {
+      "net_profit": 51995.51,
+      "roi": 51.16,
+      "win_rate": 80.0,
+      "events": 5,
+      "avg_bet": 20326.54,
+      "median_bet": 5166.6
+    },
+    "TENNIS": {
+      "net_profit": 40864.83,
+      "roi": 69.63,
+      "win_rate": 71.43,
+      "events": 8,
+      "avg_bet": 7335.62,
+      "median_bet": 5788.95
+    }
+  },
+  "market_stats": {
+    "Draw": {
+      "net_profit": -9157.84,
+      "roi": -24.46,
+      "win_rate": 25.0,
+      "events": 8,
+      "avg_bet": 4680.24,
+      "median_bet": 2435.37
+    },
+    "Futures": {
+      "net_profit": -2046.49,
+      "roi": -100.0,
+      "win_rate": 0.0,
+      "events": 3,
+      "avg_bet": 682.15,
+      "median_bet": 1002.0
+    },
+    "Moneyline / Match": {
+      "net_profit": 178577.87,
+      "roi": 20.3,
+      "win_rate": 50.88,
+      "events": 58,
+      "avg_bet": 15164.92,
+      "median_bet": 5492.1
+    },
+    "Spread": {
+      "net_profit": 272.12,
+      "roi": 8.57,
+      "win_rate": 28.57,
+      "events": 7,
+      "avg_bet": 453.44,
+      "median_bet": 387.34
+    },
+    "Totals (O/U)": {
+      "net_profit": -3006.18,
+      "roi": -100.01,
+      "win_rate": 0.0,
+      "events": 3,
+      "avg_bet": 1001.92,
+      "median_bet": 1001.0
+    }
+  },
+  "sport_market_stats": {
+    "MLB|Moneyline / Match": {
+      "net_profit": -3206.45,
+      "roi": -15.46,
+      "win_rate": 62.5,
+      "events": 8,
+      "avg_bet": 2592.71,
+      "median_bet": 2003.38
+    },
+    "Other|Draw": {
+      "net_profit": -13895.94,
+      "roi": -49.89,
+      "win_rate": 25.0,
+      "events": 4,
+      "avg_bet": 6963.13,
+      "median_bet": 3812.18
+    },
+    "Other|Futures": {
+      "net_profit": -2046.49,
+      "roi": -100.0,
+      "win_rate": 0.0,
+      "events": 3,
+      "avg_bet": 682.15,
+      "median_bet": 1002.0
+    },
+    "Other|Moneyline / Match": {
+      "net_profit": -73921.63,
+      "roi": -93.92,
+      "win_rate": 15.38,
+      "events": 13,
+      "avg_bet": 6054.51,
+      "median_bet": 1019.75
+    },
+    "Other|Spread": {
+      "net_profit": 765.69,
+      "roi": 29.88,
+      "win_rate": 33.33,
+      "events": 3,
+      "avg_bet": 854.07,
+      "median_bet": 1027.5
+    },
+    "Other|Totals (O/U)": {
+      "net_profit": -1001.0,
+      "roi": -100.0,
+      "win_rate": 0.0,
+      "events": 1,
+      "avg_bet": 1001.0,
+      "median_bet": 1001.0
+    },
+    "Soccer|Draw": {
+      "net_profit": -5476.4,
+      "roi": -103.27,
+      "win_rate": 0.0,
+      "events": 3,
+      "avg_bet": 1767.58,
+      "median_bet": 725.0
+    },
+    "Soccer|Moneyline / Match": {
+      "net_profit": 176316.12,
+      "roi": 28.4,
+      "win_rate": 60.87,
+      "events": 23,
+      "avg_bet": 26992.52,
+      "median_bet": 24294.73
+    },
+    "Soccer|Spread": {
+      "net_profit": -493.57,
+      "roi": -80.66,
+      "win_rate": 25.0,
+      "events": 4,
+      "avg_bet": 152.97,
+      "median_bet": 53.09
+    },
+    "Soccer|Totals (O/U)": {
+      "net_profit": -2005.18,
+      "roi": -100.02,
+      "win_rate": 0.0,
+      "events": 2,
+      "avg_bet": 1002.38,
+      "median_bet": 1002.38
+    },
+    "Tennis|Moneyline / Match": {
+      "net_profit": 40864.83,
+      "roi": 69.63,
+      "win_rate": 71.43,
+      "events": 8,
+      "avg_bet": 7335.62,
+      "median_bet": 5788.95
+    },
+    "UCL|Draw": {
+      "net_profit": 10214.5,
+      "roi": 238.29,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 4286.63,
+      "median_bet": 4286.63
+    },
+    "UCL|Moneyline / Match": {
+      "net_profit": 41781.01,
+      "roi": 42.92,
+      "win_rate": 75.0,
+      "events": 4,
+      "avg_bet": 24336.51,
+      "median_bet": 13045.35
+    },
+    "eSports|Moneyline / Match": {
+      "net_profit": -3256.0,
+      "roi": -100.0,
+      "win_rate": 0.0,
+      "events": 2,
+      "avg_bet": 1628.0,
+      "median_bet": 1628.0
+    }
+  },
+  "price_stats": {
+    "Favorite (60-80c)": {
+      "net_profit": 87611.54,
+      "roi": 30.11,
+      "win_rate": 88.89,
+      "events": 9
+    },
+    "Flip (40-60c)": {
+      "net_profit": 113367.68,
+      "roi": 33.84,
+      "win_rate": 65.0,
+      "events": 21
+    },
+    "Longshot (0-20c)": {
+      "net_profit": -50176.17,
+      "roi": -77.19,
+      "win_rate": 19.23,
+      "events": 26
+    },
+    "Safe (80-100c)": {
+      "net_profit": -57937.58,
+      "roi": -81.2,
+      "win_rate": 66.67,
+      "events": 3
+    },
+    "Underdog (20-40c)": {
+      "net_profit": 71774.02,
+      "roi": 44.06,
+      "win_rate": 25.0,
+      "events": 20
+    }
+  },
+  "side_stats": {
+    "No": {
+      "net_profit": 68856.33,
+      "roi": 11.74,
+      "positions": 17
+    },
+    "Specific Selection": {
+      "net_profit": 31562.17,
+      "roi": 35.48,
+      "positions": 32
+    },
+    "Yes": {
+      "net_profit": 64220.98,
+      "roi": 25.72,
+      "positions": 30
+    }
+  },
+  "monthly_pnl": {
+    "2026-05": -4201.5,
+    "2026-06": -34817.49,
+    "2026-07": -21241.74,
+    "2026-08": 217287.4,
+    "2026-09": 7612.8
+  },
+  "top_wins": [
+    {
+      "title": "Will CA Osasuna win on 2026-08-16?",
+      "slug": "lal-cel-osa-2026-08-16-osa",
+      "eventSlug": "lal-cel-osa-2026-08-16",
+      "sport_type": "SOCCER (LaLiga)",
+      "outcome": "Yes",
+      "conditionId": "0xa5306562f65e86eaf17e20fc07a39cd01053162fe6d3977eb9f75ff2f631f587",
+      "total_pnl": 127598.52,
+      "total_cost": 34105.75,
+      "avg_price": 0.2109,
+      "status": "closed"
+    },
+    {
+      "title": "Will Olympique Lyonnais win on 2026-08-26?",
+      "slug": "ucl-lyo-fen-2026-08-26-lyo",
+      "eventSlug": "ucl-lyo-fen-2026-08-26",
+      "sport_type": "SOCCER (UCL)",
+      "outcome": "No",
+      "conditionId": "0x6828dce345013514719f21c929b61a89aa7d7e0cfc08ef9495cdeef440fa6120",
+      "total_pnl": 60740.12,
+      "total_cost": 68665.36,
+      "avg_price": 0.5306,
+      "status": "closed"
+    },
+    {
+      "title": "Will Mexico win on 2026-06-30?",
+      "slug": "fifwc-mex-ecu-2026-06-30-mex",
+      "eventSlug": "fifwc-mex-ecu-2026-06-30",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "Yes",
+      "conditionId": "0x65f5760095b3b903c895b320765ccdd4074b72750458b09fde516f6254bcec67",
+      "total_pnl": 58093.3,
+      "total_cost": 45151.23,
+      "avg_price": 0.4373,
+      "status": "closed"
+    },
+    {
+      "title": "Will Club Atl\u00e9tico de Madrid win on 2026-08-23?",
+      "slug": "lal-mad-vil-2026-08-23-mad",
+      "eventSlug": "lal-mad-vil-2026-08-23",
+      "sport_type": "SOCCER (LaLiga)",
+      "outcome": "No",
+      "conditionId": "0xcadb1942623d7a37bf86833af324e80125ee32d2db9e2d1a664f4a0622a5970f",
+      "total_pnl": 49616.3,
+      "total_cost": 46134.83,
+      "avg_price": 0.4818,
+      "status": "closed"
+    },
+    {
+      "title": "Canadian Open: Kamil Majchrzak vs Gael Monfils",
+      "slug": "atp-majchrz-monfils-2026-08-03",
+      "eventSlug": "atp-majchrz-monfils-2026-08-03",
+      "sport_type": "TENNIS",
+      "outcome": "Gael Monfils",
+      "conditionId": "0x70fe683f3971e3b87a491a591174dc09222b84d6ecf53600083f201f9bf748a6",
+      "total_pnl": 30056.04,
+      "total_cost": 10018.68,
+      "avg_price": 0.25,
+      "status": "closed"
+    }
+  ],
+  "top_losses": [
+    {
+      "title": "Will AC Milan win on 2026-08-23?",
+      "slug": "sea-tor-mil-2026-08-23-mil",
+      "eventSlug": "sea-tor-mil-2026-08-23",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "No",
+      "conditionId": "0x9efedc6776e4c91a6d0fba488afd0df3c703881ef32427accbe093b184470684",
+      "total_pnl": -76645.6,
+      "total_cost": 75542.24,
+      "avg_price": 0.5074,
+      "status": "closed"
+    },
+    {
+      "title": "Will Toronto FC win on 2026-08-22?",
+      "slug": "mls-mia-tor-2026-08-22-tor",
+      "eventSlug": "mls-mia-tor-2026-08-22",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "No",
+      "conditionId": "0xc731c2586b3d803ea54b0528a37fa7ba97052d22664b10c30b818e0db1e5e808",
+      "total_pnl": -60378.2,
+      "total_cost": 60365.41,
+      "avg_price": 0.8539,
+      "status": "closed"
+    },
+    {
+      "title": "Will Ecuador win on 2026-06-30?",
+      "slug": "fifwc-mex-ecu-2026-06-30-ecu",
+      "eventSlug": "fifwc-mex-ecu-2026-06-30",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "Yes",
+      "conditionId": "0xa0f4d15ca1f25a095760f56ba63d7f99bad977a33ae93003d86d58fda3ba3da4",
+      "total_pnl": -24296.07,
+      "total_cost": 24294.73,
+      "avg_price": 0.2353,
+      "status": "closed"
+    },
+    {
+      "title": "Will Olympique Lyonnais win on 2026-08-18?",
+      "slug": "ucl-fen-lyo-2026-08-18-lyo",
+      "eventSlug": "ucl-fen-lyo-2026-08-18",
+      "sport_type": "SOCCER (UCL)",
+      "outcome": "Yes",
+      "conditionId": "0x81c08b5c34d517c2835b1ca4c777b64223d332c48678c2f69a3e4e462ebc15cd",
+      "total_pnl": -20927.33,
+      "total_cost": 20924.1,
+      "avg_price": 0.2656,
+      "status": "closed"
+    },
+    {
+      "title": "Will Norway win on 2026-07-11?",
+      "slug": "fifwc-nor-eng-2026-07-11-nor",
+      "eventSlug": "fifwc-nor-eng-2026-07-11",
+      "sport_type": "OTHER",
+      "outcome": "Yes",
+      "conditionId": "0x4b84a8e08cb3376c9e5be5cc5a37f7073de05cdf0810d2ad3fe745c4760ef3e0",
+      "total_pnl": -20404.1,
+      "total_cost": 20404.1,
+      "avg_price": 0.255,
+      "status": "closed"
+    }
+  ],
+  "top_sport": "SOCCER (LaLiga)",
+  "best_price_bucket": "Underdog (20-40c)",
+  "best_market": "Moneyline / Match",
+  "quality_score": 50,
+  "tier": "A-Tier",
+  "tags": [
+    "\u2b50\u2b50 A-Tier",
+    "\ud83c\uddea\ud83c\uddf8 LaLiga Expert",
+    "\ud83c\udfaf Underdog Sniper",
+    "\ud83d\udc0b Mega Whale",
+    "\ud83d\udcc8 Moneyline Pro"
+  ],
+  "tail_guide": "How to Tail tes21sa [A-Tier]\n\n\u2705 FOLLOW on:\n   SOCCER (LaLiga) \u2014 91.3% ROI, 10 mkts, +$245,860\n\n\ud83d\udd34 DO NOT TAIL:\n   SOCCER (Other) \u2014 ROI -34.8%, $-99,893\n   OTHER \u2014 ROI -80.3%, $-90,099\n\n\ud83d\udcc8 Stick to Moneylines (20.3% ROI over 58 markets)\n\ud83c\udfaf Best price zone: Underdog (20-40c) (44.1% ROI, 20 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udcb0 Typical market stake ~$1,659 (median)\n   (Mean $11,712 \u2014 some very large markets; size to the median unless you match their whale plays)",
+  "do_not_tail_sports": [
+    "OTHER",
+    "SOCCER (Other)"
+  ],
+  "auto_tail_sports": [],
+  "do_not_tail_market_types": [],
+  "do_not_tail_sides": [],
+  "score_breakdown": {
+    "sharpe_score": 10.6,
+    "roi_score": 25,
+    "wr_score": 0,
+    "cons_score": 4.8,
+    "vol_score": 4.5,
+    "base_score": 44.8,
+    "flip_bonus": 15,
+    "leakage_penalty": 10,
+    "midzone_roi": 39.0,
+    "directional_roi": 17.79,
+    "roi_dashboard": 18.09,
+    "roi_redeemed_only": 34.98,
+    "last_60d_roi": 20.34,
+    "last_60d_pnl": 178193.54,
+    "recency_penalty": 0,
+    "roi_for_quality": 17.79,
+    "hedge_risk_frac": 0.082,
+    "hedge_profit_share": 0.05,
+    "markets_traded": 79,
+    "median_market_stake": 1658.51,
+    "mean_market_stake": 11711.82,
+    "pnl_sum_check_ok": true
+  }
+}

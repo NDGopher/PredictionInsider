@@ -16,7 +16,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 STEPS: list[tuple[str, list[str]]] = [
     ("polydata discovery → watch", [sys.executable, str(ROOT / "discover_polydata_boards.py")]),
-    ("fetch missing watch CSVs", [sys.executable, str(ROOT / "fetch_watch_csvs.py"), "--limit", "8"]),
+    ("expand curve-scout digest queue", [sys.executable, str(ROOT / "expand_curve_scout_queue.py")]),
+    ("fetch missing watch CSVs", [sys.executable, str(ROOT / "fetch_watch_csvs.py"), "--limit", "25"]),
     ("take-book health", [sys.executable, str(ROOT / "take_book_daily.py")]),
     ("ranked play board (live+bench+watch)", [sys.executable, str(ROOT / "scan_ranked_opens.py")]),
     ("unusual flow Z-score board (UW/Hashdive)", [sys.executable, str(ROOT / "scan_unusual_flow.py"), "--events", "20", "--max-markets", "30"]),

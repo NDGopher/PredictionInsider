@@ -40,11 +40,12 @@
     "model:promote": "python pnl_analysis/auto_promote.py",
     "model:ranked": "python pnl_analysis/scan_ranked_opens.py",
     "model:unusual": "python pnl_analysis/scan_unusual_flow.py",
-    "model:fetch-watch": "python pnl_analysis/fetch_watch_csvs.py",
+    "model:fetch-watch": "python pnl_analysis/fetch_watch_csvs.py --limit 25",
     "research:mm": "python pnl_analysis/mm_maker_research.py",
     "backtest:take-health": "python pnl_analysis/take_book_daily.py",
     "backtest:elite-wf": "python pnl_analysis/walkforward_elite_discovery.py",
-    "backtest:elite-wf-legacy": "python pnl_analysis/walkforward_elite_sniper.py"
+    "backtest:elite-wf-legacy": "python pnl_analysis/walkforward_elite_sniper.py",
+    "discover:curve-queue": "python pnl_analysis/expand_curve_scout_queue.py"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

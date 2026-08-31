@@ -80,18 +80,18 @@ OUT_JSON = OUTPUT_DIR / "walkforward_elite_discovery.json"
 ROSTER_JSON = OUTPUT_DIR / "verified_elite_roster.json"
 OUT_MD = ROOT / "VERIFIED_ELITE_DISCOVERY.md"
 
-# ── Early scout (HVAB finder) ────────────────────────────────────────────────
-SCOUT_MIN_N = 25                 # closed markets before we even look
-SCOUT_MIN_ACTIVE_30D = 12        # must be printing
-SCOUT_MIN_CURVE = 55.0           # composite 0–100 (specialty-aware)
-SCOUT_MIN_UNIQUE_ROI = 5.0
-SCOUT_MIN_SPORTS_FRAC = 0.55
-SCOUT_EMERGING_DAYS = 150        # first→as_of window for "young book" bonus
-HYSTERESIS_DAYS = 14             # min days in scout/elite before soft demote
-REENTRY_COOLDOWN_DAYS = 21       # after a kick, stay out before re-scout
-# Hard floors — hysteresis never protects a collapsed / negative *dollar* book
+# ── Early scout (HVAB finder) — curve/consistency first, ROI secondary ───────
+SCOUT_MIN_N = 20                 # was 25 — find earlier
+SCOUT_MIN_ACTIVE_30D = 8         # was 12
+SCOUT_MIN_CURVE = 50.0           # was 55 — consistency/shape still primary
+SCOUT_MIN_UNIQUE_ROI = 3.0       # was 5 — user ask: ~5% scout bar / curve focus
+SCOUT_MIN_SPORTS_FRAC = 0.50     # was 0.55
+SCOUT_EMERGING_DAYS = 180        # was 150 — longer young-book window
+HYSTERESIS_DAYS = 14
+REENTRY_COOLDOWN_DAYS = 21
 HARD_CURVE_FLOOR = 35.0
 HARD_UNIQUE_ROI_FLOOR = 0.0
+SCOUT_SPECIALTY_MIN_ROI = 5.0    # softer than elite specialty
 
 # ── Elite (can fire Sniper / Telegram) ───────────────────────────────────────
 ELITE_MIN_TAKE_N = 12
@@ -315,7 +315,7 @@ def style_from_history(
     total_cost = sum(costs) or 1.0
     card.unique_roi = 100.0 * sum(holds) / total_cost
 
-    def _top(store: dict[str, dict[str, float]], k: int = 3) -> list[dict[str, Any]]:
+    def _top(store: dict[str, dict[str, float]], k: int = 8) -> list[dict[str, Any]]:
         rows = []
         for key, lane in store.items():
             if lane["n"] < 5:
@@ -382,18 +382,27 @@ def joinable(median: float, wr: float) -> tuple[bool, str]:
     return False, f"wr={wr:.0f}"
 
 
-def _sports_specialty(style: StyleCard) -> tuple[dict[str, Any], bool]:
+def _sports_specialty(
+    style: StyleCard, *, min_roi: float | None = None, min_n: int | None = None
+) -> tuple[dict[str, Any], bool]:
     """Best real-sport specialty (ignore OTHER/politics/NFL as 'top')."""
+    roi_floor = SPECIALTY_MIN_ROI if min_roi is None else min_roi
+    n_floor = SPECIALTY_MIN_N if min_n is None else min_n
     sports_only = [
         s for s in (style.top_sports or [])
         if str(s.get("key") or "").upper() not in {"OTHER", "POLITICS", "CRYPTO", "FINANCE", ""}
         and "NFL" not in str(s.get("key") or "").upper()
     ]
-    top = sports_only[0] if sports_only else {}
+    # Prefer highest-ROI specialty with enough sample, not just volume leader
+    ranked = sorted(
+        sports_only,
+        key=lambda s: (-(float(s.get("roi") or 0) if int(s.get("n") or 0) >= n_floor else -999), -int(s.get("n") or 0)),
+    )
+    top = ranked[0] if ranked else {}
     top_sport_ok = (
         bool(top.get("key"))
-        and int(top.get("n") or 0) >= SPECIALTY_MIN_N
-        and float(top.get("roi") or 0) >= SPECIALTY_MIN_ROI
+        and int(top.get("n") or 0) >= n_floor
+        and float(top.get("roi") or 0) >= roi_floor
     )
     return top, top_sport_ok
 
@@ -447,7 +456,10 @@ def decide_tier(
     )
     ok_join, join_why = joinable(style.median, style.wr)
     top, top_sport_ok = _sports_specialty(style)
-    top_is_sports = bool(top.get("key"))
+    top_scout, top_scout_ok = _sports_specialty(
+        style, min_roi=SCOUT_SPECIALTY_MIN_ROI, min_n=12
+    )
+    top_is_sports = bool(top.get("key") or top_scout.get("key"))
     strong = _strong_curve_book(style, top_sport_ok, top)
 
     st = MemberState(
@@ -575,14 +587,14 @@ def decide_tier(
         and style.unique_roi >= SCOUT_MIN_UNIQUE_ROI
         and top_is_sports
         and (
-            (style.curve_score >= SCOUT_MIN_CURVE and top_sport_ok)
-            or (top_sport_ok and style.curve_score >= 50 and active_30d >= 20)
+            (style.curve_score >= SCOUT_MIN_CURVE and top_scout_ok)
+            or (top_scout_ok and style.curve_score >= 45 and active_30d >= 15)
             or (
                 style.emerging
-                and top_sport_ok
-                and style.unique_roi >= 8
-                and style.curve_score >= 48
-                and active_30d >= 15
+                and top_scout_ok
+                and style.unique_roi >= 5
+                and style.curve_score >= 45
+                and active_30d >= 12
             )
         )
     )

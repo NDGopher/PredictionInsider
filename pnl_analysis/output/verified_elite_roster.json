@@ -50,7 +50,73 @@
       "trades_in_backtest": 30
     }
   ],
-  "scout": [],
+  "scout": [
+    {
+      "username": "HongYunX",
+      "wallet": "0xc72d7dcdb23597d143a83536fb97b1d7db7efc21",
+      "tier": "scout",
+      "why": "scout curve=82 roi=9.6% spec=SOCCER (Other),SOCCER (LaLiga) sports=60% emerging active30=40",
+      "curve_score": 82.42,
+      "unique_roi": 9.6,
+      "active_30d": 40,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "median": 5304.03,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 164,
+          "roi": -23.1
+        },
+        {
+          "key": "OTHER",
+          "n": 130,
+          "roi": 36.7
+        },
+        {
+          "key": "SOCCER (LaLiga)",
+          "n": 12,
+          "roi": 70.4
+        },
+        {
+          "key": "SOCCER (UCL)",
+          "n": 11,
+          "roi": 17.1
+        }
+      ],
+      "first_scout": "2026-08-26"
+    },
+    {
+      "username": "SineNooneEI",
+      "wallet": "0x38337de21ff0bb0a11a40761507d51e318d633d1",
+      "tier": "scout",
+      "why": "scout curve=79 roi=5.2% spec=ESPORTS,TENNIS sports=100% active30=274",
+      "curve_score": 79.42,
+      "unique_roi": 5.16,
+      "active_30d": 274,
+      "take_n": 16,
+      "take_roi": -17.48,
+      "median": 7143.99,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 1505,
+          "roi": 4.0
+        },
+        {
+          "key": "TENNIS",
+          "n": 100,
+          "roi": 21.6
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 8,
+          "roi": -9.0
+        }
+      ],
+      "first_scout": "2026-02-06"
+    }
+  ],
   "proven_bench": [
     {
       "username": "Supah9ga",
@@ -272,5 +338,12 @@
     "unit_pnl": 3411.05,
     "passes_5pct_bar": true
   },
-  "note": "Telegram/Sniper = elite only (must be active). Scout = watching. Proven_bench = historically good but stale \u2014 re-enters when active + curve holds."
+  "note": "Telegram/Sniper = elite only. Scout = curve-watch (not Telegram yet). Coverage: digest more Polydata sports survivors \u2014 see curve_scout_queue.json. HongYunX/SineNooneEI are live scouts after funnel expand.",
+  "coverage": {
+    "board_survivors": 50,
+    "have_csv": 5,
+    "missing_csv": 45,
+    "watch_added": 20,
+    "local_digest_csvs": 45
+  }
 }
