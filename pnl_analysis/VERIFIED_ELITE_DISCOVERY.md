@@ -104,8 +104,8 @@ _None._
 ## Rules
 
 - **Scout**: n≥25, active30≥12, sports≥55%, curve_score≥55.0, unique ROI≥5.0%, real-sport specialty, joinable.
-- **Elite**: specialty n≥20 ROI≥8.0% + curve≥60.0 + unique≥5.0% + sports-take n≥12 ROI≥5.0%.
-- **Kick (hard)**: stale active30<5, unique ROI<0.0%, curve<35.0, early life-floor take ROI<-5.0% @ n≥40.
+- **Elite**: specialty + (Path A: recent-40 take ROI≥5.0% @ n≥12) or (Path B curve-book: unique≥10.0% curve≥70.0 on core sports).
+- **Kick (hard)**: stale, dollar collapse, recent-cold take, or re-entry cooldown 21d.
 - **Trade**: Elite + Sniper gates (Q≥60, sport+5%, rel≥2×, 10–88¢, no NFL).
 - **Product roster**: Telegram = live elite only. Scouts watch. Proven_bench = stale but historically green.
 
