@@ -117,6 +117,13 @@ ELITE_LIFE_FLOOR_SOFT_ROI = 0.0
 SPECIALTY_MIN_N = 20
 SPECIALTY_MIN_ROI = 8.0
 SPECIALTY_STRONG_ROI = 12.0
+# Path B / strong-curve is for Capman/HVAB-like sports books — not ESPORTS grinders
+CURVE_BOOK_SPORTS = {
+    "TENNIS", "NBA", "MLB", "NHL", "NCAAB", "NCAAF", "WNBA",
+    "SOCCER (Other)", "SOCCER (EPL)", "SOCCER (UCL)", "SOCCER (La Liga)",
+    "SOCCER (Serie A)", "SOCCER (Bundesliga)", "SOCCER (Ligue 1)",
+    "CRICKET", "GOLF", "MMA", "UFC", "BOXING",
+}
 
 
 def _is_sports_family(fam: str) -> bool:
@@ -393,6 +400,9 @@ def _sports_specialty(style: StyleCard) -> tuple[dict[str, Any], bool]:
 
 def _strong_curve_book(style: StyleCard, top_sport_ok: bool, top: dict[str, Any]) -> bool:
     """Capman/HVAB-class: dollar equity + specialty still green even if unit take is soft."""
+    key = str(top.get("key") or "")
+    if key.upper() not in {s.upper() for s in CURVE_BOOK_SPORTS}:
+        return False
     return (
         top_sport_ok
         and style.curve_score >= ELITE_CURVE_SCORE
@@ -414,8 +424,16 @@ def decide_tier(
         if _is_sports_family(str(t.get("sport_family") or ""))
     ]
     take_pool = sports_takes if len(sports_takes) >= max(8, ELITE_MIN_TAKE_N // 2) else prior_takes
+    # Lifetime sample for n; recent window for ROI (stops early-hot / late-cold books)
     take_n = len(take_pool)
+    recent = take_pool[-40:] if take_pool else []
+    recent_n = len(recent)
     take_roi = (
+        float(sum(t["pnl_2c"] for t in recent) / (recent_n * STAKE) * 100.0)
+        if recent_n
+        else 0.0
+    )
+    life_roi = (
         float(sum(t["pnl_2c"] for t in take_pool) / (take_n * STAKE) * 100.0)
         if take_n
         else 0.0
@@ -477,7 +495,10 @@ def decide_tier(
                 and take_roi < ELITE_LIFE_FLOOR_ROI
                 and style.unique_roi < 8
             ):
-                return _set("none", f"life_floor_take_roi={take_roi:.1f}_n={take_n}")
+                return _set("none", f"life_floor_recent_roi={take_roi:.1f}_n={recent_n}")
+            # Early-hot books that went cold: recent take red while life still green
+            if recent_n >= 25 and take_roi < -5.0 and life_roi > 5.0:
+                return _set("none", f"recent_cold take40={take_roi:.1f}_life={life_roi:.1f}")
 
     soft_kill = False
     soft_why = ""
@@ -537,7 +558,11 @@ def decide_tier(
             )
 
     if elite_ok and not soft_kill:
-        return _set("elite", elite_why + f" {join_why} active30={active_30d}")
+        if was.tier == "none" and cooldown_left > 0:
+            # Cooldown blocks scout *and* elite re-entry after a kick
+            pass
+        else:
+            return _set("elite", elite_why + f" {join_why} active30={active_30d}")
 
     blocked_reentry = was.tier == "none" and cooldown_left > 0
 
