@@ -41,6 +41,9 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from asof_fullbook_backtest import asof_stat, load_trusted  # noqa: E402
 from copy_roster import CSV_ROWS_BOT, CLOSED_MAX_COPY, OUTPUT_DIR, ROOT, load_universe  # noqa: E402
+
+# Walk-forward is O(n²) on alerts×history — skip mega digests even under CSV_ROWS_BOT
+DISCOVERY_MAX_CSV_ROWS = 20_000
 from position_utils import play_label, sport_family  # noqa: E402
 from run_full_pipeline import csv_path_for  # noqa: E402
 from walkforward_consensus_backtest import (  # noqa: E402
@@ -663,7 +666,7 @@ def candidate_books() -> list[tuple[str, str]]:
             est = sum(1 for _ in open(csv_path_for(w, u) if csv_path_for(w, u).exists() else p, "rb")) - 1
         except OSError:
             est = 0
-        if est >= CSV_ROWS_BOT:
+        if est >= DISCOVERY_MAX_CSV_ROWS:
             return
         pairs.append((u or p.stem.rsplit("_", 1)[0], w))
         seen.add(key)
