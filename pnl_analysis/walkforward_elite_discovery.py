@@ -496,7 +496,11 @@ def decide_tier(
         if not ok_join:
             return _set("none", f"unjoinable_{join_why}")
         if style.unique_roi < HARD_UNIQUE_ROI_FLOOR:
-            return _set("none", f"hard_unique_roi={style.unique_roi:.1f}")
+            # Allow turnaround books (ic4cream-class): lifetime red but recent heat green
+            last30_roi = float((style.curve or {}).get("last30_roi") or 0)
+            last30_n = int((style.curve or {}).get("last30_n") or 0)
+            if not (last30_n >= 25 and last30_roi >= 5.0 and style.curve_score >= 70):
+                return _set("none", f"hard_unique_roi={style.unique_roi:.1f}")
         if style.curve_score < HARD_CURVE_FLOOR:
             return _set("none", f"hard_curve_collapse score={style.curve_score:.0f}")
         if not strong:
@@ -584,17 +588,29 @@ def decide_tier(
         and style.curve.get("n", 0) >= SCOUT_MIN_N
         and active_30d >= SCOUT_MIN_ACTIVE_30D
         and style.sports_frac >= SCOUT_MIN_SPORTS_FRAC
-        and style.unique_roi >= SCOUT_MIN_UNIQUE_ROI
         and top_is_sports
         and (
-            (style.curve_score >= SCOUT_MIN_CURVE and top_scout_ok)
-            or (top_scout_ok and style.curve_score >= 45 and active_30d >= 15)
+            (
+                style.unique_roi >= SCOUT_MIN_UNIQUE_ROI
+                and (
+                    (style.curve_score >= SCOUT_MIN_CURVE and top_scout_ok)
+                    or (top_scout_ok and style.curve_score >= 45 and active_30d >= 15)
+                    or (
+                        style.emerging
+                        and top_scout_ok
+                        and style.unique_roi >= 5
+                        and style.curve_score >= 45
+                        and active_30d >= 12
+                    )
+                )
+            )
+            # Turnaround / recent-excellence path (ic4cream after early drawdown)
             or (
-                style.emerging
+                float((style.curve or {}).get("last30_roi") or 0) >= 5.0
+                and int((style.curve or {}).get("last30_n") or 0) >= 30
+                and style.curve_score >= 70
+                and style.unique_roi >= -8.0
                 and top_scout_ok
-                and style.unique_roi >= 5
-                and style.curve_score >= 45
-                and active_30d >= 12
             )
         )
     )

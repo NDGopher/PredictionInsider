@@ -1,0 +1,584 @@
+{
+  "wallet": "0xe40aaa5ce1dac0b7dc24c9d0284f27e17c3fe4a2",
+  "username": "Mysaria",
+  "total_profit": -691346.44,
+  "raw_realized_pnl": -460027.06,
+  "dashboard_pnl": -691346.44,
+  "total_risked": 3319978.88,
+  "overall_roi": -20.82,
+  "redeemed_only_roi": -13.86,
+  "last_30d": {
+    "n": 1826,
+    "pnl": -394254.75,
+    "cost": 1285230.45,
+    "roi": -30.68,
+    "wins": 551,
+    "win_rate": 30.2,
+    "first": "2026-08-04",
+    "last": "2026-08-31"
+  },
+  "last_60d": {
+    "n": 1830,
+    "pnl": -393943.73,
+    "cost": 1285673.26,
+    "roi": -30.64,
+    "wins": 554,
+    "win_rate": 30.3,
+    "first": "2026-07-29",
+    "last": "2026-08-31"
+  },
+  "last_90d": {
+    "n": 1834,
+    "pnl": -391510.15,
+    "cost": 1290756.63,
+    "roi": -30.33,
+    "wins": 556,
+    "win_rate": 30.3,
+    "first": "2026-06-07",
+    "last": "2026-08-31"
+  },
+  "last_event_date": "2026-09-01",
+  "days_since_last_event": 0,
+  "possibly_quit": false,
+  "win_rate": 35.98,
+  "avg_bet_size": 24.21,
+  "median_market_stake": 0.22,
+  "mean_market_stake": 24.21,
+  "markets_traded": 14559,
+  "total_events": 2815,
+  "pseudo_sharpe": -1.81,
+  "profitable_days": 58,
+  "total_days": 147,
+  "hedge_count": 13978,
+  "hedge_risk": 2697107.46,
+  "hedge_profit": -211433.33,
+  "bond_count": 1417,
+  "bond_risk": 270395.11,
+  "bond_profit": -15346.84,
+  "open_count": 300,
+  "open_risk": 16561.76,
+  "open_value": 2547.47,
+  "open_pnl": -16867.37,
+  "sport_stats": {
+    "ESPORTS": {
+      "net_profit": -1.85,
+      "roi": -0.67,
+      "win_rate": 62.79,
+      "events": 52,
+      "avg_bet": 5.34,
+      "median_bet": 0.83
+    },
+    "MLB": {
+      "net_profit": -10880.51,
+      "roi": -653.67,
+      "win_rate": 23.1,
+      "events": 318,
+      "avg_bet": 5.23,
+      "median_bet": 0.42
+    },
+    "NBA": {
+      "net_profit": -9350.46,
+      "roi": -2726.34,
+      "win_rate": 11.81,
+      "events": 173,
+      "avg_bet": 1.98,
+      "median_bet": 0.15
+    },
+    "NHL": {
+      "net_profit": -96.59,
+      "roi": -136.14,
+      "win_rate": 0.0,
+      "events": 18,
+      "avg_bet": 3.94,
+      "median_bet": 6.07
+    },
+    "OTHER": {
+      "net_profit": -922973.08,
+      "roi": -374.65,
+      "win_rate": 30.43,
+      "events": 11277,
+      "avg_bet": 21.85,
+      "median_bet": 0.0
+    },
+    "POLITICS": {
+      "net_profit": 476775.35,
+      "roi": 518.67,
+      "win_rate": 71.26,
+      "events": 2263,
+      "avg_bet": 40.62,
+      "median_bet": 1.71
+    },
+    "SOCCER (EPL)": {
+      "net_profit": 25.91,
+      "roi": 8.72,
+      "win_rate": 42.86,
+      "events": 31,
+      "avg_bet": 9.58,
+      "median_bet": 0.84
+    },
+    "SOCCER (LaLiga)": {
+      "net_profit": 4983.13,
+      "roi": 17204.54,
+      "win_rate": 50.0,
+      "events": 4,
+      "avg_bet": 7.24,
+      "median_bet": 5.45
+    },
+    "SOCCER (Other)": {
+      "net_profit": -2327.27,
+      "roi": -67.67,
+      "win_rate": 35.15,
+      "events": 250,
+      "avg_bet": 13.76,
+      "median_bet": 5.0
+    },
+    "SOCCER (SerieA)": {
+      "net_profit": -108.07,
+      "roi": -3.81,
+      "win_rate": 56.76,
+      "events": 39,
+      "avg_bet": 72.76,
+      "median_bet": 3.0
+    },
+    "TENNIS": {
+      "net_profit": -743.41,
+      "roi": -81.55,
+      "win_rate": 16.48,
+      "events": 93,
+      "avg_bet": 9.8,
+      "median_bet": 1.15
+    },
+    "WNBA": {
+      "net_profit": 130.58,
+      "roi": 3.02,
+      "win_rate": 34.29,
+      "events": 41,
+      "avg_bet": 105.5,
+      "median_bet": 0.83
+    }
+  },
+  "market_stats": {
+    "Futures": {
+      "net_profit": 36806.55,
+      "roi": 24.17,
+      "win_rate": 58.64,
+      "events": 3152,
+      "avg_bet": 48.31,
+      "median_bet": 1.15
+    },
+    "Moneyline / Match": {
+      "net_profit": -489571.72,
+      "roi": -247.46,
+      "win_rate": 30.32,
+      "events": 11374,
+      "avg_bet": 17.39,
+      "median_bet": 0.0
+    },
+    "Totals (O/U)": {
+      "net_profit": -11801.1,
+      "roi": -498.38,
+      "win_rate": 30.43,
+      "events": 33,
+      "avg_bet": 71.75,
+      "median_bet": 17.73
+    }
+  },
+  "sport_market_stats": {
+    "MLB|Futures": {
+      "net_profit": -10900.05,
+      "roi": -658.68,
+      "win_rate": 21.69,
+      "events": 295,
+      "avg_bet": 5.61,
+      "median_bet": 0.43
+    },
+    "MLB|Moneyline / Match": {
+      "net_profit": 19.54,
+      "roi": 201.81,
+      "win_rate": 100.0,
+      "events": 23,
+      "avg_bet": 0.42,
+      "median_bet": 0.08
+    },
+    "NBA|Futures": {
+      "net_profit": -34.94,
+      "roi": -25.26,
+      "win_rate": 64.71,
+      "events": 19,
+      "avg_bet": 7.28,
+      "median_bet": 0.21
+    },
+    "NBA|Moneyline / Match": {
+      "net_profit": -9315.52,
+      "roi": -4552.28,
+      "win_rate": 3.64,
+      "events": 154,
+      "avg_bet": 1.33,
+      "median_bet": 0.15
+    },
+    "NHL|Futures": {
+      "net_profit": -96.59,
+      "roi": -136.14,
+      "win_rate": 0.0,
+      "events": 18,
+      "avg_bet": 3.94,
+      "median_bet": 6.07
+    },
+    "Other|Futures": {
+      "net_profit": -27009.04,
+      "roi": -36.37,
+      "win_rate": 53.4,
+      "events": 596,
+      "avg_bet": 124.59,
+      "median_bet": 0.36
+    },
+    "Other|Moneyline / Match": {
+      "net_profit": -884163.14,
+      "roi": -520.2,
+      "win_rate": 29.27,
+      "events": 10661,
+      "avg_bet": 15.94,
+      "median_bet": 0.0
+    },
+    "Other|Totals (O/U)": {
+      "net_profit": -11800.9,
+      "roi": -552.62,
+      "win_rate": 30.0,
+      "events": 20,
+      "avg_bet": 106.77,
+      "median_bet": 39.67
+    },
+    "Politics|Futures": {
+      "net_profit": 83615.98,
+      "roi": 128.79,
+      "win_rate": 74.38,
+      "events": 1774,
+      "avg_bet": 36.6,
+      "median_bet": 1.54
+    },
+    "Politics|Moneyline / Match": {
+      "net_profit": 393159.57,
+      "roi": 1468.76,
+      "win_rate": 60.57,
+      "events": 476,
+      "avg_bet": 56.24,
+      "median_bet": 4.17
+    },
+    "Politics|Totals (O/U)": {
+      "net_profit": -0.2,
+      "roi": -0.08,
+      "win_rate": 33.33,
+      "events": 13,
+      "avg_bet": 17.88,
+      "median_bet": 17.17
+    },
+    "Soccer|Futures": {
+      "net_profit": -8258.75,
+      "roi": -130.45,
+      "win_rate": 37.74,
+      "events": 277,
+      "avg_bet": 22.86,
+      "median_bet": 5.0
+    },
+    "Soccer|Moneyline / Match": {
+      "net_profit": 10832.45,
+      "roi": 3987.61,
+      "win_rate": 43.18,
+      "events": 47,
+      "avg_bet": 5.78,
+      "median_bet": 0.28
+    },
+    "Tennis|Futures": {
+      "net_profit": -721.32,
+      "roi": -183.38,
+      "win_rate": 14.12,
+      "events": 87,
+      "avg_bet": 4.52,
+      "median_bet": 1.15
+    },
+    "Tennis|Moneyline / Match": {
+      "net_profit": -22.09,
+      "roi": -4.26,
+      "win_rate": 50.0,
+      "events": 6,
+      "avg_bet": 86.38,
+      "median_bet": 101.33
+    },
+    "WNBA|Futures": {
+      "net_profit": 130.58,
+      "roi": 3.02,
+      "win_rate": 34.29,
+      "events": 41,
+      "avg_bet": 105.5,
+      "median_bet": 0.83
+    },
+    "eSports|Futures": {
+      "net_profit": 80.68,
+      "roi": 44.53,
+      "win_rate": 68.42,
+      "events": 45,
+      "avg_bet": 4.03,
+      "median_bet": 0.47
+    },
+    "eSports|Moneyline / Match": {
+      "net_profit": -82.53,
+      "roi": -85.68,
+      "win_rate": 20.0,
+      "events": 7,
+      "avg_bet": 13.76,
+      "median_bet": 8.6
+    }
+  },
+  "price_stats": {
+    "Favorite (60-80c)": {
+      "net_profit": -91277.73,
+      "roi": -165.38,
+      "win_rate": 53.21,
+      "events": 1076
+    },
+    "Flip (40-60c)": {
+      "net_profit": -310228.76,
+      "roi": -1439.39,
+      "win_rate": 14.54,
+      "events": 3946
+    },
+    "Longshot (0-20c)": {
+      "net_profit": 394963.93,
+      "roi": 479.14,
+      "win_rate": 51.91,
+      "events": 6169
+    },
+    "Safe (80-100c)": {
+      "net_profit": -241669.02,
+      "roi": -168.53,
+      "win_rate": 35.75,
+      "events": 1710
+    },
+    "Underdog (20-40c)": {
+      "net_profit": -216354.71,
+      "roi": -433.55,
+      "win_rate": 22.3,
+      "events": 1658
+    }
+  },
+  "side_stats": {
+    "No": {
+      "net_profit": 64633.76,
+      "roi": 28.25,
+      "positions": 2313
+    },
+    "Specific Selection": {
+      "net_profit": 0.0,
+      "roi": 0,
+      "positions": 1
+    },
+    "Yes": {
+      "net_profit": -529200.03,
+      "roi": -427.84,
+      "positions": 12245
+    }
+  },
+  "monthly_pnl": {
+    "1970-01": -286.03,
+    "2026-02": -2.41,
+    "2026-03": -4.47,
+    "2026-05": -47.34,
+    "2026-06": -1878.6,
+    "2026-07": 288.91,
+    "2026-08": -285135.16,
+    "2026-09": -38154.82,
+    "2026-10": -116859.17,
+    "2026-11": -5868.17,
+    "2026-12": -6464.37,
+    "2027-01": -4586.93,
+    "2027-02": -498.89,
+    "2027-03": 234.29,
+    "2027-04": -1.7,
+    "2027-05": -5754.0,
+    "2027-06": 920.46,
+    "2027-07": -161.68,
+    "2027-12": 79.5,
+    "2028-01": 297.95,
+    "2028-06": -33.59,
+    "2028-08": -2.92,
+    "2028-11": -730.82,
+    "2028-12": 3.04,
+    "2029-01": 80.69
+  },
+  "top_wins": [
+    {
+      "title": "Will Casey DeSantis be the Republican nominee for Florida Governor?",
+      "slug": "will-casey-desantis-be-the-republican-nominee-for-florida-governor",
+      "eventSlug": "republican-nominee-for-florida-governor",
+      "sport_type": "POLITICS",
+      "outcome": "Yes",
+      "conditionId": "0x21cadb8a9cfd75825065e766cf820299e3a8e7a766d8ec41bd968dd7b7ffa50e",
+      "total_pnl": 92113.32,
+      "total_cost": 0.0,
+      "avg_price": 0.1132,
+      "status": "closed"
+    },
+    {
+      "title": "Will Jimmy Patronis be the Republican nominee for Florida Governor?",
+      "slug": "will-jimmy-patronis-be-the-republican-nominee-for-florida-governor",
+      "eventSlug": "republican-nominee-for-florida-governor",
+      "sport_type": "POLITICS",
+      "outcome": "Yes",
+      "conditionId": "0x5393c44e806ae2919498901a3c2f663225db1e65cfb5ec8497c2d836f54920c6",
+      "total_pnl": 92110.93,
+      "total_cost": 0.0,
+      "avg_price": 0.1132,
+      "status": "closed"
+    },
+    {
+      "title": "Will Wilton Simpson be the Republican nominee for Florida Governor?",
+      "slug": "will-wilton-simpson-be-the-republican-nominee-for-florida-governor",
+      "eventSlug": "republican-nominee-for-florida-governor",
+      "sport_type": "POLITICS",
+      "outcome": "Yes",
+      "conditionId": "0x6415588e3e9bef8cae256e5cc0be3d0d7bd9d9621d42e7acd97157e7fbf844c8",
+      "total_pnl": 92110.93,
+      "total_cost": 0.0,
+      "avg_price": 0.1132,
+      "status": "closed"
+    },
+    {
+      "title": "Will Matt Gaetz be the Republican nominee for Florida Governor?",
+      "slug": "will-matt-gaetz-be-the-republican-nominee-for-florida-governor",
+      "eventSlug": "republican-nominee-for-florida-governor",
+      "sport_type": "POLITICS",
+      "outcome": "Yes",
+      "conditionId": "0xe35b9f1d3febb6ef61a75482f6329f16fbcce16ce49aa8fbdb9f0770b33646c8",
+      "total_pnl": 92110.93,
+      "total_cost": 0.0,
+      "avg_price": 0.1132,
+      "status": "closed"
+    },
+    {
+      "title": "Will Pamela Walford win the Clacton by-election?",
+      "slug": "will-pamela-walford-win-the-clacton-by-election-20260730150720674",
+      "eventSlug": "clacton-by-election-winner-20260707143521303",
+      "sport_type": "POLITICS",
+      "outcome": "Yes",
+      "conditionId": "0x7216e5d69c95e46ee1a5df364169afa7cbf82fe63a17881dbe9c9a19766caa85",
+      "total_pnl": 10089.26,
+      "total_cost": 0.0,
+      "avg_price": 0.1714,
+      "status": "closed"
+    }
+  ],
+  "top_losses": [
+    {
+      "title": "Will Eduardo Leite win the 2026 Brazilian presidential election?",
+      "slug": "will-eduardo-leite-win-the-2026-brazilian-presidential-election",
+      "eventSlug": "brazil-presidential-election",
+      "sport_type": "POLITICS",
+      "outcome": "Yes",
+      "conditionId": "0x70f1a7d2cd490b640676d5e31470bcbe16fef40087de1af8b6f6e44e299b5784",
+      "total_pnl": -13755.56,
+      "total_cost": 4539.05,
+      "avg_price": 0.2851,
+      "status": "closed"
+    },
+    {
+      "title": "Will Carlos Roberto Massa J\u00fanior win the 2026 Brazilian presidential election?",
+      "slug": "will-carlos-roberto-massa-jnior-win-the-2026-brazilian-presidential-election",
+      "eventSlug": "brazil-presidential-election",
+      "sport_type": "POLITICS",
+      "outcome": "Yes",
+      "conditionId": "0xa59bb6bb91e5c1e4d533864520fbd3bb75d6d0ebb813b4cd8a8b88479bfa8966",
+      "total_pnl": -13755.18,
+      "total_cost": 4537.46,
+      "avg_price": 0.285,
+      "status": "closed"
+    },
+    {
+      "title": "Will Aldo Rebelo win the 2026 Brazilian presidential election?",
+      "slug": "will-aldo-rebelo-win-the-2026-brazilian-presidential-election",
+      "eventSlug": "brazil-presidential-election",
+      "sport_type": "POLITICS",
+      "outcome": "Yes",
+      "conditionId": "0xafd3f96b7b6084509e625270538ff0699003fafc042263c1216e7f084cef753a",
+      "total_pnl": -13640.32,
+      "total_cost": 4521.54,
+      "avg_price": 0.284,
+      "status": "closed"
+    },
+    {
+      "title": "Will Helder Barbalho win the 2026 Brazilian presidential election?",
+      "slug": "will-helder-barbalho-win-the-2026-brazilian-presidential-election",
+      "eventSlug": "brazil-presidential-election",
+      "sport_type": "POLITICS",
+      "outcome": "Yes",
+      "conditionId": "0x919c9bc428d2d19400437852066582b11bb7b00ad78529a0069cde76766b9faf",
+      "total_pnl": -13640.27,
+      "total_cost": 4521.54,
+      "avg_price": 0.284,
+      "status": "closed"
+    },
+    {
+      "title": "Will Eduardo Bolsonaro win the 2026 Brazilian presidential election?",
+      "slug": "will-eduardo-bolsonaro-win-the-2026-brazilian-presidential-election",
+      "eventSlug": "brazil-presidential-election",
+      "sport_type": "POLITICS",
+      "outcome": "Yes",
+      "conditionId": "0xe1d5733322fd2215f136412f419d9ff805d097f78c68de3261515ff736895f2b",
+      "total_pnl": -11655.86,
+      "total_cost": 4212.67,
+      "avg_price": 0.2646,
+      "status": "closed"
+    }
+  ],
+  "top_sport": "POLITICS",
+  "best_price_bucket": "Longshot (0-20c)",
+  "best_market": "Futures",
+  "quality_score": 0,
+  "tier": "C-Tier",
+  "tags": [
+    "\u2b50 C-Tier",
+    "\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f EPL Expert",
+    "\ud83d\uddf3\ufe0f Politics Trader",
+    "\u26a0\ufe0f Last 60d dashboard PnL -30.6% \u2014 do not copy recent form",
+    "Recency penalty \u221220 Q",
+    "\u26d4 Fade NBA"
+  ],
+  "tail_guide": "How to Tail Mysaria [C-Tier]\n\n\ud83d\udfe2 AUTO-TAIL:\n   POLITICS \u2014 518.7% ROI, 2263 markets, +$476,775\n   SOCCER (EPL) \u2014 8.7% ROI, 31 markets, +$26\n\n\ud83d\udd34 DO NOT TAIL:\n   OTHER \u2014 ROI -374.6%, $-922,973\n   MLB \u2014 ROI -653.7%, $-10,881\n   NBA \u2014 ROI -2726.3%, $-9,350\n\n\u26d4 Mute all O/U bets (-498.4% ROI)\n\ud83c\udfaf Best price zone: Longshot (0-20c) (479.1% ROI, 6169 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udcb0 Typical market stake ~$0 (median)",
+  "do_not_tail_sports": [
+    "MLB",
+    "NBA",
+    "OTHER",
+    "SOCCER (Other)"
+  ],
+  "auto_tail_sports": [
+    "POLITICS",
+    "SOCCER (EPL)"
+  ],
+  "do_not_tail_market_types": [
+    "Totals (O/U)"
+  ],
+  "do_not_tail_sides": [],
+  "score_breakdown": {
+    "sharpe_score": 0,
+    "roi_score": 0,
+    "wr_score": 0,
+    "cons_score": 3.9,
+    "vol_score": 4.1,
+    "base_score": 8.1,
+    "flip_bonus": 0,
+    "leakage_penalty": 14,
+    "midzone_roi": -936.5,
+    "directional_roi": -131.8,
+    "roi_dashboard": -20.82,
+    "roi_redeemed_only": -13.86,
+    "last_60d_roi": -30.64,
+    "last_60d_pnl": -393943.73,
+    "recency_penalty": 20,
+    "roi_for_quality": -131.8,
+    "hedge_risk_frac": 0.812,
+    "hedge_profit_share": 0.0,
+    "markets_traded": 14559,
+    "median_market_stake": 0.22,
+    "mean_market_stake": 24.21,
+    "pnl_sum_check_ok": true
+  }
+}

@@ -52,6 +52,60 @@
   ],
   "scout": [
     {
+      "username": "RegardedMoney",
+      "wallet": "0x5c3a1a602848565bb16165fcd460b00c3d43020b",
+      "tier": "scout",
+      "why": "scout curve=91 roi=5.4% spec=NBA,SOCCER (Other) sports=68% active30=53",
+      "curve_score": 91.43,
+      "unique_roi": 5.45,
+      "active_30d": 53,
+      "take_n": 58,
+      "take_roi": 1.22,
+      "median": 9360.01,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 485,
+          "roi": 2.6
+        },
+        {
+          "key": "NBA",
+          "n": 281,
+          "roi": 3.6
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 269,
+          "roi": 8.9
+        },
+        {
+          "key": "ESPORTS",
+          "n": 153,
+          "roi": 7.0
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 100,
+          "roi": 19.3
+        },
+        {
+          "key": "SOCCER (LaLiga)",
+          "n": 72,
+          "roi": 17.6
+        },
+        {
+          "key": "SOCCER (UCL)",
+          "n": 63,
+          "roi": 9.9
+        },
+        {
+          "key": "MLB",
+          "n": 38,
+          "roi": -19.5
+        }
+      ]
+    },
+    {
       "username": "HongYunX",
       "wallet": "0xc72d7dcdb23597d143a83536fb97b1d7db7efc21",
       "tier": "scout",
@@ -82,9 +136,13 @@
           "key": "SOCCER (UCL)",
           "n": 11,
           "roi": 17.1
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 8,
+          "roi": -6.3
         }
-      ],
-      "first_scout": "2026-08-26"
+      ]
     },
     {
       "username": "SineNooneEI",
@@ -113,8 +171,61 @@
           "n": 8,
           "roi": -9.0
         }
-      ],
-      "first_scout": "2026-02-06"
+      ]
+    },
+    {
+      "username": "ic4cream",
+      "wallet": "0x27f738fe203827445690339104aae35b20bc44b0",
+      "tier": "scout",
+      "why": "scout curve=100 roi=-2.1% spec=SOCCER (Other),MLB sports=85% emerging active30=441",
+      "curve_score": 100.0,
+      "unique_roi": -2.05,
+      "active_30d": 441,
+      "take_n": 35,
+      "take_roi": 14.39,
+      "median": 1621.8,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 1043,
+          "roi": -7.9
+        },
+        {
+          "key": "MLB",
+          "n": 854,
+          "roi": 5.0
+        },
+        {
+          "key": "OTHER",
+          "n": 567,
+          "roi": 15.2
+        },
+        {
+          "key": "NBA",
+          "n": 386,
+          "roi": -19.9
+        },
+        {
+          "key": "WNBA",
+          "n": 378,
+          "roi": -1.2
+        },
+        {
+          "key": "NHL",
+          "n": 218,
+          "roi": -16.5
+        },
+        {
+          "key": "SOCCER (LaLiga)",
+          "n": 201,
+          "roi": -3.2
+        },
+        {
+          "key": "TENNIS",
+          "n": 188,
+          "roi": 7.1
+        }
+      ]
     }
   ],
   "proven_bench": [
@@ -345,5 +456,15 @@
     "missing_csv": 45,
     "watch_added": 20,
     "local_digest_csvs": 45
-  }
+  },
+  "aliases": {
+    "RegardedMoney": "CoryLahey (same wallet 0x5c3a1a60\u2026)"
+  },
+  "rejected_bots": [
+    {
+      "username": "Mysaria",
+      "wallet": "0xe40aaa5ce1dac0b7dc24c9d0284f27e17c3fe4a2",
+      "why": "unique -49% WR21% politics/OTHER temperature-bot \u2014 not copyable"
+    }
+  ]
 }

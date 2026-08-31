@@ -1,0 +1,124 @@
+{
+  "generated_at": "2026-08-31T20:27:36.763887+00:00",
+  "method": "Bounded data-api closed-positions sample (recent TIMESTAMP DESC). In-memory curve/style score. Full CSV digest only for scout_candidate=true. Avoids hoarding mega MM/bot tapes locally.",
+  "counts": {
+    "screened": 4,
+    "scout_candidates": 1,
+    "bot_risk": 0
+  },
+  "scout_candidates": [
+    {
+      "username": "Shori888",
+      "wallet": "0xa36fcb6947c4ac1f09ee894aa1fd0756b90e180b",
+      "ok": true,
+      "n": 94,
+      "unique_roi_est": 76.85,
+      "r2": 0.915,
+      "up_pct": 100.0,
+      "wr": 100.0,
+      "median_est": 5667.03,
+      "sports_frac_est": 0.48,
+      "curve_est": 76.6,
+      "bot_risk": false,
+      "scout_candidate": true,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 94,
+          "roi": 76.8
+        }
+      ]
+    }
+  ],
+  "bot_risk": [],
+  "all": [
+    {
+      "username": "RegardedMoney",
+      "wallet": "0x5c3a1a602848565bb16165fcd460b00c3d43020b",
+      "ok": true,
+      "n": 377,
+      "unique_roi_est": 4.55,
+      "r2": 0.177,
+      "up_pct": 70.8,
+      "wr": 70.8,
+      "median_est": 23720.28,
+      "sports_frac_est": 0.15,
+      "curve_est": 32.1,
+      "bot_risk": false,
+      "scout_candidate": false,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 377,
+          "roi": 4.6
+        }
+      ]
+    },
+    {
+      "username": "ic4cream",
+      "wallet": "0x27f738fe203827445690339104aae35b20bc44b0",
+      "ok": true,
+      "n": 368,
+      "unique_roi_est": 63.97,
+      "r2": 0.987,
+      "up_pct": 95.7,
+      "wr": 95.7,
+      "median_est": 861.5,
+      "sports_frac_est": 0.44,
+      "curve_est": 79.5,
+      "bot_risk": false,
+      "scout_candidate": false,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 368,
+          "roi": 64.0
+        }
+      ]
+    },
+    {
+      "username": "Shori888",
+      "wallet": "0xa36fcb6947c4ac1f09ee894aa1fd0756b90e180b",
+      "ok": true,
+      "n": 94,
+      "unique_roi_est": 76.85,
+      "r2": 0.915,
+      "up_pct": 100.0,
+      "wr": 100.0,
+      "median_est": 5667.03,
+      "sports_frac_est": 0.48,
+      "curve_est": 76.6,
+      "bot_risk": false,
+      "scout_candidate": true,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 94,
+          "roi": 76.8
+        }
+      ]
+    },
+    {
+      "username": "Mysaria",
+      "wallet": "0xe40aaa5ce1dac0b7dc24c9d0284f27e17c3fe4a2",
+      "ok": true,
+      "n": 259,
+      "unique_roi_est": 8.54,
+      "r2": 0.343,
+      "up_pct": 43.6,
+      "wr": 43.6,
+      "median_est": 156.49,
+      "sports_frac_est": 0.07,
+      "curve_est": 43.7,
+      "bot_risk": false,
+      "scout_candidate": false,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 259,
+          "roi": 8.5
+        }
+      ]
+    }
+  ]
+}
