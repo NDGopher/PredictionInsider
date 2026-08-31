@@ -85,27 +85,35 @@ SCOUT_MIN_UNIQUE_ROI = 5.0
 SCOUT_MIN_SPORTS_FRAC = 0.55
 SCOUT_EMERGING_DAYS = 150        # first→as_of window for "young book" bonus
 HYSTERESIS_DAYS = 14             # min days in scout/elite before soft demote
-# Hard floors — hysteresis never protects a collapsed / negative book
+REENTRY_COOLDOWN_DAYS = 21       # after a kick, stay out before re-scout
+# Hard floors — hysteresis never protects a collapsed / negative *dollar* book
 HARD_CURVE_FLOOR = 35.0
 HARD_UNIQUE_ROI_FLOOR = 0.0
 
 # ── Elite (can fire Sniper / Telegram) ───────────────────────────────────────
-ELITE_MIN_TAKE_N = 15            # curve vetted, but need copyable sample
+ELITE_MIN_TAKE_N = 12
 ELITE_MIN_TAKE_ROI = 5.0
 ELITE_MIN_CURVE = 60.0
 ELITE_MIN_UNIQUE_ROI = 5.0
-ELITE_ALT_UNIQUE_ROI = 12.0      # or unique-book ROI path
+# Path B: Capman/HVAB dollar-curve confirm (unit take may lag favorites / +2¢)
+ELITE_CURVE_UNIQUE_ROI = 10.0
+ELITE_CURVE_SCORE = 70.0
+ELITE_CURVE_TAKE_N = 12
+ELITE_CURVE_TAKE_ROI_FLOOR = -8.0  # allow short take drawdown if dollar curve elite
+ELITE_ALT_UNIQUE_ROI = 12.0
 ELITE_ALT_UNIQUE_N = 50
-ELITE_MIN_ACTIVE_30D = 10
+ELITE_MIN_ACTIVE_30D = 8
 ELITE_STALE_30D = 5
-ELITE_BLEED_60D_N = 12
-ELITE_BLEED_60D_ROI = -5.0
-ELITE_LIFE_FLOOR_ROI = 0.0       # early bleed cut while elite
-ELITE_LIFE_FLOOR_N = 25
-ELITE_LIFE_FLOOR_SOFT_ROI = 3.0  # after more sample
-ELITE_LIFE_FLOOR_SOFT_N = 40
+ELITE_BLEED_60D_N = 20
+ELITE_BLEED_60D_ROI = -12.0
+# Life-floor: only cut when *both* take-slice AND dollar curve are soft
+ELITE_LIFE_FLOOR_N = 40
+ELITE_LIFE_FLOOR_ROI = -5.0
+ELITE_LIFE_FLOOR_SOFT_N = 55
+ELITE_LIFE_FLOOR_SOFT_ROI = 0.0
 SPECIALTY_MIN_N = 20
 SPECIALTY_MIN_ROI = 8.0
+SPECIALTY_STRONG_ROI = 12.0
 
 
 def _is_sports_family(fam: str) -> bool:
@@ -241,6 +249,8 @@ class MemberState:
     active_30d: int = 0
     style: StyleCard | None = None
     since: datetime | None = None  # when current tier started (hysteresis)
+    kicked_at: datetime | None = None  # last kick → re-entry cooldown
+
 
 
 def style_from_history(
@@ -378,6 +388,16 @@ def _sports_specialty(style: StyleCard) -> tuple[dict[str, Any], bool]:
     return top, top_sport_ok
 
 
+def _strong_curve_book(style: StyleCard, top_sport_ok: bool, top: dict[str, Any]) -> bool:
+    """Capman/HVAB-class: dollar equity + specialty still green even if unit take is soft."""
+    return (
+        top_sport_ok
+        and style.curve_score >= ELITE_CURVE_SCORE
+        and style.unique_roi >= ELITE_CURVE_UNIQUE_ROI
+        and float(top.get("roi") or 0) >= SPECIALTY_STRONG_ROI
+    )
+
+
 def decide_tier(
     *,
     was: MemberState,
@@ -386,21 +406,18 @@ def decide_tier(
     active_30d: int,
     as_of: datetime,
 ) -> MemberState:
-    # Elite / life-floor use sports-family takes only (politics grind does not count)
     sports_takes = [
         t for t in prior_takes
         if _is_sports_family(str(t.get("sport_family") or ""))
     ]
-    take_pool = sports_takes if sports_takes else prior_takes
+    take_pool = sports_takes if len(sports_takes) >= max(8, ELITE_MIN_TAKE_N // 2) else prior_takes
     take_n = len(take_pool)
     take_roi = (
         float(sum(t["pnl_2c"] for t in take_pool) / (take_n * STAKE) * 100.0)
         if take_n
         else 0.0
     )
-    window_takes = [
-        t for t in take_pool if t["end_dt"] >= as_of - timedelta(days=60)
-    ]
+    window_takes = [t for t in take_pool if t["end_dt"] >= as_of - timedelta(days=60)]
     n60 = len(window_takes)
     roi60 = (
         float(sum(t["pnl_2c"] for t in window_takes) / (n60 * STAKE) * 100.0)
@@ -410,6 +427,7 @@ def decide_tier(
     ok_join, join_why = joinable(style.median, style.wr)
     top, top_sport_ok = _sports_specialty(style)
     top_is_sports = bool(top.get("key"))
+    strong = _strong_curve_book(style, top_sport_ok, top)
 
     st = MemberState(
         tier=was.tier,
@@ -418,62 +436,89 @@ def decide_tier(
         active_30d=active_30d,
         style=style,
         since=was.since,
+        kicked_at=was.kicked_at,
     )
     held_days = (as_of - was.since).days if was.since else 999
+    cooldown_left = 0
+    if was.kicked_at is not None:
+        cooldown_left = REENTRY_COOLDOWN_DAYS - (as_of - was.kicked_at).days
 
     def _set(tier: str, why: str) -> MemberState:
         st.tier = tier
         st.why = why
         if tier != was.tier:
             st.since = as_of
+            if tier == "none" and was.tier in {"scout", "elite"}:
+                st.kicked_at = as_of
+            if tier in {"scout", "elite"}:
+                st.kicked_at = None
         else:
             st.since = was.since or as_of
         return st
 
-    # ── Hard kicks (immediate — no hysteresis shield) ──
+    # Hard kicks — never shield collapsed dollar books; protect HVAB-class from short take DD
     if was.tier in {"scout", "elite"}:
         if active_30d < ELITE_STALE_30D:
             return _set("none", f"stale_30d_n={active_30d}")
-        if n60 >= ELITE_BLEED_60D_N and roi60 < ELITE_BLEED_60D_ROI:
-            return _set("none", f"bleed_60d_n={n60}_roi={roi60:.1f}")
         if not ok_join:
             return _set("none", f"unjoinable_{join_why}")
         if style.unique_roi < HARD_UNIQUE_ROI_FLOOR:
             return _set("none", f"hard_unique_roi={style.unique_roi:.1f}")
         if style.curve_score < HARD_CURVE_FLOOR:
             return _set("none", f"hard_curve_collapse score={style.curve_score:.0f}")
-        if take_n >= ELITE_LIFE_FLOOR_N and take_roi < ELITE_LIFE_FLOOR_ROI:
-            return _set("none", f"life_floor_take_roi={take_roi:.1f}_n={take_n}")
+        if not strong:
+            if n60 >= ELITE_BLEED_60D_N and roi60 < ELITE_BLEED_60D_ROI:
+                return _set("none", f"bleed_60d_n={n60}_roi={roi60:.1f}")
+            if (
+                take_n >= ELITE_LIFE_FLOOR_N
+                and take_roi < ELITE_LIFE_FLOOR_ROI
+                and style.unique_roi < 8
+            ):
+                return _set("none", f"life_floor_take_roi={take_roi:.1f}_n={take_n}")
 
-    # Soft demotes only after hysteresis
     soft_kill = False
     soft_why = ""
     if was.tier in {"scout", "elite"} and held_days >= HYSTERESIS_DAYS:
-        if take_n >= ELITE_LIFE_FLOOR_SOFT_N and take_roi < ELITE_LIFE_FLOOR_SOFT_ROI:
+        if (
+            not strong
+            and take_n >= ELITE_LIFE_FLOOR_SOFT_N
+            and take_roi < ELITE_LIFE_FLOOR_SOFT_ROI
+            and style.unique_roi < SCOUT_MIN_UNIQUE_ROI
+        ):
             soft_kill, soft_why = True, f"life_floor_soft_take_roi={take_roi:.1f}"
         elif style.curve_score < SCOUT_MIN_CURVE - 15 and style.unique_roi < SCOUT_MIN_UNIQUE_ROI:
             soft_kill, soft_why = True, f"curve_collapse score={style.curve_score:.0f}"
         elif was.tier == "scout" and style.unique_roi < SCOUT_MIN_UNIQUE_ROI:
             soft_kill, soft_why = True, f"scout_unique_roi={style.unique_roi:.1f}"
-        elif not top_is_sports:
+        elif not top_is_sports and not strong:
             soft_kill, soft_why = True, "no_sports_specialty"
 
-    # ── Elite confirm — specialty + copyable take-slice (HVAB/Capman shape) ──
     elite_ok = False
     elite_why = ""
-    if (
+    base_elite = (
         ok_join
         and active_30d >= ELITE_MIN_ACTIVE_30D
         and style.sports_frac >= SCOUT_MIN_SPORTS_FRAC
-        and style.curve_score >= ELITE_MIN_CURVE
-        and style.unique_roi >= ELITE_MIN_UNIQUE_ROI
         and top_sport_ok
-    ):
+    )
+    if base_elite and style.curve_score >= ELITE_MIN_CURVE and style.unique_roi >= ELITE_MIN_UNIQUE_ROI:
         if take_n >= ELITE_MIN_TAKE_N and take_roi >= ELITE_MIN_TAKE_ROI:
             elite_ok = True
             elite_why = (
                 f"elite take={take_n}/{take_roi:.1f}% "
                 f"spec={top.get('key')}@{top.get('roi')}% curve={style.curve_score:.0f}"
+            )
+        elif (
+            strong
+            and take_n >= ELITE_CURVE_TAKE_N
+            and take_roi >= ELITE_CURVE_TAKE_ROI_FLOOR
+            and active_30d >= 15
+        ):
+            elite_ok = True
+            elite_why = (
+                f"elite curve-book unique={style.unique_roi:.1f}% "
+                f"spec={top.get('key')}@{top.get('roi')}% "
+                f"take={take_n}/{take_roi:.1f}% curve={style.curve_score:.0f}"
             )
         elif (
             take_n >= ELITE_MIN_TAKE_N
@@ -491,9 +536,11 @@ def decide_tier(
     if elite_ok and not soft_kill:
         return _set("elite", elite_why + f" {join_why} active30={active_30d}")
 
-    # ── Scout (early HVAB / Capman path) — dollar curve + real sports specialty ──
+    blocked_reentry = was.tier == "none" and cooldown_left > 0
+
     scout_ok = (
-        ok_join
+        not blocked_reentry
+        and ok_join
         and style.curve.get("n", 0) >= SCOUT_MIN_N
         and active_30d >= SCOUT_MIN_ACTIVE_30D
         and style.sports_frac >= SCOUT_MIN_SPORTS_FRAC
@@ -530,14 +577,11 @@ def decide_tier(
     if soft_kill:
         return _set("none", soft_why)
 
-    # Keep existing scout/elite during hysteresis even if scout_ok flickered off —
-    # but only if book still looks alive (unique ROI / curve already hard-gated above)
     if was.tier in {"scout", "elite"} and held_days < HYSTERESIS_DAYS and active_30d >= ELITE_STALE_30D:
         base_why = was.why or ""
         if base_why.startswith("hold_"):
-            # strip nested hold_ prefixes — keep original promote reason
-            parts = base_why.split(" ", 2)
-            base_why = parts[-1] if len(parts) >= 3 else base_why
+            parts = base_why.split(" · ", 1)
+            base_why = parts[-1] if parts else base_why
         st.why = f"hold_{was.tier} {held_days}d · {base_why}"
         return st
 
@@ -548,11 +592,14 @@ def decide_tier(
             f"sports={style.sports_frac:.0%} take={take_n}/{take_roi:.1f}",
         )
 
-    return _set(
-        "none",
+    why = (
         f"watch score={style.curve_score:.0f} n={int(style.curve.get('n') or 0)} "
-        f"active30={active_30d} sports={style.sports_frac:.0%}",
+        f"active30={active_30d} sports={style.sports_frac:.0%}"
     )
+    if blocked_reentry:
+        why = f"cooldown_{cooldown_left}d · {why}"
+    return _set("none", why)
+
 
 
 def candidate_books() -> list[tuple[str, str]]:
@@ -565,25 +612,61 @@ def candidate_books() -> list[tuple[str, str]]:
     pairs: list[tuple[str, str]] = []
     seen: set[str] = set()
 
+    def _key(wallet: str) -> str:
+        # Digest paths use wallet[:8] (e.g. 0xc5b5bb) — not 8 hex digits.
+        return (wallet or "").lower()[:8]
+
     def _add(username: str, wallet: str) -> None:
         w = (wallet or "").lower()
         u = username or ""
-        if not w or w in seen:
+        if not w:
+            return
+        key = _key(w)
+        if key in seen:
             return
         p = csv_path_for(w, u)
         if not p.exists():
-            hits = list(OUTPUT_DIR.glob(f"*_{w[:6]}.csv")) + list(OUTPUT_DIR.glob(f"*_{w[:8]}.csv"))
+            hits = list(OUTPUT_DIR.glob(f"*_{key}.csv"))
             if not hits:
                 return
             p = hits[0]
+            if not u:
+                u = p.stem.rsplit("_", 1)[0]
+            jp = p.with_suffix(".json")
+            if jp.exists():
+                try:
+                    meta = json.loads(jp.read_text(encoding="utf-8"))
+                    fw = str(meta.get("wallet") or "").lower()
+                    fu = str(meta.get("username") or "")
+                    if fw:
+                        w = fw
+                    if fu:
+                        u = fu
+                except (OSError, json.JSONDecodeError):
+                    pass
+        # Prefer full wallet from sidecar even when path resolved
+        jp = csv_path_for(w, u).with_suffix(".json") if u else p.with_suffix(".json")
+        if not jp.exists():
+            jp = p.with_suffix(".json")
+        if jp.exists() and len(w) <= 10:
+            try:
+                meta = json.loads(jp.read_text(encoding="utf-8"))
+                fw = str(meta.get("wallet") or "").lower()
+                fu = str(meta.get("username") or "")
+                if fw and len(fw) > len(w):
+                    w = fw
+                if fu:
+                    u = fu
+            except (OSError, json.JSONDecodeError):
+                pass
         try:
-            est = sum(1 for _ in open(p, "rb")) - 1
+            est = sum(1 for _ in open(csv_path_for(w, u) if csv_path_for(w, u).exists() else p, "rb")) - 1
         except OSError:
             est = 0
         if est >= CSV_ROWS_BOT:
             return
         pairs.append((u or p.stem.rsplit("_", 1)[0], w))
-        seen.add(w)
+        seen.add(key)
 
     uni = load_universe()
     for bucket in ("live", "bench", "watch"):
