@@ -1033,10 +1033,9 @@ def write_md(payload: dict[str, Any]) -> None:
         "",
         f"- **Scout**: n≥{SCOUT_MIN_N}, active30≥{SCOUT_MIN_ACTIVE_30D}, sports≥{SCOUT_MIN_SPORTS_FRAC:.0%}, "
         f"curve_score≥{SCOUT_MIN_CURVE}, unique ROI≥{SCOUT_MIN_UNIQUE_ROI}%, real-sport specialty, joinable.",
-        f"- **Elite**: specialty n≥{SPECIALTY_MIN_N} ROI≥{SPECIALTY_MIN_ROI}% + curve≥{ELITE_MIN_CURVE} + "
-        f"unique≥{ELITE_MIN_UNIQUE_ROI}% + sports-take n≥{ELITE_MIN_TAKE_N} ROI≥{ELITE_MIN_TAKE_ROI}%.",
-        f"- **Kick (hard)**: stale active30<{ELITE_STALE_30D}, unique ROI<{HARD_UNIQUE_ROI_FLOOR}%, "
-        f"curve<{HARD_CURVE_FLOOR}, early life-floor take ROI<{ELITE_LIFE_FLOOR_ROI}% @ n≥{ELITE_LIFE_FLOOR_N}.",
+        f"- **Elite**: specialty + (Path A: recent-40 take ROI≥{ELITE_MIN_TAKE_ROI}% @ n≥{ELITE_MIN_TAKE_N}) "
+        f"or (Path B curve-book: unique≥{ELITE_CURVE_UNIQUE_ROI}% curve≥{ELITE_CURVE_SCORE} on core sports).",
+        f"- **Kick (hard)**: stale, dollar collapse, recent-cold take, or re-entry cooldown {REENTRY_COOLDOWN_DAYS}d.",
         "- **Trade**: Elite + Sniper gates (Q≥60, sport+5%, rel≥2×, 10–88¢, no NFL).",
         "- **Product roster**: Telegram = live elite only. Scouts watch. Proven_bench = stale but historically green.",
         "",
@@ -1132,7 +1131,15 @@ def main() -> int:
                 and int(f.get("trades") or 0) >= 10
             )
         ):
-            # Historically green / traded — not bleeders parked as "proven"
+            proven_stale.append(row)
+        elif (
+            int(f.get("active_30d") or 0) < ELITE_STALE_30D
+            and int(f.get("trades") or 0) >= 20
+            and float(f.get("curve_score") or 0) >= SCOUT_MIN_CURVE
+            and float(f.get("unique_roi") or 0) >= SCOUT_MIN_UNIQUE_ROI
+        ):
+            # Capman-class: historically traded as elite, now dark (final why may be "watch")
+            row = {**row, "why": f"proven_stale_inactive · {f.get('why')}"}
             proven_stale.append(row)
 
     live_elite.sort(key=lambda x: -(x.get("curve_score") or 0))

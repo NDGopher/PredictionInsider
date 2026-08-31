@@ -1,0 +1,4481 @@
+{
+  "generated_at": "2026-08-31T17:40:56.100662+00:00",
+  "method": "Discovery-first walk-forward: equity-curve + style scout \u2192 elite confirm \u2192 Sniper trades only while elite; kick stale. No pre-chosen winner list.",
+  "rules": {
+    "scout": {
+      "min_n": 25,
+      "min_active_30d": 12,
+      "min_curve_score": 55.0,
+      "min_sports_frac": 0.55,
+      "min_unique_roi": 5.0,
+      "specialty_min_n": 20,
+      "specialty_min_roi": 8.0
+    },
+    "elite": {
+      "min_take_n": 12,
+      "min_take_roi": 5.0,
+      "min_curve": 60.0,
+      "min_unique_roi": 5.0,
+      "alt_unique_roi": 12.0,
+      "alt_unique_n": 50,
+      "require_sports_specialty": true
+    },
+    "hard_kick": {
+      "stale_30d": 5,
+      "unique_roi_floor": 0.0,
+      "curve_floor": 35.0,
+      "life_floor_n": 40,
+      "life_floor_roi": -5.0
+    },
+    "sniper": "Q>=60 sport+5% rel>=2x 10-88c no NFL"
+  },
+  "books_scanned": 35,
+  "portfolio": {
+    "n": 393,
+    "wins": 242,
+    "losses": 151,
+    "win_rate": 61.58,
+    "unit_pnl": 3411.05,
+    "expectancy": 8.68,
+    "roi": 8.68,
+    "profit_factor": 1.226,
+    "sharpe_daily_roi": 4.04,
+    "max_dd": -1759.99,
+    "avg_grade": 75.7,
+    "avg_q": 75.7,
+    "avg_fill": 0.565,
+    "avg_vwap": 0.545,
+    "implied_wr": 56.5,
+    "edge": 5.1,
+    "avg_traders": 1.0,
+    "avg_rel": 5.39,
+    "calmar": 1.94,
+    "days": 122,
+    "trades_per_day": 3.22,
+    "first": "2025-01-31",
+    "last": "2026-09-01"
+  },
+  "quarters": {
+    "2025Q1": {
+      "n": 15,
+      "wins": 7,
+      "losses": 8,
+      "win_rate": 46.67,
+      "unit_pnl": -331.45,
+      "expectancy": -22.1,
+      "roi": -22.1,
+      "profit_factor": 0.586,
+      "sharpe_daily_roi": -6.27,
+      "max_dd": -479.34,
+      "avg_grade": 70.3,
+      "avg_q": 70.3,
+      "avg_fill": 0.616,
+      "avg_vwap": 0.596,
+      "implied_wr": 61.6,
+      "edge": -14.9,
+      "avg_traders": 1.0,
+      "avg_rel": 4.79,
+      "calmar": -0.69,
+      "days": 11,
+      "trades_per_day": 1.36,
+      "first": "2025-01-31",
+      "last": "2025-02-20"
+    },
+    "2025Q4": {
+      "n": 83,
+      "wins": 50,
+      "losses": 33,
+      "win_rate": 60.24,
+      "unit_pnl": 151.44,
+      "expectancy": 1.82,
+      "roi": 1.82,
+      "profit_factor": 1.046,
+      "sharpe_daily_roi": 5.12,
+      "max_dd": -1102.55,
+      "avg_grade": 74.2,
+      "avg_q": 74.2,
+      "avg_fill": 0.582,
+      "avg_vwap": 0.562,
+      "implied_wr": 58.2,
+      "edge": 2.0,
+      "avg_traders": 1.0,
+      "avg_rel": 5.17,
+      "calmar": 0.14,
+      "days": 23,
+      "trades_per_day": 3.61,
+      "first": "2025-11-26",
+      "last": "2025-12-31"
+    },
+    "2026Q1": {
+      "n": 240,
+      "wins": 154,
+      "losses": 86,
+      "win_rate": 64.17,
+      "unit_pnl": 3615.8,
+      "expectancy": 15.07,
+      "roi": 15.07,
+      "profit_factor": 1.42,
+      "sharpe_daily_roi": 6.63,
+      "max_dd": -1522.04,
+      "avg_grade": 76.3,
+      "avg_q": 76.3,
+      "avg_fill": 0.557,
+      "avg_vwap": 0.537,
+      "implied_wr": 55.7,
+      "edge": 8.5,
+      "avg_traders": 1.0,
+      "avg_rel": 4.99,
+      "calmar": 2.38,
+      "days": 71,
+      "trades_per_day": 3.38,
+      "first": "2026-01-01",
+      "last": "2026-03-29"
+    },
+    "2026Q2": {
+      "n": 25,
+      "wins": 12,
+      "losses": 13,
+      "win_rate": 48.0,
+      "unit_pnl": -105.0,
+      "expectancy": -4.2,
+      "roi": -4.2,
+      "profit_factor": 0.919,
+      "sharpe_daily_roi": 0.0,
+      "max_dd": -814.21,
+      "avg_grade": 72.6,
+      "avg_q": 72.6,
+      "avg_fill": 0.472,
+      "avg_vwap": 0.452,
+      "implied_wr": 47.2,
+      "edge": 0.8,
+      "avg_traders": 1.0,
+      "avg_rel": 4.6,
+      "calmar": -0.13,
+      "days": 6,
+      "trades_per_day": 4.17,
+      "first": "2026-04-03",
+      "last": "2026-04-13"
+    },
+    "2026Q3": {
+      "n": 30,
+      "wins": 19,
+      "losses": 11,
+      "win_rate": 63.33,
+      "unit_pnl": 80.26,
+      "expectancy": 2.68,
+      "roi": 2.68,
+      "profit_factor": 1.073,
+      "sharpe_daily_roi": 4.0,
+      "max_dd": -318.89,
+      "avg_grade": 81.3,
+      "avg_q": 81.3,
+      "avg_fill": 0.639,
+      "avg_vwap": 0.619,
+      "implied_wr": 63.9,
+      "edge": -0.5,
+      "avg_traders": 1.0,
+      "avg_rel": 10.17,
+      "calmar": 0.25,
+      "days": 11,
+      "trades_per_day": 2.73,
+      "first": "2026-08-20",
+      "last": "2026-09-01"
+    }
+  },
+  "by_trader": [
+    {
+      "username": "JhonAlexanderHinestroza",
+      "n": 91,
+      "win_rate": 63.74,
+      "roi": 28.45,
+      "unit_pnl": 2588.73,
+      "first": "2026-02-05",
+      "last": "2026-04-13"
+    },
+    {
+      "username": "ShortFlutterStock",
+      "n": 80,
+      "win_rate": 51.25,
+      "roi": -0.99,
+      "unit_pnl": -79.23,
+      "first": "2026-02-16",
+      "last": "2026-04-04"
+    },
+    {
+      "username": "Vetch",
+      "n": 69,
+      "win_rate": 79.71,
+      "roi": 19.3,
+      "unit_pnl": 1331.48,
+      "first": "2025-11-26",
+      "last": "2026-03-22"
+    },
+    {
+      "username": "Capman",
+      "n": 52,
+      "win_rate": 71.15,
+      "roi": 18.12,
+      "unit_pnl": 942.46,
+      "first": "2025-12-27",
+      "last": "2026-01-24"
+    },
+    {
+      "username": "HVAB",
+      "n": 30,
+      "win_rate": 63.33,
+      "roi": 2.68,
+      "unit_pnl": 80.26,
+      "first": "2026-08-20",
+      "last": "2026-09-01"
+    },
+    {
+      "username": "Andromeda1",
+      "n": 23,
+      "win_rate": 47.83,
+      "roi": -15.5,
+      "unit_pnl": -356.61,
+      "first": "2025-11-30",
+      "last": "2025-12-07"
+    },
+    {
+      "username": "EIf",
+      "n": 23,
+      "win_rate": 47.83,
+      "roi": -8.99,
+      "unit_pnl": -206.73,
+      "first": "2025-12-05",
+      "last": "2025-12-14"
+    },
+    {
+      "username": "DLEK",
+      "n": 15,
+      "win_rate": 46.67,
+      "roi": -22.1,
+      "unit_pnl": -331.45,
+      "first": "2025-01-31",
+      "last": "2025-02-20"
+    },
+    {
+      "username": "Supah9ga",
+      "n": 8,
+      "win_rate": 25.0,
+      "roi": -68.85,
+      "unit_pnl": -550.83,
+      "first": "2026-03-22",
+      "last": "2026-04-13"
+    },
+    {
+      "username": "kch123",
+      "n": 2,
+      "win_rate": 50.0,
+      "roi": -3.51,
+      "unit_pnl": -7.02,
+      "first": "2025-11-26",
+      "last": "2025-11-27"
+    }
+  ],
+  "leave_one_out": [
+    {
+      "dropped": "Andromeda1",
+      "n_remaining": 370,
+      "win_rate": 62.43,
+      "roi_2c": 10.18,
+      "unit_pnl": 3767.66
+    },
+    {
+      "dropped": "Capman",
+      "n_remaining": 341,
+      "win_rate": 60.12,
+      "roi_2c": 7.24,
+      "unit_pnl": 2468.59
+    },
+    {
+      "dropped": "DLEK",
+      "n_remaining": 378,
+      "win_rate": 62.17,
+      "roi_2c": 9.9,
+      "unit_pnl": 3742.5
+    },
+    {
+      "dropped": "EIf",
+      "n_remaining": 370,
+      "win_rate": 62.43,
+      "roi_2c": 9.78,
+      "unit_pnl": 3617.78
+    },
+    {
+      "dropped": "HVAB",
+      "n_remaining": 363,
+      "win_rate": 61.43,
+      "roi_2c": 9.18,
+      "unit_pnl": 3330.79
+    },
+    {
+      "dropped": "JhonAlexanderHinestroza",
+      "n_remaining": 302,
+      "win_rate": 60.93,
+      "roi_2c": 2.72,
+      "unit_pnl": 822.32
+    },
+    {
+      "dropped": "ShortFlutterStock",
+      "n_remaining": 313,
+      "win_rate": 64.22,
+      "roi_2c": 11.15,
+      "unit_pnl": 3490.28
+    },
+    {
+      "dropped": "Supah9ga",
+      "n_remaining": 385,
+      "win_rate": 62.34,
+      "roi_2c": 10.29,
+      "unit_pnl": 3961.88
+    },
+    {
+      "dropped": "Vetch",
+      "n_remaining": 324,
+      "win_rate": 57.72,
+      "roi_2c": 6.42,
+      "unit_pnl": 2079.57
+    },
+    {
+      "dropped": "kch123",
+      "n_remaining": 391,
+      "win_rate": 61.64,
+      "roi_2c": 8.74,
+      "unit_pnl": 3418.07
+    }
+  ],
+  "live_elite": [
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "tier": "elite",
+      "why": "elite curve-book unique=15.0% spec=TENNIS@14.9% take=39/-4.1% curve=100 wr_band active30=230",
+      "take_n": 39,
+      "take_roi": -4.09,
+      "active_30d": 230,
+      "median": 1874.02,
+      "unique_roi": 15.01,
+      "curve_score": 99.525,
+      "sports_frac": 0.63,
+      "top_sports": [
+        {
+          "key": "TENNIS",
+          "n": 331,
+          "roi": 14.9
+        },
+        {
+          "key": "OTHER",
+          "n": 204,
+          "roi": 15.2
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 21,
+          "roi": 14.1
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "TENNIS|Moneyline",
+          "n": 319,
+          "roi": 15.0
+        },
+        {
+          "key": "OTHER|Moneyline",
+          "n": 192,
+          "roi": 15.1
+        },
+        {
+          "key": "SOCCER (Other)|Moneyline",
+          "n": 14,
+          "roi": 17.4
+        }
+      ],
+      "curve": {
+        "n": 558.0,
+        "roi": 15.01,
+        "sharpe": 4.63,
+        "r2": 0.835,
+        "up_day_pct": 70.9,
+        "max_dd": -45585.85,
+        "calmar": 11.04,
+        "total_pnl": 503291.64,
+        "specialty": null,
+        "specialty_roi": null,
+        "specialty_n": null,
+        "specialty_sharpe": null,
+        "last30_roi": 16.61,
+        "last30_n": 230
+      },
+      "emerging": true,
+      "wr": 73.3,
+      "trades": 30,
+      "discoveries": 1
+    }
+  ],
+  "live_scout": [],
+  "proven_stale": [
+    {
+      "username": "Supah9ga",
+      "wallet": "0x57cd939930fd119067ca9dc42b22b3e15708a0fb",
+      "tier": "none",
+      "why": "stale_30d_n=0",
+      "take_n": 21,
+      "take_roi": 30.9,
+      "active_30d": 0,
+      "median": 5533.0,
+      "unique_roi": 18.62,
+      "curve_score": 83.75999999999999,
+      "sports_frac": 0.83,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 118,
+          "roi": 19.1
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 82,
+          "roi": 59.1
+        },
+        {
+          "key": "ESPORTS",
+          "n": 71,
+          "roi": 19.9
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "SOCCER (Other)|Moneyline",
+          "n": 100,
+          "roi": 13.7
+        },
+        {
+          "key": "SOCCER (EPL)|Moneyline",
+          "n": 68,
+          "roi": 64.7
+        },
+        {
+          "key": "NBA|Moneyline",
+          "n": 60,
+          "roi": 0.2
+        }
+      ],
+      "curve": {
+        "n": 539.0,
+        "roi": 18.62,
+        "sharpe": 3.28,
+        "r2": 0.719,
+        "up_day_pct": 51.9,
+        "max_dd": -218490.01,
+        "calmar": 4.22,
+        "total_pnl": 922063.69,
+        "specialty": "SOCCER (EPL)",
+        "specialty_roi": 59.05,
+        "specialty_n": 82.0,
+        "specialty_sharpe": 6.71,
+        "last30_roi": 0.0,
+        "last30_n": 0
+      },
+      "emerging": false,
+      "wr": 52.13,
+      "trades": 8,
+      "discoveries": 3
+    },
+    {
+      "username": "Vetch",
+      "wallet": "0x9c82c60829df081d593055ee5fa288870c051f13",
+      "tier": "none",
+      "why": "stale_30d_n=0",
+      "take_n": 83,
+      "take_roi": 11.96,
+      "active_30d": 0,
+      "median": 2354.84,
+      "unique_roi": 11.55,
+      "curve_score": 83.58500000000001,
+      "sports_frac": 0.89,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 187,
+          "roi": 15.6
+        },
+        {
+          "key": "NBA",
+          "n": 137,
+          "roi": 14.0
+        },
+        {
+          "key": "TENNIS",
+          "n": 114,
+          "roi": 6.5
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "ESPORTS|Moneyline",
+          "n": 187,
+          "roi": 15.6
+        },
+        {
+          "key": "NBA|Moneyline",
+          "n": 137,
+          "roi": 14.0
+        },
+        {
+          "key": "TENNIS|Moneyline",
+          "n": 107,
+          "roi": 7.1
+        }
+      ],
+      "curve": {
+        "n": 554.0,
+        "roi": 11.55,
+        "sharpe": 5.29,
+        "r2": 0.95,
+        "up_day_pct": 65.3,
+        "max_dd": -60856.3,
+        "calmar": 3.79,
+        "total_pnl": 230859.37,
+        "specialty": "NHL",
+        "specialty_roi": 25.9,
+        "specialty_n": 32.0,
+        "specialty_sharpe": 5.95,
+        "last30_roi": 0.0,
+        "last30_n": 0
+      },
+      "emerging": false,
+      "wr": 58.48,
+      "trades": 69,
+      "discoveries": 1
+    },
+    {
+      "username": "JhonAlexanderHinestroza",
+      "wallet": "0x44c58184f89a5c2f699dc8943009cb3d75a08d45",
+      "tier": "none",
+      "why": "stale_30d_n=0",
+      "take_n": 85,
+      "take_roi": 22.2,
+      "active_30d": 0,
+      "median": 2669.93,
+      "unique_roi": 19.15,
+      "curve_score": 81.16,
+      "sports_frac": 0.74,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 412,
+          "roi": 15.7
+        },
+        {
+          "key": "OTHER",
+          "n": 240,
+          "roi": 18.1
+        },
+        {
+          "key": "ESPORTS",
+          "n": 126,
+          "roi": 8.6
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "SOCCER (Other)|Moneyline",
+          "n": 291,
+          "roi": 18.4
+        },
+        {
+          "key": "OTHER|Moneyline",
+          "n": 176,
+          "roi": 24.7
+        },
+        {
+          "key": "SOCCER (Other)|Total",
+          "n": 104,
+          "roi": 7.0
+        }
+      ],
+      "curve": {
+        "n": 948.0,
+        "roi": 19.15,
+        "sharpe": 6.58,
+        "r2": 0.944,
+        "up_day_pct": 58.4,
+        "max_dd": -86161.96,
+        "calmar": 6.89,
+        "total_pnl": 593492.06,
+        "specialty": "SOCCER (UCL)",
+        "specialty_roi": 45.0,
+        "specialty_n": 45.0,
+        "specialty_sharpe": 8.14,
+        "last30_roi": 0.0,
+        "last30_n": 0
+      },
+      "emerging": false,
+      "wr": 54.85,
+      "trades": 91,
+      "discoveries": 1
+    },
+    {
+      "username": "Capman",
+      "wallet": "0xc5b5bbd42624a8f0c8dfa90221913007d8c77e80",
+      "take_n": 52,
+      "take_roi": 18.12,
+      "active_30d": 0,
+      "curve_score": null,
+      "unique_roi": null,
+      "why": "proven_stale_inactive",
+      "trades": 52
+    }
+  ],
+  "first_discoveries": [
+    {
+      "username": "DLEK",
+      "at": "2024-12-28T18:01:11+00:00",
+      "alert_ref": "2024-12-29T18:01:11+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=90 roi=9.3% spec=NBA sports=95% active30=31",
+      "curve_score": 89.83500000000001,
+      "unique_roi": 9.34,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "active_30d": 31,
+      "median": 1404.22,
+      "sports_frac": 0.95,
+      "top_sports": [
+        {
+          "key": "NBA",
+          "n": 32,
+          "roi": 17.7
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 42.0,
+        "roi": 9.34,
+        "sharpe": 1.85,
+        "r2": 0.16,
+        "up_day_pct": 61.9,
+        "max_dd": -25297.73,
+        "calmar": 0.51,
+        "total_pnl": 12854.39,
+        "specialty": "NBA",
+        "specialty_roi": 17.74,
+        "specialty_n": 32.0,
+        "specialty_sharpe": 3.79,
+        "last30_roi": 22.55,
+        "last30_n": 31
+      }
+    },
+    {
+      "username": "ShucksIt69",
+      "at": "2025-08-13T02:22:54+00:00",
+      "alert_ref": "2025-08-14T02:22:54+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=96 roi=37.5% spec=MLB sports=89% active30=28",
+      "curve_score": 96.39,
+      "unique_roi": 37.53,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "active_30d": 28,
+      "median": 924.32,
+      "sports_frac": 0.89,
+      "top_sports": [
+        {
+          "key": "MLB",
+          "n": 25,
+          "roi": 43.6
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 36.0,
+        "roi": 37.53,
+        "sharpe": 5.3,
+        "r2": 0.785,
+        "up_day_pct": 66.7,
+        "max_dd": -3134.99,
+        "calmar": 3.47,
+        "total_pnl": 10887.77,
+        "specialty": "MLB",
+        "specialty_roi": 43.64,
+        "specialty_n": 25.0,
+        "specialty_sharpe": 7.24,
+        "last30_roi": 45.23,
+        "last30_n": 28
+      }
+    },
+    {
+      "username": "Andromeda1",
+      "at": "2025-10-02T07:34:42+00:00",
+      "alert_ref": "2025-10-03T07:34:42+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=97 roi=23.0% spec=ESPORTS,SOCCER (EPL) sports=60% emerging active30=173",
+      "curve_score": 96.9,
+      "unique_roi": 23.0,
+      "take_n": 4,
+      "take_roi": -22.19,
+      "active_30d": 173,
+      "median": 1569.19,
+      "sports_frac": 0.6,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 73,
+          "roi": 2.1
+        },
+        {
+          "key": "ESPORTS",
+          "n": 55,
+          "roi": 8.8
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 13,
+          "roi": 81.3
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 184.0,
+        "roi": 23.0,
+        "sharpe": 6.66,
+        "r2": 0.86,
+        "up_day_pct": 64.3,
+        "max_dd": -40543.58,
+        "calmar": 2.85,
+        "total_pnl": 115631.95,
+        "specialty": null,
+        "specialty_roi": null,
+        "specialty_n": null,
+        "specialty_sharpe": null,
+        "last30_roi": 26.09,
+        "last30_n": 173
+      }
+    },
+    {
+      "username": "0x53eCc53E7",
+      "at": "2025-10-17T11:44:44+00:00",
+      "alert_ref": "2025-10-18T11:44:44+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=82 roi=9.6% spec=NBA sports=55% active30=16",
+      "curve_score": 81.85,
+      "unique_roi": 9.57,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "active_30d": 16,
+      "median": 1008.22,
+      "sports_frac": 0.55,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 89,
+          "roi": -29.0
+        },
+        {
+          "key": "NBA",
+          "n": 61,
+          "roi": 20.7
+        },
+        {
+          "key": "NFL",
+          "n": 38,
+          "roi": -75.7
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 289.0,
+        "roi": 9.57,
+        "sharpe": 1.4,
+        "r2": 0.2,
+        "up_day_pct": 44.4,
+        "max_dd": -55705.33,
+        "calmar": 0.73,
+        "total_pnl": 40463.35,
+        "specialty": "TENNIS",
+        "specialty_roi": 25.87,
+        "specialty_n": 26.0,
+        "specialty_sharpe": 7.13,
+        "last30_roi": 37.9,
+        "last30_n": 16
+      }
+    },
+    {
+      "username": "kch123",
+      "at": "2025-10-19T02:45:29+00:00",
+      "alert_ref": "2025-10-20T02:45:29+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=87 roi=5.6% spec=NHL,SOCCER (Other) sports=55% emerging active30=294",
+      "curve_score": 86.84,
+      "unique_roi": 5.62,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "active_30d": 294,
+      "median": 5421.2,
+      "sports_frac": 0.55,
+      "top_sports": [
+        {
+          "key": "NFL",
+          "n": 158,
+          "roi": 3.4
+        },
+        {
+          "key": "NHL",
+          "n": 150,
+          "roi": 8.0
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 25,
+          "roi": 18.4
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 358.0,
+        "roi": 5.62,
+        "sharpe": 1.63,
+        "r2": 0.192,
+        "up_day_pct": 45.0,
+        "max_dd": -420495.93,
+        "calmar": 0.61,
+        "total_pnl": 256025.94,
+        "specialty": "MLB",
+        "specialty_roi": 50.82,
+        "specialty_n": 21.0,
+        "specialty_sharpe": 7.81,
+        "last30_roi": 16.4,
+        "last30_n": 294
+      }
+    },
+    {
+      "username": "bloodmaster",
+      "at": "2025-10-23T12:38:13+00:00",
+      "alert_ref": "2025-10-24T12:38:13+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=95 roi=6.1% spec=ESPORTS sports=59% emerging active30=23",
+      "curve_score": 94.77000000000001,
+      "unique_roi": 6.09,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "active_30d": 23,
+      "median": 5175.39,
+      "sports_frac": 0.59,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 26,
+          "roi": 14.7
+        },
+        {
+          "key": "OTHER",
+          "n": 18,
+          "roi": -17.6
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 44.0,
+        "roi": 6.09,
+        "sharpe": 1.98,
+        "r2": 0.005,
+        "up_day_pct": 73.1,
+        "max_dd": -35468.98,
+        "calmar": 0.58,
+        "total_pnl": 20560.01,
+        "specialty": "ESPORTS",
+        "specialty_roi": 14.73,
+        "specialty_n": 26.0,
+        "specialty_sharpe": 4.93,
+        "last30_roi": 18.28,
+        "last30_n": 23
+      }
+    },
+    {
+      "username": "ShortFlutterStock",
+      "at": "2025-11-12T09:25:34+00:00",
+      "alert_ref": "2025-11-13T09:25:34+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=98 roi=25.9% spec=ESPORTS,NHL sports=93% emerging active30=42",
+      "curve_score": 98.39,
+      "unique_roi": 25.88,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "active_30d": 42,
+      "median": 2591.29,
+      "sports_frac": 0.93,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 25,
+          "roi": 67.6
+        },
+        {
+          "key": "NHL",
+          "n": 10,
+          "roi": 8.3
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 42.0,
+        "roi": 25.88,
+        "sharpe": 19.58,
+        "r2": 0.661,
+        "up_day_pct": 75.0,
+        "max_dd": -35835.84,
+        "calmar": 1.46,
+        "total_pnl": 52401.78,
+        "specialty": "ESPORTS",
+        "specialty_roi": 67.64,
+        "specialty_n": 25.0,
+        "specialty_sharpe": 49.46,
+        "last30_roi": 25.88,
+        "last30_n": 42
+      }
+    },
+    {
+      "username": "EIf",
+      "at": "2025-11-21T01:05:55+00:00",
+      "alert_ref": "2025-11-22T01:05:55+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=100 roi=10.4% spec=NBA,NHL sports=59% emerging active30=234",
+      "curve_score": 100.0,
+      "unique_roi": 10.43,
+      "take_n": 9,
+      "take_roi": -3.79,
+      "active_30d": 234,
+      "median": 1470.0,
+      "sports_frac": 0.59,
+      "top_sports": [
+        {
+          "key": "NBA",
+          "n": 79,
+          "roi": 8.9
+        },
+        {
+          "key": "NFL",
+          "n": 65,
+          "roi": -4.7
+        },
+        {
+          "key": "NHL",
+          "n": 44,
+          "roi": 46.1
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 234.0,
+        "roi": 10.43,
+        "sharpe": 5.77,
+        "r2": 0.151,
+        "up_day_pct": 73.3,
+        "max_dd": -57352.0,
+        "calmar": 1.12,
+        "total_pnl": 64066.52,
+        "specialty": "NHL",
+        "specialty_roi": 46.11,
+        "specialty_n": 44.0,
+        "specialty_sharpe": 9.8,
+        "last30_roi": 10.43,
+        "last30_n": 234
+      }
+    },
+    {
+      "username": "Vetch",
+      "at": "2025-11-26T12:00:00+00:00",
+      "alert_ref": "2025-11-27T12:00:00+00:00",
+      "action": "promote_elite",
+      "from": "none",
+      "to": "elite",
+      "why": "elite take=15/19.0% spec=NBA@15.3% curve=91 wr_band active30=116",
+      "curve_score": 90.52,
+      "unique_roi": 9.89,
+      "take_n": 15,
+      "take_roi": 18.98,
+      "active_30d": 116,
+      "median": 1769.44,
+      "sports_frac": 0.86,
+      "top_sports": [
+        {
+          "key": "NBA",
+          "n": 45,
+          "roi": 15.3
+        },
+        {
+          "key": "TENNIS",
+          "n": 45,
+          "roi": 0.6
+        },
+        {
+          "key": "NHL",
+          "n": 13,
+          "roi": 9.7
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 125.0,
+        "roi": 9.89,
+        "sharpe": 6.9,
+        "r2": 0.896,
+        "up_day_pct": 61.3,
+        "max_dd": -13415.93,
+        "calmar": 3.28,
+        "total_pnl": 43988.17,
+        "specialty": "NBA",
+        "specialty_roi": 15.31,
+        "specialty_n": 45.0,
+        "specialty_sharpe": 8.8,
+        "last30_roi": 9.18,
+        "last30_n": 116
+      }
+    },
+    {
+      "username": "Supah9ga",
+      "at": "2025-11-28T08:29:25+00:00",
+      "alert_ref": "2025-11-29T08:29:25+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=77 roi=7.2% spec=ESPORTS,SOCCER (UCL) sports=71% emerging active30=56",
+      "curve_score": 77.37,
+      "unique_roi": 7.24,
+      "take_n": 2,
+      "take_roi": 15.63,
+      "active_30d": 56,
+      "median": 3458.97,
+      "sports_frac": 0.71,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 25,
+          "roi": 14.5
+        },
+        {
+          "key": "OTHER",
+          "n": 14,
+          "roi": -5.4
+        },
+        {
+          "key": "SOCCER (UCL)",
+          "n": 12,
+          "roi": -66.7
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 90.0,
+        "roi": 7.24,
+        "sharpe": 1.51,
+        "r2": 0.318,
+        "up_day_pct": 57.6,
+        "max_dd": -67832.63,
+        "calmar": 0.39,
+        "total_pnl": 26128.9,
+        "specialty": "ESPORTS",
+        "specialty_roi": 14.46,
+        "specialty_n": 25.0,
+        "specialty_sharpe": 4.03,
+        "last30_roi": 7.88,
+        "last30_n": 56
+      }
+    },
+    {
+      "username": "0xheavy888",
+      "at": "2025-12-10T12:57:25+00:00",
+      "alert_ref": "2025-12-11T12:57:25+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=77 roi=6.3% spec=ESPORTS sports=78% active30=687",
+      "curve_score": 77.49000000000001,
+      "unique_roi": 6.32,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "active_30d": 687,
+      "median": 1081.54,
+      "sports_frac": 0.78,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 1125,
+          "roi": 8.0
+        },
+        {
+          "key": "OTHER",
+          "n": 264,
+          "roi": -1.0
+        },
+        {
+          "key": "NFL",
+          "n": 49,
+          "roi": -2.3
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 1492.0,
+        "roi": 6.32,
+        "sharpe": 4.41,
+        "r2": 0.919,
+        "up_day_pct": 55.7,
+        "max_dd": -23333.11,
+        "calmar": 5.57,
+        "total_pnl": 130072.03,
+        "specialty": "ESPORTS",
+        "specialty_roi": 7.95,
+        "specialty_n": 1125.0,
+        "specialty_sharpe": 6.86,
+        "last30_roi": 9.2,
+        "last30_n": 687
+      }
+    },
+    {
+      "username": "Capman",
+      "at": "2025-12-22T01:00:31+00:00",
+      "alert_ref": "2025-12-23T01:00:31+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=85 roi=13.4% spec=NBA,NHL sports=63% active30=804",
+      "curve_score": 85.49000000000001,
+      "unique_roi": 13.4,
+      "take_n": 20,
+      "take_roi": -5.99,
+      "active_30d": 804,
+      "median": 461.54,
+      "sports_frac": 0.63,
+      "top_sports": [
+        {
+          "key": "NFL",
+          "n": 458,
+          "roi": 22.6
+        },
+        {
+          "key": "NBA",
+          "n": 268,
+          "roi": 10.9
+        },
+        {
+          "key": "NHL",
+          "n": 217,
+          "roi": -3.9
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 1679.0,
+        "roi": 13.4,
+        "sharpe": 5.9,
+        "r2": 0.766,
+        "up_day_pct": 74.1,
+        "max_dd": -7783.17,
+        "calmar": 7.07,
+        "total_pnl": 55006.63,
+        "specialty": "SOCCER (EPL)",
+        "specialty_roi": 34.57,
+        "specialty_n": 28.0,
+        "specialty_sharpe": 4.63,
+        "last30_roi": 15.08,
+        "last30_n": 804
+      }
+    },
+    {
+      "username": "UAEVALORANTFAN",
+      "at": "2026-01-01T12:00:00+00:00",
+      "alert_ref": "2026-01-02T12:00:00+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=100 roi=30.2% spec=NBA,ESPORTS sports=82% emerging active30=66",
+      "curve_score": 100.0,
+      "unique_roi": 30.21,
+      "take_n": 5,
+      "take_roi": -32.87,
+      "active_30d": 66,
+      "median": 4349.17,
+      "sports_frac": 0.82,
+      "top_sports": [
+        {
+          "key": "NBA",
+          "n": 22,
+          "roi": 15.6
+        },
+        {
+          "key": "ESPORTS",
+          "n": 12,
+          "roi": 63.6
+        },
+        {
+          "key": "OTHER",
+          "n": 9,
+          "roi": 42.8
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 66.0,
+        "roi": 30.21,
+        "sharpe": 8.46,
+        "r2": 0.893,
+        "up_day_pct": 63.2,
+        "max_dd": -57399.13,
+        "calmar": 4.11,
+        "total_pnl": 236134.99,
+        "specialty": null,
+        "specialty_roi": null,
+        "specialty_n": null,
+        "specialty_sharpe": null,
+        "last30_roi": 30.21,
+        "last30_n": 66
+      }
+    },
+    {
+      "username": "JhonAlexanderHinestroza",
+      "at": "2026-01-30T01:18:12+00:00",
+      "alert_ref": "2026-01-31T01:18:12+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=100 roi=9.6% spec=SOCCER (Other),ESPORTS sports=66% emerging active30=273",
+      "curve_score": 100.0,
+      "unique_roi": 9.61,
+      "take_n": 9,
+      "take_roi": -12.45,
+      "active_30d": 273,
+      "median": 1576.77,
+      "sports_frac": 0.66,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 105,
+          "roi": 18.7
+        },
+        {
+          "key": "OTHER",
+          "n": 97,
+          "roi": 4.6
+        },
+        {
+          "key": "ESPORTS",
+          "n": 26,
+          "roi": 3.9
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 296.0,
+        "roi": 9.61,
+        "sharpe": 3.17,
+        "r2": 0.337,
+        "up_day_pct": 54.3,
+        "max_dd": -43381.94,
+        "calmar": 1.46,
+        "total_pnl": 63527.41,
+        "specialty": "SOCCER (EPL)",
+        "specialty_roi": 60.03,
+        "specialty_n": 23.0,
+        "specialty_sharpe": 14.31,
+        "last30_roi": 9.28,
+        "last30_n": 273
+      }
+    },
+    {
+      "username": "9sh8f",
+      "at": "2026-01-31T02:37:42+00:00",
+      "alert_ref": "2026-02-01T02:37:42+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=100 roi=6.0% spec=ESPORTS,NBA sports=92% emerging active30=189",
+      "curve_score": 100.0,
+      "unique_roi": 5.98,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "active_30d": 189,
+      "median": 2819.24,
+      "sports_frac": 0.92,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 157,
+          "roi": 22.1
+        },
+        {
+          "key": "OTHER",
+          "n": 13,
+          "roi": -10.4
+        },
+        {
+          "key": "NBA",
+          "n": 10,
+          "roi": 52.3
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 189.0,
+        "roi": 5.98,
+        "sharpe": 1.69,
+        "r2": 0.081,
+        "up_day_pct": 54.2,
+        "max_dd": -128421.74,
+        "calmar": 0.42,
+        "total_pnl": 54070.19,
+        "specialty": "ESPORTS",
+        "specialty_roi": 22.14,
+        "specialty_n": 157.0,
+        "specialty_sharpe": 7.85,
+        "last30_roi": 5.98,
+        "last30_n": 189
+      }
+    },
+    {
+      "username": "TheArena",
+      "at": "2026-02-01T01:48:46+00:00",
+      "alert_ref": "2026-02-02T01:48:46+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=76 roi=7.2% spec=ESPORTS sports=76% emerging active30=207",
+      "curve_score": 76.31,
+      "unique_roi": 7.25,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "active_30d": 207,
+      "median": 730.18,
+      "sports_frac": 0.76,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 154,
+          "roi": 10.8
+        },
+        {
+          "key": "OTHER",
+          "n": 43,
+          "roi": -6.2
+        },
+        {
+          "key": "NFL",
+          "n": 6,
+          "roi": -11.0
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 207.0,
+        "roi": 7.25,
+        "sharpe": 4.26,
+        "r2": 0.494,
+        "up_day_pct": 52.9,
+        "max_dd": -12589.82,
+        "calmar": 1.03,
+        "total_pnl": 13027.79,
+        "specialty": "ESPORTS",
+        "specialty_roi": 10.76,
+        "specialty_n": 154.0,
+        "specialty_sharpe": 4.97,
+        "last30_roi": 7.25,
+        "last30_n": 207
+      }
+    },
+    {
+      "username": "SineNooneEI",
+      "at": "2026-02-06T15:45:57+00:00",
+      "alert_ref": "2026-02-07T15:45:57+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=95 roi=37.8% spec=ESPORTS sports=100% emerging active30=33",
+      "curve_score": 94.63499999999999,
+      "unique_roi": 37.82,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "active_30d": 33,
+      "median": 4963.43,
+      "sports_frac": 1.0,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 33,
+          "roi": 37.8
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 33.0,
+        "roi": 37.82,
+        "sharpe": 19.02,
+        "r2": 0.509,
+        "up_day_pct": 100.0,
+        "max_dd": -32570.95,
+        "calmar": 3.7,
+        "total_pnl": 120419.11,
+        "specialty": null,
+        "specialty_roi": null,
+        "specialty_n": null,
+        "specialty_sharpe": null,
+        "last30_roi": 37.82,
+        "last30_n": 33
+      }
+    },
+    {
+      "username": "HedgeMaster88",
+      "at": "2026-02-26T12:00:00+00:00",
+      "alert_ref": "2026-02-27T12:00:00+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=84 roi=34.2% spec=SOCCER (Other),SOCCER (UCL) sports=97% emerging active30=29",
+      "curve_score": 84.135,
+      "unique_roi": 34.17,
+      "take_n": 1,
+      "take_roi": 98.42,
+      "active_30d": 29,
+      "median": 5740.0,
+      "sports_frac": 0.97,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 20,
+          "roi": 23.0
+        },
+        {
+          "key": "SOCCER (UCL)",
+          "n": 6,
+          "roi": 103.5
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 29.0,
+        "roi": 34.17,
+        "sharpe": 6.79,
+        "r2": 0.809,
+        "up_day_pct": 37.5,
+        "max_dd": -123762.23,
+        "calmar": 1.75,
+        "total_pnl": 216706.61,
+        "specialty": null,
+        "specialty_roi": null,
+        "specialty_n": null,
+        "specialty_sharpe": null,
+        "last30_roi": 34.17,
+        "last30_n": 29
+      }
+    },
+    {
+      "username": "TTdes",
+      "at": "2026-03-29T05:46:50+00:00",
+      "alert_ref": "2026-03-30T05:46:50+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=100 roi=8.9% spec=NHL,SOCCER (Other) sports=95% active30=220",
+      "curve_score": 100.0,
+      "unique_roi": 8.88,
+      "take_n": 1,
+      "take_roi": 57.19,
+      "active_30d": 220,
+      "median": 1010.5,
+      "sports_frac": 0.95,
+      "top_sports": [
+        {
+          "key": "NHL",
+          "n": 654,
+          "roi": 8.1
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 103,
+          "roi": -2.6
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 50,
+          "roi": 43.5
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 911.0,
+        "roi": 8.88,
+        "sharpe": 2.92,
+        "r2": 0.878,
+        "up_day_pct": 59.1,
+        "max_dd": -29819.84,
+        "calmar": 3.62,
+        "total_pnl": 107876.9,
+        "specialty": "SOCCER (EPL)",
+        "specialty_roi": 43.51,
+        "specialty_n": 50.0,
+        "specialty_sharpe": 9.04,
+        "last30_roi": 12.44,
+        "last30_n": 220
+      }
+    },
+    {
+      "username": "HVAB",
+      "at": "2026-07-25T02:02:00+00:00",
+      "alert_ref": "2026-07-26T02:02:00+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=92 roi=10.8% spec=TENNIS,SOCCER (Other) sports=61% emerging active30=169",
+      "curve_score": 92.07,
+      "unique_roi": 10.84,
+      "take_n": 2,
+      "take_roi": -25.41,
+      "active_30d": 169,
+      "median": 1232.01,
+      "sports_frac": 0.61,
+      "top_sports": [
+        {
+          "key": "TENNIS",
+          "n": 148,
+          "roi": 11.2
+        },
+        {
+          "key": "OTHER",
+          "n": 109,
+          "roi": 11.4
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 19,
+          "roi": -3.8
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 277.0,
+        "roi": 10.84,
+        "sharpe": 3.83,
+        "r2": 0.479,
+        "up_day_pct": 68.6,
+        "max_dd": -31360.61,
+        "calmar": 2.12,
+        "total_pnl": 66477.12,
+        "specialty": "TENNIS",
+        "specialty_roi": 11.22,
+        "specialty_n": 148.0,
+        "specialty_sharpe": 3.52,
+        "last30_roi": 13.94,
+        "last30_n": 169
+      }
+    }
+  ],
+  "recent_roster_changes": [
+    {
+      "username": "JhonAlexanderHinestroza",
+      "at": "2026-08-31T17:27:15.054475+00:00",
+      "action": "kick",
+      "from": "elite",
+      "to": "none",
+      "why": "stale_30d_n=0",
+      "curve_score": 81.16,
+      "active_30d": 0,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 412,
+          "roi": 15.7
+        },
+        {
+          "key": "OTHER",
+          "n": 240,
+          "roi": 18.1
+        },
+        {
+          "key": "ESPORTS",
+          "n": 126,
+          "roi": 8.6
+        }
+      ]
+    },
+    {
+      "username": "Vetch",
+      "at": "2026-08-31T17:26:59.274262+00:00",
+      "action": "kick",
+      "from": "elite",
+      "to": "none",
+      "why": "stale_30d_n=0",
+      "curve_score": 83.58500000000001,
+      "active_30d": 0,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 187,
+          "roi": 15.6
+        },
+        {
+          "key": "NBA",
+          "n": 137,
+          "roi": 14.0
+        },
+        {
+          "key": "TENNIS",
+          "n": 114,
+          "roi": 6.5
+        }
+      ]
+    },
+    {
+      "username": "Supah9ga",
+      "at": "2026-08-31T17:26:51.553566+00:00",
+      "action": "kick",
+      "from": "elite",
+      "to": "none",
+      "why": "stale_30d_n=0",
+      "curve_score": 83.75999999999999,
+      "active_30d": 0,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 118,
+          "roi": 19.1
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 82,
+          "roi": 59.1
+        },
+        {
+          "key": "ESPORTS",
+          "n": 71,
+          "roi": 19.9
+        }
+      ]
+    },
+    {
+      "username": "HVAB",
+      "at": "2026-08-29T00:11:49+00:00",
+      "alert_ref": "2026-08-30T00:11:49+00:00",
+      "action": "promote_elite",
+      "from": "scout",
+      "to": "elite",
+      "why": "elite curve-book unique=16.7% spec=TENNIS@17.4% take=34/-2.1% curve=100 wr_band active30=229",
+      "curve_score": 100.0,
+      "unique_roi": 16.69,
+      "take_n": 34,
+      "take_roi": -2.09,
+      "active_30d": 229,
+      "median": 1733.66,
+      "sports_frac": 0.62,
+      "top_sports": [
+        {
+          "key": "TENNIS",
+          "n": 308,
+          "roi": 17.4
+        },
+        {
+          "key": "OTHER",
+          "n": 201,
+          "roi": 15.3
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 20,
+          "roi": 0.3
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 531.0,
+        "roi": 16.69,
+        "sharpe": 4.7,
+        "r2": 0.821,
+        "up_day_pct": 71.4,
+        "max_dd": -45585.85,
+        "calmar": 11.03,
+        "total_pnl": 502991.39,
+        "specialty": "TENNIS",
+        "specialty_roi": 17.44,
+        "specialty_n": 308.0,
+        "specialty_sharpe": 3.7,
+        "last30_roi": 18.81,
+        "last30_n": 229
+      }
+    },
+    {
+      "username": "HVAB",
+      "at": "2026-08-25T00:41:57+00:00",
+      "alert_ref": "2026-08-26T00:41:57+00:00",
+      "action": "promote_scout",
+      "from": "elite",
+      "to": "scout",
+      "why": "scout curve=94 roi=12.4% spec=TENNIS,SOCCER (Other) sports=63% emerging active30=214",
+      "curve_score": 93.985,
+      "unique_roi": 12.44,
+      "take_n": 32,
+      "take_roi": -8.76,
+      "active_30d": 214,
+      "median": 1683.86,
+      "sports_frac": 0.63,
+      "top_sports": [
+        {
+          "key": "TENNIS",
+          "n": 291,
+          "roi": 10.8
+        },
+        {
+          "key": "OTHER",
+          "n": 187,
+          "roi": 16.3
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 20,
+          "roi": 0.3
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 500.0,
+        "roi": 12.44,
+        "sharpe": 4.09,
+        "r2": 0.799,
+        "up_day_pct": 70.0,
+        "max_dd": -45585.85,
+        "calmar": 7.3,
+        "total_pnl": 332930.46,
+        "specialty": null,
+        "specialty_roi": null,
+        "specialty_n": null,
+        "specialty_sharpe": null,
+        "last30_roi": 13.08,
+        "last30_n": 214
+      }
+    },
+    {
+      "username": "HVAB",
+      "at": "2026-08-13T00:58:58+00:00",
+      "alert_ref": "2026-08-14T00:58:58+00:00",
+      "action": "promote_elite",
+      "from": "scout",
+      "to": "elite",
+      "why": "elite take=12/11.7% spec=TENNIS@19.8% curve=100 wr_band active30=166",
+      "curve_score": 100.0,
+      "unique_roi": 17.56,
+      "take_n": 12,
+      "take_roi": 11.67,
+      "active_30d": 166,
+      "median": 1463.3,
+      "sports_frac": 0.6,
+      "top_sports": [
+        {
+          "key": "TENNIS",
+          "n": 218,
+          "roi": 19.8
+        },
+        {
+          "key": "OTHER",
+          "n": 157,
+          "roi": 13.3
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 20,
+          "roi": 0.3
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 397.0,
+        "roi": 17.56,
+        "sharpe": 3.7,
+        "r2": 0.604,
+        "up_day_pct": 70.6,
+        "max_dd": -45585.85,
+        "calmar": 5.62,
+        "total_pnl": 256349.27,
+        "specialty": "TENNIS",
+        "specialty_roi": 19.8,
+        "specialty_n": 218.0,
+        "specialty_sharpe": 3.08,
+        "last30_roi": 23.42,
+        "last30_n": 166
+      }
+    },
+    {
+      "username": "HVAB",
+      "at": "2026-07-25T02:02:00+00:00",
+      "alert_ref": "2026-07-26T02:02:00+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=92 roi=10.8% spec=TENNIS,SOCCER (Other) sports=61% emerging active30=169",
+      "curve_score": 92.07,
+      "unique_roi": 10.84,
+      "take_n": 2,
+      "take_roi": -25.41,
+      "active_30d": 169,
+      "median": 1232.01,
+      "sports_frac": 0.61,
+      "top_sports": [
+        {
+          "key": "TENNIS",
+          "n": 148,
+          "roi": 11.2
+        },
+        {
+          "key": "OTHER",
+          "n": 109,
+          "roi": 11.4
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 19,
+          "roi": -3.8
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 277.0,
+        "roi": 10.84,
+        "sharpe": 3.83,
+        "r2": 0.479,
+        "up_day_pct": 68.6,
+        "max_dd": -31360.61,
+        "calmar": 2.12,
+        "total_pnl": 66477.12,
+        "specialty": "TENNIS",
+        "specialty_roi": 11.22,
+        "specialty_n": 148.0,
+        "specialty_sharpe": 3.52,
+        "last30_roi": 13.94,
+        "last30_n": 169
+      }
+    },
+    {
+      "username": "ShortFlutterStock",
+      "at": "2026-06-19T12:00:00+00:00",
+      "alert_ref": "2026-06-20T12:00:00+00:00",
+      "action": "kick",
+      "from": "elite",
+      "to": "none",
+      "why": "stale_30d_n=0",
+      "curve_score": 85.58,
+      "unique_roi": 8.52,
+      "take_n": 224,
+      "take_roi": 31.73,
+      "active_30d": 0,
+      "median": 2917.31,
+      "sports_frac": 0.84,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 1914,
+          "roi": 15.1
+        },
+        {
+          "key": "NHL",
+          "n": 382,
+          "roi": 1.5
+        },
+        {
+          "key": "OTHER",
+          "n": 349,
+          "roi": 1.5
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 3172.0,
+        "roi": 8.52,
+        "sharpe": 3.48,
+        "r2": 0.941,
+        "up_day_pct": 52.9,
+        "max_dd": -325342.01,
+        "calmar": 4.77,
+        "total_pnl": 1552301.62,
+        "specialty": "ESPORTS",
+        "specialty_roi": 15.14,
+        "specialty_n": 1914.0,
+        "specialty_sharpe": 4.59,
+        "last30_roi": 0.0,
+        "last30_n": 0
+      }
+    },
+    {
+      "username": "TTdes",
+      "at": "2026-04-13T09:40:49+00:00",
+      "alert_ref": "2026-04-14T09:40:49+00:00",
+      "action": "kick",
+      "from": "scout",
+      "to": "none",
+      "why": "drop score=100 active30=215 sports=95% take=15/-41.8",
+      "curve_score": 100.0,
+      "unique_roi": 8.55,
+      "take_n": 15,
+      "take_roi": -41.83,
+      "active_30d": 215,
+      "median": 1018.18,
+      "sports_frac": 0.95,
+      "top_sports": [
+        {
+          "key": "NHL",
+          "n": 752,
+          "roi": 7.3
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 109,
+          "roi": 8.1
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 50,
+          "roi": 43.5
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 1020.0,
+        "roi": 8.55,
+        "sharpe": 2.05,
+        "r2": 0.805,
+        "up_day_pct": 59.2,
+        "max_dd": -68102.53,
+        "calmar": 1.92,
+        "total_pnl": 130891.36,
+        "specialty": "SOCCER (EPL)",
+        "specialty_roi": 43.51,
+        "specialty_n": 50.0,
+        "specialty_sharpe": 9.04,
+        "last30_roi": 10.85,
+        "last30_n": 215
+      }
+    },
+    {
+      "username": "TTdes",
+      "at": "2026-03-29T05:46:50+00:00",
+      "alert_ref": "2026-03-30T05:46:50+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=100 roi=8.9% spec=NHL,SOCCER (Other) sports=95% active30=220",
+      "curve_score": 100.0,
+      "unique_roi": 8.88,
+      "take_n": 1,
+      "take_roi": 57.19,
+      "active_30d": 220,
+      "median": 1010.5,
+      "sports_frac": 0.95,
+      "top_sports": [
+        {
+          "key": "NHL",
+          "n": 654,
+          "roi": 8.1
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 103,
+          "roi": -2.6
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 50,
+          "roi": 43.5
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 911.0,
+        "roi": 8.88,
+        "sharpe": 2.92,
+        "r2": 0.878,
+        "up_day_pct": 59.1,
+        "max_dd": -29819.84,
+        "calmar": 3.62,
+        "total_pnl": 107876.9,
+        "specialty": "SOCCER (EPL)",
+        "specialty_roi": 43.51,
+        "specialty_n": 50.0,
+        "specialty_sharpe": 9.04,
+        "last30_roi": 12.44,
+        "last30_n": 220
+      }
+    },
+    {
+      "username": "Andromeda1",
+      "at": "2026-03-27T07:32:35+00:00",
+      "alert_ref": "2026-03-28T07:32:35+00:00",
+      "action": "kick",
+      "from": "scout",
+      "to": "none",
+      "why": "life_floor_recent_roi=-18.3_n=40",
+      "curve_score": 92.1,
+      "unique_roi": 7.03,
+      "take_n": 78,
+      "take_roi": -18.29,
+      "active_30d": 266,
+      "median": 2977.76,
+      "sports_frac": 0.87,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 985,
+          "roi": 8.1
+        },
+        {
+          "key": "OTHER",
+          "n": 181,
+          "roi": 3.6
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 110,
+          "roi": 8.1
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 1617.0,
+        "roi": 7.03,
+        "sharpe": 2.48,
+        "r2": 0.849,
+        "up_day_pct": 60.5,
+        "max_dd": -261516.08,
+        "calmar": 2.7,
+        "total_pnl": 705860.84,
+        "specialty": "NBA",
+        "specialty_roi": 39.56,
+        "specialty_n": 26.0,
+        "specialty_sharpe": 4.88,
+        "last30_roi": 14.37,
+        "last30_n": 266
+      }
+    },
+    {
+      "username": "Andromeda1",
+      "at": "2026-03-27T07:32:35+00:00",
+      "alert_ref": "2026-03-28T07:32:35+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=92 roi=7.0% spec=ESPORTS,SOCCER (EPL) sports=87% active30=265",
+      "curve_score": 92.1,
+      "unique_roi": 7.03,
+      "take_n": 78,
+      "take_roi": -18.29,
+      "active_30d": 265,
+      "median": 2977.76,
+      "sports_frac": 0.87,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 984,
+          "roi": 8.1
+        },
+        {
+          "key": "OTHER",
+          "n": 181,
+          "roi": 3.6
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 110,
+          "roi": 8.1
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 1616.0,
+        "roi": 7.03,
+        "sharpe": 2.48,
+        "r2": 0.849,
+        "up_day_pct": 60.5,
+        "max_dd": -261516.08,
+        "calmar": 2.7,
+        "total_pnl": 705713.12,
+        "specialty": "NBA",
+        "specialty_roi": 39.56,
+        "specialty_n": 26.0,
+        "specialty_sharpe": 4.88,
+        "last30_roi": 14.36,
+        "last30_n": 265
+      }
+    },
+    {
+      "username": "9sh8f",
+      "at": "2026-03-24T12:00:00+00:00",
+      "alert_ref": "2026-03-25T12:00:00+00:00",
+      "action": "kick",
+      "from": "scout",
+      "to": "none",
+      "why": "scout_unique_roi=4.9",
+      "curve_score": 74.44,
+      "unique_roi": 4.94,
+      "take_n": 8,
+      "take_roi": 10.42,
+      "active_30d": 245,
+      "median": 7344.5,
+      "sports_frac": 0.92,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 555,
+          "roi": 7.4
+        },
+        {
+          "key": "OTHER",
+          "n": 47,
+          "roi": -17.4
+        },
+        {
+          "key": "NBA",
+          "n": 29,
+          "roi": 1.8
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 650.0,
+        "roi": 4.94,
+        "sharpe": 2.56,
+        "r2": 0.815,
+        "up_day_pct": 54.4,
+        "max_dd": -212970.31,
+        "calmar": 1.54,
+        "total_pnl": 327356.34,
+        "specialty": "ESPORTS",
+        "specialty_roi": 7.36,
+        "specialty_n": 555.0,
+        "specialty_sharpe": 3.72,
+        "last30_roi": 4.88,
+        "last30_n": 245
+      }
+    },
+    {
+      "username": "Supah9ga",
+      "at": "2026-03-22T06:53:27+00:00",
+      "alert_ref": "2026-03-23T06:53:27+00:00",
+      "action": "promote_elite",
+      "from": "scout",
+      "to": "elite",
+      "why": "elite take=15/74.1% spec=SOCCER (Other)@25.2% curve=94 wr_band active30=90",
+      "curve_score": 93.71000000000001,
+      "unique_roi": 19.22,
+      "take_n": 15,
+      "take_roi": 74.12,
+      "active_30d": 90,
+      "median": 5549.7,
+      "sports_frac": 0.85,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 110,
+          "roi": 25.2
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 79,
+          "roi": 47.1
+        },
+        {
+          "key": "NBA",
+          "n": 65,
+          "roi": -9.0
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 491.0,
+        "roi": 19.22,
+        "sharpe": 3.71,
+        "r2": 0.65,
+        "up_day_pct": 53.1,
+        "max_dd": -183149.19,
+        "calmar": 4.52,
+        "total_pnl": 827028.57,
+        "specialty": "SOCCER (EPL)",
+        "specialty_roi": 47.08,
+        "specialty_n": 79.0,
+        "specialty_sharpe": 5.93,
+        "last30_roi": 30.19,
+        "last30_n": 90
+      }
+    },
+    {
+      "username": "ShortFlutterStock",
+      "at": "2026-03-21T12:00:00+00:00",
+      "alert_ref": "2026-03-22T12:00:00+00:00",
+      "action": "promote_elite",
+      "from": "none",
+      "to": "elite",
+      "why": "elite take=193/18.0% spec=ESPORTS@14.7% curve=78 wr_band active30=686",
+      "curve_score": 77.91,
+      "unique_roi": 9.31,
+      "take_n": 193,
+      "take_roi": 18.03,
+      "active_30d": 686,
+      "median": 2831.76,
+      "sports_frac": 0.82,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 1642,
+          "roi": 14.7
+        },
+        {
+          "key": "OTHER",
+          "n": 329,
+          "roi": 0.4
+        },
+        {
+          "key": "NBA",
+          "n": 235,
+          "roi": -7.7
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 2657.0,
+        "roi": 9.31,
+        "sharpe": 3.77,
+        "r2": 0.914,
+        "up_day_pct": 53.2,
+        "max_dd": -294625.3,
+        "calmar": 4.52,
+        "total_pnl": 1332487.97,
+        "specialty": "SOCCER (Other)",
+        "specialty_roi": 24.49,
+        "specialty_n": 76.0,
+        "specialty_sharpe": 3.24,
+        "last30_roi": 8.67,
+        "last30_n": 686
+      }
+    },
+    {
+      "username": "HedgeMaster88",
+      "at": "2026-03-12T12:00:00+00:00",
+      "alert_ref": "2026-03-13T12:00:00+00:00",
+      "action": "kick",
+      "from": "scout",
+      "to": "none",
+      "why": "drop score=97 active30=152 sports=87% take=20/-4.9",
+      "curve_score": 96.975,
+      "unique_roi": 25.95,
+      "take_n": 20,
+      "take_roi": -4.89,
+      "active_30d": 152,
+      "median": 11339.24,
+      "sports_frac": 0.87,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 100,
+          "roi": 3.2
+        },
+        {
+          "key": "OTHER",
+          "n": 20,
+          "roi": -1.1
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 12,
+          "roi": 57.6
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 152.0,
+        "roi": 25.95,
+        "sharpe": 8.84,
+        "r2": 0.665,
+        "up_day_pct": 59.1,
+        "max_dd": -251157.84,
+        "calmar": 3.37,
+        "total_pnl": 846623.67,
+        "specialty": null,
+        "specialty_roi": null,
+        "specialty_n": null,
+        "specialty_sharpe": null,
+        "last30_roi": 25.95,
+        "last30_n": 152
+      }
+    },
+    {
+      "username": "9sh8f",
+      "at": "2026-03-10T12:00:00+00:00",
+      "alert_ref": "2026-03-11T12:00:00+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=96 roi=5.0% spec=ESPORTS,NBA sports=93% emerging active30=243",
+      "curve_score": 95.65,
+      "unique_roi": 5.01,
+      "take_n": 8,
+      "take_roi": 10.42,
+      "active_30d": 243,
+      "median": 6083.83,
+      "sports_frac": 0.93,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 463,
+          "roi": 10.3
+        },
+        {
+          "key": "OTHER",
+          "n": 35,
+          "roi": -19.6
+        },
+        {
+          "key": "NBA",
+          "n": 20,
+          "roi": -14.1
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 535.0,
+        "roi": 5.01,
+        "sharpe": 2.37,
+        "r2": 0.72,
+        "up_day_pct": 56.4,
+        "max_dd": -212970.31,
+        "calmar": 1.12,
+        "total_pnl": 239050.75,
+        "specialty": "ESPORTS",
+        "specialty_roi": 10.26,
+        "specialty_n": 463.0,
+        "specialty_sharpe": 4.49,
+        "last30_roi": 5.76,
+        "last30_n": 243
+      }
+    },
+    {
+      "username": "TheArena",
+      "at": "2026-03-08T04:50:53+00:00",
+      "alert_ref": "2026-03-09T04:50:53+00:00",
+      "action": "kick",
+      "from": "scout",
+      "to": "none",
+      "why": "bleed_60d_n=36_roi=-29.0",
+      "curve_score": 96.465,
+      "unique_roi": 8.75,
+      "take_n": 36,
+      "take_roi": -29.05,
+      "active_30d": 392,
+      "median": 1077.21,
+      "sports_frac": 0.79,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 458,
+          "roi": 10.8
+        },
+        {
+          "key": "OTHER",
+          "n": 130,
+          "roi": 2.3
+        },
+        {
+          "key": "NBA",
+          "n": 19,
+          "roi": 36.1
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 639.0,
+        "roi": 8.75,
+        "sharpe": 4.44,
+        "r2": 0.647,
+        "up_day_pct": 58.0,
+        "max_dd": -36533.8,
+        "calmar": 2.9,
+        "total_pnl": 105943.97,
+        "specialty": "NBA",
+        "specialty_roi": 36.06,
+        "specialty_n": 19.0,
+        "specialty_sharpe": 7.46,
+        "last30_roi": 9.5,
+        "last30_n": 392
+      }
+    },
+    {
+      "username": "TheArena",
+      "at": "2026-03-08T04:50:53+00:00",
+      "alert_ref": "2026-03-09T04:50:53+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=96 roi=8.7% spec=ESPORTS,NBA sports=79% emerging active30=391",
+      "curve_score": 96.465,
+      "unique_roi": 8.66,
+      "take_n": 36,
+      "take_roi": -29.05,
+      "active_30d": 391,
+      "median": 1083.63,
+      "sports_frac": 0.79,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 457,
+          "roi": 10.7
+        },
+        {
+          "key": "OTHER",
+          "n": 130,
+          "roi": 2.3
+        },
+        {
+          "key": "NBA",
+          "n": 19,
+          "roi": 36.1
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 638.0,
+        "roi": 8.66,
+        "sharpe": 4.41,
+        "r2": 0.646,
+        "up_day_pct": 58.0,
+        "max_dd": -36533.8,
+        "calmar": 2.87,
+        "total_pnl": 104774.33,
+        "specialty": "NBA",
+        "specialty_roi": 36.06,
+        "specialty_n": 19.0,
+        "specialty_sharpe": 7.46,
+        "last30_roi": 9.39,
+        "last30_n": 391
+      }
+    },
+    {
+      "username": "Andromeda1",
+      "at": "2026-03-03T12:00:00+00:00",
+      "alert_ref": "2026-03-04T12:00:00+00:00",
+      "action": "kick",
+      "from": "scout",
+      "to": "none",
+      "why": "life_floor_recent_roi=-18.3_n=40",
+      "curve_score": 95.305,
+      "unique_roi": 7.02,
+      "take_n": 78,
+      "take_roi": -18.29,
+      "active_30d": 214,
+      "median": 2771.74,
+      "sports_frac": 0.85,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 791,
+          "roi": 8.0
+        },
+        {
+          "key": "OTHER",
+          "n": 174,
+          "roi": 8.2
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 110,
+          "roi": 8.1
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 1388.0,
+        "roi": 7.02,
+        "sharpe": 2.48,
+        "r2": 0.768,
+        "up_day_pct": 59.6,
+        "max_dd": -261516.08,
+        "calmar": 2.17,
+        "total_pnl": 566525.86,
+        "specialty": "NHL",
+        "specialty_roi": 40.41,
+        "specialty_n": 19.0,
+        "specialty_sharpe": 5.85,
+        "last30_roi": 5.85,
+        "last30_n": 214
+      }
+    },
+    {
+      "username": "Andromeda1",
+      "at": "2026-03-03T07:09:09+00:00",
+      "alert_ref": "2026-03-04T07:09:09+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=95 roi=7.0% spec=ESPORTS,SOCCER (EPL) sports=85% active30=214",
+      "curve_score": 95.305,
+      "unique_roi": 7.02,
+      "take_n": 78,
+      "take_roi": -18.29,
+      "active_30d": 214,
+      "median": 2771.74,
+      "sports_frac": 0.85,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 791,
+          "roi": 8.0
+        },
+        {
+          "key": "OTHER",
+          "n": 174,
+          "roi": 8.2
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 110,
+          "roi": 8.1
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 1388.0,
+        "roi": 7.02,
+        "sharpe": 2.48,
+        "r2": 0.768,
+        "up_day_pct": 59.6,
+        "max_dd": -261516.08,
+        "calmar": 2.17,
+        "total_pnl": 566525.86,
+        "specialty": "NHL",
+        "specialty_roi": 40.41,
+        "specialty_n": 19.0,
+        "specialty_sharpe": 5.85,
+        "last30_roi": 5.85,
+        "last30_n": 214
+      }
+    },
+    {
+      "username": "ShortFlutterStock",
+      "at": "2026-02-28T12:00:00+00:00",
+      "alert_ref": "2026-03-01T12:00:00+00:00",
+      "action": "kick",
+      "from": "scout",
+      "to": "none",
+      "why": "recent_cold take40=-11.4_life=8.3",
+      "curve_score": 100.0,
+      "unique_roi": 10.43,
+      "take_n": 101,
+      "take_roi": -11.44,
+      "active_30d": 1322,
+      "median": 2656.66,
+      "sports_frac": 0.81,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 1396,
+          "roi": 17.7
+        },
+        {
+          "key": "OTHER",
+          "n": 281,
+          "roi": 2.6
+        },
+        {
+          "key": "NBA",
+          "n": 229,
+          "roi": -7.7
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 2287.0,
+        "roi": 10.43,
+        "sharpe": 4.63,
+        "r2": 0.875,
+        "up_day_pct": 54.4,
+        "max_dd": -294625.3,
+        "calmar": 3.96,
+        "total_pnl": 1167318.83,
+        "specialty": "ESPORTS",
+        "specialty_roi": 17.69,
+        "specialty_n": 1396.0,
+        "specialty_sharpe": 6.18,
+        "last30_roi": 16.63,
+        "last30_n": 1322
+      }
+    },
+    {
+      "username": "ShortFlutterStock",
+      "at": "2026-02-27T10:07:05+00:00",
+      "alert_ref": "2026-02-28T10:07:05+00:00",
+      "action": "promote_scout",
+      "from": "elite",
+      "to": "scout",
+      "why": "scout curve=100 roi=9.2% spec=ESPORTS,NBA sports=82% emerging active30=1284",
+      "curve_score": 100.0,
+      "unique_roi": 9.24,
+      "take_n": 88,
+      "take_roi": 3.29,
+      "active_30d": 1284,
+      "median": 2589.39,
+      "sports_frac": 0.82,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 1358,
+          "roi": 17.0
+        },
+        {
+          "key": "OTHER",
+          "n": 254,
+          "roi": -4.0
+        },
+        {
+          "key": "NBA",
+          "n": 224,
+          "roi": -8.8
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 2217.0,
+        "roi": 9.24,
+        "sharpe": 3.9,
+        "r2": 0.863,
+        "up_day_pct": 53.9,
+        "max_dd": -294625.3,
+        "calmar": 3.35,
+        "total_pnl": 988449.88,
+        "specialty": "ESPORTS",
+        "specialty_roi": 16.99,
+        "specialty_n": 1358.0,
+        "specialty_sharpe": 5.76,
+        "last30_roi": 15.79,
+        "last30_n": 1284
+      }
+    },
+    {
+      "username": "HedgeMaster88",
+      "at": "2026-02-26T12:00:00+00:00",
+      "alert_ref": "2026-02-27T12:00:00+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=84 roi=34.2% spec=SOCCER (Other),SOCCER (UCL) sports=97% emerging active30=29",
+      "curve_score": 84.135,
+      "unique_roi": 34.17,
+      "take_n": 1,
+      "take_roi": 98.42,
+      "active_30d": 29,
+      "median": 5740.0,
+      "sports_frac": 0.97,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 20,
+          "roi": 23.0
+        },
+        {
+          "key": "SOCCER (UCL)",
+          "n": 6,
+          "roi": 103.5
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 29.0,
+        "roi": 34.17,
+        "sharpe": 6.79,
+        "r2": 0.809,
+        "up_day_pct": 37.5,
+        "max_dd": -123762.23,
+        "calmar": 1.75,
+        "total_pnl": 216706.61,
+        "specialty": null,
+        "specialty_roi": null,
+        "specialty_n": null,
+        "specialty_sharpe": null,
+        "last30_roi": 34.17,
+        "last30_n": 29
+      }
+    },
+    {
+      "username": "ShortFlutterStock",
+      "at": "2026-02-26T04:45:12+00:00",
+      "alert_ref": "2026-02-27T04:45:12+00:00",
+      "action": "promote_elite",
+      "from": "scout",
+      "to": "elite",
+      "why": "elite take=82/7.3% spec=ESPORTS@17.8% curve=100 wr_band active30=1301",
+      "curve_score": 100.0,
+      "unique_roi": 10.28,
+      "take_n": 82,
+      "take_roi": 7.33,
+      "active_30d": 1301,
+      "median": 2576.72,
+      "sports_frac": 0.82,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 1344,
+          "roi": 17.8
+        },
+        {
+          "key": "OTHER",
+          "n": 249,
+          "roi": 0.5
+        },
+        {
+          "key": "NBA",
+          "n": 222,
+          "roi": -7.9
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 2196.0,
+        "roi": 10.28,
+        "sharpe": 4.42,
+        "r2": 0.859,
+        "up_day_pct": 54.5,
+        "max_dd": -294625.3,
+        "calmar": 3.68,
+        "total_pnl": 1085243.43,
+        "specialty": "ESPORTS",
+        "specialty_roi": 17.81,
+        "specialty_n": 1344.0,
+        "specialty_sharpe": 6.05,
+        "last30_roi": 17.66,
+        "last30_n": 1301
+      }
+    },
+    {
+      "username": "ShortFlutterStock",
+      "at": "2026-02-25T11:48:28+00:00",
+      "alert_ref": "2026-02-26T11:48:28+00:00",
+      "action": "promote_scout",
+      "from": "elite",
+      "to": "scout",
+      "why": "scout curve=100 roi=9.7% spec=ESPORTS,NBA sports=82% emerging active30=1277",
+      "curve_score": 100.0,
+      "unique_roi": 9.69,
+      "take_n": 70,
+      "take_roi": 2.1,
+      "active_30d": 1277,
+      "median": 2480.0,
+      "sports_frac": 0.82,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 1314,
+          "roi": 16.4
+        },
+        {
+          "key": "OTHER",
+          "n": 234,
+          "roi": -0.0
+        },
+        {
+          "key": "NBA",
+          "n": 220,
+          "roi": -6.0
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 2146.0,
+        "roi": 9.69,
+        "sharpe": 4.14,
+        "r2": 0.85,
+        "up_day_pct": 54.0,
+        "max_dd": -294625.3,
+        "calmar": 3.35,
+        "total_pnl": 987062.64,
+        "specialty": "ESPORTS",
+        "specialty_roi": 16.39,
+        "specialty_n": 1314.0,
+        "specialty_sharpe": 5.47,
+        "last30_roi": 17.49,
+        "last30_n": 1277
+      }
+    },
+    {
+      "username": "ShortFlutterStock",
+      "at": "2026-02-23T10:25:04+00:00",
+      "alert_ref": "2026-02-24T10:25:04+00:00",
+      "action": "promote_elite",
+      "from": "scout",
+      "to": "elite",
+      "why": "elite take=61/7.8% spec=ESPORTS@18.3% curve=100 wr_band active30=1307",
+      "curve_score": 100.0,
+      "unique_roi": 10.62,
+      "take_n": 61,
+      "take_roi": 7.79,
+      "active_30d": 1307,
+      "median": 2481.05,
+      "sports_frac": 0.82,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 1278,
+          "roi": 18.3
+        },
+        {
+          "key": "OTHER",
+          "n": 231,
+          "roi": 1.2
+        },
+        {
+          "key": "NBA",
+          "n": 219,
+          "roi": -7.7
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 2104.0,
+        "roi": 10.62,
+        "sharpe": 4.56,
+        "r2": 0.842,
+        "up_day_pct": 55.1,
+        "max_dd": -294625.3,
+        "calmar": 3.59,
+        "total_pnl": 1058108.29,
+        "specialty": "ESPORTS",
+        "specialty_roi": 18.32,
+        "specialty_n": 1278.0,
+        "specialty_sharpe": 6.16,
+        "last30_roi": 20.11,
+        "last30_n": 1307
+      }
+    },
+    {
+      "username": "DLEK",
+      "at": "2026-02-21T12:00:00+00:00",
+      "alert_ref": "2026-02-22T12:00:00+00:00",
+      "action": "kick",
+      "from": "scout",
+      "to": "none",
+      "why": "drop score=59 active30=235 sports=96% take=28/-8.8",
+      "curve_score": 58.575,
+      "unique_roi": 5.37,
+      "take_n": 28,
+      "take_roi": -8.84,
+      "active_30d": 235,
+      "median": 5422.6,
+      "sports_frac": 0.96,
+      "top_sports": [
+        {
+          "key": "NBA",
+          "n": 1011,
+          "roi": 7.1
+        },
+        {
+          "key": "WNBA",
+          "n": 87,
+          "roi": -5.5
+        },
+        {
+          "key": "SOCCER (LaLiga)",
+          "n": 74,
+          "roi": -7.4
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 1245.0,
+        "roi": 5.37,
+        "sharpe": 1.56,
+        "r2": 0.813,
+        "up_day_pct": 54.3,
+        "max_dd": -365104.62,
+        "calmar": 1.96,
+        "total_pnl": 717092.33,
+        "specialty": "NBA",
+        "specialty_roi": 7.07,
+        "specialty_n": 1011.0,
+        "specialty_sharpe": 2.09,
+        "last30_roi": 4.82,
+        "last30_n": 235
+      }
+    },
+    {
+      "username": "ShortFlutterStock",
+      "at": "2026-02-21T01:23:54+00:00",
+      "alert_ref": "2026-02-22T01:23:54+00:00",
+      "action": "promote_scout",
+      "from": "elite",
+      "to": "scout",
+      "why": "scout curve=84 roi=9.5% spec=ESPORTS,NBA sports=83% emerging active30=1291",
+      "curve_score": 84.375,
+      "unique_roi": 9.54,
+      "take_n": 50,
+      "take_roi": 2.1,
+      "active_30d": 1291,
+      "median": 2400.0,
+      "sports_frac": 0.83,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 1245,
+          "roi": 16.2
+        },
+        {
+          "key": "NBA",
+          "n": 213,
+          "roi": -9.7
+        },
+        {
+          "key": "OTHER",
+          "n": 197,
+          "roi": 1.6
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 2021.0,
+        "roi": 9.54,
+        "sharpe": 4.08,
+        "r2": 0.825,
+        "up_day_pct": 54.2,
+        "max_dd": -294625.3,
+        "calmar": 3.05,
+        "total_pnl": 897144.76,
+        "specialty": "SOCCER (Other)",
+        "specialty_roi": 17.5,
+        "specialty_n": 50.0,
+        "specialty_sharpe": 2.47,
+        "last30_roi": 17.53,
+        "last30_n": 1291
+      }
+    },
+    {
+      "username": "0xheavy888",
+      "at": "2026-02-16T12:21:25+00:00",
+      "alert_ref": "2026-02-17T12:21:25+00:00",
+      "action": "kick",
+      "from": "scout",
+      "to": "none",
+      "why": "drop score=78 active30=1515 sports=90% take=0/0.0",
+      "curve_score": 77.715,
+      "unique_roi": 6.83,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "active_30d": 1515,
+      "median": 1383.09,
+      "sports_frac": 0.9,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 3231,
+          "roi": 7.9
+        },
+        {
+          "key": "OTHER",
+          "n": 305,
+          "roi": 0.3
+        },
+        {
+          "key": "NBA",
+          "n": 142,
+          "roi": -1.9
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 3795.0,
+        "roi": 6.83,
+        "sharpe": 5.77,
+        "r2": 0.965,
+        "up_day_pct": 57.6,
+        "max_dd": -45181.22,
+        "calmar": 11.46,
+        "total_pnl": 517930.64,
+        "specialty": "ESPORTS",
+        "specialty_roi": 7.86,
+        "specialty_n": 3231.0,
+        "specialty_sharpe": 7.84,
+        "last30_roi": 7.98,
+        "last30_n": 1515
+      }
+    },
+    {
+      "username": "ShortFlutterStock",
+      "at": "2026-02-15T06:03:51+00:00",
+      "alert_ref": "2026-02-16T06:03:51+00:00",
+      "action": "promote_elite",
+      "from": "scout",
+      "to": "elite",
+      "why": "elite take=12/64.6% spec=ESPORTS@17.0% curve=81 wr_band active30=1269",
+      "curve_score": 81.215,
+      "unique_roi": 9.55,
+      "take_n": 12,
+      "take_roi": 64.6,
+      "active_30d": 1269,
+      "median": 2369.04,
+      "sports_frac": 0.82,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 1108,
+          "roi": 17.0
+        },
+        {
+          "key": "NBA",
+          "n": 209,
+          "roi": -11.6
+        },
+        {
+          "key": "OTHER",
+          "n": 185,
+          "roi": 4.3
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 1867.0,
+        "roi": 9.55,
+        "sharpe": 3.88,
+        "r2": 0.781,
+        "up_day_pct": 53.3,
+        "max_dd": -294625.3,
+        "calmar": 2.78,
+        "total_pnl": 820030.39,
+        "specialty": "SOCCER (Other)",
+        "specialty_roi": 17.5,
+        "specialty_n": 50.0,
+        "specialty_sharpe": 2.47,
+        "last30_roi": 17.5,
+        "last30_n": 1269
+      }
+    },
+    {
+      "username": "TheArena",
+      "at": "2026-02-15T02:08:21+00:00",
+      "alert_ref": "2026-02-16T02:08:21+00:00",
+      "action": "kick",
+      "from": "scout",
+      "to": "none",
+      "why": "hard_curve_collapse score=33",
+      "curve_score": 33.18,
+      "unique_roi": 2.23,
+      "take_n": 25,
+      "take_roi": -31.04,
+      "active_30d": 356,
+      "median": 819.18,
+      "sports_frac": 0.87,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 292,
+          "roi": 1.7
+        },
+        {
+          "key": "OTHER",
+          "n": 43,
+          "roi": -6.2
+        },
+        {
+          "key": "NBA",
+          "n": 11,
+          "roi": 76.0
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 372.0,
+        "roi": 2.23,
+        "sharpe": 1.1,
+        "r2": 0.692,
+        "up_day_pct": 54.8,
+        "max_dd": -36533.8,
+        "calmar": 0.24,
+        "total_pnl": 8920.24,
+        "specialty": null,
+        "specialty_roi": null,
+        "specialty_n": null,
+        "specialty_sharpe": null,
+        "last30_roi": 2.73,
+        "last30_n": 356
+      }
+    },
+    {
+      "username": "9sh8f",
+      "at": "2026-02-14T10:54:17+00:00",
+      "alert_ref": "2026-02-15T10:54:17+00:00",
+      "action": "kick",
+      "from": "scout",
+      "to": "none",
+      "why": "scout_unique_roi=2.9",
+      "curve_score": 98.545,
+      "unique_roi": 2.9,
+      "take_n": 8,
+      "take_roi": 10.42,
+      "active_30d": 259,
+      "median": 3587.19,
+      "sports_frac": 0.92,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 264,
+          "roi": 14.5
+        },
+        {
+          "key": "OTHER",
+          "n": 22,
+          "roi": -4.9
+        },
+        {
+          "key": "NBA",
+          "n": 16,
+          "roi": -41.7
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 313.0,
+        "roi": 2.9,
+        "sharpe": 1.19,
+        "r2": 0.544,
+        "up_day_pct": 51.4,
+        "max_dd": -137918.21,
+        "calmar": 0.42,
+        "total_pnl": 57851.93,
+        "specialty": "ESPORTS",
+        "specialty_roi": 14.5,
+        "specialty_n": 264.0,
+        "specialty_sharpe": 8.25,
+        "last30_roi": 6.69,
+        "last30_n": 259
+      }
+    },
+    {
+      "username": "JhonAlexanderHinestroza",
+      "at": "2026-02-10T17:07:11+00:00",
+      "alert_ref": "2026-02-11T17:07:11+00:00",
+      "action": "promote_elite",
+      "from": "scout",
+      "to": "elite",
+      "why": "elite take=12/15.9% spec=SOCCER (Other)@17.9% curve=98 wr_band active30=379",
+      "curve_score": 98.16499999999999,
+      "unique_roi": 15.84,
+      "take_n": 12,
+      "take_roi": 15.9,
+      "active_30d": 379,
+      "median": 2080.8,
+      "sports_frac": 0.69,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 170,
+          "roi": 17.9
+        },
+        {
+          "key": "OTHER",
+          "n": 135,
+          "roi": 22.3
+        },
+        {
+          "key": "ESPORTS",
+          "n": 65,
+          "roi": 8.5
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 462.0,
+        "roi": 15.84,
+        "sharpe": 5.39,
+        "r2": 0.692,
+        "up_day_pct": 58.7,
+        "max_dd": -50366.52,
+        "calmar": 4.0,
+        "total_pnl": 201459.52,
+        "specialty": "SOCCER (LaLiga)",
+        "specialty_roi": 36.75,
+        "specialty_n": 28.0,
+        "specialty_sharpe": 6.49,
+        "last30_roi": 17.63,
+        "last30_n": 379
+      }
+    },
+    {
+      "username": "Supah9ga",
+      "at": "2026-02-09T12:00:00+00:00",
+      "alert_ref": "2026-02-10T12:00:00+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=91 roi=6.6% spec=SOCCER (Other),SOCCER (EPL) sports=82% emerging active30=152",
+      "curve_score": 90.75999999999999,
+      "unique_roi": 6.63,
+      "take_n": 2,
+      "take_roi": 15.63,
+      "active_30d": 152,
+      "median": 5530.4,
+      "sports_frac": 0.82,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 77,
+          "roi": 10.1
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 63,
+          "roi": 21.0
+        },
+        {
+          "key": "NBA",
+          "n": 59,
+          "roi": -11.7
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 364.0,
+        "roi": 6.63,
+        "sharpe": 1.41,
+        "r2": 0.385,
+        "up_day_pct": 51.2,
+        "max_dd": -183149.19,
+        "calmar": 0.92,
+        "total_pnl": 169081.67,
+        "specialty": "SOCCER (EPL)",
+        "specialty_roi": 21.05,
+        "specialty_n": 63.0,
+        "specialty_sharpe": 3.35,
+        "last30_roi": 6.6,
+        "last30_n": 152
+      }
+    },
+    {
+      "username": "SineNooneEI",
+      "at": "2026-02-08T03:19:03+00:00",
+      "alert_ref": "2026-02-09T03:19:03+00:00",
+      "action": "kick",
+      "from": "scout",
+      "to": "none",
+      "why": "hard_unique_roi=-6.0",
+      "curve_score": 12.66,
+      "unique_roi": -6.0,
+      "take_n": 14,
+      "take_roi": -17.96,
+      "active_30d": 56,
+      "median": 8992.0,
+      "sports_frac": 1.0,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 56,
+          "roi": -6.0
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 56.0,
+        "roi": -6.0,
+        "sharpe": -1.37,
+        "r2": 0.044,
+        "up_day_pct": 83.3,
+        "max_dd": -220252.28,
+        "calmar": -0.21,
+        "total_pnl": -46229.96,
+        "specialty": null,
+        "specialty_roi": null,
+        "specialty_n": null,
+        "specialty_sharpe": null,
+        "last30_roi": -6.0,
+        "last30_n": 56
+      }
+    },
+    {
+      "username": "JhonAlexanderHinestroza",
+      "at": "2026-02-07T01:43:25+00:00",
+      "alert_ref": "2026-02-08T01:43:25+00:00",
+      "action": "promote_scout",
+      "from": "elite",
+      "to": "scout",
+      "why": "scout curve=100 roi=17.1% spec=SOCCER (Other),ESPORTS sports=70% emerging active30=373",
+      "curve_score": 100.0,
+      "unique_roi": 17.14,
+      "take_n": 10,
+      "take_roi": 20.21,
+      "active_30d": 373,
+      "median": 2137.4,
+      "sports_frac": 0.7,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 165,
+          "roi": 18.6
+        },
+        {
+          "key": "OTHER",
+          "n": 125,
+          "roi": 24.8
+        },
+        {
+          "key": "ESPORTS",
+          "n": 64,
+          "roi": 7.0
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 434.0,
+        "roi": 17.14,
+        "sharpe": 5.9,
+        "r2": 0.648,
+        "up_day_pct": 58.1,
+        "max_dd": -50366.52,
+        "calmar": 4.09,
+        "total_pnl": 206012.43,
+        "specialty": "SOCCER (EPL)",
+        "specialty_roi": 69.82,
+        "specialty_n": 29.0,
+        "specialty_sharpe": 11.15,
+        "last30_roi": 16.71,
+        "last30_n": 373
+      }
+    },
+    {
+      "username": "SineNooneEI",
+      "at": "2026-02-06T15:45:57+00:00",
+      "alert_ref": "2026-02-07T15:45:57+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=95 roi=37.8% spec=ESPORTS sports=100% emerging active30=33",
+      "curve_score": 94.63499999999999,
+      "unique_roi": 37.82,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "active_30d": 33,
+      "median": 4963.43,
+      "sports_frac": 1.0,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 33,
+          "roi": 37.8
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 33.0,
+        "roi": 37.82,
+        "sharpe": 19.02,
+        "r2": 0.509,
+        "up_day_pct": 100.0,
+        "max_dd": -32570.95,
+        "calmar": 3.7,
+        "total_pnl": 120419.11,
+        "specialty": null,
+        "specialty_roi": null,
+        "specialty_n": null,
+        "specialty_sharpe": null,
+        "last30_roi": 37.82,
+        "last30_n": 33
+      }
+    },
+    {
+      "username": "ShortFlutterStock",
+      "at": "2026-02-06T12:00:00+00:00",
+      "alert_ref": "2026-02-07T12:00:00+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=82 roi=5.1% spec=ESPORTS,NBA sports=77% emerging active30=781",
+      "curve_score": 82.13,
+      "unique_roi": 5.07,
+      "take_n": 3,
+      "take_roi": -100.0,
+      "active_30d": 781,
+      "median": 2719.38,
+      "sports_frac": 0.77,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 591,
+          "roi": 10.2
+        },
+        {
+          "key": "NBA",
+          "n": 171,
+          "roi": -14.6
+        },
+        {
+          "key": "OTHER",
+          "n": 167,
+          "roi": 1.7
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 1233.0,
+        "roi": 5.07,
+        "sharpe": 2.14,
+        "r2": 0.294,
+        "up_day_pct": 50.6,
+        "max_dd": -294625.3,
+        "calmar": 1.08,
+        "total_pnl": 317127.21,
+        "specialty": "SOCCER (Other)",
+        "specialty_roi": 19.45,
+        "specialty_n": 31.0,
+        "specialty_sharpe": 2.75,
+        "last30_roi": 11.89,
+        "last30_n": 781
+      }
+    },
+    {
+      "username": "JhonAlexanderHinestroza",
+      "at": "2026-02-04T00:24:33+00:00",
+      "alert_ref": "2026-02-05T00:24:33+00:00",
+      "action": "promote_elite",
+      "from": "scout",
+      "to": "elite",
+      "why": "elite curve-book unique=12.3% spec=SOCCER (Other)@12.7% take=12/2.2% curve=100 wr_band active30=360",
+      "curve_score": 100.0,
+      "unique_roi": 12.26,
+      "take_n": 12,
+      "take_roi": 2.17,
+      "active_30d": 360,
+      "median": 1986.8,
+      "sports_frac": 0.7,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 151,
+          "roi": 12.7
+        },
+        {
+          "key": "OTHER",
+          "n": 117,
+          "roi": 14.8
+        },
+        {
+          "key": "ESPORTS",
+          "n": 60,
+          "roi": 0.2
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 403.0,
+        "roi": 12.26,
+        "sharpe": 4.27,
+        "r2": 0.662,
+        "up_day_pct": 55.0,
+        "max_dd": -50366.52,
+        "calmar": 2.51,
+        "total_pnl": 126573.86,
+        "specialty": "SOCCER (EPL)",
+        "specialty_roi": 72.13,
+        "specialty_n": 26.0,
+        "specialty_sharpe": 10.92,
+        "last30_roi": 11.48,
+        "last30_n": 360
+      }
+    },
+    {
+      "username": "kch123",
+      "at": "2026-02-02T19:09:50+00:00",
+      "alert_ref": "2026-02-03T19:09:50+00:00",
+      "action": "kick",
+      "from": "scout",
+      "to": "none",
+      "why": "drop score=74 active30=760 sports=70% take=17/3.6",
+      "curve_score": 74.42,
+      "unique_roi": 7.78,
+      "take_n": 17,
+      "take_roi": 3.64,
+      "active_30d": 760,
+      "median": 11872.36,
+      "sports_frac": 0.7,
+      "top_sports": [
+        {
+          "key": "NHL",
+          "n": 1573,
+          "roi": 7.0
+        },
+        {
+          "key": "NFL",
+          "n": 575,
+          "roi": -0.8
+        },
+        {
+          "key": "OTHER",
+          "n": 228,
+          "roi": 21.1
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 2691.0,
+        "roi": 7.78,
+        "sharpe": 3.69,
+        "r2": 0.883,
+        "up_day_pct": 57.9,
+        "max_dd": -3139472.61,
+        "calmar": 2.72,
+        "total_pnl": 8528844.51,
+        "specialty": "NBA",
+        "specialty_roi": 12.55,
+        "specialty_n": 114.0,
+        "specialty_sharpe": 2.79,
+        "last30_roi": 9.02,
+        "last30_n": 760
+      }
+    },
+    {
+      "username": "ShucksIt69",
+      "at": "2026-02-02T06:38:54+00:00",
+      "alert_ref": "2026-02-03T06:38:54+00:00",
+      "action": "kick",
+      "from": "elite",
+      "to": "none",
+      "why": "drop score=80 active30=370 sports=82% take=12/35.7",
+      "curve_score": 79.92,
+      "unique_roi": 5.53,
+      "take_n": 12,
+      "take_roi": 35.69,
+      "active_30d": 370,
+      "median": 6797.56,
+      "sports_frac": 0.82,
+      "top_sports": [
+        {
+          "key": "NBA",
+          "n": 714,
+          "roi": 6.8
+        },
+        {
+          "key": "NFL",
+          "n": 192,
+          "roi": 4.6
+        },
+        {
+          "key": "MLB",
+          "n": 107,
+          "roi": 34.3
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 1099.0,
+        "roi": 5.53,
+        "sharpe": 2.2,
+        "r2": 0.827,
+        "up_day_pct": 52.6,
+        "max_dd": -388477.63,
+        "calmar": 1.96,
+        "total_pnl": 760736.5,
+        "specialty": "MLB",
+        "specialty_roi": 34.28,
+        "specialty_n": 107.0,
+        "specialty_sharpe": 6.41,
+        "last30_roi": 4.49,
+        "last30_n": 370
+      }
+    },
+    {
+      "username": "TheArena",
+      "at": "2026-02-01T01:48:46+00:00",
+      "alert_ref": "2026-02-02T01:48:46+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=76 roi=7.2% spec=ESPORTS sports=76% emerging active30=207",
+      "curve_score": 76.31,
+      "unique_roi": 7.25,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "active_30d": 207,
+      "median": 730.18,
+      "sports_frac": 0.76,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 154,
+          "roi": 10.8
+        },
+        {
+          "key": "OTHER",
+          "n": 43,
+          "roi": -6.2
+        },
+        {
+          "key": "NFL",
+          "n": 6,
+          "roi": -11.0
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 207.0,
+        "roi": 7.25,
+        "sharpe": 4.26,
+        "r2": 0.494,
+        "up_day_pct": 52.9,
+        "max_dd": -12589.82,
+        "calmar": 1.03,
+        "total_pnl": 13027.79,
+        "specialty": "ESPORTS",
+        "specialty_roi": 10.76,
+        "specialty_n": 154.0,
+        "specialty_sharpe": 4.97,
+        "last30_roi": 7.25,
+        "last30_n": 207
+      }
+    },
+    {
+      "username": "9sh8f",
+      "at": "2026-01-31T02:37:42+00:00",
+      "alert_ref": "2026-02-01T02:37:42+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=100 roi=6.0% spec=ESPORTS,NBA sports=92% emerging active30=189",
+      "curve_score": 100.0,
+      "unique_roi": 5.98,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "active_30d": 189,
+      "median": 2819.24,
+      "sports_frac": 0.92,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 157,
+          "roi": 22.1
+        },
+        {
+          "key": "OTHER",
+          "n": 13,
+          "roi": -10.4
+        },
+        {
+          "key": "NBA",
+          "n": 10,
+          "roi": 52.3
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 189.0,
+        "roi": 5.98,
+        "sharpe": 1.69,
+        "r2": 0.081,
+        "up_day_pct": 54.2,
+        "max_dd": -128421.74,
+        "calmar": 0.42,
+        "total_pnl": 54070.19,
+        "specialty": "ESPORTS",
+        "specialty_roi": 22.14,
+        "specialty_n": 157.0,
+        "specialty_sharpe": 7.85,
+        "last30_roi": 5.98,
+        "last30_n": 189
+      }
+    },
+    {
+      "username": "JhonAlexanderHinestroza",
+      "at": "2026-01-30T01:18:12+00:00",
+      "alert_ref": "2026-01-31T01:18:12+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=100 roi=9.6% spec=SOCCER (Other),ESPORTS sports=66% emerging active30=273",
+      "curve_score": 100.0,
+      "unique_roi": 9.61,
+      "take_n": 9,
+      "take_roi": -12.45,
+      "active_30d": 273,
+      "median": 1576.77,
+      "sports_frac": 0.66,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 105,
+          "roi": 18.7
+        },
+        {
+          "key": "OTHER",
+          "n": 97,
+          "roi": 4.6
+        },
+        {
+          "key": "ESPORTS",
+          "n": 26,
+          "roi": 3.9
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 296.0,
+        "roi": 9.61,
+        "sharpe": 3.17,
+        "r2": 0.337,
+        "up_day_pct": 54.3,
+        "max_dd": -43381.94,
+        "calmar": 1.46,
+        "total_pnl": 63527.41,
+        "specialty": "SOCCER (EPL)",
+        "specialty_roi": 60.03,
+        "specialty_n": 23.0,
+        "specialty_sharpe": 14.31,
+        "last30_roi": 9.28,
+        "last30_n": 273
+      }
+    },
+    {
+      "username": "Andromeda1",
+      "at": "2026-01-28T07:51:46+00:00",
+      "alert_ref": "2026-01-29T07:51:46+00:00",
+      "action": "kick",
+      "from": "scout",
+      "to": "none",
+      "why": "life_floor_recent_roi=-18.3_n=40",
+      "curve_score": 85.005,
+      "unique_roi": 7.84,
+      "take_n": 78,
+      "take_roi": -18.29,
+      "active_30d": 223,
+      "median": 2510.62,
+      "sports_frac": 0.83,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 584,
+          "roi": 8.0
+        },
+        {
+          "key": "OTHER",
+          "n": 158,
+          "roi": 9.3
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 106,
+          "roi": 6.0
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 1125.0,
+        "roi": 7.84,
+        "sharpe": 2.8,
+        "r2": 0.863,
+        "up_day_pct": 58.7,
+        "max_dd": -261516.08,
+        "calmar": 1.84,
+        "total_pnl": 481461.14,
+        "specialty": "NHL",
+        "specialty_roi": 40.0,
+        "specialty_n": 16.0,
+        "specialty_sharpe": 5.64,
+        "last30_roi": 1.39,
+        "last30_n": 223
+      }
+    },
+    {
+      "username": "Andromeda1",
+      "at": "2026-01-25T12:00:00+00:00",
+      "alert_ref": "2026-01-26T12:00:00+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=93 roi=8.2% spec=ESPORTS,SOCCER (EPL) sports=83% emerging active30=223",
+      "curve_score": 93.005,
+      "unique_roi": 8.16,
+      "take_n": 78,
+      "take_roi": -18.29,
+      "active_30d": 223,
+      "median": 2503.88,
+      "sports_frac": 0.83,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 576,
+          "roi": 8.6
+        },
+        {
+          "key": "OTHER",
+          "n": 154,
+          "roi": 8.5
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 106,
+          "roi": 6.0
+        }
+      ],
+      "emerging": true,
+      "curve": {
+        "n": 1110.0,
+        "roi": 8.16,
+        "sharpe": 2.94,
+        "r2": 0.858,
+        "up_day_pct": 58.5,
+        "max_dd": -261516.08,
+        "calmar": 1.89,
+        "total_pnl": 493884.74,
+        "specialty": "NHL",
+        "specialty_roi": 40.0,
+        "specialty_n": 16.0,
+        "specialty_sharpe": 5.64,
+        "last30_roi": 2.51,
+        "last30_n": 223
+      }
+    },
+    {
+      "username": "0xheavy888",
+      "at": "2026-01-24T03:02:54+00:00",
+      "alert_ref": "2026-01-25T03:02:54+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=86 roi=6.5% spec=ESPORTS,NBA sports=86% active30=675",
+      "curve_score": 85.52,
+      "unique_roi": 6.47,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "active_30d": 675,
+      "median": 1257.09,
+      "sports_frac": 0.86,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 2026,
+          "roi": 8.0
+        },
+        {
+          "key": "OTHER",
+          "n": 297,
+          "roi": 0.0
+        },
+        {
+          "key": "NBA",
+          "n": 142,
+          "roi": -1.9
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 2573.0,
+        "roi": 6.47,
+        "sharpe": 5.05,
+        "r2": 0.963,
+        "up_day_pct": 56.3,
+        "max_dd": -26780.9,
+        "calmar": 11.17,
+        "total_pnl": 299076.48,
+        "specialty": "ESPORTS",
+        "specialty_roi": 8.01,
+        "specialty_n": 2026.0,
+        "specialty_sharpe": 7.34,
+        "last30_roi": 5.99,
+        "last30_n": 675
+      }
+    },
+    {
+      "username": "Capman",
+      "at": "2026-01-24T00:16:38+00:00",
+      "alert_ref": "2026-01-25T00:16:38+00:00",
+      "action": "kick",
+      "from": "elite",
+      "to": "none",
+      "why": "drop score=91 active30=1763 sports=55% take=87/23.3",
+      "curve_score": 90.675,
+      "unique_roi": 9.7,
+      "take_n": 87,
+      "take_roi": 23.31,
+      "active_30d": 1763,
+      "median": 492.0,
+      "sports_frac": 0.55,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 891,
+          "roi": 2.5
+        },
+        {
+          "key": "NFL",
+          "n": 682,
+          "roi": 8.1
+        },
+        {
+          "key": "NBA",
+          "n": 598,
+          "roi": 11.8
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 3504.0,
+        "roi": 9.7,
+        "sharpe": 6.36,
+        "r2": 0.936,
+        "up_day_pct": 69.3,
+        "max_dd": -21143.02,
+        "calmar": 5.16,
+        "total_pnl": 109200.0,
+        "specialty": "NHL",
+        "specialty_roi": 19.35,
+        "specialty_n": 590.0,
+        "specialty_sharpe": 5.75,
+        "last30_roi": 7.85,
+        "last30_n": 1763
+      }
+    },
+    {
+      "username": "DLEK",
+      "at": "2026-01-23T12:00:00+00:00",
+      "alert_ref": "2026-01-24T12:00:00+00:00",
+      "action": "promote_scout",
+      "from": "none",
+      "to": "scout",
+      "why": "scout curve=72 roi=6.1% spec=NBA,WNBA sports=97% active30=276",
+      "curve_score": 72.455,
+      "unique_roi": 6.07,
+      "take_n": 28,
+      "take_roi": -8.84,
+      "active_30d": 276,
+      "median": 5016.6,
+      "sports_frac": 0.97,
+      "top_sports": [
+        {
+          "key": "NBA",
+          "n": 824,
+          "roi": 8.3
+        },
+        {
+          "key": "WNBA",
+          "n": 87,
+          "roi": -5.5
+        },
+        {
+          "key": "SOCCER (LaLiga)",
+          "n": 60,
+          "roi": -10.1
+        }
+      ],
+      "emerging": false,
+      "curve": {
+        "n": 1029.0,
+        "roi": 6.07,
+        "sharpe": 1.6,
+        "r2": 0.683,
+        "up_day_pct": 53.6,
+        "max_dd": -365104.62,
+        "calmar": 1.76,
+        "total_pnl": 641769.83,
+        "specialty": "NBA",
+        "specialty_roi": 8.28,
+        "specialty_n": 824.0,
+        "specialty_sharpe": 2.16,
+        "last30_roi": 8.49,
+        "last30_n": 276
+      }
+    }
+  ],
+  "last_trades": [
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-25T19:23:25+00:00",
+      "as_of": "2026-08-24T19:23:25+00:00",
+      "event_end": "2026-09-01T00:00:00+00:00",
+      "title": "US Open, Qualification ATP: Bernard Tomic vs Lloyd Harris",
+      "side": "bernard tomic",
+      "sport": "TENNIS",
+      "sport_family": "Tennis",
+      "submarket": "Moneyline",
+      "play": "US Open, Qualification ATP: Bernard Tomic vs Lloyd Harris \u00b7 bernard tomic \u00b7 Tennis \u00b7 Moneyline",
+      "q": 80,
+      "rel": 2.23,
+      "sport_roi": 13.2,
+      "entry": 0.4202,
+      "fill_plus_2c": 0.4402,
+      "cost": 3693.71,
+      "won": false,
+      "unit_pnl": -100.0,
+      "elite_why": "elite curve-book unique=13.5% spec=TENNIS@13.2% take=27/-6.3% curve=94 wr_band active30=211",
+      "curve_score": 93.75999999999999,
+      "conditionId": "0x413aac6a3dfed151ab1c574eb881c29afa228dfaf98a17a3189a8d249da7f0e0"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-25T21:06:13+00:00",
+      "as_of": "2026-08-24T21:06:13+00:00",
+      "event_end": "2026-09-01T00:00:00+00:00",
+      "title": "Kingston 2: Keshav Chopra vs Kaylan Bigun",
+      "side": "keshav chopra",
+      "sport": "TENNIS",
+      "sport_family": "Tennis",
+      "submarket": "Moneyline",
+      "play": "Kingston 2: Keshav Chopra vs Kaylan Bigun \u00b7 keshav chopra \u00b7 Tennis \u00b7 Moneyline",
+      "q": 80,
+      "rel": 12.73,
+      "sport_roi": 13.2,
+      "entry": 0.8184,
+      "fill_plus_2c": 0.8384,
+      "cost": 21056.55,
+      "won": true,
+      "unit_pnl": 19.27,
+      "elite_why": "elite curve-book unique=13.5% spec=TENNIS@13.2% take=27/-6.3% curve=94 wr_band active30=211",
+      "curve_score": 93.75999999999999,
+      "conditionId": "0xc00af9766146c0020d11d64b7764031eb6ad70333db5a9ec0eb0ec3d37191f7b"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-25T19:23:25+00:00",
+      "as_of": "2026-08-24T19:23:25+00:00",
+      "event_end": "2026-09-01T00:00:00+00:00",
+      "title": "US Open, Qualification ATP: Bernard Tomic vs Lloyd Harris",
+      "side": "lloyd harris",
+      "sport": "TENNIS",
+      "sport_family": "Tennis",
+      "submarket": "Moneyline",
+      "play": "US Open, Qualification ATP: Bernard Tomic vs Lloyd Harris \u00b7 lloyd harris \u00b7 Tennis \u00b7 Moneyline",
+      "q": 80,
+      "rel": 6.05,
+      "sport_roi": 13.2,
+      "entry": 0.6901,
+      "fill_plus_2c": 0.7101,
+      "cost": 10010.38,
+      "won": true,
+      "unit_pnl": 40.83,
+      "elite_why": "elite curve-book unique=13.5% spec=TENNIS@13.2% take=27/-6.3% curve=94 wr_band active30=211",
+      "curve_score": 93.75999999999999,
+      "conditionId": "0x413aac6a3dfed151ab1c574eb881c29afa228dfaf98a17a3189a8d249da7f0e0"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-24T20:10:00+00:00",
+      "as_of": "2026-08-23T20:10:00+00:00",
+      "event_end": "2026-08-31T00:00:00+00:00",
+      "title": "US Open, Qualification ATP: Guy Den Ouden vs Genaro Alberto Olivieri",
+      "side": "genaro alberto olivieri",
+      "sport": "TENNIS",
+      "sport_family": "Tennis",
+      "submarket": "Moneyline",
+      "play": "US Open, Qualification ATP: Guy Den Ouden vs Genaro Alberto Olivieri \u00b7 genaro alberto olivieri \u00b7 Tennis \u00b7 Moneyline",
+      "q": 83,
+      "rel": 2.82,
+      "sport_roi": 14.6,
+      "entry": 0.6485,
+      "fill_plus_2c": 0.6685,
+      "cost": 4396.95,
+      "won": true,
+      "unit_pnl": 49.59,
+      "elite_why": "elite curve-book unique=15.2% spec=TENNIS@14.6% take=25/1.2% curve=98 wr_band active30=199",
+      "curve_score": 98.28,
+      "conditionId": "0x24df8b0cba372e683ec049b6ac00331eb2ece325d1f0ecb88b8860cc4e21eec6"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-24T13:50:25+00:00",
+      "as_of": "2026-08-23T13:50:25+00:00",
+      "event_end": "2026-08-31T00:00:00+00:00",
+      "title": "Roehampton 2: Inaki Montes-De La Torre vs Oskari Paldanius",
+      "side": "oskari paldanius",
+      "sport": "TENNIS",
+      "sport_family": "Tennis",
+      "submarket": "Moneyline",
+      "play": "Roehampton 2: Inaki Montes-De La Torre vs Oskari Paldanius \u00b7 oskari paldanius \u00b7 Tennis \u00b7 Moneyline",
+      "q": 83,
+      "rel": 3.13,
+      "sport_roi": 14.6,
+      "entry": 0.5754,
+      "fill_plus_2c": 0.5954,
+      "cost": 4877.79,
+      "won": false,
+      "unit_pnl": -100.0,
+      "elite_why": "elite curve-book unique=15.2% spec=TENNIS@14.6% take=25/1.2% curve=98 wr_band active30=199",
+      "curve_score": 98.28,
+      "conditionId": "0x744607fa8e80bda5d4ebbe5664ef3af78316760bd24d8b0b368e84a8971cbc9a"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-24T18:04:03+00:00",
+      "as_of": "2026-08-23T18:04:03+00:00",
+      "event_end": "2026-08-31T00:00:00+00:00",
+      "title": "US Open, Qualification WTA: Rebeka Masarova vs Iryna Shymanovich",
+      "side": "iryna shymanovich",
+      "sport": "TENNIS",
+      "sport_family": "Tennis",
+      "submarket": "Moneyline",
+      "play": "US Open, Qualification WTA: Rebeka Masarova vs Iryna Shymanovich \u00b7 iryna shymanovich \u00b7 Tennis \u00b7 Moneyline",
+      "q": 83,
+      "rel": 12.5,
+      "sport_roi": 14.6,
+      "entry": 0.7303,
+      "fill_plus_2c": 0.7503,
+      "cost": 19494.99,
+      "won": true,
+      "unit_pnl": 33.28,
+      "elite_why": "elite curve-book unique=15.2% spec=TENNIS@14.6% take=25/1.2% curve=98 wr_band active30=199",
+      "curve_score": 98.28,
+      "conditionId": "0xb8ff4fed0f17261be9567943a0b4ecc4fca969d7db73f470cab5e2184d68c365"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-24T18:04:03+00:00",
+      "as_of": "2026-08-23T18:04:03+00:00",
+      "event_end": "2026-08-31T00:00:00+00:00",
+      "title": "US Open, Qualification WTA: Rebeka Masarova vs Iryna Shymanovich",
+      "side": "rebeka masarova",
+      "sport": "TENNIS",
+      "sport_family": "Tennis",
+      "submarket": "Moneyline",
+      "play": "US Open, Qualification WTA: Rebeka Masarova vs Iryna Shymanovich \u00b7 rebeka masarova \u00b7 Tennis \u00b7 Moneyline",
+      "q": 83,
+      "rel": 16.45,
+      "sport_roi": 14.6,
+      "entry": 0.8259,
+      "fill_plus_2c": 0.8459,
+      "cost": 25665.12,
+      "won": false,
+      "unit_pnl": -100.0,
+      "elite_why": "elite curve-book unique=15.2% spec=TENNIS@14.6% take=25/1.2% curve=98 wr_band active30=199",
+      "curve_score": 98.28,
+      "conditionId": "0xb8ff4fed0f17261be9567943a0b4ecc4fca969d7db73f470cab5e2184d68c365"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-24T18:48:57+00:00",
+      "as_of": "2026-08-23T18:48:57+00:00",
+      "event_end": "2026-08-31T00:00:00+00:00",
+      "title": "US Open, Qualification ATP: Titouan Droguet vs Daniel Rincon",
+      "side": "daniel rincon",
+      "sport": "TENNIS",
+      "sport_family": "Tennis",
+      "submarket": "Moneyline",
+      "play": "US Open, Qualification ATP: Titouan Droguet vs Daniel Rincon \u00b7 daniel rincon \u00b7 Tennis \u00b7 Moneyline",
+      "q": 83,
+      "rel": 15.58,
+      "sport_roi": 14.6,
+      "entry": 0.7567,
+      "fill_plus_2c": 0.7767,
+      "cost": 24304.36,
+      "won": true,
+      "unit_pnl": 28.75,
+      "elite_why": "elite curve-book unique=15.2% spec=TENNIS@14.6% take=25/1.2% curve=98 wr_band active30=199",
+      "curve_score": 98.28,
+      "conditionId": "0x21a8f31d0d5e5104b81c9e2fe284575dfc7b7040ecc0ef8a13c2786a6753acdb"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-22T19:43:43+00:00",
+      "as_of": "2026-08-21T19:43:43+00:00",
+      "event_end": "2026-08-29T00:00:00+00:00",
+      "title": "Quebec City: Hugo Gaston vs Luca Van Assche",
+      "side": "luca van assche",
+      "sport": "TENNIS",
+      "sport_family": "Tennis",
+      "submarket": "Moneyline",
+      "play": "Quebec City: Hugo Gaston vs Luca Van Assche \u00b7 luca van assche \u00b7 Tennis \u00b7 Moneyline",
+      "q": 81,
+      "rel": 26.46,
+      "sport_roi": 13.8,
+      "entry": 0.6507,
+      "fill_plus_2c": 0.6707,
+      "cost": 41223.46,
+      "won": true,
+      "unit_pnl": 49.1,
+      "elite_why": "elite curve-book unique=14.6% spec=TENNIS@13.8% take=22/2.6% curve=93 wr_band active30=192",
+      "curve_score": 92.965,
+      "conditionId": "0x50f67be70f2578943bbf961470d87f419bea7bd3865f2a3a92c7e1f70aefe553"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-21T16:13:58+00:00",
+      "as_of": "2026-08-20T16:13:58+00:00",
+      "event_end": "2026-08-28T00:00:00+00:00",
+      "title": "ITF W35 Verbier Women: Angella Okutoyi vs Valentini Grammatikopoulou",
+      "side": "valentini grammatikopoulou",
+      "sport": "OTHER",
+      "sport_family": "Other",
+      "submarket": "Moneyline",
+      "play": "ITF W35 Verbier Women: Angella Okutoyi vs Valentini Grammatikopoulou \u00b7 valentini grammatikopoulou \u00b7 Other \u00b7 Moneyline",
+      "q": 81,
+      "rel": 2.17,
+      "sport_roi": 16.9,
+      "entry": 0.7542,
+      "fill_plus_2c": 0.7742,
+      "cost": 3357.63,
+      "won": true,
+      "unit_pnl": 29.17,
+      "elite_why": "elite curve-book unique=14.7% spec=TENNIS@13.8% take=20/-0.2% curve=93 wr_band active30=187",
+      "curve_score": 92.725,
+      "conditionId": "0xeaa47d08ae81b473edfb30388ebda2ed40f2e7cbd171f2135c1be8748eda3372"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-21T16:50:10+00:00",
+      "as_of": "2026-08-20T16:50:10+00:00",
+      "event_end": "2026-08-28T00:00:00+00:00",
+      "title": "Sion: Lorenzo Giustino vs Benjamin Hassan",
+      "side": "benjamin hassan",
+      "sport": "TENNIS",
+      "sport_family": "Tennis",
+      "submarket": "Moneyline",
+      "play": "Sion: Lorenzo Giustino vs Benjamin Hassan \u00b7 benjamin hassan \u00b7 Tennis \u00b7 Moneyline",
+      "q": 81,
+      "rel": 30.0,
+      "sport_roi": 13.8,
+      "entry": 0.3642,
+      "fill_plus_2c": 0.3842,
+      "cost": 83110.94,
+      "won": true,
+      "unit_pnl": 160.28,
+      "elite_why": "elite curve-book unique=14.7% spec=TENNIS@13.8% take=20/-0.2% curve=93 wr_band active30=187",
+      "curve_score": 92.725,
+      "conditionId": "0x797120291e56deddca5eca071b181e112d09aae516beb4e888d88c50d47bdd30"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-19T15:50:40+00:00",
+      "as_of": "2026-08-18T15:50:40+00:00",
+      "event_end": "2026-08-26T00:00:00+00:00",
+      "title": "ITF W75 Kursumlijska Banja 3 Women: Beatrice Ricci vs Varvara Panshina",
+      "side": "varvara panshina",
+      "sport": "OTHER",
+      "sport_family": "Other",
+      "submarket": "Moneyline",
+      "play": "ITF W75 Kursumlijska Banja 3 Women: Beatrice Ricci vs Varvara Panshina \u00b7 varvara panshina \u00b7 Other \u00b7 Moneyline",
+      "q": 82,
+      "rel": 2.48,
+      "sport_roi": 19.4,
+      "entry": 0.7532,
+      "fill_plus_2c": 0.7732,
+      "cost": 3784.59,
+      "won": true,
+      "unit_pnl": 29.33,
+      "elite_why": "elite take=17/8.8% spec=TENNIS@17.4% curve=97 wr_band active30=173",
+      "curve_score": 97.215,
+      "conditionId": "0xbcaab3c4d61b20c15e08712ca72b1f90b314218e57fb8e60995114538fce2f34"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-19T15:33:58+00:00",
+      "as_of": "2026-08-18T15:33:58+00:00",
+      "event_end": "2026-08-26T00:00:00+00:00",
+      "title": "ITF W35 Krakow Women: Oriana Gniewkowska vs Georgina Garcia Perez",
+      "side": "oriana gniewkowska",
+      "sport": "OTHER",
+      "sport_family": "Other",
+      "submarket": "Moneyline",
+      "play": "ITF W35 Krakow Women: Oriana Gniewkowska vs Georgina Garcia Perez \u00b7 oriana gniewkowska \u00b7 Other \u00b7 Moneyline",
+      "q": 82,
+      "rel": 2.81,
+      "sport_roi": 19.4,
+      "entry": 0.6233,
+      "fill_plus_2c": 0.6433,
+      "cost": 4286.52,
+      "won": true,
+      "unit_pnl": 55.45,
+      "elite_why": "elite take=17/8.8% spec=TENNIS@17.4% curve=97 wr_band active30=173",
+      "curve_score": 97.215,
+      "conditionId": "0x706f1916a971c5c0b1743800e1dda81666dd72a35c2152d2d8b6fd4bd9f93d0c"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-19T03:03:58+00:00",
+      "as_of": "2026-08-18T03:03:58+00:00",
+      "event_end": "2026-08-25T00:00:00+00:00",
+      "title": "Cincinnati Open: Learner Tien vs Frances Tiafoe",
+      "side": "learner tien",
+      "sport": "TENNIS",
+      "sport_family": "Tennis",
+      "submarket": "Moneyline",
+      "play": "Cincinnati Open: Learner Tien vs Frances Tiafoe \u00b7 learner tien \u00b7 Tennis \u00b7 Moneyline",
+      "q": 82,
+      "rel": 15.32,
+      "sport_roi": 17.4,
+      "entry": 0.6118,
+      "fill_plus_2c": 0.6318,
+      "cost": 23342.09,
+      "won": false,
+      "unit_pnl": -100.0,
+      "elite_why": "elite take=17/8.8% spec=TENNIS@17.4% curve=97 wr_band active30=173",
+      "curve_score": 97.215,
+      "conditionId": "0xc5b9793afda2f61179031e45513b21521bf3fae3fae461542d2c6cec0476b65d"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-19T02:43:57+00:00",
+      "as_of": "2026-08-18T02:43:57+00:00",
+      "event_end": "2026-08-25T00:00:00+00:00",
+      "title": "Cancun: Lloyd Harris vs Laslo Djere",
+      "side": "laslo djere",
+      "sport": "TENNIS",
+      "sport_family": "Tennis",
+      "submarket": "Moneyline",
+      "play": "Cancun: Lloyd Harris vs Laslo Djere \u00b7 laslo djere \u00b7 Tennis \u00b7 Moneyline",
+      "q": 82,
+      "rel": 7.58,
+      "sport_roi": 17.4,
+      "entry": 0.5128,
+      "fill_plus_2c": 0.5328,
+      "cost": 11554.09,
+      "won": false,
+      "unit_pnl": -100.0,
+      "elite_why": "elite take=17/8.8% spec=TENNIS@17.4% curve=97 wr_band active30=173",
+      "curve_score": 97.215,
+      "conditionId": "0xe3c4fe2397f3e8fd0749d921b02986a33640dcf0834c86715b01d7b60bad782d"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-19T01:41:52+00:00",
+      "as_of": "2026-08-18T01:41:52+00:00",
+      "event_end": "2026-08-25T00:00:00+00:00",
+      "title": "Cincinnati Open: Learner Tien vs Frances Tiafoe",
+      "side": "frances tiafoe",
+      "sport": "TENNIS",
+      "sport_family": "Tennis",
+      "submarket": "Moneyline",
+      "play": "Cincinnati Open: Learner Tien vs Frances Tiafoe \u00b7 frances tiafoe \u00b7 Tennis \u00b7 Moneyline",
+      "q": 82,
+      "rel": 3.05,
+      "sport_roi": 17.4,
+      "entry": 0.3718,
+      "fill_plus_2c": 0.3918,
+      "cost": 4647.47,
+      "won": true,
+      "unit_pnl": 155.23,
+      "elite_why": "elite take=17/8.8% spec=TENNIS@17.4% curve=97 wr_band active30=173",
+      "curve_score": 97.215,
+      "conditionId": "0xc5b9793afda2f61179031e45513b21521bf3fae3fae461542d2c6cec0476b65d"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-18T18:35:07+00:00",
+      "as_of": "2026-08-17T18:35:07+00:00",
+      "event_end": "2026-08-25T00:00:00+00:00",
+      "title": "ITF W35 Bistrita Women: Jessica Pieri vs Federica Sacco",
+      "side": "jessica pieri",
+      "sport": "OTHER",
+      "sport_family": "Other",
+      "submarket": "Moneyline",
+      "play": "ITF W35 Bistrita Women: Jessica Pieri vs Federica Sacco \u00b7 jessica pieri \u00b7 Other \u00b7 Moneyline",
+      "q": 80,
+      "rel": 3.53,
+      "sport_roi": 14.0,
+      "entry": 0.2286,
+      "fill_plus_2c": 0.2486,
+      "cost": 5342.67,
+      "won": true,
+      "unit_pnl": 302.25,
+      "elite_why": "elite take=16/8.6% spec=TENNIS@17.5% curve=100 wr_band active30=171",
+      "curve_score": 100.0,
+      "conditionId": "0x034f9b40b8c26b4dc0f1516d634679fb6972df6e43873c7c4b8842a45d583c85"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-18T16:00:42+00:00",
+      "as_of": "2026-08-17T16:00:42+00:00",
+      "event_end": "2026-08-25T00:00:00+00:00",
+      "title": "Prague 2: Maxim Mrva vs Nerman Fatic",
+      "side": "nerman fatic",
+      "sport": "TENNIS",
+      "sport_family": "Tennis",
+      "submarket": "Moneyline",
+      "play": "Prague 2: Maxim Mrva vs Nerman Fatic \u00b7 nerman fatic \u00b7 Tennis \u00b7 Moneyline",
+      "q": 80,
+      "rel": 8.43,
+      "sport_roi": 17.5,
+      "entry": 0.6521,
+      "fill_plus_2c": 0.6721,
+      "cost": 12744.99,
+      "won": false,
+      "unit_pnl": -100.0,
+      "elite_why": "elite take=16/8.6% spec=TENNIS@17.5% curve=100 wr_band active30=171",
+      "curve_score": 100.0,
+      "conditionId": "0x23686b82f7b7cd35ab1400116f1c3c1b3c561f749d72494d848baeae6b476ddc"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-18T16:00:42+00:00",
+      "as_of": "2026-08-17T16:00:42+00:00",
+      "event_end": "2026-08-25T00:00:00+00:00",
+      "title": "Prague 2: Maxim Mrva vs Nerman Fatic",
+      "side": "maxim mrva",
+      "sport": "TENNIS",
+      "sport_family": "Tennis",
+      "submarket": "Moneyline",
+      "play": "Prague 2: Maxim Mrva vs Nerman Fatic \u00b7 maxim mrva \u00b7 Tennis \u00b7 Moneyline",
+      "q": 80,
+      "rel": 15.07,
+      "sport_roi": 17.5,
+      "entry": 0.7305,
+      "fill_plus_2c": 0.7505,
+      "cost": 22788.37,
+      "won": true,
+      "unit_pnl": 33.24,
+      "elite_why": "elite take=16/8.6% spec=TENNIS@17.5% curve=100 wr_band active30=171",
+      "curve_score": 100.0,
+      "conditionId": "0x23686b82f7b7cd35ab1400116f1c3c1b3c561f749d72494d848baeae6b476ddc"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "alerted_at": "2026-08-17T23:26:42+00:00",
+      "as_of": "2026-08-16T23:26:42+00:00",
+      "event_end": "2026-08-24T00:00:00+00:00",
+      "title": "Cincinnati Open: Diana Shnaider vs Maja Chwalinska",
+      "side": "maja chwalinska",
+      "sport": "TENNIS",
+      "sport_family": "Tennis",
+      "submarket": "Moneyline",
+      "play": "Cincinnati Open: Diana Shnaider vs Maja Chwalinska \u00b7 maja chwalinska \u00b7 Tennis \u00b7 Moneyline",
+      "q": 81,
+      "rel": 2.36,
+      "sport_roi": 19.6,
+      "entry": 0.3508,
+      "fill_plus_2c": 0.3708,
+      "cost": 3545.2,
+      "won": false,
+      "unit_pnl": -100.0,
+      "elite_why": "elite take=14/15.6% spec=TENNIS@19.6% curve=100 wr_band active30=177",
+      "curve_score": 100.0,
+      "conditionId": "0xa50ccad0b6e8635efef7ce9cc701ad6cc918fdc443ea897560fc22826e9cec4b"
+    }
+  ],
+  "passes_product_bar": true
+}
