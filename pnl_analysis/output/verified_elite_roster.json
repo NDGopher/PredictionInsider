@@ -1,0 +1,60 @@
+{
+  "generated_at": "2026-08-31T15:28:37.313252+00:00",
+  "rule": "walkforward_verified_elite",
+  "sniper_strategy": "asof_live_q60_sport_rel2",
+  "elite": [
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "take_n": 48,
+      "take_roi": 8.99,
+      "active_30d": 230,
+      "median": 1920.0,
+      "why": "keep_elite take=48/9.0% active30=230",
+      "trades_in_backtest": 0
+    }
+  ],
+  "proven_bench": [
+    {
+      "username": "JhonAlexanderHinestroza",
+      "wallet": "0x44c58184f89a5c2f699dc8943009cb3d75a08d45",
+      "take_n": 106,
+      "take_roi": 23.62,
+      "active_30d": 0,
+      "median": 2669.93,
+      "why": "stale_30d_n=0",
+      "trades_in_backtest": 63,
+      "status": "proven_bench_stale"
+    },
+    {
+      "username": "Vetch",
+      "wallet": "0x9c82c60829df081d593055ee5fa288870c051f13",
+      "take_n": 84,
+      "take_roi": 19.24,
+      "active_30d": 0,
+      "median": 2354.84,
+      "why": "stale_30d_n=0",
+      "trades_in_backtest": 44,
+      "status": "proven_bench_stale"
+    },
+    {
+      "username": "Capman",
+      "wallet": "0xc5b5bbd42624a8f0c8dfa90221913007d8c77e80",
+      "take_n": 255,
+      "take_roi": 14.89,
+      "active_30d": 0,
+      "median": 475.0,
+      "why": "stale_30d_n=0",
+      "trades_in_backtest": 201,
+      "status": "proven_bench_stale"
+    }
+  ],
+  "backtest": {
+    "n": 380,
+    "win_rate": 67.37,
+    "roi_2c": 11.16,
+    "unit_pnl": 4242.07,
+    "passes_5pct_bar": true
+  },
+  "note": "Telegram / main tracking = elite (live) only. proven_bench = historically cleared gates but currently stale \u2014 auto-repromotes when active again. Watch/Radar heat is separate and must not dilute this book."
+}

@@ -102,6 +102,20 @@ export function loadTakeHealthFile(): TakeHealthFile | null {
 }
 
 export function loadTrustedCopyBooks(): Array<{ username: string; wallet: string }> {
+  const eliteFile = loadJson<{
+    elite?: Array<{ username?: string; wallet?: string }>;
+    proven_bench?: Array<{ username?: string; wallet?: string }>;
+  }>("pnl_analysis/output/verified_elite_roster.json");
+  const elite = (eliteFile?.elite || [])
+    .map((t) => ({ username: String(t.username || ""), wallet: String(t.wallet || "") }))
+    .filter((t) => t.username || t.wallet);
+  if (elite.length > 0) {
+    console.log(
+      `[take-plays] verified elite roster (${elite.length}): ${elite.map((t) => t.username).join(", ")}`,
+    );
+    return elite;
+  }
+
   const uni = loadJson<{ live?: Array<{ username?: string; wallet?: string }> }>(
     "pnl_analysis/output/copy_universe.json",
   );
@@ -112,7 +126,7 @@ export function loadTrustedCopyBooks(): Array<{ username: string; wallet: string
     console.log(`[take-plays] copy books from copy_universe live (${live.length}): ${live.map((t) => t.username).join(", ")}`);
     return live;
   }
-  console.warn("[take-plays] copy_universe.json has no live books — not falling back to the stale take-book 12");
+  console.warn("[take-plays] no verified elite / live books — take tape idle until promote");
   return [];
 }
 

@@ -42,7 +42,8 @@
     "model:unusual": "python pnl_analysis/scan_unusual_flow.py",
     "model:fetch-watch": "python pnl_analysis/fetch_watch_csvs.py",
     "research:mm": "python pnl_analysis/mm_maker_research.py",
-    "backtest:take-health": "python pnl_analysis/take_book_daily.py"
+    "backtest:take-health": "python pnl_analysis/take_book_daily.py",
+    "backtest:elite-wf": "python pnl_analysis/walkforward_elite_sniper.py"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
