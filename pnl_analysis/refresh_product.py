@@ -27,6 +27,7 @@ STEPS: list[tuple[str, list[str]]] = [
     ("tail digest + CLV", [sys.executable, str(ROOT / "digest_tail_candidates.py")]),
     ("adaptive multi-strategy lab", [sys.executable, str(ROOT / "adaptive_copy_lab.py")]),
     ("auto-promote to live", [sys.executable, str(ROOT / "auto_promote.py")]),
+    ("verified elite walk-forward", [sys.executable, str(ROOT / "walkforward_elite_sniper.py")]),
     ("copy universe (post-promote)", [sys.executable, str(ROOT / "copy_roster.py")]),
     ("market-making research", [sys.executable, str(ROOT / "mm_maker_research.py")]),
     ("hot-copy screen", [sys.executable, str(ROOT / "screen_hot_copy.py")]),
