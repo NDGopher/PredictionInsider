@@ -1,0 +1,1727 @@
+{
+  "note": "Forward-honest discovery timeline for manual testing. Dates are as-of alert times when gates first cleared.",
+  "portfolio_ref": "walkforward_elite_discovery.json",
+  "traders": [
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "tier": "elite",
+      "why": "elite curve-book unique=15.0% spec=TENNIS@14.9% take=39/-4.1% curve=100 wr_band active30=230",
+      "active_30d": 230,
+      "curve_score": 99.525,
+      "unique_roi": 15.01,
+      "take_n": 39,
+      "take_roi": -4.09,
+      "median": 1874.02,
+      "sports_frac": 0.63,
+      "wr": 73.3,
+      "top_sports": [
+        {
+          "key": "TENNIS",
+          "n": 331,
+          "roi": 14.9
+        },
+        {
+          "key": "OTHER",
+          "n": 204,
+          "roi": 15.2
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 21,
+          "roi": 14.1
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "TENNIS|Moneyline",
+          "n": 319,
+          "roi": 15.0
+        },
+        {
+          "key": "OTHER|Moneyline",
+          "n": 192,
+          "roi": 15.1
+        },
+        {
+          "key": "SOCCER (Other)|Moneyline",
+          "n": 14,
+          "roi": 17.4
+        }
+      ],
+      "first_scout": {
+        "date": "2026-07-25",
+        "why": "scout curve=92 roi=10.8% spec=TENNIS,SOCCER (Other) sports=61% emerging active30=169",
+        "curve": 92.07,
+        "unique": 10.84,
+        "tops": [
+          {
+            "key": "TENNIS",
+            "n": 148,
+            "roi": 11.2
+          },
+          {
+            "key": "OTHER",
+            "n": 109,
+            "roi": 11.4
+          },
+          {
+            "key": "SOCCER (Other)",
+            "n": 19,
+            "roi": -3.8
+          }
+        ],
+        "median": 1232.01
+      },
+      "first_elite": {
+        "date": "2026-08-13",
+        "why": "elite take=12/11.7% spec=TENNIS@19.8% curve=100 wr_band active30=166",
+        "curve": 100.0,
+        "unique": 17.56,
+        "take_n": 12,
+        "take_roi": 11.67
+      },
+      "elite_windows": [
+        {
+          "start": "2026-08-13",
+          "why": "elite take=12/11.7% spec=TENNIS@19.8% curve=100 wr_band active30=166",
+          "curve": 100.0,
+          "unique": 17.56,
+          "end": "2026-08-25",
+          "kick": "scout curve=94 roi=12.4% spec=TENNIS,SOCCER (Other) sports=63% emerging active30=214"
+        },
+        {
+          "start": "2026-08-29",
+          "why": "elite curve-book unique=16.7% spec=TENNIS@17.4% take=34/-2.1% curve=100 wr_band active30=229",
+          "curve": 100.0,
+          "unique": 16.69,
+          "end": "present"
+        }
+      ],
+      "backtest": {
+        "n": 30,
+        "pnl": 80.26,
+        "roi": 2.68,
+        "first": "2026-08-14",
+        "last": "2026-08-25"
+      },
+      "sample_plays": [
+        {
+          "date": "2026-08-14",
+          "won": true,
+          "pnl": 46.63,
+          "q": 81,
+          "rel": 3.48,
+          "sport": "TENNIS",
+          "sub": "Moneyline",
+          "entry": 0.662,
+          "cost": 5092.3,
+          "title": "Cincinnati Open: Katie Boulter vs Katie Volynets"
+        },
+        {
+          "date": "2026-08-14",
+          "won": false,
+          "pnl": -100.0,
+          "q": 81,
+          "rel": 8.86,
+          "sport": "TENNIS",
+          "sub": "Moneyline",
+          "entry": 0.7111,
+          "cost": 12964.65,
+          "title": "Cincinnati Open: Katie Boulter vs Katie Volynets"
+        },
+        {
+          "date": "2026-08-14",
+          "won": false,
+          "pnl": -100.0,
+          "q": 81,
+          "rel": 6.99,
+          "sport": "TENNIS",
+          "sub": "Moneyline",
+          "entry": 0.3319,
+          "cost": 10224.34,
+          "title": "Cincinnati Open: Zachary Svajda vs Mattia Bellucci"
+        },
+        {
+          "date": "2026-08-14",
+          "won": true,
+          "pnl": 36.8,
+          "q": 81,
+          "rel": 3.04,
+          "sport": "TENNIS",
+          "sub": "Moneyline",
+          "entry": 0.711,
+          "cost": 4447.32,
+          "title": "Astana: Jie Cui vs Aziz Dougaz"
+        },
+        {
+          "date": "2026-08-25",
+          "won": false,
+          "pnl": -100.0,
+          "q": 80,
+          "rel": 2.23,
+          "sport": "TENNIS",
+          "sub": "Moneyline",
+          "entry": 0.4202,
+          "cost": 3693.71,
+          "title": "US Open, Qualification ATP: Bernard Tomic vs Lloyd Harris"
+        },
+        {
+          "date": "2026-08-25",
+          "won": true,
+          "pnl": 40.83,
+          "q": 80,
+          "rel": 6.05,
+          "sport": "TENNIS",
+          "sub": "Moneyline",
+          "entry": 0.6901,
+          "cost": 10010.38,
+          "title": "US Open, Qualification ATP: Bernard Tomic vs Lloyd Harris"
+        },
+        {
+          "date": "2026-08-25",
+          "won": true,
+          "pnl": 19.27,
+          "q": 80,
+          "rel": 12.73,
+          "sport": "TENNIS",
+          "sub": "Moneyline",
+          "entry": 0.8184,
+          "cost": 21056.55,
+          "title": "Kingston 2: Keshav Chopra vs Kaylan Bigun"
+        }
+      ]
+    },
+    {
+      "username": "Capman",
+      "wallet": "0xc5b5bbd42624a8f0c8dfa90221913007d8c77e80",
+      "tier": "none",
+      "why": "watch score=84 n=7313 active30=0 sports=53%",
+      "active_30d": 0,
+      "curve_score": 84.03,
+      "unique_roi": 11.19,
+      "take_n": 202,
+      "take_roi": 10.94,
+      "median": 475.0,
+      "sports_frac": 0.53,
+      "wr": 61.32,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 2705,
+          "roi": 11.0
+        },
+        {
+          "key": "NHL",
+          "n": 1286,
+          "roi": 17.0
+        },
+        {
+          "key": "NBA",
+          "n": 1219,
+          "roi": 10.8
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "OTHER|Moneyline",
+          "n": 1937,
+          "roi": 10.3
+        },
+        {
+          "key": "NHL|Moneyline",
+          "n": 730,
+          "roi": 19.5
+        },
+        {
+          "key": "NBA|Moneyline",
+          "n": 534,
+          "roi": 13.4
+        }
+      ],
+      "first_scout": {
+        "date": "2025-12-22",
+        "why": "scout curve=85 roi=13.4% spec=NBA,NHL sports=63% active30=804",
+        "curve": 85.49000000000001,
+        "unique": 13.4,
+        "tops": [
+          {
+            "key": "NFL",
+            "n": 458,
+            "roi": 22.6
+          },
+          {
+            "key": "NBA",
+            "n": 268,
+            "roi": 10.9
+          },
+          {
+            "key": "NHL",
+            "n": 217,
+            "roi": -3.9
+          }
+        ],
+        "median": 461.54
+      },
+      "first_elite": {
+        "date": "2025-12-25",
+        "why": "elite curve-book unique=13.0% spec=NBA@12.0% take=23/3.3% curve=85 wr_band active30=784",
+        "curve": 85.235,
+        "unique": 12.97,
+        "take_n": 23,
+        "take_roi": 3.34
+      },
+      "elite_windows": [
+        {
+          "start": "2025-12-25",
+          "why": "elite curve-book unique=13.0% spec=NBA@12.0% take=23/3.3% curve=85 wr_band active30=784",
+          "curve": 85.235,
+          "unique": 12.97,
+          "end": "2025-12-30",
+          "kick": "scout curve=86 roi=11.9% spec=NBA,NHL sports=63% active30=792"
+        },
+        {
+          "start": "2025-12-30",
+          "why": "elite specialty NBA n=345 roi=11.2% take=33/4.2% curve=86 wr_band active30=804",
+          "curve": 85.94,
+          "unique": 12.31,
+          "end": "2025-12-30",
+          "kick": "scout curve=86 roi=11.9% spec=NBA,NHL sports=63% active30=805"
+        },
+        {
+          "start": "2025-12-31",
+          "why": "elite specialty NBA n=353 roi=9.2% take=36/2.5% curve=86 wr_band active30=842",
+          "curve": 86.195,
+          "unique": 12.08,
+          "end": "2025-12-31",
+          "kick": "scout curve=86 roi=12.0% spec=NBA,NHL sports=62% active30=845"
+        },
+        {
+          "start": "2025-12-31",
+          "why": "elite specialty NBA n=356 roi=9.2% take=36/2.5% curve=86 wr_band active30=846",
+          "curve": 86.21000000000001,
+          "unique": 12.02,
+          "end": "2025-12-31",
+          "kick": "scout curve=86 roi=11.9% spec=NBA,NHL sports=62% active30=849"
+        },
+        {
+          "start": "2025-12-31",
+          "why": "elite specialty NBA n=356 roi=9.2% take=36/2.5% curve=86 wr_band active30=858",
+          "curve": 86.255,
+          "unique": 12.01,
+          "end": "2026-01-01",
+          "kick": "scout curve=86 roi=11.9% spec=NBA,NHL sports=62% active30=863"
+        },
+        {
+          "start": "2026-01-01",
+          "why": "elite specialty NBA n=364 roi=10.1% take=37/3.6% curve=86 wr_band active30=866",
+          "curve": 86.375,
+          "unique": 12.04,
+          "end": "2026-01-02",
+          "kick": "scout curve=87 roi=11.1% spec=NBA,NHL sports=62% active30=886"
+        },
+        {
+          "start": "2026-01-03",
+          "why": "elite take=43/11.9% spec=NBA@13.6% curve=87 wr_band active30=953",
+          "curve": 86.78,
+          "unique": 13.0,
+          "end": "2026-01-07",
+          "kick": "scout curve=96 roi=10.4% spec=NBA sports=59% active30=1089"
+        },
+        {
+          "start": "2026-01-08",
+          "why": "elite take=51/10.0% spec=NBA@9.9% curve=91 wr_band active30=1157",
+          "curve": 91.345,
+          "unique": 9.76,
+          "end": "2026-01-24",
+          "kick": "drop score=91 active30=1763 sports=55% take=87/23.3"
+        }
+      ],
+      "backtest": {
+        "n": 52,
+        "pnl": 942.56,
+        "roi": 18.13,
+        "first": "2025-12-27",
+        "last": "2026-01-24"
+      },
+      "sample_plays": [
+        {
+          "date": "2025-12-27",
+          "won": true,
+          "pnl": 21.17,
+          "q": 78,
+          "rel": 5.39,
+          "sport": "NBA",
+          "sub": "Moneyline",
+          "entry": 0.8053,
+          "cost": 2550.0,
+          "title": "Celtics vs. Pacers"
+        },
+        {
+          "date": "2025-12-27",
+          "won": true,
+          "pnl": 74.96,
+          "q": 78,
+          "rel": 2.86,
+          "sport": "NBA",
+          "sub": "Moneyline",
+          "entry": 0.5516,
+          "cost": 1354.07,
+          "title": "76ers vs. Bulls"
+        },
+        {
+          "date": "2025-12-28",
+          "won": true,
+          "pnl": 40.85,
+          "q": 87,
+          "rel": 2.35,
+          "sport": "NBA",
+          "sub": "Total",
+          "entry": 0.69,
+          "cost": 1104.79,
+          "title": "Suns vs. Pelicans: O/U 236.5"
+        },
+        {
+          "date": "2025-12-28",
+          "won": false,
+          "pnl": -100.0,
+          "q": 87,
+          "rel": 3.45,
+          "sport": "NBA",
+          "sub": "Total",
+          "entry": 0.7291,
+          "cost": 1626.58,
+          "title": "Suns vs. Pelicans: O/U 236.5"
+        },
+        {
+          "date": "2026-01-24",
+          "won": true,
+          "pnl": 99.83,
+          "q": 72,
+          "rel": 7.11,
+          "sport": "NHL",
+          "sub": "Moneyline",
+          "entry": 0.4804,
+          "cost": 3490.76,
+          "title": "Flyers vs. Avalanche"
+        },
+        {
+          "date": "2026-01-24",
+          "won": true,
+          "pnl": 16.06,
+          "q": 72,
+          "rel": 4.23,
+          "sport": "NBA",
+          "sub": "Moneyline",
+          "entry": 0.8417,
+          "cost": 2076.17,
+          "title": "Nuggets vs. Bucks"
+        },
+        {
+          "date": "2026-01-24",
+          "won": true,
+          "pnl": 20.48,
+          "q": 72,
+          "rel": 3.22,
+          "sport": "NHL",
+          "sub": "Total",
+          "entry": 0.81,
+          "cost": 1578.69,
+          "title": "Utah vs. Predators: O/U 6.5"
+        }
+      ]
+    },
+    {
+      "username": "Vetch",
+      "wallet": "0x9c82c60829df081d593055ee5fa288870c051f13",
+      "tier": "none",
+      "why": "stale_30d_n=0",
+      "active_30d": 0,
+      "curve_score": 83.58500000000001,
+      "unique_roi": 11.55,
+      "take_n": 83,
+      "take_roi": 11.96,
+      "median": 2354.84,
+      "sports_frac": 0.89,
+      "wr": 58.48,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 187,
+          "roi": 15.6
+        },
+        {
+          "key": "NBA",
+          "n": 137,
+          "roi": 14.0
+        },
+        {
+          "key": "TENNIS",
+          "n": 114,
+          "roi": 6.5
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "ESPORTS|Moneyline",
+          "n": 187,
+          "roi": 15.6
+        },
+        {
+          "key": "NBA|Moneyline",
+          "n": 137,
+          "roi": 14.0
+        },
+        {
+          "key": "TENNIS|Moneyline",
+          "n": 107,
+          "roi": 7.1
+        }
+      ],
+      "first_scout": null,
+      "first_elite": {
+        "date": "2025-11-26",
+        "why": "elite take=15/19.0% spec=NBA@15.3% curve=91 wr_band active30=116",
+        "curve": 90.52,
+        "unique": 9.89,
+        "take_n": 15,
+        "take_roi": 18.98
+      },
+      "elite_windows": [
+        {
+          "start": "2025-11-26",
+          "why": "elite take=15/19.0% spec=NBA@15.3% curve=91 wr_band active30=116",
+          "curve": 90.52,
+          "unique": 9.89,
+          "end": "2026-08-31",
+          "kick": "stale_30d_n=0"
+        }
+      ],
+      "backtest": {
+        "n": 69,
+        "pnl": 1331.55,
+        "roi": 19.3,
+        "first": "2025-11-27",
+        "last": "2026-03-18"
+      },
+      "sample_plays": [
+        {
+          "date": "2025-11-27",
+          "won": true,
+          "pnl": 126.35,
+          "q": 80,
+          "rel": 6.97,
+          "sport": "NBA",
+          "sub": "Moneyline",
+          "entry": 0.4218,
+          "cost": 12526.01,
+          "title": "Pistons vs. Celtics"
+        },
+        {
+          "date": "2025-11-28",
+          "won": false,
+          "pnl": -100.0,
+          "q": 74,
+          "rel": 2.41,
+          "sport": "NHL",
+          "sub": "Moneyline",
+          "entry": 0.4501,
+          "cost": 4390.3,
+          "title": "Lightning vs. Red Wings"
+        },
+        {
+          "date": "2025-11-29",
+          "won": true,
+          "pnl": 11.11,
+          "q": 77,
+          "rel": 4.12,
+          "sport": "NBA",
+          "sub": "Moneyline",
+          "entry": 0.88,
+          "cost": 7919.91,
+          "title": "Suns vs. Thunder"
+        },
+        {
+          "date": "2025-11-30",
+          "won": true,
+          "pnl": 33.33,
+          "q": 84,
+          "rel": 2.55,
+          "sport": "NHL",
+          "sub": "Moneyline",
+          "entry": 0.73,
+          "cost": 5109.98,
+          "title": "Sharks vs. Golden Knights"
+        },
+        {
+          "date": "2026-03-17",
+          "won": true,
+          "pnl": 21.12,
+          "q": 85,
+          "rel": 4.68,
+          "sport": "ESPORTS",
+          "sub": "Moneyline",
+          "entry": 0.8056,
+          "cost": 11036.94,
+          "title": "LoL: G2 Esports vs Team Secret Whales (BO5) - First Stand Group A"
+        },
+        {
+          "date": "2026-03-17",
+          "won": false,
+          "pnl": -100.0,
+          "q": 85,
+          "rel": 4.08,
+          "sport": "ESPORTS",
+          "sub": "Moneyline",
+          "entry": 0.18,
+          "cost": 9626.58,
+          "title": "LoL: Bilibili Gaming vs G2 Esports (BO5) - First Stand Group A"
+        },
+        {
+          "date": "2026-03-18",
+          "won": true,
+          "pnl": 28.59,
+          "q": 76,
+          "rel": 2.83,
+          "sport": "ESPORTS",
+          "sub": "Moneyline",
+          "entry": 0.7577,
+          "cost": 6681.79,
+          "title": "LoL: LYON vs LOUD (BO5) - First Stand Group B"
+        }
+      ]
+    },
+    {
+      "username": "JhonAlexanderHinestroza",
+      "wallet": "0x44c58184f89a5c2f699dc8943009cb3d75a08d45",
+      "tier": "none",
+      "why": "stale_30d_n=0",
+      "active_30d": 0,
+      "curve_score": 81.16,
+      "unique_roi": 19.15,
+      "take_n": 85,
+      "take_roi": 22.2,
+      "median": 2669.93,
+      "sports_frac": 0.74,
+      "wr": 54.85,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 412,
+          "roi": 15.7
+        },
+        {
+          "key": "OTHER",
+          "n": 240,
+          "roi": 18.1
+        },
+        {
+          "key": "ESPORTS",
+          "n": 126,
+          "roi": 8.6
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "SOCCER (Other)|Moneyline",
+          "n": 291,
+          "roi": 18.4
+        },
+        {
+          "key": "OTHER|Moneyline",
+          "n": 176,
+          "roi": 24.7
+        },
+        {
+          "key": "SOCCER (Other)|Total",
+          "n": 104,
+          "roi": 7.0
+        }
+      ],
+      "first_scout": {
+        "date": "2026-01-30",
+        "why": "scout curve=100 roi=9.6% spec=SOCCER (Other),ESPORTS sports=66% emerging active30=273",
+        "curve": 100.0,
+        "unique": 9.61,
+        "tops": [
+          {
+            "key": "SOCCER (Other)",
+            "n": 105,
+            "roi": 18.7
+          },
+          {
+            "key": "OTHER",
+            "n": 97,
+            "roi": 4.6
+          },
+          {
+            "key": "ESPORTS",
+            "n": 26,
+            "roi": 3.9
+          }
+        ],
+        "median": 1576.77
+      },
+      "first_elite": {
+        "date": "2026-02-04",
+        "why": "elite curve-book unique=12.3% spec=SOCCER (Other)@12.7% take=12/2.2% curve=100 wr_band active30=360",
+        "curve": 100.0,
+        "unique": 12.26,
+        "take_n": 12,
+        "take_roi": 2.17
+      },
+      "elite_windows": [
+        {
+          "start": "2026-02-04",
+          "why": "elite curve-book unique=12.3% spec=SOCCER (Other)@12.7% take=12/2.2% curve=100 wr_band active30=360",
+          "curve": 100.0,
+          "unique": 12.26,
+          "end": "2026-02-07",
+          "kick": "scout curve=100 roi=17.1% spec=SOCCER (Other),ESPORTS sports=70% emerging active30=373"
+        },
+        {
+          "start": "2026-02-10",
+          "why": "elite take=12/15.9% spec=SOCCER (Other)@17.9% curve=98 wr_band active30=379",
+          "curve": 98.16499999999999,
+          "unique": 15.84,
+          "end": "2026-08-31",
+          "kick": "stale_30d_n=0"
+        }
+      ],
+      "backtest": {
+        "n": 91,
+        "pnl": 2588.77,
+        "roi": 28.45,
+        "first": "2026-02-05",
+        "last": "2026-04-12"
+      },
+      "sample_plays": [
+        {
+          "date": "2026-02-05",
+          "won": true,
+          "pnl": 143.4,
+          "q": 68,
+          "rel": 2.4,
+          "sport": "SOCCER (Other)",
+          "sub": "Moneyline",
+          "entry": 0.3908,
+          "cost": 4822.06,
+          "title": "Will Gr\u00eamio FBPA win on 2026-02-04?"
+        },
+        {
+          "date": "2026-02-05",
+          "won": true,
+          "pnl": 194.16,
+          "q": 68,
+          "rel": 10.06,
+          "sport": "OTHER",
+          "sub": "Moneyline",
+          "entry": 0.32,
+          "cost": 20193.91,
+          "title": "Will Atalanta BC win on 2026-02-05?"
+        },
+        {
+          "date": "2026-02-07",
+          "won": true,
+          "pnl": 85.19,
+          "q": 76,
+          "rel": 4.98,
+          "sport": "SOCCER (Other)",
+          "sub": "Moneyline",
+          "entry": 0.52,
+          "cost": 10082.14,
+          "title": "Will BV Borussia 09 Dortmund win on 2026-02-07?"
+        },
+        {
+          "date": "2026-02-07",
+          "won": true,
+          "pnl": 74.09,
+          "q": 76,
+          "rel": 19.59,
+          "sport": "SOCCER (Other)",
+          "sub": "Moneyline",
+          "entry": 0.5544,
+          "cost": 39672.6,
+          "title": "Will FC St. Pauli 1910 win on 2026-02-07?"
+        },
+        {
+          "date": "2026-04-11",
+          "won": false,
+          "pnl": -100.0,
+          "q": 84,
+          "rel": 4.8,
+          "sport": "SOCCER (Other)",
+          "sub": "Moneyline",
+          "entry": 0.32,
+          "cost": 12729.59,
+          "title": "Will Udinese Calcio win on 2026-04-11?"
+        },
+        {
+          "date": "2026-04-12",
+          "won": true,
+          "pnl": 14.88,
+          "q": 83,
+          "rel": 2.46,
+          "sport": "SOCCER (Other)",
+          "sub": "Draw",
+          "entry": 0.8505,
+          "cost": 6552.36,
+          "title": "Will CD Tondela vs. Gil Vicente FC end in a draw?"
+        },
+        {
+          "date": "2026-04-12",
+          "won": false,
+          "pnl": -100.0,
+          "q": 83,
+          "rel": 2.46,
+          "sport": "SOCCER (Other)",
+          "sub": "Moneyline",
+          "entry": 0.4497,
+          "cost": 6563.93,
+          "title": "Will Shenzhen Xinpengcheng FC win on 2026-04-12?"
+        }
+      ]
+    },
+    {
+      "username": "Supah9ga",
+      "wallet": "0x57cd939930fd119067ca9dc42b22b3e15708a0fb",
+      "tier": "none",
+      "why": "stale_30d_n=0",
+      "active_30d": 0,
+      "curve_score": 83.75999999999999,
+      "unique_roi": 18.62,
+      "take_n": 21,
+      "take_roi": 30.9,
+      "median": 5533.0,
+      "sports_frac": 0.83,
+      "wr": 52.13,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 118,
+          "roi": 19.1
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 82,
+          "roi": 59.1
+        },
+        {
+          "key": "ESPORTS",
+          "n": 71,
+          "roi": 19.9
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "SOCCER (Other)|Moneyline",
+          "n": 100,
+          "roi": 13.7
+        },
+        {
+          "key": "SOCCER (EPL)|Moneyline",
+          "n": 68,
+          "roi": 64.7
+        },
+        {
+          "key": "NBA|Moneyline",
+          "n": 60,
+          "roi": 0.2
+        }
+      ],
+      "first_scout": {
+        "date": "2025-11-28",
+        "why": "scout curve=77 roi=7.2% spec=ESPORTS,SOCCER (UCL) sports=71% emerging active30=56",
+        "curve": 77.37,
+        "unique": 7.24,
+        "tops": [
+          {
+            "key": "ESPORTS",
+            "n": 25,
+            "roi": 14.5
+          },
+          {
+            "key": "OTHER",
+            "n": 14,
+            "roi": -5.4
+          },
+          {
+            "key": "SOCCER (UCL)",
+            "n": 12,
+            "roi": -66.7
+          }
+        ],
+        "median": 3458.97
+      },
+      "first_elite": {
+        "date": "2026-03-22",
+        "why": "elite take=15/74.1% spec=SOCCER (Other)@25.2% curve=94 wr_band active30=90",
+        "curve": 93.71000000000001,
+        "unique": 19.22,
+        "take_n": 15,
+        "take_roi": 74.12
+      },
+      "elite_windows": [
+        {
+          "start": "2026-03-22",
+          "why": "elite take=15/74.1% spec=SOCCER (Other)@25.2% curve=94 wr_band active30=90",
+          "curve": 93.71000000000001,
+          "unique": 19.22,
+          "end": "2026-08-31",
+          "kick": "stale_30d_n=0"
+        }
+      ],
+      "backtest": {
+        "n": 8,
+        "pnl": -550.83,
+        "roi": -68.85,
+        "first": "2026-03-23",
+        "last": "2026-04-13"
+      },
+      "sample_plays": [
+        {
+          "date": "2026-03-23",
+          "won": true,
+          "pnl": 36.99,
+          "q": 62,
+          "rel": 5.77,
+          "sport": "SOCCER (LaLiga)",
+          "sub": "Moneyline",
+          "entry": 0.71,
+          "cost": 32035.18,
+          "title": "Will Club Atl\u00e9tico de Madrid win on 2026-03-22?"
+        },
+        {
+          "date": "2026-04-02",
+          "won": false,
+          "pnl": -100.0,
+          "q": 64,
+          "rel": 6.88,
+          "sport": "SOCCER (Other)",
+          "sub": "Moneyline",
+          "entry": 0.24,
+          "cost": 38186.87,
+          "title": "Will Paris Saint-Germain FC win on 2026-04-03?"
+        },
+        {
+          "date": "2026-04-03",
+          "won": false,
+          "pnl": -100.0,
+          "q": 64,
+          "rel": 3.4,
+          "sport": "SOCCER (Other)",
+          "sub": "Moneyline",
+          "entry": 0.3552,
+          "cost": 18836.76,
+          "title": "Will FC Bayern M\u00fcnchen win on 2026-04-04?"
+        },
+        {
+          "date": "2026-04-04",
+          "won": false,
+          "pnl": -100.0,
+          "q": 63,
+          "rel": 5.68,
+          "sport": "SOCCER (Other)",
+          "sub": "Moneyline",
+          "entry": 0.39,
+          "cost": 31521.66,
+          "title": "Will FC Internazionale Milano win on 2026-04-05?"
+        },
+        {
+          "date": "2026-04-13",
+          "won": true,
+          "pnl": 12.18,
+          "q": 62,
+          "rel": 3.93,
+          "sport": "OTHER",
+          "sub": "Futures",
+          "entry": 0.8714,
+          "cost": 21784.56,
+          "title": "Will Scottie Scheffler win the 2026 Masters tournament?"
+        },
+        {
+          "date": "2026-04-13",
+          "won": false,
+          "pnl": -100.0,
+          "q": 62,
+          "rel": 2.17,
+          "sport": "OTHER",
+          "sub": "Futures",
+          "entry": 0.3,
+          "cost": 11999.76,
+          "title": "Will Rory McIlroy win the 2026 Masters tournament?"
+        },
+        {
+          "date": "2026-04-13",
+          "won": false,
+          "pnl": -100.0,
+          "q": 62,
+          "rel": 4.26,
+          "sport": "SOCCER (Other)",
+          "sub": "Moneyline",
+          "entry": 0.24,
+          "cost": 23600.88,
+          "title": "Will VfB Stuttgart win on 2026-04-12?"
+        }
+      ]
+    },
+    {
+      "username": "ShortFlutterStock",
+      "wallet": "0x13414a77a4be48988851c73dfd824d0168e70853",
+      "tier": "none",
+      "why": "watch score=86 n=3178 active30=0 sports=84%",
+      "active_30d": 0,
+      "curve_score": 85.58,
+      "unique_roi": 8.4,
+      "take_n": 224,
+      "take_roi": 31.73,
+      "median": 2914.64,
+      "sports_frac": 0.84,
+      "wr": 59.63,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 1917,
+          "roi": 15.1
+        },
+        {
+          "key": "NHL",
+          "n": 382,
+          "roi": 1.5
+        },
+        {
+          "key": "OTHER",
+          "n": 351,
+          "roi": 1.5
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "ESPORTS|Map / Game",
+          "n": 596,
+          "roi": 16.5
+        },
+        {
+          "key": "ESPORTS|Moneyline",
+          "n": 579,
+          "roi": 18.4
+        },
+        {
+          "key": "ESPORTS|Total",
+          "n": 511,
+          "roi": -19.5
+        }
+      ],
+      "first_scout": {
+        "date": "2025-11-12",
+        "why": "scout curve=98 roi=25.9% spec=ESPORTS,NHL sports=93% emerging active30=42",
+        "curve": 98.39,
+        "unique": 25.88,
+        "tops": [
+          {
+            "key": "ESPORTS",
+            "n": 25,
+            "roi": 67.6
+          },
+          {
+            "key": "NHL",
+            "n": 10,
+            "roi": 8.3
+          }
+        ],
+        "median": 2591.29
+      },
+      "first_elite": {
+        "date": "2026-02-15",
+        "why": "elite take=12/64.6% spec=ESPORTS@17.0% curve=81 wr_band active30=1269",
+        "curve": 81.215,
+        "unique": 9.55,
+        "take_n": 12,
+        "take_roi": 64.6
+      },
+      "elite_windows": [
+        {
+          "start": "2026-02-15",
+          "why": "elite take=12/64.6% spec=ESPORTS@17.0% curve=81 wr_band active30=1269",
+          "curve": 81.215,
+          "unique": 9.55,
+          "end": "2026-02-21",
+          "kick": "scout curve=84 roi=9.5% spec=ESPORTS,NBA sports=83% emerging active30=1291"
+        },
+        {
+          "start": "2026-02-23",
+          "why": "elite take=61/7.8% spec=ESPORTS@18.3% curve=100 wr_band active30=1307",
+          "curve": 100.0,
+          "unique": 10.62,
+          "end": "2026-02-25",
+          "kick": "scout curve=100 roi=9.7% spec=ESPORTS,NBA sports=82% emerging active30=1277"
+        },
+        {
+          "start": "2026-02-26",
+          "why": "elite take=82/7.3% spec=ESPORTS@17.8% curve=100 wr_band active30=1301",
+          "curve": 100.0,
+          "unique": 10.28,
+          "end": "2026-02-27",
+          "kick": "scout curve=100 roi=9.2% spec=ESPORTS,NBA sports=82% emerging active30=1284"
+        },
+        {
+          "start": "2026-03-21",
+          "why": "elite take=193/18.0% spec=ESPORTS@14.7% curve=78 wr_band active30=686",
+          "curve": 77.91,
+          "unique": 9.31,
+          "end": "2026-06-19",
+          "kick": "stale_30d_n=0"
+        }
+      ],
+      "backtest": {
+        "n": 80,
+        "pnl": -79.29,
+        "roi": -0.99,
+        "first": "2026-02-16",
+        "last": "2026-04-05"
+      },
+      "sample_plays": [
+        {
+          "date": "2026-02-16",
+          "won": false,
+          "pnl": -100.0,
+          "q": 66,
+          "rel": 4.37,
+          "sport": "ESPORTS",
+          "sub": "Moneyline",
+          "entry": 0.2261,
+          "cost": 10364.08,
+          "title": "Counter-Strike: B8 vs Aurora Gaming (BO3) - PGL Cluj-Napoca Group Stag"
+        },
+        {
+          "date": "2026-02-16",
+          "won": false,
+          "pnl": -100.0,
+          "q": 66,
+          "rel": 3.65,
+          "sport": "ESPORTS",
+          "sub": "Map / Game",
+          "entry": 0.4401,
+          "cost": 8643.37,
+          "title": "Counter-Strike: B8 vs Aurora Gaming - Map 2 Winner"
+        },
+        {
+          "date": "2026-02-16",
+          "won": false,
+          "pnl": -100.0,
+          "q": 66,
+          "rel": 2.11,
+          "sport": "ESPORTS",
+          "sub": "Moneyline",
+          "entry": 0.2277,
+          "cost": 5005.06,
+          "title": "Counter-Strike: MOUZ vs FUT Esports (BO3) - PGL Cluj-Napoca Group Stag"
+        },
+        {
+          "date": "2026-02-16",
+          "won": false,
+          "pnl": -100.0,
+          "q": 66,
+          "rel": 2.69,
+          "sport": "ESPORTS",
+          "sub": "Map / Game",
+          "entry": 0.4529,
+          "cost": 6377.3,
+          "title": "Counter-Strike: B8 vs Aurora Gaming - Map 1 Winner"
+        },
+        {
+          "date": "2026-04-04",
+          "won": true,
+          "pnl": 162.89,
+          "q": 60,
+          "rel": 11.71,
+          "sport": "ESPORTS",
+          "sub": "Moneyline",
+          "entry": 0.3604,
+          "cost": 33362.67,
+          "title": "LoL: Gen.G vs KT Rolster (BO3) - LCK Rounds 1-2"
+        },
+        {
+          "date": "2026-04-04",
+          "won": true,
+          "pnl": 305.78,
+          "q": 60,
+          "rel": 2.33,
+          "sport": "ESPORTS",
+          "sub": "Moneyline",
+          "entry": 0.2264,
+          "cost": 6637.43,
+          "title": "LoL: BNK FEARX vs HANJIN BRION (BO3) - LCK Rounds 1-2"
+        },
+        {
+          "date": "2026-04-05",
+          "won": true,
+          "pnl": 43.13,
+          "q": 61,
+          "rel": 2.73,
+          "sport": "ESPORTS",
+          "sub": "Moneyline",
+          "entry": 0.6787,
+          "cost": 7837.75,
+          "title": "LoL: SK Gaming vs Shifters (BO3) - LEC Regular Season"
+        }
+      ]
+    },
+    {
+      "username": "SineNooneEI",
+      "wallet": "0x38337de21ff0bb0a11a40761507d51e318d633d1",
+      "tier": "none",
+      "why": "watch score=79 n=1626 active30=274 sports=100%",
+      "active_30d": 274,
+      "curve_score": 79.42,
+      "unique_roi": 5.16,
+      "take_n": 16,
+      "take_roi": -17.48,
+      "median": 7143.99,
+      "sports_frac": 1.0,
+      "wr": 53.38,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 1505,
+          "roi": 4.0
+        },
+        {
+          "key": "TENNIS",
+          "n": 100,
+          "roi": 21.6
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 8,
+          "roi": -9.0
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "ESPORTS|Map / Game",
+          "n": 927,
+          "roi": 3.6
+        },
+        {
+          "key": "ESPORTS|Moneyline",
+          "n": 564,
+          "roi": 4.0
+        },
+        {
+          "key": "TENNIS|Moneyline",
+          "n": 95,
+          "roi": 20.9
+        }
+      ],
+      "first_scout": {
+        "date": "2026-02-06",
+        "why": "scout curve=95 roi=37.8% spec=ESPORTS sports=100% emerging active30=33",
+        "curve": 94.63499999999999,
+        "unique": 37.82,
+        "tops": [
+          {
+            "key": "ESPORTS",
+            "n": 33,
+            "roi": 37.8
+          }
+        ],
+        "median": 4963.43
+      },
+      "first_elite": null,
+      "elite_windows": [],
+      "backtest": {
+        "n": 0,
+        "pnl": 0,
+        "roi": null,
+        "first": null,
+        "last": null
+      },
+      "sample_plays": []
+    },
+    {
+      "username": "bigspending",
+      "wallet": "0x86dab59a8a6e7f9947282d2117aab3429b706428",
+      "tier": "none",
+      "why": "watch score=13 n=59 active30=59 sports=63%",
+      "active_30d": 59,
+      "curve_score": 12.65,
+      "unique_roi": -12.7,
+      "take_n": 2,
+      "take_roi": -100.0,
+      "median": 12564.74,
+      "sports_frac": 0.63,
+      "wr": 50.85,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 24,
+          "roi": -38.4
+        },
+        {
+          "key": "OTHER",
+          "n": 22,
+          "roi": 33.3
+        },
+        {
+          "key": "SOCCER (UCL)",
+          "n": 13,
+          "roi": 2.0
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "OTHER|Moneyline",
+          "n": 18,
+          "roi": 38.1
+        },
+        {
+          "key": "SOCCER (Other)|Moneyline",
+          "n": 16,
+          "roi": -40.6
+        },
+        {
+          "key": "SOCCER (UCL)|Moneyline",
+          "n": 7,
+          "roi": 6.5
+        }
+      ],
+      "first_scout": null,
+      "first_elite": null,
+      "elite_windows": [],
+      "backtest": {
+        "n": 0,
+        "pnl": 0,
+        "roi": null,
+        "first": null,
+        "last": null
+      },
+      "sample_plays": []
+    },
+    {
+      "username": "HedgeMaster88",
+      "wallet": "0x036c159d5a348058a81066a76b89f35926d4178d",
+      "tier": "none",
+      "why": "watch score=85 n=234 active30=0 sports=87%",
+      "active_30d": 0,
+      "curve_score": 85.02000000000001,
+      "unique_roi": 19.11,
+      "take_n": 42,
+      "take_roi": -6.19,
+      "median": 9834.45,
+      "sports_frac": 0.87,
+      "wr": 52.99,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 148,
+          "roi": 12.8
+        },
+        {
+          "key": "OTHER",
+          "n": 31,
+          "roi": 19.1
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 19,
+          "roi": -1.7
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "SOCCER (Other)|Moneyline",
+          "n": 78,
+          "roi": 26.8
+        },
+        {
+          "key": "SOCCER (Other)|Total",
+          "n": 60,
+          "roi": -1.0
+        },
+        {
+          "key": "OTHER|Moneyline",
+          "n": 20,
+          "roi": -4.1
+        }
+      ],
+      "first_scout": {
+        "date": "2026-02-26",
+        "why": "scout curve=84 roi=34.2% spec=SOCCER (Other),SOCCER (UCL) sports=97% emerging active30=29",
+        "curve": 84.135,
+        "unique": 34.17,
+        "tops": [
+          {
+            "key": "SOCCER (Other)",
+            "n": 20,
+            "roi": 23.0
+          },
+          {
+            "key": "SOCCER (UCL)",
+            "n": 6,
+            "roi": 103.5
+          }
+        ],
+        "median": 5740.0
+      },
+      "first_elite": null,
+      "elite_windows": [],
+      "backtest": {
+        "n": 0,
+        "pnl": 0,
+        "roi": null,
+        "first": null,
+        "last": null
+      },
+      "sample_plays": []
+    },
+    {
+      "username": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
+      "wallet": "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87",
+      "tier": "none",
+      "why": "watch score=86 n=116 active30=35 sports=84%",
+      "active_30d": 35,
+      "curve_score": 85.55,
+      "unique_roi": 13.66,
+      "take_n": 2,
+      "take_roi": -19.61,
+      "median": 38536.93,
+      "sports_frac": 0.84,
+      "wr": 55.17,
+      "top_sports": [
+        {
+          "key": "TENNIS",
+          "n": 86,
+          "roi": 24.2
+        },
+        {
+          "key": "OTHER",
+          "n": 18,
+          "roi": 2.9
+        },
+        {
+          "key": "NBA",
+          "n": 9,
+          "roi": -4.4
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "TENNIS|Moneyline",
+          "n": 85,
+          "roi": 24.1
+        },
+        {
+          "key": "OTHER|Moneyline",
+          "n": 16,
+          "roi": 7.0
+        },
+        {
+          "key": "NBA|Moneyline",
+          "n": 9,
+          "roi": -4.4
+        }
+      ],
+      "first_scout": null,
+      "first_elite": null,
+      "elite_windows": [],
+      "backtest": {
+        "n": 0,
+        "pnl": 0,
+        "roi": null,
+        "first": null,
+        "last": null
+      },
+      "sample_plays": []
+    }
+  ],
+  "near_misses": [
+    {
+      "username": "SineNooneEI",
+      "wallet": "0x38337de21ff0bb0a11a40761507d51e318d633d1",
+      "tier": "none",
+      "why": "watch score=79 n=1626 active30=274 sports=100%",
+      "active_30d": 274,
+      "curve_score": 79.42,
+      "unique_roi": 5.16,
+      "take_n": 16,
+      "take_roi": -17.48,
+      "median": 7143.99,
+      "sports_frac": 1.0,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 1505,
+          "roi": 4.0
+        },
+        {
+          "key": "TENNIS",
+          "n": 100,
+          "roi": 21.6
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 8,
+          "roi": -9.0
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "ESPORTS|Map / Game",
+          "n": 927,
+          "roi": 3.6
+        },
+        {
+          "key": "ESPORTS|Moneyline",
+          "n": 564,
+          "roi": 4.0
+        },
+        {
+          "key": "TENNIS|Moneyline",
+          "n": 95,
+          "roi": 20.9
+        }
+      ],
+      "to_reach_scout": [
+        "specialty sport n\u226520 ROI\u22658.0% (top={'key': 'ESPORTS', 'n': 1505, 'roi': 4.0})"
+      ],
+      "to_reach_elite": [
+        "Path A: recent-40 take ROI \u2265 5.0% (now -17.5%)",
+        "Path B: core-sport specialty (not ESPORTS) \u2014 tennis/NBA/soccer/etc",
+        "Path B: unique \u2265 10.0% (now 5.2%)"
+      ]
+    },
+    {
+      "username": "bigspending",
+      "wallet": "0x86dab59a8a6e7f9947282d2117aab3429b706428",
+      "tier": "none",
+      "why": "watch score=13 n=59 active30=59 sports=63%",
+      "active_30d": 59,
+      "curve_score": 12.65,
+      "unique_roi": -12.7,
+      "take_n": 2,
+      "take_roi": -100.0,
+      "median": 12564.74,
+      "sports_frac": 0.63,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 24,
+          "roi": -38.4
+        },
+        {
+          "key": "OTHER",
+          "n": 22,
+          "roi": 33.3
+        },
+        {
+          "key": "SOCCER (UCL)",
+          "n": 13,
+          "roi": 2.0
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "OTHER|Moneyline",
+          "n": 18,
+          "roi": 38.1
+        },
+        {
+          "key": "SOCCER (Other)|Moneyline",
+          "n": 16,
+          "roi": -40.6
+        },
+        {
+          "key": "SOCCER (UCL)|Moneyline",
+          "n": 7,
+          "roi": 6.5
+        }
+      ],
+      "to_reach_scout": [
+        "curve_score \u2265 55.0 (now 13)",
+        "unique ROI \u2265 5.0% (now -12.7%)",
+        "specialty sport n\u226520 ROI\u22658.0% (top={'key': 'SOCCER (Other)', 'n': 24, 'roi': -38.4})"
+      ],
+      "to_reach_elite": [
+        "Path A: take_n \u2265 12 (now 2)",
+        "Path A: recent-40 take ROI \u2265 5.0% (now -100.0%)",
+        "Path B: unique \u2265 10.0% (now -12.7%)",
+        "Path B: curve \u2265 70.0 (now 13)"
+      ]
+    },
+    {
+      "username": "0xE30E74595517de48f1FB19f4553dd3d9F1E96B87",
+      "wallet": "0xe30e74595517de48f1fb19f4553dd3d9f1e96b87",
+      "tier": "none",
+      "why": "watch score=86 n=116 active30=35 sports=84%",
+      "active_30d": 35,
+      "curve_score": 85.55,
+      "unique_roi": 13.66,
+      "take_n": 2,
+      "take_roi": -19.61,
+      "median": 38536.93,
+      "sports_frac": 0.84,
+      "top_sports": [
+        {
+          "key": "TENNIS",
+          "n": 86,
+          "roi": 24.2
+        },
+        {
+          "key": "OTHER",
+          "n": 18,
+          "roi": 2.9
+        },
+        {
+          "key": "NBA",
+          "n": 9,
+          "roi": -4.4
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "TENNIS|Moneyline",
+          "n": 85,
+          "roi": 24.1
+        },
+        {
+          "key": "OTHER|Moneyline",
+          "n": 16,
+          "roi": 7.0
+        },
+        {
+          "key": "NBA|Moneyline",
+          "n": 9,
+          "roi": -4.4
+        }
+      ],
+      "to_reach_scout": [
+        "joinable (median=$38,537)"
+      ],
+      "to_reach_elite": [
+        "Path A: take_n \u2265 12 (now 2)",
+        "Path A: recent-40 take ROI \u2265 5.0% (now -19.6%)"
+      ]
+    },
+    {
+      "username": "predictionlegend",
+      "wallet": "0x3eb095d871501a1d7a3cb086a22d174b52356a68",
+      "tier": "none",
+      "why": "watch score=11 n=53 active30=53 sports=74%",
+      "active_30d": 53,
+      "curve_score": 10.96,
+      "unique_roi": -6.04,
+      "take_n": 2,
+      "take_roi": -100.0,
+      "median": 17880.26,
+      "sports_frac": 0.74,
+      "top_sports": [
+        {
+          "key": "SOCCER (LaLiga)",
+          "n": 21,
+          "roi": -2.1
+        },
+        {
+          "key": "OTHER",
+          "n": 14,
+          "roi": -37.1
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 13,
+          "roi": 8.1
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "SOCCER (LaLiga)|Moneyline",
+          "n": 13,
+          "roi": 5.3
+        },
+        {
+          "key": "SOCCER (Other)|Moneyline",
+          "n": 9,
+          "roi": 31.1
+        },
+        {
+          "key": "OTHER|Moneyline",
+          "n": 8,
+          "roi": -62.8
+        }
+      ],
+      "to_reach_scout": [
+        "curve_score \u2265 55.0 (now 11)",
+        "unique ROI \u2265 5.0% (now -6.0%)",
+        "joinable (median=$17,880)",
+        "specialty sport n\u226520 ROI\u22658.0% (top={'key': 'SOCCER (LaLiga)', 'n': 21, 'roi': -2.1})"
+      ],
+      "to_reach_elite": [
+        "Path A: take_n \u2265 12 (now 2)",
+        "Path A: recent-40 take ROI \u2265 5.0% (now -100.0%)",
+        "Path B: core-sport specialty (not SOCCER (LaLiga)) \u2014 tennis/NBA/soccer/etc",
+        "Path B: unique \u2265 10.0% (now -6.0%)",
+        "Path B: curve \u2265 70.0 (now 11)"
+      ]
+    },
+    {
+      "username": "HedgeMaster88",
+      "wallet": "0x036c159d5a348058a81066a76b89f35926d4178d",
+      "tier": "none",
+      "why": "watch score=85 n=234 active30=0 sports=87%",
+      "active_30d": 0,
+      "curve_score": 85.02000000000001,
+      "unique_roi": 19.11,
+      "take_n": 42,
+      "take_roi": -6.19,
+      "median": 9834.45,
+      "sports_frac": 0.87,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 148,
+          "roi": 12.8
+        },
+        {
+          "key": "OTHER",
+          "n": 31,
+          "roi": 19.1
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 19,
+          "roi": -1.7
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "SOCCER (Other)|Moneyline",
+          "n": 78,
+          "roi": 26.8
+        },
+        {
+          "key": "SOCCER (Other)|Total",
+          "n": 60,
+          "roi": -1.0
+        },
+        {
+          "key": "OTHER|Moneyline",
+          "n": 20,
+          "roi": -4.1
+        }
+      ],
+      "to_reach_scout": [
+        "active30 \u2265 12 (now 0)"
+      ],
+      "to_reach_elite": [
+        "Path A: recent-40 take ROI \u2265 5.0% (now -6.2%)"
+      ]
+    }
+  ],
+  "how_backtest_works": {
+    "step1": "At each fill alert time T, only use closed markets ending \u2264 T-lag",
+    "step2": "Score dollar equity curve + sports specialty + median size + WR + activity",
+    "step3": "Promote scout when curve/specialty/activity clear; elite when Path A take or Path B curve-book",
+    "step4": "If elite AND Sniper gates (Q\u226560, sport ROI+5%, rel\u22652\u00d7, 10\u201388\u00a2, no NFL) \u2192 would have bet $100 unit +2\u00a2 fill",
+    "step5": "Kick on stale (<5 prints/30d), recent-cold take, dollar collapse; 21d cooldown before re-add"
+  }
+}
