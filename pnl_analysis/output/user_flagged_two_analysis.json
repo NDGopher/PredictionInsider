@@ -1,0 +1,447 @@
+[
+  {
+    "label": "Vigilant-Environment",
+    "username": "Vigilant-Environment",
+    "wallet": "0xdbdd45150249e229eb4ca8aa48a30dca21faa5de",
+    "style": {
+      "n": 26213,
+      "unique_roi": 0.76,
+      "median": 596.32,
+      "wr": 46.4,
+      "sports_frac": 0.73,
+      "last90_n": 11148,
+      "last90_roi": 2.69,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 9898,
+          "roi": -0.7
+        },
+        {
+          "key": "OTHER",
+          "n": 6966,
+          "roi": 5.9
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 3571,
+          "roi": -2.4
+        },
+        {
+          "key": "TENNIS",
+          "n": 1918,
+          "roi": -7.0
+        },
+        {
+          "key": "NBA",
+          "n": 1297,
+          "roi": -2.6
+        },
+        {
+          "key": "MLB",
+          "n": 996,
+          "roi": 7.6
+        },
+        {
+          "key": "NHL",
+          "n": 388,
+          "roi": 1.7
+        },
+        {
+          "key": "WNBA",
+          "n": 356,
+          "roi": 11.1
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "ESPORTS|Map / Game",
+          "n": 5030,
+          "roi": -3.2
+        },
+        {
+          "key": "OTHER|Moneyline",
+          "n": 4423,
+          "roi": 5.1
+        },
+        {
+          "key": "ESPORTS|Moneyline",
+          "n": 4305,
+          "roi": 1.3
+        },
+        {
+          "key": "OTHER|Total",
+          "n": 1774,
+          "roi": 6.9
+        },
+        {
+          "key": "TENNIS|Moneyline",
+          "n": 1661,
+          "roi": -7.8
+        },
+        {
+          "key": "SOCCER (Other)|Total",
+          "n": 1633,
+          "roi": -2.8
+        },
+        {
+          "key": "SOCCER (Other)|Moneyline",
+          "n": 1399,
+          "roi": -2.3
+        },
+        {
+          "key": "NBA|Moneyline",
+          "n": 544,
+          "roi": -4.1
+        }
+      ],
+      "curve_score": 91.1,
+      "curve": {
+        "n": 26213.0,
+        "roi": 0.76,
+        "sharpe": 0.99,
+        "r2": 0.67,
+        "up_day_pct": 52.0,
+        "max_dd": -198250.85,
+        "calmar": 0.77,
+        "total_pnl": 152933.56,
+        "specialty": "SOCCER (UCL)",
+        "specialty_roi": 16.39,
+        "specialty_n": 204.0,
+        "specialty_sharpe": 4.26,
+        "last30_roi": 0.22,
+        "last30_n": 5717
+      }
+    },
+    "walk": {
+      "first_scout": "2026-08-16",
+      "first_scout_why": "scout curve=67 roi=3.1% spec=SOCCER (Other),ESPORTS sports=75% emerging active30=252",
+      "first_elite": null,
+      "first_elite_why": null,
+      "tier": "none",
+      "why": "cooldown_5d \u00b7 watch score=83 n=2938 active30=2938 sports=72%",
+      "trades": 0,
+      "curve_score": 82.855,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "active_30d": 2938,
+      "trade_roi": 0.0,
+      "sample_trades": []
+    },
+    "api_screen": {
+      "username": "Vigilant-Environment",
+      "wallet": "0xdbdd45150249e229eb4ca8aa48a30dca21faa5de",
+      "ok": true,
+      "n": 330,
+      "unique_roi_est": 50.09,
+      "r2": 0.969,
+      "up_pct": 87.0,
+      "wr": 87.0,
+      "median_est": 291.01,
+      "sports_frac_est": 0.35,
+      "curve_est": 78.8,
+      "bot_risk": false,
+      "scout_candidate": false,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 330,
+          "roi": 50.1
+        }
+      ]
+    },
+    "miss_reasons": [
+      "mega_tape_26213_rows_skipped_by_discovery_max",
+      "api_screen_sports_frac=0.35<0.45",
+      "walkforward_scouted_never_elited"
+    ],
+    "roster_log": [
+      {
+        "at": "2026-08-16T03:10:48+00:00",
+        "alert_ref": "2026-08-17T03:10:48+00:00",
+        "action": "promote_scout",
+        "from": "none",
+        "to": "scout",
+        "why": "scout curve=67 roi=3.1% spec=SOCCER (Other),ESPORTS sports=75% emerging active30=252",
+        "curve_score": 67.38,
+        "unique_roi": 3.14,
+        "take_n": 0,
+        "take_roi": 0.0,
+        "active_30d": 252,
+        "median": 396.25,
+        "sports_frac": 0.75,
+        "top_sports": [
+          {
+            "key": "SOCCER (Other)",
+            "n": 98,
+            "roi": -12.1
+          },
+          {
+            "key": "ESPORTS",
+            "n": 71,
+            "roi": 15.6
+          },
+          {
+            "key": "OTHER",
+            "n": 62,
+            "roi": 17.8
+          },
+          {
+            "key": "MLB",
+            "n": 7,
+            "roi": 5.5
+          },
+          {
+            "key": "TENNIS",
+            "n": 6,
+            "roi": 63.3
+          },
+          {
+            "key": "WNBA",
+            "n": 6,
+            "roi": -35.4
+          }
+        ],
+        "emerging": true,
+        "curve": {
+          "n": 252.0,
+          "roi": 3.14,
+          "sharpe": 0.0,
+          "r2": 0.008,
+          "up_day_pct": 100.0,
+          "max_dd": -29228.5,
+          "calmar": 0.12,
+          "total_pnl": 3383.23,
+          "specialty": "ESPORTS",
+          "specialty_roi": 15.63,
+          "specialty_n": 71.0,
+          "specialty_sharpe": 0.0,
+          "last30_roi": 3.14,
+          "last30_n": 252
+        }
+      },
+      {
+        "at": "2026-08-16T03:43:09+00:00",
+        "alert_ref": "2026-08-17T03:43:09+00:00",
+        "action": "kick",
+        "from": "scout",
+        "to": "none",
+        "why": "hard_unique_roi=-1.5",
+        "curve_score": 67.38,
+        "unique_roi": -1.52,
+        "take_n": 0,
+        "take_roi": 0.0,
+        "active_30d": 254,
+        "median": 398.76,
+        "sports_frac": 0.75,
+        "top_sports": [
+          {
+            "key": "SOCCER (Other)",
+            "n": 99,
+            "roi": -20.4
+          },
+          {
+            "key": "ESPORTS",
+            "n": 71,
+            "roi": 15.6
+          },
+          {
+            "key": "OTHER",
+            "n": 63,
+            "roi": 17.4
+          },
+          {
+            "key": "MLB",
+            "n": 7,
+            "roi": 5.5
+          },
+          {
+            "key": "TENNIS",
+            "n": 6,
+            "roi": 63.3
+          },
+          {
+            "key": "WNBA",
+            "n": 6,
+            "roi": -35.4
+          }
+        ],
+        "emerging": true,
+        "curve": {
+          "n": 254.0,
+          "roi": -1.52,
+          "sharpe": 0.0,
+          "r2": 0.011,
+          "up_day_pct": 0.0,
+          "max_dd": -29228.5,
+          "calmar": -0.06,
+          "total_pnl": -1713.11,
+          "specialty": "ESPORTS",
+          "specialty_roi": 15.63,
+          "specialty_n": 71.0,
+          "specialty_sharpe": 0.0,
+          "last30_roi": -1.52,
+          "last30_n": 254
+        }
+      }
+    ]
+  },
+  {
+    "label": "sentrio",
+    "username": "sentrio",
+    "wallet": "0xdb83e85ffd22faa4009273034770f96ffc5b1e50",
+    "style": {
+      "n": 23854,
+      "unique_roi": -0.66,
+      "median": 874.36,
+      "wr": 45.0,
+      "sports_frac": 0.8,
+      "last90_n": 18385,
+      "last90_roi": -0.51,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 4805,
+          "roi": -2.6
+        },
+        {
+          "key": "ESPORTS",
+          "n": 4536,
+          "roi": -0.1
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 4295,
+          "roi": -2.9
+        },
+        {
+          "key": "TENNIS",
+          "n": 3896,
+          "roi": -0.6
+        },
+        {
+          "key": "MLB",
+          "n": 3535,
+          "roi": 1.3
+        },
+        {
+          "key": "WNBA",
+          "n": 998,
+          "roi": 4.3
+        },
+        {
+          "key": "SOCCER (LaLiga)",
+          "n": 473,
+          "roi": -3.9
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 457,
+          "roi": 3.9
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "TENNIS|Moneyline",
+          "n": 3720,
+          "roi": -0.5
+        },
+        {
+          "key": "OTHER|Total",
+          "n": 2298,
+          "roi": -0.2
+        },
+        {
+          "key": "ESPORTS|Moneyline",
+          "n": 2243,
+          "roi": 0.5
+        },
+        {
+          "key": "SOCCER (Other)|Total",
+          "n": 2084,
+          "roi": -2.6
+        },
+        {
+          "key": "OTHER|Moneyline",
+          "n": 1784,
+          "roi": -7.1
+        },
+        {
+          "key": "ESPORTS|Map / Game",
+          "n": 1675,
+          "roi": -11.1
+        },
+        {
+          "key": "MLB|Moneyline",
+          "n": 1673,
+          "roi": 0.4
+        },
+        {
+          "key": "SOCCER (Other)|Moneyline",
+          "n": 1539,
+          "roi": -4.6
+        }
+      ],
+      "curve_score": 53.6,
+      "curve": {
+        "n": 23854.0,
+        "roi": -0.66,
+        "sharpe": -1.38,
+        "r2": 0.698,
+        "up_day_pct": 39.1,
+        "max_dd": -363204.35,
+        "calmar": -0.49,
+        "total_pnl": -179626.68,
+        "specialty": "NHL",
+        "specialty_roi": 6.46,
+        "specialty_n": 88.0,
+        "specialty_sharpe": 2.19,
+        "last30_roi": -0.3,
+        "last30_n": 7273
+      }
+    },
+    "walk": {
+      "first_scout": null,
+      "first_scout_why": null,
+      "first_elite": null,
+      "first_elite_why": null,
+      "tier": "none",
+      "why": "watch score=83 n=2939 active30=2939 sports=84%",
+      "trades": 0,
+      "curve_score": 83.445,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "active_30d": 2939,
+      "trade_roi": 0.0,
+      "sample_trades": []
+    },
+    "api_screen": {
+      "username": "sentrio",
+      "wallet": "0xdb83e85ffd22faa4009273034770f96ffc5b1e50",
+      "ok": true,
+      "n": 265,
+      "unique_roi_est": 9.21,
+      "r2": 0.654,
+      "up_pct": 75.8,
+      "wr": 75.8,
+      "median_est": 367.3,
+      "sports_frac_est": 0.48,
+      "curve_est": 66.2,
+      "bot_risk": false,
+      "scout_candidate": true,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 265,
+          "roi": 9.2
+        }
+      ]
+    },
+    "miss_reasons": [
+      "lifetime_unique_negative=-0.66%",
+      "mega_tape_23854_rows_skipped_by_discovery_max",
+      "walkforward_never_scouted"
+    ],
+    "roster_log": []
+  }
+]
