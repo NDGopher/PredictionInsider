@@ -47,17 +47,18 @@ KICK_NOTE_RE = re.compile(r"\bKICK\b|do not tail|not a copy", re.I)
 
 # Same mix as Polydata Smart Score, with our two custom slots.
 INSIDER_WEIGHTS = {
-    "pnl_consistency": 0.25,
-    "wr_quality": 0.20,
-    "risk": 0.20,
-    "diversification": 0.15,
-    "recency": 0.10,       # Polydata "timing & execution"
-    "copyability": 0.10,   # Polydata "bot penalty" — we score joinability instead
+    "pnl_consistency": 0.22,
+    "wr_quality": 0.18,
+    "risk": 0.18,
+    "diversification": 0.08,
+    "recency": 0.22,       # Stale take-book names must not outrank HOT copyables
+    "copyability": 0.12,   # Joinable size + not a grinder
 }
 
 MM_WALLETS = {
     "0xd9e0aaca471f489be338fd0c91a26e8669a805f2",
     "0xd9e0aaca471f489be338fd0f91a26e8669a805f2",
+    "0x2005d16a84ceefa912d4e380cd32e7ff827875ea",  # RN1 — 3.3M fills
 }
 GRINDER_WR = 94.0
 UNTAILABLE_MEDIAN = 50_000.0
@@ -457,6 +458,8 @@ def score_trader(
         days_since_i = int(days_since) if days_since is not None else None
     except (TypeError, ValueError):
         days_since_i = None
+    if days_since_i is not None and days_since_i < 0:
+        days_since_i = 0
     last_event_early = a.get("last_event_date") or h.get("max_date") or book.get("last_end_date")
     if days_since_i is None and last_event_early:
         try:
@@ -466,7 +469,19 @@ def score_trader(
             pass
     recency_band = str(h.get("recency_band") or recency_from_days(days_since_i)[0])
     live_weight = float(h.get("live_weight") if h.get("live_weight") is not None else recency_from_days(days_since_i)[1])
-    market_maker = wallet.lower() in MM_WALLETS
+    pd_trades = int(pd_early.get("trades") or 0)
+    try:
+        tpd = float(pd_early.get("trades_per_day") or 0)
+    except (TypeError, ValueError):
+        tpd = 0.0
+    bot_class = str(pd_early.get("bot_class") or "").upper()
+    # Polydata bot_class=BOT is noisy (0x8a3a is BOT at 17.6 trades/day).
+    # $100 copy skip = 100k fills, 400+ trades/day, or known MM wallet.
+    market_maker = (
+        wallet.lower() in MM_WALLETS
+        or pd_trades >= 100_000
+        or tpd >= 400
+    )
     untailable = bool(h.get("untailable") or market_maker)
     winner_capped = bool(book.get("winner_capped"))
     health_action = str(h.get("action") or "") or None
@@ -510,9 +525,16 @@ def score_trader(
     )
     copyable = lane == "take_book"
     if copyable:
-        copy_s = max(copy_s, 80.0)
         take_reason = str((take_row or {}).get("reason") or "").strip()
-        copy_note = take_reason or "On the live take book (12 matched sports books)."
+        if recency_band in {"DROP", "DARK"}:
+            copy_s = min(copy_s, 22.0)
+            copy_note = (
+                take_reason
+                or "Historical take-book name, but too quiet to tail live."
+            )
+        else:
+            copy_s = max(copy_s, 80.0)
+            copy_note = take_reason or "On the live take book (matched sports books)."
         if health_action and health_action.upper() in BLOCK_COPY_ACTIONS:
             copy_note += (
                 f" Health still flags {health_action} on hold-to-res — "
@@ -584,6 +606,7 @@ def score_trader(
         "on_roster": on_roster,
         "lane": lane,
         "take_book": on_take,
+        "copy_bucket": None,
         "score_source": score_source,
         "insider_score": insider,
         "badge": badge,
@@ -687,7 +710,9 @@ def write_markdown(payload: dict[str, Any]) -> None:
         "Polydata Smart Score mix: PnL consistency 25%, WR quality 20%, risk 20%, "
         "diversification 15%, timing 10%, bot penalty 10%.",
         "",
-        "Our mix: same first four slots, then **recency 10%** and **copyability 10%**.",
+        "Our mix: PnL consistency 22%, WR 18%, risk 18%, diversification 8%, "
+        "**recency 22%**, **copyability 12%**. DROP/DARK take-book names stay in "
+        "the archive filter — they do not get a live copyability boost.",
         "",
         "## Polydata Sports ranks (scraped profiles)",
         "",
@@ -827,6 +852,20 @@ def main() -> int:
     for i, t in enumerate(traders, 1):
         t["insider_rank"] = i
 
+    copy_buckets: dict[str, str] = {}
+    uni_path = OUTPUT_DIR / "copy_universe.json"
+    if uni_path.exists():
+        try:
+            uni = json.loads(uni_path.read_text(encoding="utf-8"))
+            for key in ("live", "bench", "watch", "kicked", "skip"):
+                for row in uni.get(key) or []:
+                    if isinstance(row, dict) and row.get("wallet"):
+                        copy_buckets[str(row["wallet"]).lower()] = key
+        except Exception:
+            copy_buckets = {}
+    for t in traders:
+        t["copy_bucket"] = copy_buckets.get(str(t.get("wallet") or "").lower())
+
     sports = [t for t in traders if t.get("polydata", {}).get("sports_rank")]
     sports.sort(key=lambda t: t["polydata"]["sports_rank"] or 9_999)
     lane_counts = {
@@ -841,10 +880,10 @@ def main() -> int:
         "generated_at": AS_OF.isoformat(),
         "as_of": AS_OF.date().isoformat(),
         "method": (
-            "Insider Score from our full closed+open CSVs. Copyable = the 12 take-book "
-            "sports books in trusted_full_books.json. Polydata HTML profiles are a "
-            "calibration reference (Smart Score, WR, PF, Sharpe/Sortino/HHI/Kelly, sports rank). "
-            "Not used as product PnL."
+            "Insider Score from our full closed+open CSVs. Take-book 12 is the "
+            "historical as-of backtest set (Capman, kch123…). Live copy is the "
+            "$100 joinable subset (unique ROI ≥5%, ≥8 prints in 30d, median <$15k). "
+            "Polydata Smart Score / 3M-fill bots (RN1) are not $100 copy."
         ),
         "weights": INSIDER_WEIGHTS,
         "polydata_weights": POLYDATA_SMART_SCORE_WEIGHTS,
@@ -857,6 +896,8 @@ def main() -> int:
             "watch": lane_counts["watch"],
             "kicked": lane_counts["kicked"],
             "reference": lane_counts["reference"],
+            "live_copy": sum(1 for t in traders if t.get("copy_bucket") == "live"),
+            "bench": sum(1 for t in traders if t.get("copy_bucket") == "bench"),
             "polydata_ok": sum(1 for t in traders if t.get("polydata", {}).get("ok")),
             "accuracy_matched": matched,
             "winner_capped": sum(1 for t in traders if t.get("winner_capped")),

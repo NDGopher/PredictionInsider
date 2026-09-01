@@ -1,0 +1,190 @@
+{
+  "generated_at": "2026-09-01T14:32:17.731154+00:00",
+  "method": "Bounded data-api closed-positions sample (recent TIMESTAMP DESC). In-memory curve/style score. Full CSV digest only for scout_candidate=true. Avoids hoarding mega MM/bot tapes locally.",
+  "counts": {
+    "screened": 6,
+    "scout_candidates": 2,
+    "bot_risk": 0
+  },
+  "scout_candidates": [
+    {
+      "username": "Shori888",
+      "wallet": "0xa36fcb6947c4ac1f09ee894aa1fd0756b90e180b",
+      "ok": true,
+      "n": 94,
+      "unique_roi_est": 76.85,
+      "r2": 0.915,
+      "up_pct": 100.0,
+      "wr": 100.0,
+      "median_est": 5667.03,
+      "sports_frac_est": 0.48,
+      "curve_est": 76.6,
+      "bot_risk": false,
+      "scout_candidate": true,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 94,
+          "roi": 76.8
+        }
+      ]
+    },
+    {
+      "username": "sentrio",
+      "wallet": "0xdb83e85ffd22faa4009273034770f96ffc5b1e50",
+      "ok": true,
+      "n": 265,
+      "unique_roi_est": 9.21,
+      "r2": 0.654,
+      "up_pct": 75.8,
+      "wr": 75.8,
+      "median_est": 367.3,
+      "sports_frac_est": 0.48,
+      "curve_est": 66.2,
+      "bot_risk": false,
+      "scout_candidate": true,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 265,
+          "roi": 9.2
+        }
+      ]
+    }
+  ],
+  "bot_risk": [],
+  "all": [
+    {
+      "username": "RegardedMoney",
+      "wallet": "0x5c3a1a602848565bb16165fcd460b00c3d43020b",
+      "ok": true,
+      "n": 377,
+      "unique_roi_est": 4.55,
+      "r2": 0.177,
+      "up_pct": 70.8,
+      "wr": 70.8,
+      "median_est": 23720.28,
+      "sports_frac_est": 0.15,
+      "curve_est": 32.1,
+      "bot_risk": false,
+      "scout_candidate": false,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 377,
+          "roi": 4.6
+        }
+      ]
+    },
+    {
+      "username": "Mysaria",
+      "wallet": "0xe40aaa5ce1dac0b7dc24c9d0284f27e17c3fe4a2",
+      "ok": true,
+      "n": 308,
+      "unique_roi_est": 2.68,
+      "r2": 0.551,
+      "up_pct": 45.1,
+      "wr": 45.1,
+      "median_est": 141.9,
+      "sports_frac_est": 0.0,
+      "curve_est": 37.1,
+      "bot_risk": false,
+      "scout_candidate": false,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 308,
+          "roi": 2.7
+        }
+      ]
+    },
+    {
+      "username": "Shori888",
+      "wallet": "0xa36fcb6947c4ac1f09ee894aa1fd0756b90e180b",
+      "ok": true,
+      "n": 94,
+      "unique_roi_est": 76.85,
+      "r2": 0.915,
+      "up_pct": 100.0,
+      "wr": 100.0,
+      "median_est": 5667.03,
+      "sports_frac_est": 0.48,
+      "curve_est": 76.6,
+      "bot_risk": false,
+      "scout_candidate": true,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 94,
+          "roi": 76.8
+        }
+      ]
+    },
+    {
+      "username": "ic4cream",
+      "wallet": "0x27f738fe203827445690339104aae35b20bc44b0",
+      "ok": true,
+      "n": 368,
+      "unique_roi_est": 63.13,
+      "r2": 0.987,
+      "up_pct": 95.4,
+      "wr": 95.4,
+      "median_est": 861.5,
+      "sports_frac_est": 0.44,
+      "curve_est": 79.5,
+      "bot_risk": false,
+      "scout_candidate": false,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 368,
+          "roi": 63.1
+        }
+      ]
+    },
+    {
+      "username": "Vigilant-Environment",
+      "wallet": "0xdbdd45150249e229eb4ca8aa48a30dca21faa5de",
+      "ok": true,
+      "n": 330,
+      "unique_roi_est": 50.09,
+      "r2": 0.969,
+      "up_pct": 87.0,
+      "wr": 87.0,
+      "median_est": 291.01,
+      "sports_frac_est": 0.35,
+      "curve_est": 78.8,
+      "bot_risk": false,
+      "scout_candidate": false,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 330,
+          "roi": 50.1
+        }
+      ]
+    },
+    {
+      "username": "sentrio",
+      "wallet": "0xdb83e85ffd22faa4009273034770f96ffc5b1e50",
+      "ok": true,
+      "n": 265,
+      "unique_roi_est": 9.21,
+      "r2": 0.654,
+      "up_pct": 75.8,
+      "wr": 75.8,
+      "median_est": 367.3,
+      "sports_frac_est": 0.48,
+      "curve_est": 66.2,
+      "bot_risk": false,
+      "scout_candidate": true,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 265,
+          "roi": 9.2
+        }
+      ]
+    }
+  ]
+}

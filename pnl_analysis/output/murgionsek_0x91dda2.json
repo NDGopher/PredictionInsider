@@ -1,0 +1,215 @@
+{
+  "wallet": "0x91dda263d251e7f771ea333f8cb6b6066761600b",
+  "username": "murgionsek",
+  "total_profit": 301612.01,
+  "raw_realized_pnl": 301612.01,
+  "dashboard_pnl": 301612.01,
+  "total_risked": 458307.35,
+  "overall_roi": 65.81,
+  "redeemed_only_roi": 65.81,
+  "last_30d": {
+    "n": 2,
+    "pnl": 301612.01,
+    "cost": 458307.35,
+    "roi": 65.81,
+    "wins": 2,
+    "win_rate": 100.0,
+    "first": "2026-08-21",
+    "last": "2026-08-21"
+  },
+  "last_60d": {
+    "n": 2,
+    "pnl": 301612.01,
+    "cost": 458307.35,
+    "roi": 65.81,
+    "wins": 2,
+    "win_rate": 100.0,
+    "first": "2026-08-21",
+    "last": "2026-08-21"
+  },
+  "last_90d": {
+    "n": 2,
+    "pnl": 301612.01,
+    "cost": 458307.35,
+    "roi": 65.81,
+    "wins": 2,
+    "win_rate": 100.0,
+    "first": "2026-08-21",
+    "last": "2026-08-21"
+  },
+  "last_event_date": "2026-08-21",
+  "days_since_last_event": 10,
+  "possibly_quit": false,
+  "win_rate": 100.0,
+  "avg_bet_size": 229153.68,
+  "median_market_stake": 229153.68,
+  "mean_market_stake": 229153.68,
+  "markets_traded": 2,
+  "total_events": 2,
+  "pseudo_sharpe": 0.0,
+  "profitable_days": 1,
+  "total_days": 1,
+  "hedge_count": 0,
+  "hedge_risk": 0.0,
+  "hedge_profit": 0.0,
+  "bond_count": 0,
+  "bond_risk": 0.0,
+  "bond_profit": 0.0,
+  "open_count": 0,
+  "open_risk": 0.0,
+  "open_value": 0.0,
+  "open_pnl": 0.0,
+  "sport_stats": {
+    "SOCCER (EPL)": {
+      "net_profit": 50987.54,
+      "roi": 22.17,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 229991.89,
+      "median_bet": 229991.89
+    },
+    "SOCCER (LaLiga)": {
+      "net_profit": 250624.47,
+      "roi": 109.77,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 228315.46,
+      "median_bet": 228315.46
+    }
+  },
+  "market_stats": {
+    "Moneyline / Match": {
+      "net_profit": 301612.01,
+      "roi": 65.81,
+      "win_rate": 100.0,
+      "events": 2,
+      "avg_bet": 229153.68,
+      "median_bet": 229153.68
+    }
+  },
+  "sport_market_stats": {
+    "Soccer|Moneyline / Match": {
+      "net_profit": 301612.01,
+      "roi": 65.81,
+      "win_rate": 100.0,
+      "events": 2,
+      "avg_bet": 229153.68,
+      "median_bet": 229153.68
+    }
+  },
+  "price_stats": {
+    "Flip (40-60c)": {
+      "net_profit": 250624.47,
+      "roi": 109.77,
+      "win_rate": 100.0,
+      "events": 1
+    },
+    "Safe (80-100c)": {
+      "net_profit": 50987.54,
+      "roi": 22.17,
+      "win_rate": 100.0,
+      "events": 1
+    }
+  },
+  "side_stats": {
+    "Yes": {
+      "net_profit": 301612.01,
+      "roi": 65.81,
+      "positions": 2
+    }
+  },
+  "monthly_pnl": {
+    "2026-08": 301612.01
+  },
+  "top_wins": [
+    {
+      "title": "Will Real Betis Balompi\u00e9 win on 2026-08-21?",
+      "slug": "lal-bet-rso-2026-08-21-bet",
+      "eventSlug": "lal-bet-rso-2026-08-21",
+      "sport_type": "SOCCER (LaLiga)",
+      "outcome": "Yes",
+      "conditionId": "0xcaeaab3b3d1b538f0d1742660fdee9dbbc338affc991167e1bb5c5e7933173b3",
+      "total_pnl": 250624.47,
+      "total_cost": 228315.46,
+      "avg_price": 0.476,
+      "status": "closed"
+    },
+    {
+      "title": "Will Arsenal FC win on 2026-08-21?",
+      "slug": "epl-ars-cov-2026-08-21-ars",
+      "eventSlug": "epl-ars-cov-2026-08-21",
+      "sport_type": "SOCCER (EPL)",
+      "outcome": "Yes",
+      "conditionId": "0x8f172fca6b16f787f6a859ef9bc918dcf80eee45cb55baf434e67f7588d77bdf",
+      "total_pnl": 50987.54,
+      "total_cost": 229991.89,
+      "avg_price": 0.8176,
+      "status": "closed"
+    }
+  ],
+  "top_losses": [
+    {
+      "title": "Will Arsenal FC win on 2026-08-21?",
+      "slug": "epl-ars-cov-2026-08-21-ars",
+      "eventSlug": "epl-ars-cov-2026-08-21",
+      "sport_type": "SOCCER (EPL)",
+      "outcome": "Yes",
+      "conditionId": "0x8f172fca6b16f787f6a859ef9bc918dcf80eee45cb55baf434e67f7588d77bdf",
+      "total_pnl": 50987.54,
+      "total_cost": 229991.89,
+      "avg_price": 0.8176,
+      "status": "closed"
+    },
+    {
+      "title": "Will Real Betis Balompi\u00e9 win on 2026-08-21?",
+      "slug": "lal-bet-rso-2026-08-21-bet",
+      "eventSlug": "lal-bet-rso-2026-08-21",
+      "sport_type": "SOCCER (LaLiga)",
+      "outcome": "Yes",
+      "conditionId": "0xcaeaab3b3d1b538f0d1742660fdee9dbbc338affc991167e1bb5c5e7933173b3",
+      "total_pnl": 250624.47,
+      "total_cost": 228315.46,
+      "avg_price": 0.476,
+      "status": "closed"
+    }
+  ],
+  "top_sport": "OTHER",
+  "best_price_bucket": null,
+  "best_market": "Moneyline / Match",
+  "quality_score": 54,
+  "tier": "A-Tier",
+  "tags": [
+    "\u2b50\u2b50 A-Tier",
+    "\u2705 Yes-Side Specialist",
+    "\ud83d\udc0b Mega Whale"
+  ],
+  "tail_guide": "How to Tail murgionsek [A-Tier]\n\n\n\ud83d\udcc8 Stick to Moneylines (65.8% ROI over 2 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 100% of edge from 'Yes' side \u2014 copy that side only\n\u26a1 Typical market stake ~$229,154 (median per market) \u2014 alert at 3\u00d7 for high conviction",
+  "do_not_tail_sports": [],
+  "auto_tail_sports": [],
+  "do_not_tail_market_types": [],
+  "do_not_tail_sides": [],
+  "score_breakdown": {
+    "sharpe_score": 0.0,
+    "roi_score": 25,
+    "wr_score": 15,
+    "cons_score": 10.0,
+    "vol_score": 4.2,
+    "base_score": 54.2,
+    "flip_bonus": 0,
+    "leakage_penalty": 0,
+    "midzone_roi": 0,
+    "directional_roi": 65.81,
+    "roi_dashboard": 65.81,
+    "roi_redeemed_only": 65.81,
+    "last_60d_roi": 65.81,
+    "last_60d_pnl": 301612.01,
+    "recency_penalty": 0,
+    "roi_for_quality": 65.81,
+    "hedge_risk_frac": 0.0,
+    "hedge_profit_share": 0.0,
+    "markets_traded": 2,
+    "median_market_stake": 229153.68,
+    "mean_market_stake": 229153.68,
+    "pnl_sum_check_ok": true
+  }
+}

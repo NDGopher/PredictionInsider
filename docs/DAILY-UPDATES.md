@@ -2,7 +2,7 @@
 
 To keep **PNL, trader scores, and signals** accurate, run the pipeline at least once per day. **Incremental** mode merges **recent** trades into existing CSVs (not a full history re-download every time).
 
-**One-click Windows (`refresh-all.bat`):** Runs **incremental** pipeline every time (merge recent API data into CSVs, re-analyze all traders, ingest) so rankings and ROI stay current when you double-click. For a faster start without Python: `start-prediction-insider.bat skip`.
+**One-click Windows (`refresh-all.bat`):** Starts the app first (so Take these keeps working), then incremental CSV merge + ingest, then rebuilds Insider Ranks, copy universe, and take-book from those CSVs. Refresh the browser when it prints `[OK] Ranks, copy universe, and take-book rebuilt`. For a faster start without Python: `start-prediction-insider.bat skip`.
 
 **Smart mode (`start-prediction-insider.bat` with no args):** Skips the pipeline if the last successful **ingest** was within **PI_SMART_REFRESH_HOURS** (default **6**; was 24h). Timestamp file: `pnl_analysis/output/.last_pipeline_run`. Force a run: `set PI_FORCE_REFRESH=1` then the same bat, or `start-prediction-insider.bat incremental`.
 
@@ -10,7 +10,7 @@ To keep **PNL, trader scores, and signals** accurate, run the pipeline at least 
 
 ## Quick run (recommended for daily)
 
-- **Incremental:** For each trader with an existing CSV, fetches **recent closed and open pages** from the API, **overlays** them onto the full CSV (same position `id` keeps the newest row for accurate PnL), then **re-analyzes** and **ingests**. Much faster than a full re-fetch.
+- **Incremental:** Overlay the **newest ~800 closed positions** plus the current open book onto the unique CSV already on disk (dedupe by position id — no duplicates, no full-history re-download). Thin/new books still get the winner+loser+recent repair overlay. Then re-analyze, ingest, and rebuild ranks/copy list. `db:init` only creates SQL tables and takes seconds.
 
 ```bash
 npm run daily-pipeline

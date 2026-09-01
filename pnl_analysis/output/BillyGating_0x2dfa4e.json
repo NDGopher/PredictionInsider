@@ -1,0 +1,318 @@
+{
+  "wallet": "0x2dfa4e79eca44b7c774f40a45535adbc368a6f60",
+  "username": "BillyGating",
+  "total_profit": 406122.96,
+  "raw_realized_pnl": 422716.68,
+  "dashboard_pnl": 406122.96,
+  "total_risked": 685368.72,
+  "overall_roi": 59.26,
+  "redeemed_only_roi": 61.68,
+  "last_30d": {
+    "n": 3,
+    "pnl": 138483.79,
+    "cost": 465830.02,
+    "roi": 29.73,
+    "wins": 2,
+    "win_rate": 66.7,
+    "first": "2026-08-29",
+    "last": "2026-08-30"
+  },
+  "last_60d": {
+    "n": 3,
+    "pnl": 138483.79,
+    "cost": 465830.02,
+    "roi": 29.73,
+    "wins": 2,
+    "win_rate": 66.7,
+    "first": "2026-08-29",
+    "last": "2026-08-30"
+  },
+  "last_90d": {
+    "n": 3,
+    "pnl": 138483.79,
+    "cost": 465830.02,
+    "roi": 29.73,
+    "wins": 2,
+    "win_rate": 66.7,
+    "first": "2026-08-29",
+    "last": "2026-08-30"
+  },
+  "last_event_date": "2026-08-30",
+  "days_since_last_event": 1,
+  "possibly_quit": false,
+  "win_rate": 80.0,
+  "avg_bet_size": 137073.74,
+  "median_market_stake": 143561.25,
+  "mean_market_stake": 137073.74,
+  "markets_traded": 5,
+  "total_events": 5,
+  "pseudo_sharpe": 21.57,
+  "profitable_days": 3,
+  "total_days": 3,
+  "hedge_count": 0,
+  "hedge_risk": 0.0,
+  "hedge_profit": 0.0,
+  "bond_count": 0,
+  "bond_risk": 0.0,
+  "bond_profit": 0.0,
+  "open_count": 0,
+  "open_risk": 0.0,
+  "open_value": 0.0,
+  "open_pnl": 0.0,
+  "sport_stats": {
+    "ESPORTS": {
+      "net_profit": 138483.79,
+      "roi": 29.73,
+      "win_rate": 66.67,
+      "events": 3,
+      "avg_bet": 155276.67,
+      "median_bet": 143561.25
+    },
+    "TENNIS": {
+      "net_profit": 267639.18,
+      "roi": 121.91,
+      "win_rate": 100.0,
+      "events": 2,
+      "avg_bet": 109769.35,
+      "median_bet": 109769.35
+    }
+  },
+  "market_stats": {
+    "Map / Game": {
+      "net_profit": -16779.5,
+      "roi": -101.13,
+      "win_rate": 0.0,
+      "events": 1,
+      "avg_bet": 16591.82,
+      "median_bet": 16591.82
+    },
+    "Moneyline / Match": {
+      "net_profit": 422902.46,
+      "roi": 63.24,
+      "win_rate": 100.0,
+      "events": 4,
+      "avg_bet": 167194.22,
+      "median_bet": 148887.94
+    }
+  },
+  "sport_market_stats": {
+    "Tennis|Moneyline / Match": {
+      "net_profit": 267639.18,
+      "roi": 121.91,
+      "win_rate": 100.0,
+      "events": 2,
+      "avg_bet": 109769.35,
+      "median_bet": 109769.35
+    },
+    "eSports|Map / Game": {
+      "net_profit": -16779.5,
+      "roi": -101.13,
+      "win_rate": 0.0,
+      "events": 1,
+      "avg_bet": 16591.82,
+      "median_bet": 16591.82
+    },
+    "eSports|Moneyline / Match": {
+      "net_profit": 155263.28,
+      "roi": 34.56,
+      "win_rate": 100.0,
+      "events": 2,
+      "avg_bet": 224619.1,
+      "median_bet": 224619.1
+    }
+  },
+  "price_stats": {
+    "Favorite (60-80c)": {
+      "net_profit": 138483.79,
+      "roi": 29.73,
+      "win_rate": 66.67,
+      "events": 3
+    },
+    "Flip (40-60c)": {
+      "net_profit": 151018.61,
+      "roi": 97.93,
+      "win_rate": 100.0,
+      "events": 1
+    },
+    "Underdog (20-40c)": {
+      "net_profit": 116620.57,
+      "roi": 178.53,
+      "win_rate": 100.0,
+      "events": 1
+    }
+  },
+  "side_stats": {
+    "Specific Selection": {
+      "net_profit": 406122.96,
+      "roi": 59.26,
+      "positions": 5
+    }
+  },
+  "monthly_pnl": {
+    "2026-08": 138483.79,
+    "2026-09": 267639.18
+  },
+  "top_wins": [
+    {
+      "title": "US Open ATP: Jaume Munar vs Terence Atmane",
+      "slug": "atp-munar-atmane-2026-08-30",
+      "eventSlug": "atp-munar-atmane-2026-08-30",
+      "sport_type": "TENNIS",
+      "outcome": "Jaume Munar",
+      "conditionId": "0xd8418ecb65af402d08c22f76c9ccd55a068017dea7978aae69f15a6f8470445c",
+      "total_pnl": 151018.61,
+      "total_cost": 154214.62,
+      "avg_price": 0.5052,
+      "status": "closed"
+    },
+    {
+      "title": "US Open ATP: Thiago Agustin Tirante vs Adrian Mannarino",
+      "slug": "atp-tirante-mannari-2026-08-30",
+      "eventSlug": "atp-tirante-mannari-2026-08-30",
+      "sport_type": "TENNIS",
+      "outcome": "Adrian Mannarino",
+      "conditionId": "0x35e5781ca92ff5dc1207990eb9ea44fb78d0683d96217e39a613a9802177bea9",
+      "total_pnl": 116620.57,
+      "total_cost": 65324.07,
+      "avg_price": 0.359,
+      "status": "closed"
+    },
+    {
+      "title": "Counter-Strike: FUT Esports vs Lynn Vision (BO3) - BLAST Open Porto Group B",
+      "slug": "cs2-fut-lvg-2026-08-29",
+      "eventSlug": "cs2-fut-lvg-2026-08-29",
+      "sport_type": "ESPORTS",
+      "outcome": "FUT Esports",
+      "conditionId": "0xf1c907c335da228d21ccd1c5a9ec5d8e41097f47648ebbe37e5f55bd2483feb1",
+      "total_pnl": 104702.15,
+      "total_cost": 305676.95,
+      "avg_price": 0.7448,
+      "status": "closed"
+    },
+    {
+      "title": "Counter-Strike: Inner Circle Esports vs FUT Esports (BO3) - BLAST Open Porto Group B",
+      "slug": "cs2-ice-fut-2026-08-30",
+      "eventSlug": "cs2-ice-fut-2026-08-30",
+      "sport_type": "ESPORTS",
+      "outcome": "FUT Esports",
+      "conditionId": "0x6aa0f0e9bedc0ec3a4ae5bc582fc2c52ccad570d7fe1d7e7a1b27dcc5b5cd36c",
+      "total_pnl": 50561.13,
+      "total_cost": 143561.25,
+      "avg_price": 0.7395,
+      "status": "closed"
+    },
+    {
+      "title": "Counter-Strike: Vitality vs Legacy - Map 2 Winner",
+      "slug": "cs2-vit-lgc-2026-08-30-game2",
+      "eventSlug": "cs2-vit-lgc-2026-08-30",
+      "sport_type": "ESPORTS",
+      "outcome": "Vitality",
+      "conditionId": "0x477df2e44de1dd464344ac934996a5b80e7546757bdfb0a526fedd9fdfa2aa90",
+      "total_pnl": -16779.5,
+      "total_cost": 16591.82,
+      "avg_price": 0.6199,
+      "status": "closed"
+    }
+  ],
+  "top_losses": [
+    {
+      "title": "Counter-Strike: Vitality vs Legacy - Map 2 Winner",
+      "slug": "cs2-vit-lgc-2026-08-30-game2",
+      "eventSlug": "cs2-vit-lgc-2026-08-30",
+      "sport_type": "ESPORTS",
+      "outcome": "Vitality",
+      "conditionId": "0x477df2e44de1dd464344ac934996a5b80e7546757bdfb0a526fedd9fdfa2aa90",
+      "total_pnl": -16779.5,
+      "total_cost": 16591.82,
+      "avg_price": 0.6199,
+      "status": "closed"
+    },
+    {
+      "title": "Counter-Strike: Inner Circle Esports vs FUT Esports (BO3) - BLAST Open Porto Group B",
+      "slug": "cs2-ice-fut-2026-08-30",
+      "eventSlug": "cs2-ice-fut-2026-08-30",
+      "sport_type": "ESPORTS",
+      "outcome": "FUT Esports",
+      "conditionId": "0x6aa0f0e9bedc0ec3a4ae5bc582fc2c52ccad570d7fe1d7e7a1b27dcc5b5cd36c",
+      "total_pnl": 50561.13,
+      "total_cost": 143561.25,
+      "avg_price": 0.7395,
+      "status": "closed"
+    },
+    {
+      "title": "Counter-Strike: FUT Esports vs Lynn Vision (BO3) - BLAST Open Porto Group B",
+      "slug": "cs2-fut-lvg-2026-08-29",
+      "eventSlug": "cs2-fut-lvg-2026-08-29",
+      "sport_type": "ESPORTS",
+      "outcome": "FUT Esports",
+      "conditionId": "0xf1c907c335da228d21ccd1c5a9ec5d8e41097f47648ebbe37e5f55bd2483feb1",
+      "total_pnl": 104702.15,
+      "total_cost": 305676.95,
+      "avg_price": 0.7448,
+      "status": "closed"
+    },
+    {
+      "title": "US Open ATP: Thiago Agustin Tirante vs Adrian Mannarino",
+      "slug": "atp-tirante-mannari-2026-08-30",
+      "eventSlug": "atp-tirante-mannari-2026-08-30",
+      "sport_type": "TENNIS",
+      "outcome": "Adrian Mannarino",
+      "conditionId": "0x35e5781ca92ff5dc1207990eb9ea44fb78d0683d96217e39a613a9802177bea9",
+      "total_pnl": 116620.57,
+      "total_cost": 65324.07,
+      "avg_price": 0.359,
+      "status": "closed"
+    },
+    {
+      "title": "US Open ATP: Jaume Munar vs Terence Atmane",
+      "slug": "atp-munar-atmane-2026-08-30",
+      "eventSlug": "atp-munar-atmane-2026-08-30",
+      "sport_type": "TENNIS",
+      "outcome": "Jaume Munar",
+      "conditionId": "0xd8418ecb65af402d08c22f76c9ccd55a068017dea7978aae69f15a6f8470445c",
+      "total_pnl": 151018.61,
+      "total_cost": 154214.62,
+      "avg_price": 0.5052,
+      "status": "closed"
+    }
+  ],
+  "top_sport": "OTHER",
+  "best_price_bucket": null,
+  "best_market": "Moneyline / Match",
+  "quality_score": 84,
+  "tier": "S-Tier",
+  "tags": [
+    "\u2b50\u2b50\u2b50 S-Tier",
+    "\ud83d\udc8e Consistent Grinder",
+    "\ud83d\udc0b Mega Whale"
+  ],
+  "tail_guide": "How to Tail BillyGating [S-Tier]\n\n\n\ud83d\udcc8 Stick to Moneylines (63.2% ROI over 4 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 100% of edge from 'Specific' side \u2014 copy that side only\n\u26a1 Typical market stake ~$143,561 (median per market) \u2014 alert at 3\u00d7 for high conviction",
+  "do_not_tail_sports": [],
+  "auto_tail_sports": [],
+  "do_not_tail_market_types": [],
+  "do_not_tail_sides": [],
+  "score_breakdown": {
+    "sharpe_score": 30,
+    "roi_score": 25,
+    "wr_score": 15,
+    "cons_score": 10.0,
+    "vol_score": 4.4,
+    "base_score": 84.4,
+    "flip_bonus": 0,
+    "leakage_penalty": 0,
+    "midzone_roi": 0,
+    "directional_roi": 59.26,
+    "roi_dashboard": 59.26,
+    "roi_redeemed_only": 61.68,
+    "last_60d_roi": 29.73,
+    "last_60d_pnl": 138483.79,
+    "recency_penalty": 0,
+    "roi_for_quality": 59.26,
+    "hedge_risk_frac": 0.0,
+    "hedge_profit_share": 0.0,
+    "markets_traded": 5,
+    "median_market_stake": 143561.25,
+    "mean_market_stake": 137073.74,
+    "pnl_sum_check_ok": true
+  }
+}

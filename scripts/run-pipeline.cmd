@@ -27,15 +27,25 @@ pause
 exit /b 1
 
 :run_full
-echo Running FULL pipeline: fetch + analyze + ingest for all curated traders (can take a long time^)...
+echo Running FULL pipeline: fetch + analyze + ingest, then ranks / copy list...
 %PY% pnl_analysis\run_full_pipeline.py --ingest
 set "EC=%errorlevel%"
-goto after_py
+goto refresh_product
 
 :run_inc
+echo Scanning Polydata sports boards for new watch names...
+%PY% pnl_analysis\discover_polydata_boards.py
 echo Running INCREMENTAL pipeline: merge recent trades + re-analyze + ingest...
 %PY% pnl_analysis\run_full_pipeline.py --incremental --ingest
 set "EC=%errorlevel%"
+goto refresh_product
+
+:refresh_product
+echo.
+echo Rebuilding Insider Ranks, copy universe, and take-book (app stays up)...
+%PY% pnl_analysis\refresh_product.py
+set "PEC=%errorlevel%"
+if not "%PEC%"=="0" if "%EC%"=="0" set "EC=%PEC%"
 
 :after_py
 echo.

@@ -12,7 +12,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from position_utils import attach_event_dates, dashboard_pnl, is_redeemable_flag, read_trader_csv
+from position_utils import attach_event_dates, dashboard_pnl, is_redeemable_flag, mark_resolved, read_trader_csv
 
 # ================================================================
 # CLASSIFIERS  (exact logic from Gemini's framework)
@@ -134,14 +134,34 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
     now_utc = datetime.now(timezone.utc)
     horizon = now_utc + timedelta(days=1)
 
+    dated = mark_resolved(dated)
+    # Last-Nd = settled events only. Open MTM on a market-maker book (RN1) was
+    # dumping +$14M into "30d" while lifetime dashboard was +$7M.
+    resolved = dated["is_resolved"].fillna(False) if "is_resolved" in dated.columns else pd.Series(False, index=dated.index)
+
     def _window_stats(days: int) -> dict:
         cutoff = now_utc - timedelta(days=days)
-        mask = dated["event_dt"].notna() & (dated["event_dt"] >= cutoff) & (dated["event_dt"] <= horizon)
+        mask = (
+            dated["event_dt"].notna()
+            & resolved
+            & (dated["event_dt"] >= cutoff)
+            & (dated["event_dt"] <= now_utc)
+        )
         sub = dated.loc[mask]
-        n = int(len(sub))
-        pnl = float(sub["total_position_pnl"].sum()) if n else 0.0
-        cost = float(sub["calculated_cost"].sum()) if n else 0.0
-        wins = int(((sub["curPrice"] >= 0.99) if "curPrice" in sub.columns else sub["total_position_pnl"] > 0).sum()) if n else 0
+        if sub.empty:
+            return {
+                "n": 0, "pnl": 0.0, "cost": 0.0, "roi": 0.0, "wins": 0,
+                "win_rate": 0.0, "first": None, "last": None,
+            }
+        ev = sub.groupby("grouping_id", dropna=False).agg(
+            pnl=("total_position_pnl", "sum"),
+            cost=("calculated_cost", "sum"),
+            event_dt=("event_dt", "max"),
+        )
+        n = int(len(ev))
+        pnl = float(ev["pnl"].sum())
+        cost = float(ev["cost"].sum())
+        wins = int((ev["pnl"] > 0).sum())
         return {
             "n": n,
             "pnl": round(pnl, 2),
@@ -149,8 +169,8 @@ def analyze_csv(csv_path: Path, username: str, wallet: str) -> dict:
             "roi": round((pnl / cost * 100.0) if cost > 0 else 0.0, 2),
             "wins": wins,
             "win_rate": round((wins / n * 100.0) if n else 0.0, 1),
-            "first": str(sub["event_dt"].min())[:10] if n else None,
-            "last": str(sub["event_dt"].max())[:10] if n else None,
+            "first": str(ev["event_dt"].min())[:10] if n else None,
+            "last": str(ev["event_dt"].max())[:10] if n else None,
         }
 
     last_30d = _window_stats(30)

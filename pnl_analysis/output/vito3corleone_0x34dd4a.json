@@ -1,0 +1,350 @@
+{
+  "wallet": "0x34dd4a4b70eaf79a17878f7938263c801d4dfd83",
+  "username": "vito3corleone",
+  "total_profit": 2150102.34,
+  "raw_realized_pnl": 2974189.27,
+  "dashboard_pnl": 2150102.34,
+  "total_risked": 9439184.25,
+  "overall_roi": 22.78,
+  "redeemed_only_roi": 31.51,
+  "last_30d": {
+    "n": 11,
+    "pnl": 1659839.84,
+    "cost": 5519274.5,
+    "roi": 30.07,
+    "wins": 7,
+    "win_rate": 63.6,
+    "first": "2026-08-22",
+    "last": "2026-08-30"
+  },
+  "last_60d": {
+    "n": 11,
+    "pnl": 1659839.84,
+    "cost": 5519274.5,
+    "roi": 30.07,
+    "wins": 7,
+    "win_rate": 63.6,
+    "first": "2026-08-22",
+    "last": "2026-08-30"
+  },
+  "last_90d": {
+    "n": 11,
+    "pnl": 1659839.84,
+    "cost": 5519274.5,
+    "roi": 30.07,
+    "wins": 7,
+    "win_rate": 63.6,
+    "first": "2026-08-22",
+    "last": "2026-08-30"
+  },
+  "last_event_date": "2026-08-30",
+  "days_since_last_event": 1,
+  "possibly_quit": false,
+  "win_rate": 62.5,
+  "avg_bet_size": 589949.02,
+  "median_market_stake": 328732.31,
+  "mean_market_stake": 589949.02,
+  "markets_traded": 16,
+  "total_events": 13,
+  "pseudo_sharpe": 8.84,
+  "profitable_days": 5,
+  "total_days": 8,
+  "hedge_count": 0,
+  "hedge_risk": 0.0,
+  "hedge_profit": 0.0,
+  "bond_count": 0,
+  "bond_risk": 0.0,
+  "bond_profit": 0.0,
+  "open_count": 2,
+  "open_risk": 3919909.75,
+  "open_value": 4410172.25,
+  "open_pnl": 490262.5,
+  "sport_stats": {
+    "SOCCER (EPL)": {
+      "net_profit": 1058354.87,
+      "roi": 20.92,
+      "win_rate": 75.0,
+      "events": 4,
+      "avg_bet": 1264600.19,
+      "median_bet": 789927.79
+    },
+    "SOCCER (LaLiga)": {
+      "net_profit": 897432.87,
+      "roi": 28.49,
+      "win_rate": 60.0,
+      "events": 5,
+      "avg_bet": 630016.05,
+      "median_bet": 649102.65
+    },
+    "SOCCER (Other)": {
+      "net_profit": 109165.63,
+      "roi": 9.6,
+      "win_rate": 50.0,
+      "events": 6,
+      "avg_bet": 189454.25,
+      "median_bet": 103727.11
+    },
+    "SOCCER (UCL)": {
+      "net_profit": 85148.97,
+      "roi": 90.61,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 93977.79,
+      "median_bet": 93977.79
+    }
+  },
+  "market_stats": {
+    "Moneyline / Match": {
+      "net_profit": 1942453.58,
+      "roi": 21.04,
+      "win_rate": 60.0,
+      "events": 15,
+      "avg_bet": 615429.75,
+      "median_bet": 381000.21
+    },
+    "Totals (O/U)": {
+      "net_profit": 207648.76,
+      "roi": 99.96,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 207738.07,
+      "median_bet": 207738.07
+    }
+  },
+  "sport_market_stats": {
+    "Soccer|Moneyline / Match": {
+      "net_profit": 1857304.61,
+      "roi": 20.33,
+      "win_rate": 57.14,
+      "events": 14,
+      "avg_bet": 652676.31,
+      "median_bet": 411034.79
+    },
+    "Soccer|Totals (O/U)": {
+      "net_profit": 207648.76,
+      "roi": 99.96,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 207738.07,
+      "median_bet": 207738.07
+    },
+    "UCL|Moneyline / Match": {
+      "net_profit": 85148.97,
+      "roi": 90.61,
+      "win_rate": 100.0,
+      "events": 1,
+      "avg_bet": 93977.79,
+      "median_bet": 93977.79
+    }
+  },
+  "price_stats": {
+    "Favorite (60-80c)": {
+      "net_profit": -18087.4,
+      "roi": -0.4,
+      "win_rate": 60.0,
+      "events": 5
+    },
+    "Flip (40-60c)": {
+      "net_profit": 2325519.29,
+      "roi": 64.41,
+      "win_rate": 71.43,
+      "events": 7
+    },
+    "Safe (80-100c)": {
+      "net_profit": 189460.81,
+      "roi": 20.87,
+      "win_rate": 100.0,
+      "events": 1
+    },
+    "Underdog (20-40c)": {
+      "net_profit": -346790.35,
+      "roi": -98.15,
+      "win_rate": 33.33,
+      "events": 3
+    }
+  },
+  "side_stats": {
+    "No": {
+      "net_profit": -353457.81,
+      "roi": -62.33,
+      "positions": 3
+    },
+    "Specific Selection": {
+      "net_profit": 207648.76,
+      "roi": 99.96,
+      "positions": 1
+    },
+    "Yes": {
+      "net_profit": 2295911.39,
+      "roi": 26.5,
+      "positions": 12
+    }
+  },
+  "monthly_pnl": {
+    "2026-08": 2150102.34
+  },
+  "top_wins": [
+    {
+      "title": "Will Brentford FC win on 2026-08-22?",
+      "slug": "epl-bre-tot-2026-08-22-bre",
+      "eventSlug": "epl-bre-tot-2026-08-22",
+      "sport_type": "SOCCER (EPL)",
+      "outcome": "Yes",
+      "conditionId": "0x7c6cd7a3bc858e069d886098c7909b2c733a7f8f586f72a012eb56f7a6686fcb",
+      "total_pnl": 1254481.43,
+      "total_cost": 1138786.21,
+      "avg_price": 0.4758,
+      "status": "closed"
+    },
+    {
+      "title": "Will Real Racing Club win on 2026-08-28?",
+      "slug": "lal-rrc-elc-2026-08-28-rrc",
+      "eventSlug": "lal-rrc-elc-2026-08-28",
+      "sport_type": "SOCCER (LaLiga)",
+      "outcome": "Yes",
+      "conditionId": "0xcf19cbcdb27d1d0cf9ea4bb04f54b8cf827e6fb399cd586a59a2604f79ada1e4",
+      "total_pnl": 933553.93,
+      "total_cost": 935501.57,
+      "avg_price": 0.5005,
+      "status": "closed"
+    },
+    {
+      "title": "Will CA Osasuna win on 2026-08-31?",
+      "slug": "lal-osa-get-2026-08-31-osa",
+      "eventSlug": "lal-osa-get-2026-08-31",
+      "sport_type": "SOCCER (LaLiga)",
+      "outcome": "Yes",
+      "conditionId": "0x4bff0435333433a22c26cbb85b0afda85e9eeb99b437d5ad82eb06258c970386",
+      "total_pnl": 443011.23,
+      "total_cost": 649102.65,
+      "avg_price": 0.4368,
+      "status": "open"
+    },
+    {
+      "title": "Will Stade Rennais FC 1901 win on 2026-08-30?",
+      "slug": "fl1-ren-lmf-2026-08-30-ren",
+      "eventSlug": "fl1-ren-lmf-2026-08-30",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "Yes",
+      "conditionId": "0x0830a6ea7b4522e5fea014abffb954fa121cf65ba8ddbd2d92fb974ccf600ec1",
+      "total_pnl": 288119.13,
+      "total_cost": 729469.63,
+      "avg_price": 0.7168,
+      "status": "closed"
+    },
+    {
+      "title": "Fulham FC vs. Chelsea FC: O/U 4.5",
+      "slug": "epl-ful-che-2026-08-24-total-4pt5",
+      "eventSlug": "epl-ful-che-2026-08-24-more-markets",
+      "sport_type": "SOCCER (EPL)",
+      "outcome": "Over",
+      "conditionId": "0x80eed98e988dc2cf53990dafa16536c153f86f9b83eecae8b59fd8841dfe491d",
+      "total_pnl": 207648.76,
+      "total_cost": 207738.07,
+      "avg_price": 0.5001,
+      "status": "closed"
+    }
+  ],
+  "top_losses": [
+    {
+      "title": "Will Brentford FC win on 2026-08-30?",
+      "slug": "epl-lee-bre-2026-08-30-bre",
+      "eventSlug": "epl-lee-bre-2026-08-30",
+      "sport_type": "SOCCER (EPL)",
+      "outcome": "Yes",
+      "conditionId": "0x0eead812dd20ebafbf0eec0531c9d6844a111e776a440685853bc4ca91af7c2a",
+      "total_pnl": -451026.59,
+      "total_cost": 441069.37,
+      "avg_price": 0.4955,
+      "status": "closed"
+    },
+    {
+      "title": "Will Real Betis Balompi\u00e9 win on 2026-08-25?",
+      "slug": "lal-val-bet-2026-08-25-bet",
+      "eventSlug": "lal-val-bet-2026-08-25",
+      "sport_type": "SOCCER (LaLiga)",
+      "outcome": "No",
+      "conditionId": "0xa691d8c050daa4cec6e7abd73fdcf0881ae6433ec1f93dd0fd080bffc2aadabf",
+      "total_pnl": -383193.68,
+      "total_cost": 381000.21,
+      "avg_price": 0.6538,
+      "status": "closed"
+    },
+    {
+      "title": "Will Valencia CF win on 2026-08-25?",
+      "slug": "lal-val-bet-2026-08-25-val",
+      "eventSlug": "lal-val-bet-2026-08-25",
+      "sport_type": "SOCCER (LaLiga)",
+      "outcome": "Yes",
+      "conditionId": "0x1e3e02da1749eed46ab0eb607c55ccfb2fb1c15ffbb6f9b4b05d7933f558789a",
+      "total_pnl": -285399.42,
+      "total_cost": 276464.4,
+      "avg_price": 0.3575,
+      "status": "closed"
+    },
+    {
+      "title": "Will Lille OSC win on 2026-08-28?",
+      "slug": "fl1-lil-psg-2026-08-28-lil",
+      "eventSlug": "fl1-lil-psg-2026-08-28",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "Yes",
+      "conditionId": "0x67c707d05a56cc757dd012e419e127a189aa824c334aea6f45ba7af4e052682d",
+      "total_pnl": -147298.44,
+      "total_cost": 144273.04,
+      "avg_price": 0.4588,
+      "status": "closed"
+    },
+    {
+      "title": "Will AC Monza win on 2026-08-29?",
+      "slug": "sea-mon-udi-2026-08-29-mon",
+      "eventSlug": "sea-mon-udi-2026-08-29",
+      "sport_type": "SOCCER (Other)",
+      "outcome": "Yes",
+      "conditionId": "0xa8d7f431a64f407dd01c10dfc40d29ed2ad40c1d40a3c56f6047751b36a50d4e",
+      "total_pnl": -73778.16,
+      "total_cost": 71365.35,
+      "avg_price": 0.3166,
+      "status": "closed"
+    }
+  ],
+  "top_sport": "OTHER",
+  "best_price_bucket": null,
+  "best_market": "Moneyline / Match",
+  "quality_score": 81,
+  "tier": "S-Tier",
+  "tags": [
+    "\u2b50\u2b50\u2b50 S-Tier",
+    "\u2705 Yes-Side Specialist",
+    "\ud83d\udc8e Consistent Grinder",
+    "\ud83d\udc0b Mega Whale"
+  ],
+  "tail_guide": "How to Tail vito3corleone [S-Tier]\n\n\n\ud83d\udcc8 Stick to Moneylines (21.0% ROI over 15 markets)\n\u26a0\ufe0f  Strip any bet at avgPrice \u2265 0.95 \u2014 those are bond-yield trades, not signals\n\ud83d\udca1 107% of edge from 'Yes' side \u2014 copy that side only\n\u26a1 Typical market stake ~$328,732 (median per market) \u2014 alert at 3\u00d7 for high conviction\n   (Mean $589,949 \u2014 some very large markets; size to the median unless you match their whale plays)",
+  "do_not_tail_sports": [],
+  "auto_tail_sports": [],
+  "do_not_tail_market_types": [],
+  "do_not_tail_sides": [],
+  "score_breakdown": {
+    "sharpe_score": 30,
+    "roi_score": 25,
+    "wr_score": 14.5,
+    "cons_score": 6.2,
+    "vol_score": 5,
+    "base_score": 80.8,
+    "flip_bonus": 0,
+    "leakage_penalty": 0,
+    "midzone_roi": 0,
+    "directional_roi": 22.78,
+    "roi_dashboard": 22.78,
+    "roi_redeemed_only": 31.51,
+    "last_60d_roi": 30.07,
+    "last_60d_pnl": 1659839.84,
+    "recency_penalty": 0,
+    "roi_for_quality": 22.78,
+    "hedge_risk_frac": 0.0,
+    "hedge_profit_share": 0.0,
+    "markets_traded": 16,
+    "median_market_stake": 328732.31,
+    "mean_market_stake": 589949.02,
+    "pnl_sum_check_ok": true
+  }
+}
