@@ -2,18 +2,21 @@
 
 Generated **2026-08-24T18:22:27 UTC**. Pull this file plus `pnl_analysis/output/working_copy_model.json` and `pnl_analysis/output/recent_take_alerts.json` — they are committed, not CSVs.
 
+**Single roster contract**: Live tail list = `pnl_analysis/output/verified_elite_roster.json` → `elite[]`. See `LIVE_ROSTER.md` for full contract.
+
 Product rule: **`asof_live_q60_sport_rel2`** — Q≥60, sport-lane ROI≥+5%, rel≥2× median, 10–88¢, no NFL, fill VWAP+2¢, hold to resolution. Unique-book ROI/PnL is truth. Polydata month curves are discovery only.
 
-## Live copy (Take these tails these names tonight)
+## Live copy (verified_elite_roster elite = Telegram/Sniper tail)
 
-**0x8a3aB8120807bD64a3De48695110e390fa2ceB9a, 0x1b20a00709DfE648AFd26b326394b5e031f83ab0, HongYunX, SDTrading**
+Current elite roster from walk-forward: **HVAB** (tennis specialist, Path-B WR 82%, unique ROI 15%)
 
-| Trader | Unique ROI | WR | Median | 30d n | 30d ROI | Take-rule n | Take +2¢ | Why live |
-|---|---:|---:|---:|---:|---:|---:|---:|---|
-| 0x8a3aB8120807bD64a3De48695110e390fa2ceB9a | 15.52% | 54.24% | $4,837 | 133 | 0.3% | 24 | 7.4% | joinable HOT/WARM, unique ROI≥5%, ≥8 prints/30d |
-| 0x1b20a00709DfE648AFd26b326394b5e031f83ab0 | 34.66% | 51.39% | $12,788 | 51 | 34.66% | 11 | 53.31% | joinable HOT/WARM, unique ROI≥5%, ≥8 prints/30d |
-| HongYunX | 10.31% | 60.91% | $3,132 | 38 | 52.32% | 0 | —% | joinable HOT/WARM, unique ROI≥5%, ≥8 prints/30d |
-| SDTrading | -0.15% | 48.62% | $4,539 | 222 | 14.95% | 0 | —% | joinable HOT/WARM, unique ROI≥5%, ≥8 prints/30d |
+Path-B specialist exception: WR 75–85 allowed for walk-forward Elite with curve-book unique≥10% + sports specialty + joinable median.
+
+| Trader | Unique ROI | WR | Median | 30d n | Specialty | Why elite |
+|---|---:|---:|---:|---:|---|---|
+| HVAB | 15.01% | 82.0% | $1,874 | 230 | TENNIS | elite curve-book unique=15.0% spec=TENNIS@14.9% (Path-B specialist) |
+
+**Not live (legacy claims)**: 0x8a3a, TTdes, etc. are no longer in the elite roster. Run `walkforward_elite_discovery.py` to regenerate.
 
 ## Bench / demoted (keep the book, do not fire live)
 
@@ -149,7 +152,8 @@ Do not recrawl 89 wallets to refresh this model. Incremental ingest of live+benc
 ## Fluid rules (do not retune Q/rel from a cold week)
 
 - Pause live copy if last 30d take-slice n≥25 and +2¢ ROI < 0, or last 60d n≥40 and ROI < −5%.
-- extra_traders `watch` never auto-promotes. Human status change required.
-- Unique ROI < 5%, quiet 30d n<8, median ≥$15k, WR outside 48–75, or 100k+ fills → not $100 live.
-- RN1 / HOG993 / mentionmarket / MM bots stay skipped.
-- Empty Take these is honest when nothing passes Q/rel/price tonight.
+- extra_traders `watch` never auto-promotes — **exception**: verified_elite_roster elite names override watch gate.
+- Unique ROI < 5%, quiet 30d n<8, median ≥$15k, or 100k+ fills → not $100 live.
+- **WR gates**: 48–75 standard, 75–85 Path-B specialist (walk-forward Elite + unique≥10%).
+- RN1 / HOG993 / mentionmarket / Vigilant-Environment / sentrio / Mysaria bots stay skipped.
+- Empty Take these is honest when nothing passes Q/rel/price tonight **and** HVAB is in the live tail set.
