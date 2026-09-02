@@ -455,7 +455,8 @@ def apply_promotions(*, dry_run: bool = False) -> dict[str, Any]:
             "(unique ROI≥5% or Path-B elite or regime turnaround/hot last30≥8% n≥30). "
             "Take-slice n≥12 with −ROI blocks (except Path-B). "
             "Demote on take bleed ≤−10% or 60d+90d both negative. "
-            "Bench at 90d no prints. Rebuilds copy_universe."
+            "Bench at 90d no prints. Unique-book stats overlay from Postgres desk tape. "
+            "Rebuilds copy_universe."
         ),
         "promoted": promoted,
         "demoted": demoted,

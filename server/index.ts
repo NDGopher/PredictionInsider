@@ -123,5 +123,6 @@ app.use((req, res, next) => {
     exec(`cmd /c start "" "${runtime.url}"`);
   }
   import("./scheduledPipeline").then((m) => m.runScheduledPipelineIfNeeded());
+  import("./deskIngest").then((m) => m.startDeskIngestLoop());
   import("./takeBookLiveLoop").then((m) => m.startTakeBookLiveLoop());
 })();

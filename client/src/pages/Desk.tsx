@@ -65,6 +65,16 @@ export default function Desk() {
           <p className="text-sm text-muted-foreground mt-1 max-w-3xl">
             Current tickets vs the last 30 days of resolved tape the same rule would have taken.
             Numbers are unique-book hold-to-resolution at VWAP+2¢, $100 flat. Nothing here is a live fill.
+            {data.ingest ? (
+              <span className="block mt-1">
+                Tape: {data.ingest.source}
+                {data.ingest.lastFetchAt ? ` · last pull ${data.ingest.lastFetchAt.slice(0, 16).replace("T", " ")} UTC` : ""}
+                {` · refresh every ${data.ingest.refreshMinutes}m`}
+                {` · ${data.ingest.fills} fills / ${data.ingest.walletsTracked} wallets`}
+                {data.ingest.unresolved ? ` · ${data.ingest.unresolved} unresolved` : ""}
+                {data.ingest.running ? " · ingest running" : ""}
+              </span>
+            ) : null}
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">

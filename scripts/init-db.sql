@@ -132,3 +132,123 @@ CREATE TABLE IF NOT EXISTS tracked_bets (
   user_id TEXT,
   created_at BIGINT DEFAULT (extract(epoch from now()) * 1000)::BIGINT
 );
+
+-- ── Copy-desk live tape (source of truth — not trader CSVs) ─────────────────
+-- Fills from Polymarket /activity and /trades. Natural key is the fill itself.
+CREATE TABLE IF NOT EXISTS desk_fills (
+  wallet            TEXT NOT NULL,
+  event_timestamp   TIMESTAMPTZ NOT NULL,
+  condition_id      TEXT NOT NULL,
+  side              TEXT NOT NULL,
+  price             DOUBLE PRECISION NOT NULL,
+  size              DOUBLE PRECISION NOT NULL,
+  transaction_hash  TEXT NOT NULL DEFAULT '',
+  username          TEXT NOT NULL DEFAULT '',
+  market_id         TEXT NOT NULL DEFAULT '',
+  asset             TEXT NOT NULL DEFAULT '',
+  outcome           TEXT NOT NULL DEFAULT '',
+  title             TEXT NOT NULL DEFAULT '',
+  slug              TEXT NOT NULL DEFAULT '',
+  event_slug        TEXT NOT NULL DEFAULT '',
+  usdc_size         DOUBLE PRECISION NOT NULL DEFAULT 0,
+  event_type        TEXT NOT NULL DEFAULT 'TRADE',
+  sport             TEXT NOT NULL DEFAULT '',
+  market_type       TEXT NOT NULL DEFAULT '',
+  source            TEXT NOT NULL DEFAULT 'activity',
+  ingested_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (wallet, event_timestamp, condition_id, side, price, size, transaction_hash)
+);
+CREATE INDEX IF NOT EXISTS idx_desk_fills_wallet ON desk_fills (wallet);
+CREATE INDEX IF NOT EXISTS idx_desk_fills_wallet_ts ON desk_fills (wallet, event_timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_desk_fills_ts ON desk_fills (event_timestamp);
+CREATE INDEX IF NOT EXISTS idx_desk_fills_condition ON desk_fills (condition_id);
+CREATE INDEX IF NOT EXISTS idx_desk_fills_username ON desk_fills (username);
+CREATE INDEX IF NOT EXISTS idx_desk_fills_slug ON desk_fills (slug);
+CREATE INDEX IF NOT EXISTS idx_desk_fills_market ON desk_fills (market_id);
+
+-- Username → proxy wallet (and optional EOA). Unresolved names stay flagged.
+CREATE TABLE IF NOT EXISTS desk_wallets (
+  username          TEXT PRIMARY KEY,
+  display_name      TEXT NOT NULL DEFAULT '',
+  wallet            TEXT,
+  eoa_wallet        TEXT,
+  source            TEXT NOT NULL DEFAULT '',
+  resolved          BOOLEAN NOT NULL DEFAULT FALSE,
+  unresolved_reason TEXT,
+  last_resolved_at  TIMESTAMPTZ,
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_desk_wallets_wallet ON desk_wallets (wallet);
+CREATE INDEX IF NOT EXISTS idx_desk_wallets_resolved ON desk_wallets (resolved);
+
+-- Incremental cursor per trading wallet (last-seen activity/trades timestamp).
+CREATE TABLE IF NOT EXISTS desk_ingest_cursors (
+  wallet            TEXT PRIMARY KEY,
+  username          TEXT NOT NULL DEFAULT '',
+  last_seen_ts      TIMESTAMPTZ,
+  last_seen_unix    BIGINT,
+  last_fetch_at     TIMESTAMPTZ,
+  last_ok           BOOLEAN,
+  last_error        TEXT,
+  fills_inserted    INTEGER NOT NULL DEFAULT 0,
+  source            TEXT NOT NULL DEFAULT 'activity'
+);
+
+-- Market metadata for grading (resolution / end date). Not a trader tape.
+CREATE TABLE IF NOT EXISTS desk_markets (
+  condition_id      TEXT PRIMARY KEY,
+  title             TEXT NOT NULL DEFAULT '',
+  slug              TEXT NOT NULL DEFAULT '',
+  event_slug        TEXT NOT NULL DEFAULT '',
+  end_date          TIMESTAMPTZ,
+  closed            BOOLEAN NOT NULL DEFAULT FALSE,
+  winning_outcome   TEXT,
+  outcome_prices    TEXT,
+  sport             TEXT NOT NULL DEFAULT '',
+  market_type       TEXT NOT NULL DEFAULT '',
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_desk_markets_end ON desk_markets (end_date);
+CREATE INDEX IF NOT EXISTS idx_desk_markets_closed ON desk_markets (closed);
+
+-- Derived unique books from desk_fills + desk_markets. Fast would-have / promote.
+CREATE TABLE IF NOT EXISTS desk_unique_books (
+  wallet            TEXT NOT NULL,
+  condition_id      TEXT NOT NULL,
+  outcome           TEXT NOT NULL,
+  username          TEXT NOT NULL DEFAULT '',
+  title             TEXT NOT NULL DEFAULT '',
+  slug              TEXT NOT NULL DEFAULT '',
+  event_slug        TEXT NOT NULL DEFAULT '',
+  sport             TEXT NOT NULL DEFAULT '',
+  market_type       TEXT NOT NULL DEFAULT '',
+  submarket         TEXT NOT NULL DEFAULT '',
+  entry_price       DOUBLE PRECISION NOT NULL,
+  cost              DOUBLE PRECISION NOT NULL,
+  size              DOUBLE PRECISION NOT NULL DEFAULT 0,
+  won               BOOLEAN,
+  resolved          BOOLEAN NOT NULL DEFAULT FALSE,
+  end_date          TIMESTAMPTZ,
+  first_fill_at     TIMESTAMPTZ,
+  last_fill_at      TIMESTAMPTZ,
+  fill_count        INTEGER NOT NULL DEFAULT 0,
+  hold_pnl          DOUBLE PRECISION,
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (wallet, condition_id, outcome)
+);
+CREATE INDEX IF NOT EXISTS idx_desk_books_wallet ON desk_unique_books (wallet);
+CREATE INDEX IF NOT EXISTS idx_desk_books_wallet_end ON desk_unique_books (wallet, end_date);
+CREATE INDEX IF NOT EXISTS idx_desk_books_username ON desk_unique_books (username);
+CREATE INDEX IF NOT EXISTS idx_desk_books_end ON desk_unique_books (end_date);
+CREATE INDEX IF NOT EXISTS idx_desk_books_resolved ON desk_unique_books (resolved);
+
+CREATE TABLE IF NOT EXISTS desk_ingest_runs (
+  id                SERIAL PRIMARY KEY,
+  started_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  finished_at       TIMESTAMPTZ,
+  ok                BOOLEAN,
+  wallets_ok        INTEGER NOT NULL DEFAULT 0,
+  wallets_unresolved INTEGER NOT NULL DEFAULT 0,
+  fills_inserted    INTEGER NOT NULL DEFAULT 0,
+  error             TEXT
+);

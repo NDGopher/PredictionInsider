@@ -163,33 +163,34 @@ def get_trader_metrics(wallet: str) -> dict[str, Any] | None:
     return None
 
 
-def cmd_add(args: argparse.Namespace) -> int:
-    """Add a trader to the roster."""
-    wallet = args.wallet.lower().strip()
-    username = args.username.strip()
-    status = args.status or "watch"
-    why_tail = args.why or ""
-    source = args.source or "manual"
-
+def add_trader(
+    wallet: str,
+    username: str,
+    *,
+    status: str = "watch",
+    why: str = "",
+    source: str = "manual",
+    notes: str = "",
+) -> int:
+    """Add or update a roster row. Wallet must already be the trading proxy."""
+    wallet = wallet.lower().strip()
+    username = username.strip()
     if status not in VALID_STATUSES:
         print(f"[error] invalid status: {status}. Must be one of {VALID_STATUSES}")
         return 1
-
     data = load_extra()
     idx = find_trader(data, wallet=wallet)
     now = now_iso()
-
     entry = {
         "wallet": wallet,
         "username": username,
         "source": source,
         "status": status,
-        "why_tail": why_tail,
+        "why_tail": why,
         "add_date": today_iso(),
         "updated_at": now,
-        "notes": args.notes or "",
+        "notes": notes,
     }
-
     if idx >= 0:
         old = data[idx]
         entry["add_date"] = old.get("add_date") or today_iso()
@@ -199,7 +200,7 @@ def cmd_add(args: argparse.Namespace) -> int:
             "old_status": old.get("status"),
             "new_status": status,
             "timestamp": now,
-            "reason": args.notes or "manual update",
+            "reason": notes or why or "manual update",
         })
         data[idx] = entry
         print(f"[roster] updated {username} ({wallet[:10]}...) -> status={status}")
@@ -208,12 +209,41 @@ def cmd_add(args: argparse.Namespace) -> int:
             "action": "add",
             "status": status,
             "timestamp": now,
-            "reason": why_tail or "manual add",
+            "reason": why or "manual add",
         }]
         data.append(entry)
         print(f"[roster] added {username} ({wallet[:10]}...) -> status={status}")
-
     save_extra(data)
+    return 0
+
+
+def cmd_add(args: argparse.Namespace) -> int:
+    """Add a trader to the roster by wallet."""
+    return add_trader(
+        args.wallet,
+        args.username,
+        status=args.status or "watch",
+        why=args.why or "",
+        source=args.source or "manual",
+        notes=args.notes or "",
+    )
+
+
+def cmd_add_username(args: argparse.Namespace) -> int:
+    """Resolve a display name / handle to the proxy wallet, then add + ingest."""
+    from live_ingest import add_username
+
+    rec = add_username(args.username, status=args.status or "watch")
+    if not rec.get("resolved"):
+        print(
+            f"[roster] UNRESOLVED {args.username}: {rec.get('unresolved_reason')} "
+            "— flagged, not added as a silent 0-0 book."
+        )
+        return 2
+    print(
+        f"[roster] resolved {args.username} → {rec.get('wallet')} "
+        f"via {rec.get('source')} ({rec.get('display_name')})"
+    )
     return 0
 
 
@@ -649,10 +679,18 @@ def main() -> int:
     p_auto = subparsers.add_parser("auto", help="Apply activity+equity promote/demote")
     p_auto.add_argument("--dry-run", action="store_true", help="Do not write extra_traders.json")
 
+    p_add_name = subparsers.add_parser(
+        "add-username",
+        help="Resolve a handle (HVAB, 20D6, …) to the proxy wallet, ingest, add to roster",
+    )
+    p_add_name.add_argument("username", help="Polymarket username or desk label")
+    p_add_name.add_argument("--status", default="watch", help="Initial status (default: watch)")
+
     args = parser.parse_args()
 
     commands = {
         "add": cmd_add,
+        "add-username": cmd_add_username,
         "kick": cmd_kick,
         "bench": cmd_bench,
         "remove": cmd_remove,

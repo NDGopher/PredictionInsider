@@ -6,6 +6,7 @@
 import { spawn } from "child_process";
 import { writeFile, readFile, mkdir } from "fs/promises";
 import { join } from "path";
+import { maybeRefreshDeskIngest } from "./deskIngest";
 import { getSmartRefreshIntervalMs } from "./pipelineRefreshConfig";
 import { resolvePythonCommand } from "./resolvePython";
 
@@ -33,6 +34,7 @@ async function setLastRunTime(): Promise<void> {
 export function runScheduledPipelineIfNeeded(): void {
   setImmediate(async () => {
     try {
+      maybeRefreshDeskIngest(true);
       const intervalMs = getSmartRefreshIntervalMs();
       const intervalHours = Math.round(intervalMs / 3600000);
       const last = await getLastRunTime();

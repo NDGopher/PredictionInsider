@@ -20,7 +20,8 @@ import {
   type TailStrategyFilters,
 } from "./tailStrategies";
 import { collectTakePlays, enrichTakePlaysWithBook, loadLaneBacktest, loadTakeHealthFile, loadTrustedCopyBooks, mapCsvOpenRows, takeStrategyCard, type TakePlayBundle } from "./takePlays";
-import { loadDeskPayload } from "./desk";
+import { loadDeskIngestStatus, loadDeskPayload } from "./desk";
+import { maybeRefreshDeskIngest } from "./deskIngest";
 import { syncTakeBookAlerts, telegramConfigured } from "./telegramTakeAlerts";
 import { cancelUnfilledTake, paperLogTakePlays } from "./paperTakeBets";
 import { americanFromPrice } from "./oddsFormat";
@@ -6240,6 +6241,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
   app.get("/api/desk", async (_req, res) => {
     try {
+      maybeRefreshDeskIngest(false);
       const cached = getCache<SignalsResponse>("signals-elite-v59-vip-premium-sp");
       const bundle = collectTakePlays(cached?.signals || []);
       const health = loadTakeHealthFile();
@@ -6252,10 +6254,25 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         paused: bundle.paused,
         pauseReason: bundle.pauseReason,
       });
+      payload.ingest = await loadDeskIngestStatus();
       res.setHeader("Cache-Control", "no-store");
       res.json(payload);
     } catch (err: unknown) {
       console.error("desk error:", err);
+      res.status(500).json({ error: formatApiError(err) });
+    }
+  });
+
+  app.post("/api/desk/refresh", async (_req, res) => {
+    try {
+      const kicked = maybeRefreshDeskIngest(true);
+      res.json({
+        ok: true,
+        ...kicked,
+        ingest: await loadDeskIngestStatus(),
+      });
+    } catch (err: unknown) {
+      console.error("desk refresh error:", err);
       res.status(500).json({ error: formatApiError(err) });
     }
   });

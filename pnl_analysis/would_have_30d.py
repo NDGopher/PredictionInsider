@@ -4,13 +4,11 @@
 Which plays WOULD the live rule have taken, and what did those tickets
 do at VWAP+2¢ hold-to-resolution?
 
-Sources (in order, never invented):
-  1) pnl_analysis/output/asof_fullbook_plays.csv (gitignored rebuild)
-  2) asof_fullbook_backtest.collect_plays from trader CSVs already on disk
+Source of truth is Postgres desk_unique_books (API → desk_fills → books).
+Trader CSVs are not the live book. If a wallet is unresolved or has no
+resolved tape, they are blocked — not zero-filled.
 
-PnL is unit $100 at their VWAP + 2¢. If a trader has no CSV / no resolved
-plays in the window, they are listed as blocked — not filled with zeros
-that look like a result.
+PnL is unit $100 at their VWAP + 2¢.
 
 Writes:
   pnl_analysis/output/would_have_30d.json
@@ -36,6 +34,8 @@ from asof_fullbook_backtest import (  # noqa: E402
     strategy_masks,
 )
 from copy_roster import load_universe  # noqa: E402
+from desk_db import connect, db_available, fetch_unique_books, list_unresolved  # noqa: E402
+from desk_tape import books_to_markets_df  # noqa: E402
 from run_full_pipeline import OUTPUT_DIR  # noqa: E402
 from take_book_bankroll import FLAT_STAKE, take_mask  # noqa: E402
 from trader_display import english_name  # noqa: E402
@@ -75,20 +75,35 @@ def _load_trusted() -> list[dict[str, Any]]:
     return out
 
 
+def _db_loader(wanted: set[str]):
+    """Load resolved unique books for one wallet from Postgres. No CSV fallback."""
+
+    def loader(wallet: str, username: str) -> pd.DataFrame:
+        w = (wallet or "").lower()
+        if w not in wanted:
+            return pd.DataFrame()
+        try:
+            with connect() as conn:
+                books = fetch_unique_books(conn, [w])
+        except Exception as exc:
+            print(f"[would-have] db loader {username}: {exc}")
+            return pd.DataFrame()
+        return books_to_markets_df(books)
+
+    return loader
+
+
 def load_plays(rebuild: bool) -> tuple[pd.DataFrame, str]:
-    if PLAYS_CSV.exists() and not rebuild:
-        df = pd.read_csv(PLAYS_CSV)
-        df["end_dt"] = pd.to_datetime(df["end_dt"], utc=True)
-        if "won" in df.columns:
-            df["won"] = df["won"].astype(str).str.lower().isin(["true", "1", "yes"])
-        return df, f"asof_fullbook_plays.csv ({len(df)} rows)"
     trusted = _load_trusted()
     if not trusted:
         return pd.DataFrame(), "no trusted/live books"
-    df = collect_plays(trusted)
-    if df is None or df.empty:
-        return pd.DataFrame(), "collect_plays returned empty (missing CSVs or warmup)"
-    return df, f"collect_plays from {len(trusted)} live/trusted CSVs"
+    if db_available():
+        wanted = {str(t.get("wallet") or "").lower() for t in trusted if t.get("wallet")}
+        df = collect_plays(trusted, loader=_db_loader(wanted))
+        if df is None or df.empty:
+            return pd.DataFrame(), "postgres unique books empty or below as-of warmup"
+        return df, f"postgres desk_unique_books ({len(trusted)} wallets, {len(df)} as-of plays)"
+    return pd.DataFrame(), "DATABASE_URL missing or Postgres unreachable — no CSV fallback"
 
 
 def equity_curve(sub: pd.DataFrame) -> list[dict[str, Any]]:
@@ -143,7 +158,8 @@ def write_markdown(payload: dict[str, Any]) -> str:
         "",
         "This is **not** a live fill tape and **not** invented PnL. It is the as-of "
         "Q60 + sport + 2× size + 10–88¢ + no NFL rule, applied to resolved unique "
-        "books already in `pnl_analysis/output`. Fill = their VWAP + 2¢. Stake = $100.",
+        "books in Postgres (`desk_unique_books`, fed by Polymarket activity/trades). "
+        "Fill = their VWAP + 2¢. Stake = $100.",
         "",
         f"Window: last **{payload.get('window_days')}** days of resolved tape ending "
         f"**{payload.get('as_of')}**"
@@ -155,7 +171,7 @@ def write_markdown(payload: dict[str, Any]) -> str:
         "- **n** = tickets the rule would have taken (resolved in-window).",
         "- **WR / ROI +2¢ / PnL** = hold-to-resolution at VWAP+2¢, flat $100.",
         "- **Equity** = cumulative unit PnL in date order. Empty curve = no would-have prints.",
-        "- A trader with **blocked** status has no usable CSV/warmup — we do not zero-fill them.",
+        "- A trader with **blocked** status is unresolved or has no honest tape — we do not zero-fill them.",
         "- This is *would have*, not *did fill*. Live CLOB ask can still reject a ticket.",
         "",
         "## Book",
@@ -196,7 +212,7 @@ def write_markdown(payload: dict[str, Any]) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rebuild", action="store_true", help="Ignore plays CSV; re-collect from trader CSVs")
+    parser.add_argument("--rebuild", action="store_true", help="Ignored; tape always comes from Postgres")
     parser.add_argument("--days", type=int, default=WINDOW_DAYS)
     args = parser.parse_args()
     now = datetime.now(timezone.utc)
@@ -212,8 +228,9 @@ def main() -> int:
             "window_days": args.days,
             "source": source,
             "blocked_reason": (
-                "No as-of play tape on disk. Run `npm run backtest:asof` after CSVs "
-                "exist, or keep asof_fullbook_plays.csv from a prior pipeline."
+                "No as-of play tape in Postgres. Run `npm run ingest:live` "
+                "(activity/trades → desk_fills → desk_unique_books). Unresolved "
+                "names are flagged, not zero-filled. CSVs are not the live book."
             ),
             "book": asof_stat(pd.DataFrame(), 0.02),
             "by_trader": [],
@@ -236,14 +253,10 @@ def main() -> int:
         masks = strategy_masks(df)
         mask = masks.get("asof_live_q60_sport_rel2", pd.Series(False, index=df.index))
     take_all = df.loc[mask].copy()
-    if take_all.empty:
-        tape_end = pd.to_datetime(df["end_dt"], utc=True).max() if not df.empty else pd.Timestamp(now)
-    else:
-        tape_end = pd.to_datetime(take_all["end_dt"], utc=True).max()
-    if pd.isna(tape_end):
-        tape_end = pd.Timestamp(now)
+    # Wall-clock last N days of the live stream (not last N days of a stale tape).
+    tape_end = pd.Timestamp(now)
     cut = tape_end - pd.Timedelta(days=args.days)
-    take = take_all[take_all["end_dt"] >= cut].sort_values("end_dt")
+    take = take_all[take_all["end_dt"] >= cut].sort_values("end_dt") if not take_all.empty else take_all
 
     wallets = {}
     if "wallet" in take.columns:
@@ -259,11 +272,27 @@ def main() -> int:
             by_trader.append(trader_block(str(name), wallets.get(str(name), ""), grp))
     by_trader.sort(key=lambda r: (-r["n"], str(r["username"])))
 
+    unresolved_names: set[str] = set()
+    try:
+        with connect(require=False) as conn:
+            if conn is not None:
+                for u in list_unresolved(conn):
+                    unresolved_names.add(str(u.get("username") or ""))
+                    blocked.append({
+                        "username": u.get("username"),
+                        "wallet": "",
+                        "display_name": u.get("display_name") or english_name(u.get("username"), None),
+                        "why": f"unresolved wallet: {u.get('unresolved_reason') or 'no proxy'}",
+                    })
+    except Exception as exc:
+        print(f"[would-have] unresolved lookup: {exc}")
+
     for name, wallet in live_names.items():
-        if name in seen:
+        if name in seen or name in unresolved_names:
             continue
-        csv_hits = list(OUTPUT_DIR.glob(f"{name}_*.csv"))
-        why = "no take-rule prints in window" if csv_hits else "no trader CSV on disk — not zero-filled"
+        why = "no take-rule prints in window" if wallet else "unresolved wallet — not zero-filled"
+        if not wallet:
+            why = "unresolved wallet — not zero-filled"
         blocked.append({
             "username": name,
             "wallet": wallet,
@@ -294,10 +323,11 @@ def main() -> int:
         "blocked": blocked,
         "stake": FLAT_STAKE,
         "how_to_read": (
-            "n is tickets the live take rule would have taken in the last 30d "
-            "of resolved unique-book tape. ROI/PnL are unit $100 at VWAP+2¢. "
-            "Blocked names have no honest tape — do not treat them as 0-0."
+            "n is tickets the live take rule would have taken in the last 30 "
+            "wall-clock days of resolved unique-book tape in Postgres. "
+            "ROI/PnL are unit $100 at VWAP+2¢. Blocked = unresolved or no tape, not 0-0."
         ),
+        "tape": "postgres",
     }
     OUT.write_text(json.dumps(payload, indent=2, default=str, ensure_ascii=False), encoding="utf-8")
     MD.write_text(write_markdown(payload), encoding="utf-8")

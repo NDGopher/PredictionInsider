@@ -268,7 +268,11 @@ def robust_ok(sub: pd.DataFrame) -> tuple[bool, str]:
     return True, "n≥200, +ROI after 2¢, leave-one-out and quarters hold"
 
 
-def collect_plays(trusted: list[dict], extra_books: list[dict] | None = None) -> pd.DataFrame:
+def collect_plays(
+    trusted: list[dict],
+    extra_books: list[dict] | None = None,
+    loader=None,
+) -> pd.DataFrame:
     allow: dict[str, str] = {}
     for t in trusted:
         w = str(t.get("wallet") or "").lower()
@@ -286,10 +290,15 @@ def collect_plays(trusted: list[dict], extra_books: list[dict] | None = None) ->
         w = wallet.lower()
         if w not in allow:
             continue
-        csv_p = csv_path_for(wallet, username)
-        if not csv_p.exists():
-            continue
-        mk = load_trader_markets(csv_p, username, w)
+        if loader is not None:
+            mk = loader(w, username)
+            if mk is None or getattr(mk, "empty", True):
+                continue
+        else:
+            csv_p = csv_path_for(wallet, username)
+            if not csv_p.exists():
+                continue
+            mk = load_trader_markets(csv_p, username, w)
         if len(mk) < WARMUP + 5:
             print(f"  skip {username}: n={len(mk)}")
             continue
