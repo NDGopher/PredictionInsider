@@ -277,14 +277,22 @@ def _ensure_row(
     return row
 
 
-def ingest_scouts(*, extra: list[dict[str, Any]], by_wallet: dict[str, dict[str, Any]], dry_run: bool) -> list[dict[str, Any]]:
-    """Add vetted discover_traders candidates as scout — no live promotion here."""
+def ingest_scouts(
+    *,
+    extra: list[dict[str, Any]],
+    by_wallet: dict[str, dict[str, Any]],
+    dry_run: bool,
+    discovered_path: Path | None = None,
+) -> list[dict[str, Any]]:
+    """Add vetted auto-discover / discover_traders candidates as scout — no live promotion here."""
     added: list[dict[str, Any]] = []
-    payload = _load_json(DISCOVERED)
+    payload = _load_json(discovered_path or DISCOVERED)
     for r in (payload.get("recommended") or [])[:8]:
         wallet = str(r.get("wallet") or "").lower()
         username = str(r.get("username") or "")
         if not wallet or wallet in by_wallet:
+            continue
+        if r.get("resolved") is False:
             continue
         why = (
             f"Scout {today_iso()}: screen={r.get('screen_score')} "
@@ -303,7 +311,7 @@ def ingest_scouts(*, extra: list[dict[str, Any]], by_wallet: dict[str, dict[str,
         row = {
             "wallet": wallet,
             "username": username,
-            "source": "sports_leaderboard_scout",
+            "source": str(r.get("source") or "auto_discover_scout"),
             "status": "scout",
             "why_tail": why,
             "add_date": today_iso(),
