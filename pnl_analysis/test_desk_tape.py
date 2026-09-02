@@ -102,6 +102,49 @@ def test_hedge_dropped() -> None:
     assert books == []
 
 
+def test_player_outcome_resolution() -> None:
+    w = "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8"
+    fills = [
+        activity_to_fill(
+            _trade(outcome="Jie Cui", title="Cui vs X", slug="atp-cui-x"),
+            username="HVAB",
+            wallet=w,
+            source="activity",
+        )
+    ]
+    markets = {
+        "0xcond1": {
+            "title": "Cui vs X",
+            "slug": "atp-cui-x",
+            "end_date": "2026-08-20T00:00:00+00:00",
+            "closed": True,
+            "winning_outcome": "Jie Cui",
+            "sport": "TENNIS",
+        }
+    }
+    books = unique_books_from_fills(fills, markets, username="HVAB", wallet=w)
+    assert books[0]["resolved"] is True
+    assert books[0]["won"] is True
+
+
+def test_redeem_alone_does_not_resolve() -> None:
+    """REDEEM exists only on wins — must not become the would-have tape."""
+    w = "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8"
+    fills = [
+        activity_to_fill(_trade(), username="HVAB", wallet=w, source="activity"),
+        activity_to_fill(
+            _trade(type="REDEEM", transactionHash="0xred", usdcSize=100, price=0),
+            username="HVAB",
+            wallet=w,
+            source="activity",
+        ),
+    ]
+    books = unique_books_from_fills(fills, {}, username="HVAB", wallet=w)
+    assert len(books) == 1
+    assert books[0]["resolved"] is False
+    assert books[0]["won"] is None
+
+
 def test_skip_row_without_condition() -> None:
     row = activity_to_fill(
         {"type": "TRADE", "timestamp": 1, "price": 0.5, "size": 1},
@@ -117,5 +160,7 @@ if __name__ == "__main__":
     test_unresolved_not_won()
     test_winner_from_market_not_invented()
     test_hedge_dropped()
+    test_player_outcome_resolution()
+    test_redeem_alone_does_not_resolve()
     test_skip_row_without_condition()
     print("[OK] desk_tape")

@@ -105,13 +105,34 @@
     "notes": "SS 89 sports #11. PnL exact $5.71M but only 11 closed — too thin to tail.",
     "bench_reason": "stale_177d_no_joinable_prints",
     "bench_date": "2026-09-02",
-    "updated_at": "2026-09-02T04:58:07.376835+00:00",
+    "updated_at": "2026-09-02T13:42:04.175817+00:00",
     "history": [
       {
         "action": "auto_bench",
         "old_status": "watch",
         "new_status": "benched",
         "timestamp": "2026-09-02T04:58:07.376838+00:00",
+        "reason": "stale_177d_no_joinable_prints"
+      },
+      {
+        "action": "auto_bench",
+        "old_status": "benched",
+        "new_status": "benched",
+        "timestamp": "2026-09-02T13:33:03.929364+00:00",
+        "reason": "stale_177d_no_joinable_prints"
+      },
+      {
+        "action": "auto_bench",
+        "old_status": "benched",
+        "new_status": "benched",
+        "timestamp": "2026-09-02T13:35:08.658922+00:00",
+        "reason": "stale_177d_no_joinable_prints"
+      },
+      {
+        "action": "auto_bench",
+        "old_status": "benched",
+        "new_status": "benched",
+        "timestamp": "2026-09-02T13:42:04.175821+00:00",
         "reason": "stale_177d_no_joinable_prints"
       }
     ]
@@ -144,15 +165,22 @@
     "wallet": "0x5c3a1a602848565bb16165fcd460b00c3d43020b",
     "username": "RegardedMoney",
     "source": "verified_elite_scout",
-    "status": "scout",
-    "why_tail": "scout curve=91 roi=5.4% spec=NBA,SOCCER (Other) sports=68% active30=53",
+    "status": "watch",
+    "why_tail": "scout_book_valid closed=1652 wr=59.4 roi=4.61",
     "add_date": "2026-09-02",
-    "updated_at": "2026-09-02T04:58:07.362564+00:00",
+    "updated_at": "2026-09-02T13:33:03.937571+00:00",
     "history": [
       {
         "action": "scout_add",
         "timestamp": "2026-09-02T04:58:07.362568+00:00",
         "reason": "scout curve=91 roi=5.4% spec=NBA,SOCCER (Other) sports=68% active30=53"
+      },
+      {
+        "action": "scout_to_watch",
+        "old_status": "scout",
+        "new_status": "watch",
+        "timestamp": "2026-09-02T13:33:03.937578+00:00",
+        "reason": "scout_book_valid closed=1652 wr=59.4 roi=4.61"
       }
     ]
   },
@@ -234,13 +262,34 @@
     "why_tail": "",
     "notes": "",
     "add_date": "2026-09-02",
-    "updated_at": "2026-09-02T04:58:07.373086+00:00",
+    "updated_at": "2026-09-02T13:42:04.127162+00:00",
     "history": [
       {
         "action": "auto_bench",
         "old_status": "watch",
         "new_status": "benched",
         "timestamp": "2026-09-02T04:58:07.373088+00:00",
+        "reason": "stale_110d_no_joinable_prints"
+      },
+      {
+        "action": "auto_bench",
+        "old_status": "benched",
+        "new_status": "benched",
+        "timestamp": "2026-09-02T13:33:03.883953+00:00",
+        "reason": "stale_110d_no_joinable_prints"
+      },
+      {
+        "action": "auto_bench",
+        "old_status": "benched",
+        "new_status": "benched",
+        "timestamp": "2026-09-02T13:35:08.611837+00:00",
+        "reason": "stale_110d_no_joinable_prints"
+      },
+      {
+        "action": "auto_bench",
+        "old_status": "benched",
+        "new_status": "benched",
+        "timestamp": "2026-09-02T13:42:04.127168+00:00",
         "reason": "stale_110d_no_joinable_prints"
       }
     ],

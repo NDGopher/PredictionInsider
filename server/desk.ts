@@ -217,7 +217,7 @@ export function loadDeskPayload(now: {
   const csvLive = Array.isArray(health.live_open) ? health.live_open.length : 0;
   const csvNear = Array.isArray(health.near_open) ? health.near_open.length : 0;
   if (now.take === 0 && csvLive === 0 && csvNear > 0) {
-    diagnoseBits.push(`CSV open scan has ${csvNear} NEAR and 0 TAKE — diagnose is still true: gates are strict, empty TAKE is honest.`);
+    diagnoseBits.push(`Open-book scan has ${csvNear} NEAR and 0 TAKE — diagnose is still true: gates are strict, empty TAKE is honest.`);
   }
   if (would.blocked_reason) {
     diagnoseBits.push(String(would.blocked_reason));

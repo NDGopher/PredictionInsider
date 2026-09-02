@@ -29,6 +29,7 @@ from desk_db import (  # noqa: E402
     ensure_schema,
     fetch_fills,
     fetch_markets_map,
+    fetch_unique_books,
     finish_run,
     get_cursor,
     ingest_status,
@@ -171,6 +172,97 @@ def fetch_trades_incremental(wallet: str, *, since_unix: int | None) -> list[dic
     return out
 
 
+def fetch_closed_resolution(wallet: str, *, since_unix: int | None, deep: bool = False) -> list[dict[str, Any]]:
+    """Incremental closed-positions for resolution/end-date only — not a CSV dump."""
+    out: list[dict[str, Any]] = []
+    offset = 0
+    if deep:
+        max_pages = 40
+    elif since_unix:
+        max_pages = 4
+    else:
+        max_pages = 8
+    for _ in range(max_pages):
+        batch = _get(
+            f"{DATA}/closed-positions",
+            {
+                "user": wallet,
+                "limit": 50,
+                "offset": offset,
+                "sortBy": "TIMESTAMP",
+                "sortDirection": "DESC",
+            },
+        )
+        _sleep()
+        if not batch:
+            break
+        hit = False
+        for ev in batch:
+            ts = ev.get("timestamp") or 0
+            try:
+                ts_n = int(float(ts))
+            except (TypeError, ValueError):
+                ts_n = 0
+            if ts_n > 10_000_000_000:
+                ts_n = ts_n // 1000
+            if since_unix is not None and ts_n and ts_n <= since_unix:
+                hit = True
+                break
+            cur = _safe_float(ev.get("curPrice") or ev.get("cur_price"))
+            outcome_name = str(ev.get("outcome") or "").strip()
+            opposite = str(ev.get("oppositeOutcome") or ev.get("opposite_outcome") or "").strip()
+            winning = None
+            if cur is not None and cur >= 0.99 and outcome_name:
+                winning = outcome_name
+            elif cur is not None and cur <= 0.01:
+                winning = opposite or _outcome_yes_no_flip(outcome_name)
+            parsed = {
+                "condition_id": str(ev.get("conditionId") or ev.get("condition_id") or ""),
+                "title": str(ev.get("title") or ""),
+                "slug": str(ev.get("slug") or ""),
+                "event_slug": str(ev.get("eventSlug") or ev.get("event_slug") or ""),
+                "end_date": ev.get("endDate") or ev.get("end_date"),
+                "closed": winning is not None,
+                "winning_outcome": winning,
+                "outcome_prices": None,
+                "sport": "",
+                "market_type": "",
+            }
+            if parsed["condition_id"] and winning:
+                out.append(parsed)
+        if hit or len(batch) < 50:
+            break
+        offset += 50
+    return out
+
+
+def _safe_float(v: Any) -> float | None:
+    try:
+        if v is None or v == "":
+            return None
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def _outcome_yes_no(value: Any) -> str | None:
+    s = str(value or "").strip().lower()
+    if s == "yes":
+        return "Yes"
+    if s == "no":
+        return "No"
+    return None
+
+
+def _outcome_yes_no_flip(value: Any) -> str | None:
+    s = _outcome_yes_no(value)
+    if s == "Yes":
+        return "No"
+    if s == "No":
+        return "Yes"
+    return None
+
+
 def fetch_gamma_markets(condition_ids: list[str]) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     for cid in condition_ids:
@@ -233,6 +325,16 @@ def ingest_wallet(conn: Any, rec: dict[str, Any]) -> dict[str, Any]:
         if row:
             fills.append(row)
     inserted = upsert_fills(conn, fills)
+    try:
+        # Resolution overlay from newest closed-positions (winners and losers).
+        # Deep page on a thin book so as-of warmup can run; incremental stays short.
+        existing = [b for b in fetch_unique_books(conn, [wallet]) if b.get("resolved")]
+        upsert_markets(
+            conn,
+            fetch_closed_resolution(wallet, since_unix=None, deep=len(existing) < 40),
+        )
+    except Exception as exc:
+        print(f"    closed-positions resolution skipped: {exc}")
     newest = _newest_unix(fills)
     save_cursor(conn, {
         "wallet": wallet,

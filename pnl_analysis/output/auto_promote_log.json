@@ -1,37 +1,8 @@
 {
-  "generated_at": "2026-09-02T04:58:07.382110+00:00",
+  "generated_at": "2026-09-02T13:42:04.196483+00:00",
   "dry_run": false,
-  "method": "Automatic scout/watch/bench → take_book when joinable + HOT/WARM + (unique ROI≥5% or Path-B elite or regime turnaround/hot last30≥8% n≥30). Take-slice n≥12 with −ROI blocks (except Path-B). Demote on take bleed ≤−10% or 60d+90d both negative. Bench at 90d no prints. Rebuilds copy_universe.",
-  "promoted": [
-    {
-      "username": "UAEVALORANTFAN",
-      "wallet": "0xc65ca4755436f82d8eb461e65781584b8cadea39",
-      "from_bucket": "watch",
-      "regime": "turnaround",
-      "why": "auto_live regime=turnaround last30=33.88% n=80 (2 red months → 2 green; last30 33.88% n=80)",
-      "unique_roi": 3.42,
-      "last_30d_roi": 33.88,
-      "last_30d_n": 80,
-      "take_n": null,
-      "take_roi": null,
-      "display_name": "UAEVALORANTFAN",
-      "action": "auto_promote_live"
-    },
-    {
-      "username": "0x20D6436849F930584892730C7F96eBB2Ac763856",
-      "wallet": "0x20d6436849f930584892730c7f96ebb2ac763856",
-      "from_bucket": "bench",
-      "regime": "hot",
-      "why": "auto_live regime=hot last30=32.52% n=58 (hot last30 32.52% n=58)",
-      "unique_roi": 1.85,
-      "last_30d_roi": 32.52,
-      "last_30d_n": 58,
-      "take_n": null,
-      "take_roi": null,
-      "display_name": "20D6",
-      "action": "auto_promote_live"
-    }
-  ],
+  "method": "Automatic scout/watch/bench → take_book when joinable + HOT/WARM + (unique ROI≥5% or Path-B elite or regime turnaround/hot last30≥8% n≥30). Take-slice n≥12 with −ROI blocks (except Path-B). Demote on take bleed ≤−10% or 60d+90d both negative. Bench at 90d no prints. Unique-book stats overlay from Postgres desk tape. Rebuilds copy_universe.",
+  "promoted": [],
   "demoted": [],
   "watched": [],
   "benched": [
@@ -50,36 +21,7 @@
       "display_name": "KeyTransporter"
     }
   ],
-  "scouts_added": [
-    {
-      "username": "RegardedMoney",
-      "wallet": "0x5c3a1a602848565bb16165fcd460b00c3d43020b",
-      "action": "scout_add",
-      "why": "scout curve=91 roi=5.4% spec=NBA,SOCCER (Other) sports=68% active30=53",
-      "display_name": "RegardedMoney"
-    },
-    {
-      "username": "HongYunX",
-      "wallet": "0xc72d7dcdb23597d143a83536fb97b1d7db7efc21",
-      "action": "scout_add",
-      "why": "scout curve=82 roi=9.6% spec=SOCCER (Other),SOCCER (LaLiga) sports=60% emerging active30=40",
-      "display_name": "HongYunX"
-    },
-    {
-      "username": "SineNooneEI",
-      "wallet": "0x38337de21ff0bb0a11a40761507d51e318d633d1",
-      "action": "scout_add",
-      "why": "scout curve=79 roi=5.2% spec=ESPORTS,TENNIS sports=100% active30=274",
-      "display_name": "SineNooneEI"
-    },
-    {
-      "username": "ic4cream",
-      "wallet": "0x27f738fe203827445690339104aae35b20bc44b0",
-      "action": "scout_add",
-      "why": "scout curve=100 roi=-2.1% spec=SOCCER (Other),MLB sports=85% emerging active30=441",
-      "display_name": "ic4cream"
-    }
-  ],
+  "scouts_added": [],
   "held_sample": [
     {
       "username": "CoryLahey",
@@ -220,8 +162,8 @@
       "unique_roi": 21.87,
       "last_30d_roi": -100.0,
       "last_30d_n": 1,
-      "take_n": 11,
-      "take_roi": -19.92,
+      "take_n": 0,
+      "take_roi": null,
       "display_name": "Supah9ga"
     },
     {
@@ -272,8 +214,8 @@
       "unique_roi": 19.07,
       "last_30d_roi": 0.0,
       "last_30d_n": 0,
-      "take_n": 20,
-      "take_roi": -16.66,
+      "take_n": 0,
+      "take_roi": null,
       "display_name": "HedgeMaster88"
     },
     {
@@ -285,8 +227,8 @@
       "unique_roi": 11.24,
       "last_30d_roi": -18.41,
       "last_30d_n": 57,
-      "take_n": 7,
-      "take_roi": -33.93,
+      "take_n": 20,
+      "take_roi": 14.83,
       "display_name": "Vetch"
     },
     {
@@ -369,11 +311,11 @@
     }
   ],
   "counts": {
-    "promoted": 2,
+    "promoted": 0,
     "demoted": 0,
     "watched": 0,
     "benched": 2,
-    "scouts_added": 4,
+    "scouts_added": 0,
     "held": 22
   }
 }

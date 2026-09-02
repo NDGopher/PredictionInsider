@@ -236,24 +236,18 @@ def unique_books_from_fills(
             {"title": title, "slug": slug}
         ))
         sub = classify_submarket({"title": title, "slug": slug, "eventSlug": event_slug})
-        winning = meta.get("winning_outcome")
-        closed = bool(meta.get("closed"))
+        winning = _outcome_norm(meta.get("winning_outcome")) if meta.get("winning_outcome") else None
         won: bool | None = None
         resolved = False
-        if winning in {"Yes", "No"}:
-            won = outcome == winning
+        # Resolution must come from market metadata (both winners and losers).
+        # A REDEEM event only exists on wins — using it alone would invent a
+        # winner-skewed tape. Sports books use player/team names, not only Yes/No.
+        if winning:
+            won = outcome.casefold() == winning.casefold()
             resolved = True
-        elif redeems.get(cid):
-            # Redeem without a parsed winner: they held a winning token, but we
-            # only mark won if a redeem outcome matches this side.
-            redeem_outcomes = {_outcome_norm(r.get("outcome")) for r in redeems[cid]}
-            if outcome in redeem_outcomes:
-                won = True
-                resolved = True
-            elif redeem_outcomes and outcome not in redeem_outcomes and "" not in redeem_outcomes:
-                won = False
-                resolved = True
         end = meta.get("end_date") or meta.get("end_dt")
+        if end is None and resolved:
+            end = last
         entry_c = min(max(entry, 0.02), 0.98)
         hold = None
         if resolved and won is not None:
@@ -294,7 +288,7 @@ def books_to_markets_df(books: list[dict[str, Any]]):
     for b in books:
         if not b.get("resolved") or b.get("won") is None:
             continue
-        end = b.get("end_dt") or b.get("end_date")
+        end = b.get("end_dt") or b.get("end_date") or b.get("last_fill_at")
         if end is None:
             continue
         if isinstance(end, (int, float)):
