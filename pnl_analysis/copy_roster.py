@@ -5,8 +5,16 @@ Mega/high-frequency books (100k+ Polydata trades or 50k+ CSV rows) are not
 copyable at $100 and are skipped by the daily pipeline so we spend the
 refresh budget on joinable sports books.
 
-Copy-focus (daily refresh): live + bench + watch. Skip/kicked/reference stay
-on disk but are not re-fetched.
+Copy-focus (daily refresh): live + bench + watch + scout. Skip/kicked/reference
+stay on disk but are not re-fetched.
+
+Status values from extra_traders.json:
+  take_book  - On the live Telegram alert list (must pass elite gates)
+  watch      - Tracked, books refreshed, not on live alerts
+  benched    - Was live or watch, auto-benched for staleness (90+ days)
+  scout      - Discovered candidate, needs vetting (refreshed)
+  kicked     - Removed from roster (reason required)
+  removed    - Manually removed by operator
 
 Writes: pnl_analysis/output/copy_universe.json
 """
@@ -33,6 +41,7 @@ MEDIAN_JOIN_MAX = 15_000.0
 WR_LO = 48.0
 WR_HI = 75.0
 LIVE_RECENCY = {"HOT", "WARM"}
+STALE_BENCH_DAYS = 90
 
 # Reasons that mean "do not fetch / do not copy" vs size that is just unjoinable.
 HARD_REASON_PREFIXES = (
@@ -88,6 +97,7 @@ def load_take_book() -> list[dict[str, Any]]:
 
 
 def load_extra_status() -> dict[str, str]:
+    """Load status values from extra_traders.json (wallet -> status)."""
     data = _load_json(EXTRA_PATH)
     out: dict[str, str] = {}
     if not isinstance(data, list):
@@ -102,6 +112,21 @@ def load_extra_status() -> dict[str, str]:
     return out
 
 
+def load_extra_full() -> dict[str, dict[str, Any]]:
+    """Load full extra_traders.json records (wallet -> full record)."""
+    data = _load_json(EXTRA_PATH)
+    out: dict[str, dict[str, Any]] = {}
+    if not isinstance(data, list):
+        return out
+    for row in data:
+        if not isinstance(row, dict):
+            continue
+        w = str(row.get("wallet") or "").strip().lower()
+        if w:
+            out[w] = row
+    return out
+
+
 def _f(v: Any) -> float | None:
     try:
         if v is None:
@@ -111,7 +136,11 @@ def _f(v: Any) -> float | None:
         return None
 
 
-def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[str, Any]:
+def classify_trader(
+    row: dict[str, Any],
+    extra_status: dict[str, str],
+    extra_full: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     username = str(row.get("username") or "")
     wallet = str(row.get("wallet") or "").lower()
     our = row.get("our") or {}
@@ -128,11 +157,13 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
     matched = bool(acc.get("matched") or lane == "take_book")
     take_book = bool(row.get("take_book") or lane == "take_book")
     extra = extra_status.get(wallet, "")
+    extra_row = (extra_full or {}).get(wallet) or {}
+    why_tail = str(extra_row.get("why_tail") or "")
 
     reasons: list[str] = []
     if username in HARD_SKIP_USERNAMES or wallet in HARD_SKIP_WALLETS:
         reasons.append("hard_skip_mega_or_mm")
-    if extra in {"kicked", "kick", "grinder"}:
+    if extra in {"kicked", "kick", "grinder", "removed"}:
         reasons.append("extra_kicked")
     if lane == "kicked":
         reasons.append("lane_kicked")
@@ -157,10 +188,31 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
         and not hard
         and lane not in {"kicked", "reference"}
     )
-    live = joinable and matched and recency in LIVE_RECENCY
+
+    days_since = row.get("days_since_last")
+    if days_since is None:
+        last_event = our.get("last_event_date")
+        if last_event:
+            try:
+                last_dt = datetime.fromisoformat(str(last_event)[:10]).replace(tzinfo=timezone.utc)
+                days_since = max(0, int((datetime.now(timezone.utc) - last_dt).total_seconds() // 86400))
+            except (TypeError, ValueError):
+                pass
+
+    auto_benched = False
+    if extra == "benched":
+        auto_benched = True
+        reasons.append("operator_benched")
+    elif days_since is not None and days_since >= STALE_BENCH_DAYS and extra not in {"kicked", "kick", "removed"}:
+        auto_benched = True
+        reasons.append(f"stale_{days_since}d_no_joinable_prints")
+
+    live = joinable and matched and recency in LIVE_RECENCY and not auto_benched
     bench = False
     if not live and not hard and lane not in {"kicked", "reference"}:
-        if take_book or (matched and CLOSED_MIN <= closed <= CLOSED_MAX_COPY and WR_LO <= wr <= WR_HI):
+        if auto_benched:
+            bench = True
+        elif take_book or (matched and CLOSED_MIN <= closed <= CLOSED_MAX_COPY and WR_LO <= wr <= WR_HI):
             bench = True
             if recency in {"DROP", "DARK"}:
                 reasons.append(f"stale_{recency}")
@@ -177,10 +229,12 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
         bucket = "live"
     elif bench:
         bucket = "bench"
-    elif lane == "kicked" or extra in {"kicked", "kick"}:
+    elif lane == "kicked" or extra in {"kicked", "kick", "removed"}:
         bucket = "kicked"
     elif lane == "reference":
         bucket = "reference"
+    elif extra == "scout":
+        bucket = "scout"
     else:
         bucket = "watch"
 
@@ -198,32 +252,35 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
         "win_rate": round(wr, 2),
         "median_stake": round(median, 2),
         "last_event_date": our.get("last_event_date"),
+        "days_since_last": days_since,
+        "why_tail": why_tail,
         "reasons": reasons,
-        # Live + bench + watch stay on the daily fetch so ranks/PnL stay current.
-        # Skip/kicked/reference are uncopyable bots or unfinished tapes — do not spend API budget.
-        "refresh": bucket in {"live", "bench", "watch"},
+        "refresh": bucket in {"live", "bench", "watch", "scout"},
     }
 
 
 def build_universe() -> dict[str, Any]:
     ranks = _load_json(RANKS_PATH) or {}
     extra_status = load_extra_status()
+    extra_full = load_extra_full()
     take = load_take_book()
     traders: list[dict[str, Any]] = []
     seen: set[str] = set()
     for row in ranks.get("traders") or []:
         if not isinstance(row, dict):
             continue
-        classified = classify_trader(row, extra_status)
+        classified = classify_trader(row, extra_status, extra_full)
         w = classified["wallet"]
         if not w or w in seen:
             continue
         seen.add(w)
         traders.append(classified)
 
-    buckets = {"live": [], "bench": [], "watch": [], "kicked": [], "skip": [], "reference": []}
+    buckets = {"live": [], "bench": [], "watch": [], "scout": [], "kicked": [], "skip": [], "reference": []}
     for t in traders:
         buckets.setdefault(t["bucket"], []).append(t)
+
+    stale_benched = [t for t in traders if any("stale_" in r and "no_joinable" in r for r in t.get("reasons", []))]
 
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -231,6 +288,8 @@ def build_universe() -> dict[str, Any]:
             "Live copy = Polydata-matched, joinable (40–12k closed, WR 48–75, median <$15k), "
             "HOT/WARM. Skip = 100k+ Polydata trades, 50k+ CSV rows, MM, kicked grinders. "
             "Bench = matched but stale/cold — keep full books, do not fire live. "
+            f"Auto-bench after {STALE_BENCH_DAYS}d no joinable prints. "
+            "Scout = discovered candidates, refresh for vetting. "
             "Futures are not a copy lane (n=5, −37% after 2¢)."
         ),
         "rules": {
@@ -241,12 +300,15 @@ def build_universe() -> dict[str, Any]:
             "median_join_max": MEDIAN_JOIN_MAX,
             "wr": [WR_LO, WR_HI],
             "live_recency": sorted(LIVE_RECENCY),
+            "stale_bench_days": STALE_BENCH_DAYS,
         },
         "take_book_matched": [{"username": t.get("username"), "wallet": str(t.get("wallet") or "").lower()} for t in take],
         "counts": {k: len(v) for k, v in buckets.items()},
+        "stale_benched_count": len(stale_benched),
         "live": buckets["live"],
         "bench": buckets["bench"],
         "watch": buckets["watch"],
+        "scout": buckets["scout"],
         "kicked": buckets["kicked"],
         "skip": buckets["skip"],
         "reference": buckets["reference"],
@@ -280,7 +342,7 @@ def live_copy_books() -> list[dict[str, str]]:
 
 
 def copy_focus_buckets() -> tuple[str, ...]:
-    return ("live", "bench", "watch")
+    return ("live", "bench", "watch", "scout")
 
 
 def refresh_usernames() -> set[str]:
@@ -326,16 +388,22 @@ def main() -> int:
     payload = write_universe()
     print(f"[copy-roster] wrote {OUT_PATH}")
     counts = payload.get("counts") or {}
+    stale_n = payload.get("stale_benched_count") or 0
     print(
         f"  live={counts.get('live')} bench={counts.get('bench')} watch={counts.get('watch')} "
-        f"skip={counts.get('skip')} kicked={counts.get('kicked')}"
+        f"scout={counts.get('scout')} skip={counts.get('skip')} kicked={counts.get('kicked')}"
     )
+    if stale_n:
+        print(f"  {stale_n} trader(s) auto-benched for staleness (>={STALE_BENCH_DAYS}d no joinable prints)")
     for t in payload.get("live") or []:
         print(f"  LIVE  {t['username']:<32} closed={t['closed']:<5} wr={t['win_rate']} rec={t['recency']}")
     for t in payload.get("bench") or []:
         print(f"  BENCH {t['username']:<32} closed={t['closed']:<5} wr={t['win_rate']} rec={t['recency']} {t.get('reasons')}")
     for t in payload.get("watch") or []:
         print(f"  WATCH {t['username']:<32} closed={t['closed']:<5} wr={t['win_rate']} rec={t['recency']}")
+    for t in payload.get("scout") or []:
+        why = t.get("why_tail") or ""
+        print(f"  SCOUT {t['username']:<32} closed={t['closed']:<5} wr={t['win_rate']} why={why[:50]}")
     return 0
 
 
