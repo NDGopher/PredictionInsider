@@ -1,0 +1,479 @@
+{
+  "generated_at": "2026-08-31T17:40:56.100662+00:00",
+  "rule": "walkforward_elite_discovery",
+  "sniper_strategy": "asof_live_q60_sport_rel2",
+  "elite": [
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "take_n": 39,
+      "take_roi": -4.09,
+      "active_30d": 230,
+      "median": 1874.02,
+      "curve_score": 99.525,
+      "unique_roi": 15.01,
+      "top_sports": [
+        {
+          "key": "TENNIS",
+          "n": 331,
+          "roi": 14.9
+        },
+        {
+          "key": "OTHER",
+          "n": 204,
+          "roi": 15.2
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 21,
+          "roi": 14.1
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "TENNIS|Moneyline",
+          "n": 319,
+          "roi": 15.0
+        },
+        {
+          "key": "OTHER|Moneyline",
+          "n": 192,
+          "roi": 15.1
+        },
+        {
+          "key": "SOCCER (Other)|Moneyline",
+          "n": 14,
+          "roi": 17.4
+        }
+      ],
+      "why": "elite curve-book unique=15.0% spec=TENNIS@14.9% take=39/-4.1% curve=100 wr_band active30=230",
+      "trades_in_backtest": 30,
+      "win_rate": 81.84,
+      "events": 394,
+      "closed": 0,
+      "last_30d_n": 175,
+      "last_30d_roi": 14.44,
+      "last_60d_n": 338,
+      "last_60d_roi": 11.79,
+      "last_event_date": "2026-08-21",
+      "metrics_source": "insider_ranks snapshot carried in PR #6 copy_universe (2026-08-21 last event). Not invented."
+    }
+  ],
+  "scout": [
+    {
+      "username": "RegardedMoney",
+      "wallet": "0x5c3a1a602848565bb16165fcd460b00c3d43020b",
+      "tier": "scout",
+      "why": "scout curve=91 roi=5.4% spec=NBA,SOCCER (Other) sports=68% active30=53",
+      "curve_score": 91.43,
+      "unique_roi": 5.45,
+      "active_30d": 53,
+      "take_n": 58,
+      "take_roi": 1.22,
+      "median": 9360.01,
+      "top_sports": [
+        {
+          "key": "OTHER",
+          "n": 485,
+          "roi": 2.6
+        },
+        {
+          "key": "NBA",
+          "n": 281,
+          "roi": 3.6
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 269,
+          "roi": 8.9
+        },
+        {
+          "key": "ESPORTS",
+          "n": 153,
+          "roi": 7.0
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 100,
+          "roi": 19.3
+        },
+        {
+          "key": "SOCCER (LaLiga)",
+          "n": 72,
+          "roi": 17.6
+        },
+        {
+          "key": "SOCCER (UCL)",
+          "n": 63,
+          "roi": 9.9
+        },
+        {
+          "key": "MLB",
+          "n": 38,
+          "roi": -19.5
+        }
+      ]
+    },
+    {
+      "username": "HongYunX",
+      "wallet": "0xc72d7dcdb23597d143a83536fb97b1d7db7efc21",
+      "tier": "scout",
+      "why": "scout curve=82 roi=9.6% spec=SOCCER (Other),SOCCER (LaLiga) sports=60% emerging active30=40",
+      "curve_score": 82.42,
+      "unique_roi": 9.6,
+      "active_30d": 40,
+      "take_n": 0,
+      "take_roi": 0.0,
+      "median": 5304.03,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 164,
+          "roi": -23.1
+        },
+        {
+          "key": "OTHER",
+          "n": 130,
+          "roi": 36.7
+        },
+        {
+          "key": "SOCCER (LaLiga)",
+          "n": 12,
+          "roi": 70.4
+        },
+        {
+          "key": "SOCCER (UCL)",
+          "n": 11,
+          "roi": 17.1
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 8,
+          "roi": -6.3
+        }
+      ]
+    },
+    {
+      "username": "SineNooneEI",
+      "wallet": "0x38337de21ff0bb0a11a40761507d51e318d633d1",
+      "tier": "scout",
+      "why": "scout curve=79 roi=5.2% spec=ESPORTS,TENNIS sports=100% active30=274",
+      "curve_score": 79.42,
+      "unique_roi": 5.16,
+      "active_30d": 274,
+      "take_n": 16,
+      "take_roi": -17.48,
+      "median": 7143.99,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 1505,
+          "roi": 4.0
+        },
+        {
+          "key": "TENNIS",
+          "n": 100,
+          "roi": 21.6
+        },
+        {
+          "key": "SOCCER (Other)",
+          "n": 8,
+          "roi": -9.0
+        }
+      ]
+    },
+    {
+      "username": "ic4cream",
+      "wallet": "0x27f738fe203827445690339104aae35b20bc44b0",
+      "tier": "scout",
+      "why": "scout curve=100 roi=-2.1% spec=SOCCER (Other),MLB sports=85% emerging active30=441",
+      "curve_score": 100.0,
+      "unique_roi": -2.05,
+      "active_30d": 441,
+      "take_n": 35,
+      "take_roi": 14.39,
+      "median": 1621.8,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 1043,
+          "roi": -7.9
+        },
+        {
+          "key": "MLB",
+          "n": 854,
+          "roi": 5.0
+        },
+        {
+          "key": "OTHER",
+          "n": 567,
+          "roi": 15.2
+        },
+        {
+          "key": "NBA",
+          "n": 386,
+          "roi": -19.9
+        },
+        {
+          "key": "WNBA",
+          "n": 378,
+          "roi": -1.2
+        },
+        {
+          "key": "NHL",
+          "n": 218,
+          "roi": -16.5
+        },
+        {
+          "key": "SOCCER (LaLiga)",
+          "n": 201,
+          "roi": -3.2
+        },
+        {
+          "key": "TENNIS",
+          "n": 188,
+          "roi": 7.1
+        }
+      ]
+    }
+  ],
+  "proven_bench": [
+    {
+      "username": "Supah9ga",
+      "wallet": "0x57cd939930fd119067ca9dc42b22b3e15708a0fb",
+      "tier": "none",
+      "why": "stale_30d_n=0",
+      "take_n": 21,
+      "take_roi": 30.9,
+      "active_30d": 0,
+      "median": 5533.0,
+      "unique_roi": 18.62,
+      "curve_score": 83.75999999999999,
+      "sports_frac": 0.83,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 118,
+          "roi": 19.1
+        },
+        {
+          "key": "SOCCER (EPL)",
+          "n": 82,
+          "roi": 59.1
+        },
+        {
+          "key": "ESPORTS",
+          "n": 71,
+          "roi": 19.9
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "SOCCER (Other)|Moneyline",
+          "n": 100,
+          "roi": 13.7
+        },
+        {
+          "key": "SOCCER (EPL)|Moneyline",
+          "n": 68,
+          "roi": 64.7
+        },
+        {
+          "key": "NBA|Moneyline",
+          "n": 60,
+          "roi": 0.2
+        }
+      ],
+      "curve": {
+        "n": 539.0,
+        "roi": 18.62,
+        "sharpe": 3.28,
+        "r2": 0.719,
+        "up_day_pct": 51.9,
+        "max_dd": -218490.01,
+        "calmar": 4.22,
+        "total_pnl": 922063.69,
+        "specialty": "SOCCER (EPL)",
+        "specialty_roi": 59.05,
+        "specialty_n": 82.0,
+        "specialty_sharpe": 6.71,
+        "last30_roi": 0.0,
+        "last30_n": 0
+      },
+      "emerging": false,
+      "wr": 52.13,
+      "trades": 8,
+      "discoveries": 3
+    },
+    {
+      "username": "Vetch",
+      "wallet": "0x9c82c60829df081d593055ee5fa288870c051f13",
+      "tier": "none",
+      "why": "stale_30d_n=0",
+      "take_n": 83,
+      "take_roi": 11.96,
+      "active_30d": 0,
+      "median": 2354.84,
+      "unique_roi": 11.55,
+      "curve_score": 83.58500000000001,
+      "sports_frac": 0.89,
+      "top_sports": [
+        {
+          "key": "ESPORTS",
+          "n": 187,
+          "roi": 15.6
+        },
+        {
+          "key": "NBA",
+          "n": 137,
+          "roi": 14.0
+        },
+        {
+          "key": "TENNIS",
+          "n": 114,
+          "roi": 6.5
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "ESPORTS|Moneyline",
+          "n": 187,
+          "roi": 15.6
+        },
+        {
+          "key": "NBA|Moneyline",
+          "n": 137,
+          "roi": 14.0
+        },
+        {
+          "key": "TENNIS|Moneyline",
+          "n": 107,
+          "roi": 7.1
+        }
+      ],
+      "curve": {
+        "n": 554.0,
+        "roi": 11.55,
+        "sharpe": 5.29,
+        "r2": 0.95,
+        "up_day_pct": 65.3,
+        "max_dd": -60856.3,
+        "calmar": 3.79,
+        "total_pnl": 230859.37,
+        "specialty": "NHL",
+        "specialty_roi": 25.9,
+        "specialty_n": 32.0,
+        "specialty_sharpe": 5.95,
+        "last30_roi": 0.0,
+        "last30_n": 0
+      },
+      "emerging": false,
+      "wr": 58.48,
+      "trades": 69,
+      "discoveries": 1
+    },
+    {
+      "username": "JhonAlexanderHinestroza",
+      "wallet": "0x44c58184f89a5c2f699dc8943009cb3d75a08d45",
+      "tier": "none",
+      "why": "stale_30d_n=0",
+      "take_n": 85,
+      "take_roi": 22.2,
+      "active_30d": 0,
+      "median": 2669.93,
+      "unique_roi": 19.15,
+      "curve_score": 81.16,
+      "sports_frac": 0.74,
+      "top_sports": [
+        {
+          "key": "SOCCER (Other)",
+          "n": 412,
+          "roi": 15.7
+        },
+        {
+          "key": "OTHER",
+          "n": 240,
+          "roi": 18.1
+        },
+        {
+          "key": "ESPORTS",
+          "n": 126,
+          "roi": 8.6
+        }
+      ],
+      "top_submarkets": [
+        {
+          "key": "SOCCER (Other)|Moneyline",
+          "n": 291,
+          "roi": 18.4
+        },
+        {
+          "key": "OTHER|Moneyline",
+          "n": 176,
+          "roi": 24.7
+        },
+        {
+          "key": "SOCCER (Other)|Total",
+          "n": 104,
+          "roi": 7.0
+        }
+      ],
+      "curve": {
+        "n": 948.0,
+        "roi": 19.15,
+        "sharpe": 6.58,
+        "r2": 0.944,
+        "up_day_pct": 58.4,
+        "max_dd": -86161.96,
+        "calmar": 6.89,
+        "total_pnl": 593492.06,
+        "specialty": "SOCCER (UCL)",
+        "specialty_roi": 45.0,
+        "specialty_n": 45.0,
+        "specialty_sharpe": 8.14,
+        "last30_roi": 0.0,
+        "last30_n": 0
+      },
+      "emerging": false,
+      "wr": 54.85,
+      "trades": 91,
+      "discoveries": 1
+    },
+    {
+      "username": "Capman",
+      "wallet": "0xc5b5bbd42624a8f0c8dfa90221913007d8c77e80",
+      "take_n": 52,
+      "take_roi": 18.12,
+      "active_30d": 0,
+      "curve_score": null,
+      "unique_roi": null,
+      "why": "proven_stale_inactive",
+      "trades": 52
+    }
+  ],
+  "backtest": {
+    "n": 393,
+    "win_rate": 61.58,
+    "roi_2c": 8.68,
+    "unit_pnl": 3411.05,
+    "passes_5pct_bar": true
+  },
+  "note": "Telegram/Sniper = elite only. Scout = curve-watch (not Telegram yet). Coverage: digest more Polydata sports survivors \u2014 see curve_scout_queue.json. HongYunX/SineNooneEI are live scouts after funnel expand.",
+  "coverage": {
+    "board_survivors": 50,
+    "have_csv": 5,
+    "missing_csv": 45,
+    "watch_added": 20,
+    "local_digest_csvs": 45
+  },
+  "aliases": {
+    "RegardedMoney": "CoryLahey (same wallet 0x5c3a1a60\u2026)"
+  },
+  "rejected_bots": [
+    {
+      "username": "Mysaria",
+      "wallet": "0xe40aaa5ce1dac0b7dc24c9d0284f27e17c3fe4a2",
+      "why": "unique -49% WR21% politics/OTHER temperature-bot \u2014 not copyable"
+    }
+  ]
+}

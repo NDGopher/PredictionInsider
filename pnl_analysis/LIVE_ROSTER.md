@@ -21,6 +21,10 @@ python roster_manage.py bench 0x1234... --reason "No prints since 2026-05-01"
 # Auto-bench all traders with 90+ days no activity
 python roster_manage.py stale --days 90 --apply
 
+# Apply activity + equity promote/demote (not vibes)
+python roster_manage.py auto
+python roster_manage.py auto --dry-run
+
 # View scout candidates from leaderboard discovery
 python roster_manage.py scout --max-new 10
 python roster_manage.py scout --write  # Add them to roster as scouts
@@ -212,6 +216,8 @@ The `extra_traders.json` file uses this schema:
   ]
 }
 ```
+
+Auto promote/demote is documented in `DESK.md`. The 30-day would-have table is `WOULD_HAVE_30D.md` / `/desk`.
 
 ## Integration with Existing Pipeline
 

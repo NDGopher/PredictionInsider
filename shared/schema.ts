@@ -158,7 +158,107 @@ export const marketsResponseSchema = z.object({
   kalshiCount: z.number().optional(),
 });
 
+export const deskEquityPointSchema = z.object({
+  t: z.string(),
+  equity: z.number(),
+  pnl: z.number().optional(),
+});
+
+export const deskTraderWouldHaveSchema = z.object({
+  username: z.string(),
+  wallet: z.string().optional(),
+  displayName: z.string(),
+  n: z.number(),
+  winRate: z.number().nullable(),
+  roi2c: z.number().nullable(),
+  pnl2c: z.number().nullable(),
+  maxDd: z.number().nullable(),
+  equityEnd: z.number().nullable(),
+  equityCurve: z.array(deskEquityPointSchema),
+  last: z.string().nullable().optional(),
+});
+
+export const deskRosterRowSchema = z.object({
+  username: z.string(),
+  wallet: z.string(),
+  displayName: z.string(),
+  bucket: z.string(),
+  extraStatus: z.string().nullable().optional(),
+  joinable: z.boolean().optional(),
+  recency: z.string().optional(),
+  winRate: z.number().nullable().optional(),
+  uniqueRoi: z.number().nullable().optional(),
+  last30n: z.number().nullable().optional(),
+  last30Roi: z.number().nullable().optional(),
+  whyTail: z.string().optional(),
+  reasons: z.array(z.string()),
+  promoteReason: z.string().nullable().optional(),
+  demoteReason: z.string().nullable().optional(),
+  pathB: z.boolean().optional(),
+});
+
+export const deskActionSchema = z.object({
+  username: z.string().optional(),
+  displayName: z.string().optional(),
+  wallet: z.string().optional(),
+  action: z.string().optional(),
+  why: z.string().optional(),
+});
+
+export const deskWouldHavePlaySchema = z.object({
+  end: z.string(),
+  username: z.string().optional(),
+  displayName: z.string(),
+  play: z.string(),
+  won: z.boolean(),
+  fill: z.number().optional(),
+  pnl_2c: z.number(),
+  equity: z.number().optional(),
+});
+
+export const deskResponseSchema = z.object({
+  generatedAt: z.string().nullable(),
+  asOf: z.string().nullable(),
+  invented: z.boolean(),
+  blockedReason: z.string().nullable().optional(),
+  howToRead: z.string(),
+  promoteHow: z.string(),
+  takeNearDiagnose: z.string(),
+  stillBlocked: z.array(z.string()),
+  book: z.object({
+    n: z.number(),
+    winRate: z.number().nullable(),
+    roi2c: z.number().nullable(),
+    pnl2c: z.number().nullable(),
+  }),
+  now: z.object({
+    take: z.number(),
+    near: z.number(),
+    skip: z.number(),
+    paused: z.boolean(),
+    pauseReason: z.string().nullable().optional(),
+  }),
+  roster: z.array(deskRosterRowSchema),
+  wouldHave: z.array(deskTraderWouldHaveSchema),
+  plays: z.array(deskWouldHavePlaySchema),
+  equityCurve: z.array(deskEquityPointSchema),
+  actions: z.object({
+    promoted: z.array(deskActionSchema),
+    demoted: z.array(deskActionSchema),
+    benched: z.array(deskActionSchema),
+    scoutsAdded: z.array(deskActionSchema),
+  }),
+  blockedTraders: z.array(z.object({
+    username: z.string().optional(),
+    displayName: z.string(),
+    why: z.string(),
+  })),
+});
+
 export type Trader = z.infer<typeof traderSchema>;
+export type DeskResponse = z.infer<typeof deskResponseSchema>;
+export type DeskRosterRow = z.infer<typeof deskRosterRowSchema>;
+export type DeskTraderWouldHave = z.infer<typeof deskTraderWouldHaveSchema>;
 export type Trade = z.infer<typeof tradeSchema>;
 export type Signal = z.infer<typeof signalSchema>;
 export type Market = z.infer<typeof marketSchema>;

@@ -20,6 +20,7 @@ import {
   type TailStrategyFilters,
 } from "./tailStrategies";
 import { collectTakePlays, enrichTakePlaysWithBook, loadLaneBacktest, loadTakeHealthFile, loadTrustedCopyBooks, mapCsvOpenRows, takeStrategyCard, type TakePlayBundle } from "./takePlays";
+import { loadDeskPayload } from "./desk";
 import { syncTakeBookAlerts, telegramConfigured } from "./telegramTakeAlerts";
 import { cancelUnfilledTake, paperLogTakePlays } from "./paperTakeBets";
 import { americanFromPrice } from "./oddsFormat";
@@ -6220,8 +6221,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         pauseReason: bundle.pauseReason,
         live: bundle.live,
         near: bundle.near,
+        skip: bundle.skip,
         csvOpen: {
-          live: [],
+          live: mapCsvOpenRows(health?.live_open || []),
           near: mapCsvOpenRows(health?.near_open || []),
         },
         signalsFetchedAt: cached?.fetchedAt || null,
@@ -6232,7 +6234,29 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       });
     } catch (err: unknown) {
       console.error("take-plays error:", err);
-      res.status(500).json({ error: formatApiError(err), live: [], near: [] });
+      res.status(500).json({ error: formatApiError(err), live: [], near: [], skip: [] });
+    }
+  });
+
+  app.get("/api/desk", async (_req, res) => {
+    try {
+      const cached = getCache<SignalsResponse>("signals-elite-v59-vip-premium-sp");
+      const bundle = collectTakePlays(cached?.signals || []);
+      const health = loadTakeHealthFile();
+      const csvLive = mapCsvOpenRows(health?.live_open || []);
+      const csvNear = mapCsvOpenRows(health?.near_open || []);
+      const payload = loadDeskPayload({
+        take: bundle.live.length + csvLive.filter((p) => p.take && p.valid).length,
+        near: bundle.near.length + csvNear.length,
+        skip: bundle.skip.length,
+        paused: bundle.paused,
+        pauseReason: bundle.pauseReason,
+      });
+      res.setHeader("Cache-Control", "no-store");
+      res.json(payload);
+    } catch (err: unknown) {
+      console.error("desk error:", err);
+      res.status(500).json({ error: formatApiError(err) });
     }
   });
 

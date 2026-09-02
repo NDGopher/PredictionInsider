@@ -408,6 +408,7 @@ export async function notifyTakePlays(
   const bundle: TakePlayBundle = {
     live: plays,
     near: [],
+    skip: [],
     paused: opts.paused,
     pauseReason: null,
   };
