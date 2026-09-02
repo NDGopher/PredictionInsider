@@ -1,10 +1,71 @@
 /**
  * Desk payload: current TAKE/NEAR/SKIP + 30d would-have + roster actions.
- * Reads pipeline artifacts only. Never invents fills or PnL.
+ * Tape lives in Postgres (desk_fills). JSON artifacts are derived views.
+ * Never invents fills or PnL.
  */
 import fs from "fs";
 import path from "path";
+import { Pool } from "pg";
 import type { DeskResponse } from "@shared/schema";
+import { deskIngestFreshness, getDeskRefreshIntervalMs } from "./deskIngest";
+
+let tapePool: Pool | null = null;
+
+function getTapePool(): Pool | null {
+  if (!process.env.DATABASE_URL) return null;
+  if (!tapePool) {
+    tapePool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      connectionTimeoutMillis: 8000,
+      statement_timeout: 8000,
+    });
+  }
+  return tapePool;
+}
+
+export interface DeskIngestStatus {
+  source: string;
+  lastFetchAt: string | null;
+  refreshMinutes: number;
+  walletsTracked: number;
+  unresolved: number;
+  fills: number;
+  running: boolean;
+}
+
+export async function loadDeskIngestStatus(): Promise<DeskIngestStatus> {
+  const kick = deskIngestFreshness();
+  const fallback: DeskIngestStatus = {
+    source: process.env.DATABASE_URL ? "postgres" : "no_database_url",
+    lastFetchAt: null,
+    refreshMinutes: Math.round(getDeskRefreshIntervalMs() / 60000),
+    walletsTracked: 0,
+    unresolved: 0,
+    fills: 0,
+    running: kick.running,
+  };
+  const pool = getTapePool();
+  if (!pool) return fallback;
+  try {
+    const fills = await pool.query<{ n: string }>("SELECT COUNT(*)::text AS n FROM desk_fills");
+    const resolved = await pool.query<{ n: string }>("SELECT COUNT(*)::text AS n FROM desk_wallets WHERE resolved");
+    const unresolved = await pool.query<{ n: string }>("SELECT COUNT(*)::text AS n FROM desk_wallets WHERE resolved IS NOT TRUE");
+    const last = await pool.query<{ t: Date | null }>("SELECT MAX(last_fetch_at) AS t FROM desk_ingest_cursors");
+    const lastAt = last.rows[0]?.t;
+    return {
+      source: "postgres",
+      lastFetchAt: lastAt ? new Date(lastAt).toISOString() : null,
+      refreshMinutes: fallback.refreshMinutes,
+      walletsTracked: Number(resolved.rows[0]?.n || 0),
+      unresolved: Number(unresolved.rows[0]?.n || 0),
+      fills: Number(fills.rows[0]?.n || 0),
+      running: kick.running,
+    };
+  } catch (err) {
+    console.warn("[desk] ingest status:", err instanceof Error ? err.message : err);
+    return fallback;
+  }
+}
 
 interface JsonMap {
   [key: string]: unknown;
@@ -156,7 +217,7 @@ export function loadDeskPayload(now: {
   const csvLive = Array.isArray(health.live_open) ? health.live_open.length : 0;
   const csvNear = Array.isArray(health.near_open) ? health.near_open.length : 0;
   if (now.take === 0 && csvLive === 0 && csvNear > 0) {
-    diagnoseBits.push(`CSV open scan has ${csvNear} NEAR and 0 TAKE — diagnose is still true: gates are strict, empty TAKE is honest.`);
+    diagnoseBits.push(`Open-book scan has ${csvNear} NEAR and 0 TAKE — diagnose is still true: gates are strict, empty TAKE is honest.`);
   }
   if (would.blocked_reason) {
     diagnoseBits.push(String(would.blocked_reason));
@@ -164,7 +225,7 @@ export function loadDeskPayload(now: {
 
   const stillBlocked: string[] = [];
   if (!would.generated_at) {
-    stillBlocked.push("30d would-have JSON is missing — run npm run backtest:would-have after CSVs exist.");
+    stillBlocked.push("30d would-have JSON is missing — run npm run ingest:live then npm run backtest:would-have.");
   }
   if (would.blocked_reason) {
     stillBlocked.push(String(would.blocked_reason));
@@ -208,5 +269,14 @@ export function loadDeskPayload(now: {
       scoutsAdded: mapAction(promo.scouts_added),
     },
     blockedTraders: blocked,
+    ingest: {
+      source: String(would.tape || "postgres"),
+      lastFetchAt: would.generated_at != null ? String(would.generated_at) : null,
+      refreshMinutes: Math.round(getDeskRefreshIntervalMs() / 60000),
+      walletsTracked: roster.length,
+      unresolved: blocked.filter((b) => String(b.why).includes("unresolved")).length,
+      fills: 0,
+      running: deskIngestFreshness().running,
+    },
   };
 }

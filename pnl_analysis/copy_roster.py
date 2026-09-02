@@ -426,6 +426,41 @@ def classify_trader(
     }
 
 
+def _overlay_db_stats(traders: list[dict[str, Any]]) -> None:
+    """Replace stale file stats with fresh Postgres unique-book stats when present."""
+    try:
+        from desk_db import connect, wallet_stats
+    except Exception:
+        return
+    try:
+        with connect(require=False) as conn:
+            if conn is None:
+                return
+            for t in traders:
+                w = str(t.get("wallet") or "").lower()
+                if not w:
+                    continue
+                stats = wallet_stats(conn, w)
+                if not stats or int(stats.get("closed") or 0) <= 0:
+                    continue
+                t["closed"] = stats["closed"]
+                t["last_30d_n"] = stats["last_30d_n"]
+                t["last_30d_roi"] = stats["last_30d_roi"]
+                t["last_60d_n"] = stats["last_60d_n"]
+                t["last_60d_roi"] = stats["last_60d_roi"]
+                if stats.get("unique_roi") is not None:
+                    t["unique_roi"] = stats["unique_roi"]
+                if stats.get("win_rate") is not None:
+                    t["win_rate"] = stats["win_rate"]
+                if stats.get("median_stake"):
+                    t["median_stake"] = stats["median_stake"]
+                t["days_since_last"] = stats.get("days_since_last")
+                t["last_event_date"] = stats.get("last_event_date")
+                t["tape_source"] = "postgres"
+    except Exception as exc:
+        print(f"[copy-roster] postgres overlay skipped: {exc}")
+
+
 def build_universe() -> dict[str, Any]:
     ranks = _load_json(RANKS_PATH) or {}
     extra_status = load_extra_status()
@@ -479,6 +514,8 @@ def build_universe() -> dict[str, Any]:
         traders.append(classified)
 
     buckets = {"live": [], "bench": [], "watch": [], "scout": [], "kicked": [], "skip": [], "reference": []}
+    _overlay_db_stats(traders)
+
     for t in traders:
         buckets.setdefault(t["bucket"], []).append(t)
 

@@ -253,6 +253,15 @@ export const deskResponseSchema = z.object({
     displayName: z.string(),
     why: z.string(),
   })),
+  ingest: z.object({
+    source: z.string(),
+    lastFetchAt: z.string().nullable(),
+    refreshMinutes: z.number(),
+    walletsTracked: z.number(),
+    unresolved: z.number(),
+    fills: z.number(),
+    running: z.boolean().optional(),
+  }).optional(),
 });
 
 export type Trader = z.infer<typeof traderSchema>;

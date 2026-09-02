@@ -13,6 +13,30 @@ from typing import Any
 from run_full_pipeline import OUTPUT_DIR, csv_path_for
 
 
+def _analysis_from_db(wallet: str) -> dict[str, Any] | None:
+    """Fresh unique-book monthly / last-30 from Postgres. None if tape is empty."""
+    try:
+        from desk_db import connect, monthly_pnl, wallet_stats
+    except Exception:
+        return None
+    try:
+        with connect(require=False) as conn:
+            if conn is None:
+                return None
+            stats = wallet_stats(conn, wallet)
+            if not stats or int(stats.get("closed") or 0) <= 0:
+                return None
+            monthly = monthly_pnl(conn, wallet)
+        return {
+            "overall_roi": stats.get("unique_roi"),
+            "last_30d": {"roi": stats.get("last_30d_roi"), "n": stats.get("last_30d_n")},
+            "monthly_pnl": monthly,
+            "tape_source": "postgres",
+        }
+    except Exception:
+        return None
+
+
 def _f(v: Any) -> float | None:
     try:
         if v is None:
@@ -23,6 +47,9 @@ def _f(v: Any) -> float | None:
 
 
 def load_analysis(wallet: str, username: str) -> dict[str, Any] | None:
+    db = _analysis_from_db(wallet)
+    if db is not None:
+        return db
     csv_p = csv_path_for(wallet, username)
     json_p = csv_p.with_suffix(".json")
     if not json_p.exists():
