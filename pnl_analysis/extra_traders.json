@@ -101,8 +101,20 @@
     "wallet": "0x94f199fb7789f1aef7fff6b758d6b375100f4c7a",
     "username": "KeyTransporter",
     "source": "polydata_smart_score",
-    "status": "watch",
-    "notes": "SS 89 sports #11. PnL exact $5.71M but only 11 closed — too thin to tail."
+    "status": "benched",
+    "notes": "SS 89 sports #11. PnL exact $5.71M but only 11 closed — too thin to tail.",
+    "bench_reason": "stale_177d_no_joinable_prints",
+    "bench_date": "2026-09-02",
+    "updated_at": "2026-09-02T04:58:07.376835+00:00",
+    "history": [
+      {
+        "action": "auto_bench",
+        "old_status": "watch",
+        "new_status": "benched",
+        "timestamp": "2026-09-02T04:58:07.376838+00:00",
+        "reason": "stale_177d_no_joinable_prints"
+      }
+    ]
   },
   {
     "wallet": "0x476e1322d1a412fa0325527b8c3bc5e707b1396d",
@@ -110,5 +122,151 @@
     "source": "polydata_smart_score",
     "status": "watch",
     "notes": "SS 83 sports #28. PnL $3.55M vs $3.56M but only 15 closed — too thin to tail."
+  },
+  {
+    "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+    "username": "HVAB",
+    "source": "verified_elite_roster",
+    "status": "take_book",
+    "why_tail": "Path-B tennis specialist: walk-forward Elite unique 15.0%, WR 81.8% band, joinable median. Take-slice 39/-4.1% is not a −10 demote.",
+    "add_date": "2026-09-02",
+    "notes": "Restored from PR #6 live roster. Sniper gates unchanged. Vigilant-Environment/sentrio/Mysaria stay excluded.",
+    "history": [
+      {
+        "action": "promote",
+        "new_status": "take_book",
+        "timestamp": "2026-09-02T00:00:00+00:00",
+        "reason": "Path-B specialist exception (PR #6 reuse)"
+      }
+    ]
+  },
+  {
+    "wallet": "0x5c3a1a602848565bb16165fcd460b00c3d43020b",
+    "username": "RegardedMoney",
+    "source": "verified_elite_scout",
+    "status": "scout",
+    "why_tail": "scout curve=91 roi=5.4% spec=NBA,SOCCER (Other) sports=68% active30=53",
+    "add_date": "2026-09-02",
+    "updated_at": "2026-09-02T04:58:07.362564+00:00",
+    "history": [
+      {
+        "action": "scout_add",
+        "timestamp": "2026-09-02T04:58:07.362568+00:00",
+        "reason": "scout curve=91 roi=5.4% spec=NBA,SOCCER (Other) sports=68% active30=53"
+      }
+    ]
+  },
+  {
+    "wallet": "0xc72d7dcdb23597d143a83536fb97b1d7db7efc21",
+    "username": "HongYunX",
+    "source": "verified_elite_scout",
+    "status": "scout",
+    "why_tail": "scout curve=82 roi=9.6% spec=SOCCER (Other),SOCCER (LaLiga) sports=60% emerging active30=40",
+    "add_date": "2026-09-02",
+    "updated_at": "2026-09-02T04:58:07.362578+00:00",
+    "history": [
+      {
+        "action": "scout_add",
+        "timestamp": "2026-09-02T04:58:07.362580+00:00",
+        "reason": "scout curve=82 roi=9.6% spec=SOCCER (Other),SOCCER (LaLiga) sports=60% emerging active30=40"
+      }
+    ]
+  },
+  {
+    "wallet": "0x38337de21ff0bb0a11a40761507d51e318d633d1",
+    "username": "SineNooneEI",
+    "source": "verified_elite_scout",
+    "status": "scout",
+    "why_tail": "scout curve=79 roi=5.2% spec=ESPORTS,TENNIS sports=100% active30=274",
+    "add_date": "2026-09-02",
+    "updated_at": "2026-09-02T04:58:07.362587+00:00",
+    "history": [
+      {
+        "action": "scout_add",
+        "timestamp": "2026-09-02T04:58:07.362588+00:00",
+        "reason": "scout curve=79 roi=5.2% spec=ESPORTS,TENNIS sports=100% active30=274"
+      }
+    ]
+  },
+  {
+    "wallet": "0x27f738fe203827445690339104aae35b20bc44b0",
+    "username": "ic4cream",
+    "source": "verified_elite_scout",
+    "status": "scout",
+    "why_tail": "scout curve=100 roi=-2.1% spec=SOCCER (Other),MLB sports=85% emerging active30=441",
+    "add_date": "2026-09-02",
+    "updated_at": "2026-09-02T04:58:07.362594+00:00",
+    "history": [
+      {
+        "action": "scout_add",
+        "timestamp": "2026-09-02T04:58:07.362595+00:00",
+        "reason": "scout curve=100 roi=-2.1% spec=SOCCER (Other),MLB sports=85% emerging active30=441"
+      }
+    ]
+  },
+  {
+    "wallet": "0xc65ca4755436f82d8eb461e65781584b8cadea39",
+    "username": "UAEVALORANTFAN",
+    "source": "auto_promote",
+    "status": "take_book",
+    "why_tail": "auto_live regime=turnaround last30=33.88% n=80 (2 red months → 2 green; last30 33.88% n=80)",
+    "notes": "",
+    "add_date": "2026-09-02",
+    "updated_at": "2026-09-02T04:58:07.365258+00:00",
+    "history": [
+      {
+        "action": "auto_promote",
+        "old_status": "watch",
+        "new_status": "take_book",
+        "timestamp": "2026-09-02T04:58:07.365260+00:00",
+        "reason": "auto_live regime=turnaround last30=33.88% n=80 (2 red months → 2 green; last30 33.88% n=80)"
+      }
+    ],
+    "auto_promoted_at": "2026-09-02T04:58:07.365255+00:00",
+    "auto_promote_reason": "auto_live regime=turnaround last30=33.88% n=80 (2 red months → 2 green; last30 33.88% n=80)",
+    "regime": "turnaround"
+  },
+  {
+    "wallet": "0x9f138019d5481fdc5c59b93b0ae4b9b817cce0fd",
+    "username": "Bienville",
+    "source": "auto_promote",
+    "status": "benched",
+    "why_tail": "",
+    "notes": "",
+    "add_date": "2026-09-02",
+    "updated_at": "2026-09-02T04:58:07.373086+00:00",
+    "history": [
+      {
+        "action": "auto_bench",
+        "old_status": "watch",
+        "new_status": "benched",
+        "timestamp": "2026-09-02T04:58:07.373088+00:00",
+        "reason": "stale_110d_no_joinable_prints"
+      }
+    ],
+    "bench_reason": "stale_110d_no_joinable_prints",
+    "bench_date": "2026-09-02"
+  },
+  {
+    "wallet": "0x20d6436849f930584892730c7f96ebb2ac763856",
+    "username": "0x20D6436849F930584892730C7F96eBB2Ac763856",
+    "source": "auto_promote",
+    "status": "take_book",
+    "why_tail": "auto_live regime=hot last30=32.52% n=58 (hot last30 32.52% n=58)",
+    "notes": "",
+    "add_date": "2026-09-02",
+    "updated_at": "2026-09-02T04:58:07.374812+00:00",
+    "history": [
+      {
+        "action": "auto_promote",
+        "old_status": "watch",
+        "new_status": "take_book",
+        "timestamp": "2026-09-02T04:58:07.374814+00:00",
+        "reason": "auto_live regime=hot last30=32.52% n=58 (hot last30 32.52% n=58)"
+      }
+    ],
+    "auto_promoted_at": "2026-09-02T04:58:07.374810+00:00",
+    "auto_promote_reason": "auto_live regime=hot last30=32.52% n=58 (hot last30 32.52% n=58)",
+    "regime": "hot"
   }
 ]

@@ -71,6 +71,7 @@ export interface AnnotatedTakePlay {
 export interface TakePlayBundle {
   live: AnnotatedTakePlay[];
   near: AnnotatedTakePlay[];
+  skip: AnnotatedTakePlay[];
   paused: boolean;
   pauseReason: string | null;
 }
@@ -231,22 +232,29 @@ export function collectTakePlays(signals: Signal[]): TakePlayBundle {
   const health = loadTakeHealthFile();
   const paused = health?.status === "pause";
   if (!filters) {
-    return { live: [], near: [], paused, pauseReason: health?.pause_reason || null };
+    return { live: [], near: [], skip: [], paused, pauseReason: health?.pause_reason || null };
   }
   const live: AnnotatedTakePlay[] = [];
   const near: AnnotatedTakePlay[] = [];
+  const skip: AnnotatedTakePlay[] = [];
   for (const raw of signals) {
     const report: TakeGateReport = diagnoseTakeGates(raw, filters);
     const row = playFromSignal(raw, report);
-    if (row.lane === "futures" || row.submarket === "Futures") continue;
+    if (row.lane === "futures" || row.submarket === "Futures") {
+      skip.push(row);
+      continue;
+    }
     if (row.take) live.push(row);
     else if (row.close) near.push(row);
+    else if (report.allowTraders.length > 0 || report.misses.length > 0) skip.push(row);
   }
   live.sort((a, b) => b.rel - a.rel || b.q - a.q);
   near.sort((a, b) => b.rel - a.rel || b.q - a.q);
+  skip.sort((a, b) => b.rel - a.rel || b.q - a.q);
   return {
     live: live.slice(0, 40),
     near: near.slice(0, 20),
+    skip: skip.slice(0, 12),
     paused,
     pauseReason: health?.pause_reason || null,
   };
@@ -259,6 +267,7 @@ export async function enrichTakePlaysWithBook(bundle: TakePlayBundle): Promise<T
   const quotes = tokenIds.length > 0 ? await fetchClobQuotes(tokenIds) : new Map();
   const stillLive: AnnotatedTakePlay[] = [];
   const stillNear: AnnotatedTakePlay[] = [];
+  const stillSkip: AnnotatedTakePlay[] = [...bundle.skip];
   for (const row of bundle.live) {
     const q = row.tokenId ? quotes.get(row.tokenId) : undefined;
     if (q && q.ask != null) {
@@ -270,7 +279,8 @@ export async function enrichTakePlaysWithBook(bundle: TakePlayBundle): Promise<T
     }
     applyQuote(row);
     if (row.take && row.valid) stillLive.push(row);
-    else if (row.close || row.misses.length > 0) stillNear.push(row);
+    else if (row.close || row.misses.length <= 2) stillNear.push(row);
+    else stillSkip.push(row);
   }
   for (const row of bundle.near) {
     const q = row.tokenId ? quotes.get(row.tokenId) : undefined;
@@ -288,6 +298,7 @@ export async function enrichTakePlaysWithBook(bundle: TakePlayBundle): Promise<T
   stillNear.sort((a, b) => b.rel - a.rel || b.q - a.q);
   bundle.live = stillLive.slice(0, 40);
   bundle.near = stillNear.slice(0, 20);
+  bundle.skip = stillSkip.slice(0, 12);
   return bundle;
 }
 

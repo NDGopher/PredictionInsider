@@ -1,0 +1,2653 @@
+{
+  "generated_at": "2026-09-02T04:57:02.314266+00:00",
+  "as_of": "2026-04-13",
+  "wall_clock": "2026-09-02",
+  "window_days": 30,
+  "window_start": "2026-03-14",
+  "source": "collect_plays from 13 live/trusted CSVs",
+  "rule": "asof_live_q60_sport_rel2 · VWAP+2¢ · $100 · hold-to-resolution",
+  "invented": false,
+  "book": {
+    "n": 105,
+    "wins": 68,
+    "losses": 37,
+    "win_rate": 64.76,
+    "unit_pnl": 133.16,
+    "expectancy": 1.27,
+    "roi": 1.27,
+    "profit_factor": 1.036,
+    "sharpe_daily_roi": -2.55,
+    "max_dd": -694.01,
+    "avg_grade": 76.1,
+    "avg_q": 76.1,
+    "avg_fill": 0.612,
+    "avg_vwap": 0.592,
+    "implied_wr": 61.2,
+    "edge": 3.5,
+    "avg_traders": 1.0,
+    "avg_rel": 4.9,
+    "calmar": 0.19,
+    "days": 25,
+    "trades_per_day": 4.2,
+    "first": "2026-03-14",
+    "last": "2026-04-13"
+  },
+  "by_trader": [
+    {
+      "username": "Capman",
+      "wallet": "0xc5b5bbd42624a8f0c8dfa90221913007d8c77e80",
+      "display_name": "Capman",
+      "n": 67,
+      "wins": 51,
+      "losses": 16,
+      "win_rate": 76.12,
+      "roi_2c": 13.78,
+      "pnl_2c": 922.95,
+      "max_dd": -365.85,
+      "sharpe_daily_roi": 8.31,
+      "first": "2026-03-14",
+      "last": "2026-04-08",
+      "equity_curve": [
+        {
+          "end": "2026-03-14",
+          "play": "Nets vs. 76ers",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 42.86,
+          "equity": 42.86,
+          "fill": 0.7
+        },
+        {
+          "end": "2026-03-15",
+          "play": "Kings vs. Clippers",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 119.46,
+          "equity": 162.32,
+          "fill": 0.456
+        },
+        {
+          "end": "2026-03-15",
+          "play": "UFC Fight Night: Andre Fili vs. Jose Miguel Delgado (Featherweight, Prelims)",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 27.53,
+          "equity": 189.85,
+          "fill": 0.784
+        },
+        {
+          "end": "2026-03-15",
+          "play": "Penn Quakers vs. Yale Bulldogs",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 114.24,
+          "equity": 304.08,
+          "fill": 0.467
+        },
+        {
+          "end": "2026-03-15",
+          "play": "Penn Quakers vs. Yale Bulldogs",
+          "username": "Capman",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 204.08,
+          "fill": 0.692
+        },
+        {
+          "end": "2026-03-15",
+          "play": "UFC Fight Night: Brad Tavares vs. Eryk Anders (Middleweight, Prelims)",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 64.77,
+          "equity": 268.85,
+          "fill": 0.607
+        },
+        {
+          "end": "2026-03-16",
+          "play": "Warriors vs. Knicks",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 13.69,
+          "equity": 282.54,
+          "fill": 0.88
+        },
+        {
+          "end": "2026-03-16",
+          "play": "Suns vs. Celtics",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 176.58,
+          "equity": 459.12,
+          "fill": 0.362
+        },
+        {
+          "end": "2026-03-17",
+          "play": "UNCW Seahawks vs. Yale Bulldogs",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 38.53,
+          "equity": 497.65,
+          "fill": 0.722
+        },
+        {
+          "end": "2026-03-17",
+          "play": "Spurs vs. Clippers: O/U 232.5",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 25.46,
+          "equity": 523.11,
+          "fill": 0.797
+        },
+        {
+          "end": "2026-03-17",
+          "play": "Liberty Flames vs. George Mason Patriots",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 28.12,
+          "equity": 551.24,
+          "fill": 0.78
+        },
+        {
+          "end": "2026-03-17",
+          "play": "Lakers vs. Rockets",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 21.95,
+          "equity": 573.19,
+          "fill": 0.82
+        },
+        {
+          "end": "2026-03-17",
+          "play": "Thunder vs. Magic: O/U 220.5",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 11.54,
+          "equity": 584.72,
+          "fill": 0.897
+        },
+        {
+          "end": "2026-03-18",
+          "play": "Cavaliers vs. Bucks",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 24.92,
+          "equity": 609.64,
+          "fill": 0.801
+        },
+        {
+          "end": "2026-03-18",
+          "play": "Stephen F. Austin Lumberjacks vs. Tulsa Golden Hurricane",
+          "username": "Capman",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 509.64,
+          "fill": 0.426
+        },
+        {
+          "end": "2026-03-19",
+          "play": "Clippers vs. Pelicans",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 14.94,
+          "equity": 524.59,
+          "fill": 0.87
+        },
+        {
+          "end": "2026-03-19",
+          "play": "Texas A&M Aggies vs. Saint Mary's Gaels",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 14.91,
+          "equity": 539.49,
+          "fill": 0.87
+        },
+        {
+          "end": "2026-03-19",
+          "play": "TCU Horned Frogs vs. Ohio State Buckeyes",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 51.9,
+          "equity": 591.39,
+          "fill": 0.658
+        },
+        {
+          "end": "2026-03-19",
+          "play": "Magic vs. Hornets",
+          "username": "Capman",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 491.39,
+          "fill": 0.36
+        },
+        {
+          "end": "2026-03-19",
+          "play": "McNeese State Cowboys vs. Vanderbilt Commodores: O/U 147.5",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 58.7,
+          "equity": 550.09,
+          "fill": 0.63
+        },
+        {
+          "end": "2026-03-19",
+          "play": "VCU Rams vs. North Carolina Tar Heels",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 111.36,
+          "equity": 661.45,
+          "fill": 0.473
+        },
+        {
+          "end": "2026-03-20",
+          "play": "Spread: Virginia Cavaliers (-5.5)",
+          "username": "Capman",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 561.45,
+          "fill": 0.593
+        },
+        {
+          "end": "2026-03-20",
+          "play": "Santa Clara Broncos vs. Kentucky Wildcats",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 101.86,
+          "equity": 663.31,
+          "fill": 0.495
+        },
+        {
+          "end": "2026-03-20",
+          "play": "Iowa Hawkeyes vs. Clemson Tigers: O/U 128.5",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 21.23,
+          "equity": 684.53,
+          "fill": 0.825
+        },
+        {
+          "end": "2026-03-21",
+          "play": "Vanderbilt Commodores vs. Nebraska Cornhuskers",
+          "username": "Capman",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 584.53,
+          "fill": 0.732
+        },
+        {
+          "end": "2026-03-21",
+          "play": "Texas Longhorns vs. Gonzaga Bulldogs: O/U 141.5",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 71.17,
+          "equity": 655.7,
+          "fill": 0.584
+        },
+        {
+          "end": "2026-03-21",
+          "play": "Spread: Florida Gators (-35.5)",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 95.38,
+          "equity": 751.08,
+          "fill": 0.512
+        },
+        {
+          "end": "2026-03-21",
+          "play": "Lakers vs. Magic",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 46.38,
+          "equity": 797.46,
+          "fill": 0.683
+        },
+        {
+          "end": "2026-03-21",
+          "play": "High Point Panthers vs. Arkansas Razorbacks",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 42.16,
+          "equity": 839.62,
+          "fill": 0.703
+        },
+        {
+          "end": "2026-03-21",
+          "play": "Lakers vs. Magic: O/U 234.5",
+          "username": "Capman",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 739.62,
+          "fill": 0.53
+        },
+        {
+          "end": "2026-03-22",
+          "play": "Kentucky Wildcats vs. Iowa State Cyclones: O/U 146.5",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 23.4,
+          "equity": 763.02,
+          "fill": 0.81
+        },
+        {
+          "end": "2026-03-22",
+          "play": "Miami Hurricanes vs. Purdue Boilermakers: O/U 147.5",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 40.06,
+          "equity": 803.08,
+          "fill": 0.714
+        },
+        {
+          "end": "2026-03-23",
+          "play": "Raptors vs. Suns",
+          "username": "Capman",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 703.08,
+          "fill": 0.3
+        },
+        {
+          "end": "2026-03-23",
+          "play": "Timberwolves vs. Celtics",
+          "username": "Capman",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 603.08,
+          "fill": 0.52
+        },
+        {
+          "end": "2026-03-23",
+          "play": "Lakers vs. Pistons",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 27.73,
+          "equity": 630.82,
+          "fill": 0.783
+        },
+        {
+          "end": "2026-03-24",
+          "play": "Blue Jackets vs. Flyers",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 63.91,
+          "equity": 694.73,
+          "fill": 0.61
+        },
+        {
+          "end": "2026-03-25",
+          "play": "Miami Open: Aleksandar Kovacevic vs Rei Sakamoto",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 79.04,
+          "equity": 773.77,
+          "fill": 0.559
+        },
+        {
+          "end": "2026-03-26",
+          "play": "Nebraska Cornhuskers vs. Iowa Hawkeyes",
+          "username": "Capman",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 673.77,
+          "fill": 0.63
+        },
+        {
+          "end": "2026-03-26",
+          "play": "Nets vs. Warriors",
+          "username": "Capman",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 573.77,
+          "fill": 0.239
+        },
+        {
+          "end": "2026-03-26",
+          "play": "Miami Open: Valentin Royer vs Thiago Agustin Tirante",
+          "username": "Capman",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 473.77,
+          "fill": 0.304
+        },
+        {
+          "end": "2026-03-26",
+          "play": "Wild vs. Panthers",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 18.84,
+          "equity": 492.61,
+          "fill": 0.841
+        },
+        {
+          "end": "2026-03-26",
+          "play": "Nets vs. Warriors",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 44.01,
+          "equity": 536.62,
+          "fill": 0.694
+        },
+        {
+          "end": "2026-03-26",
+          "play": "Miami Open: Valentin Royer vs Thiago Agustin Tirante",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 26.7,
+          "equity": 563.31,
+          "fill": 0.789
+        },
+        {
+          "end": "2026-03-27",
+          "play": "Miami Open: Tommy Paul vs Adrian Mannarino",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 38.34,
+          "equity": 601.66,
+          "fill": 0.723
+        },
+        {
+          "end": "2026-03-27",
+          "play": "Clippers vs. Pacers",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 25.19,
+          "equity": 626.85,
+          "fill": 0.799
+        },
+        {
+          "end": "2026-03-27",
+          "play": "Tennessee Volunteers vs. Iowa State Cyclones",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 103.25,
+          "equity": 730.1,
+          "fill": 0.492
+        },
+        {
+          "end": "2026-03-28",
+          "play": "76ers vs. Hornets",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 134.02,
+          "equity": 864.11,
+          "fill": 0.427
+        },
+        {
+          "end": "2026-03-28",
+          "play": "Michigan State Spartans vs. Connecticut Huskies",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 25.58,
+          "equity": 889.7,
+          "fill": 0.796
+        },
+        {
+          "end": "2026-03-28",
+          "play": "Illinois Fighting Illini vs. Iowa Hawkeyes",
+          "username": "Capman",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 789.7,
+          "fill": 0.311
+        },
+        {
+          "end": "2026-03-28",
+          "play": "Tennessee Volunteers vs. Iowa State Cyclones: O/U 138.5",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 17.69,
+          "equity": 807.38,
+          "fill": 0.85
+        },
+        {
+          "end": "2026-03-28",
+          "play": "76ers vs. Hornets",
+          "username": "Capman",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 707.38,
+          "fill": 0.265
+        },
+        {
+          "end": "2026-03-28",
+          "play": "Jets vs. Avalanche",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 11.32,
+          "equity": 718.7,
+          "fill": 0.898
+        },
+        {
+          "end": "2026-03-28",
+          "play": "Illinois Fighting Illini vs. Iowa Hawkeyes",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 35.91,
+          "equity": 754.61,
+          "fill": 0.736
+        },
+        {
+          "end": "2026-03-29",
+          "play": "Spread: Clippers (-13.5)",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 22.91,
+          "equity": 777.53,
+          "fill": 0.814
+        },
+        {
+          "end": "2026-03-29",
+          "play": "Miami Open: Tommy Paul vs Raphael Collignon",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 15.46,
+          "equity": 792.98,
+          "fill": 0.866
+        },
+        {
+          "end": "2026-03-29",
+          "play": "Miami Open: Carlos Alcaraz vs Sebastian Korda",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 68.83,
+          "equity": 861.82,
+          "fill": 0.592
+        },
+        {
+          "end": "2026-03-29",
+          "play": "Spread: Michigan Wolverines (-7.5)",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 14.94,
+          "equity": 876.76,
+          "fill": 0.87
+        },
+        {
+          "end": "2026-03-29",
+          "play": "Spread: Trail Blazers (-19.5)",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 100.52,
+          "equity": 977.28,
+          "fill": 0.499
+        },
+        {
+          "end": "2026-03-29",
+          "play": "UFC Fight Night: Ignacio Bahamondes vs. Tofiq Musayev (Lightweight, Prelims)",
+          "username": "Capman",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 877.28,
+          "fill": 0.547
+        },
+        {
+          "end": "2026-03-30",
+          "play": "76ers vs. Heat",
+          "username": "Capman",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 777.28,
+          "fill": 0.72
+        },
+        {
+          "end": "2026-03-31",
+          "play": "Bulls vs. Spurs: O/U 242.5",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 17.15,
+          "equity": 794.43,
+          "fill": 0.854
+        },
+        {
+          "end": "2026-03-31",
+          "play": "Pistons vs. Thunder",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 23.8,
+          "equity": 818.23,
+          "fill": 0.808
+        },
+        {
+          "end": "2026-03-31",
+          "play": "Suns vs. Magic",
+          "username": "Capman",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 718.23,
+          "fill": 0.52
+        },
+        {
+          "end": "2026-04-04",
+          "play": "Credit One Charleston Open, Qualification: Aliona Bolsova vs Ekaterine Gorgodze",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 82.68,
+          "equity": 800.92,
+          "fill": 0.547
+        },
+        {
+          "end": "2026-04-05",
+          "play": "Colorado Rockies vs. Miami Marlins",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 85.76,
+          "equity": 886.68,
+          "fill": 0.538
+        },
+        {
+          "end": "2026-04-07",
+          "play": "San Francisco Giants vs. San Diego Padres",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 18.64,
+          "equity": 905.31,
+          "fill": 0.843
+        },
+        {
+          "end": "2026-04-08",
+          "play": "Texas Rangers vs. Baltimore Orioles",
+          "username": "Capman",
+          "won": true,
+          "pnl_2c": 17.64,
+          "equity": 922.95,
+          "fill": 0.85
+        }
+      ],
+      "equity_end": 922.95,
+      "source": "as-of take rule, VWAP+2¢, hold-to-resolution"
+    },
+    {
+      "username": "HedgeMaster88",
+      "wallet": "0x036c159d5a348058a81066a76b89f35926d4178d",
+      "display_name": "HedgeMaster88",
+      "n": 20,
+      "wins": 10,
+      "losses": 10,
+      "win_rate": 50.0,
+      "roi_2c": -16.66,
+      "pnl_2c": -333.2,
+      "max_dd": -558.49,
+      "sharpe_daily_roi": 0.0,
+      "first": "2026-03-14",
+      "last": "2026-03-23",
+      "equity_curve": [
+        {
+          "end": "2026-03-14",
+          "play": "Atlanta United FC vs. Philadelphia Union: O/U 2.5",
+          "username": "HedgeMaster88",
+          "won": true,
+          "pnl_2c": 92.13,
+          "equity": 92.13,
+          "fill": 0.52
+        },
+        {
+          "end": "2026-03-14",
+          "play": "Will Chelsea FC win on 2026-03-14?",
+          "username": "HedgeMaster88",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": -7.87,
+          "fill": 0.57
+        },
+        {
+          "end": "2026-03-14",
+          "play": "Charlotte FC vs. Inter Miami CF: O/U 2.5",
+          "username": "HedgeMaster88",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": -107.87,
+          "fill": 0.6
+        },
+        {
+          "end": "2026-03-14",
+          "play": "Will Real Madrid CF win on 2026-03-14?",
+          "username": "HedgeMaster88",
+          "won": true,
+          "pnl_2c": 28.21,
+          "equity": -79.67,
+          "fill": 0.78
+        },
+        {
+          "end": "2026-03-15",
+          "play": "Will FC Cincinnati win on 2026-03-15?",
+          "username": "HedgeMaster88",
+          "won": true,
+          "pnl_2c": 40.89,
+          "equity": -38.78,
+          "fill": 0.71
+        },
+        {
+          "end": "2026-03-15",
+          "play": "Liverpool FC vs. Tottenham Hotspur FC: O/U 3.5",
+          "username": "HedgeMaster88",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": -138.78,
+          "fill": 0.506
+        },
+        {
+          "end": "2026-03-15",
+          "play": "Will Cruzeiro EC win on 2026-03-15?",
+          "username": "HedgeMaster88",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": -238.78,
+          "fill": 0.526
+        },
+        {
+          "end": "2026-03-15",
+          "play": "Will Stade Rennais FC 1901 win on 2026-03-15?",
+          "username": "HedgeMaster88",
+          "won": true,
+          "pnl_2c": 72.41,
+          "equity": -166.36,
+          "fill": 0.58
+        },
+        {
+          "end": "2026-03-15",
+          "play": "Liverpool FC vs. Tottenham Hotspur FC: O/U 2.5",
+          "username": "HedgeMaster88",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": -266.36,
+          "fill": 0.73
+        },
+        {
+          "end": "2026-03-17",
+          "play": "Will Real Madrid CF win on 2026-03-17?",
+          "username": "HedgeMaster88",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": -366.36,
+          "fill": 0.85
+        },
+        {
+          "end": "2026-03-17",
+          "play": "Manchester City FC vs. Real Madrid CF: Both Teams to Score",
+          "username": "HedgeMaster88",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": -466.36,
+          "fill": 0.444
+        },
+        {
+          "end": "2026-03-19",
+          "play": "FC Porto vs. VfB Stuttgart: O/U 2.5",
+          "username": "HedgeMaster88",
+          "won": true,
+          "pnl_2c": 98.33,
+          "equity": -368.03,
+          "fill": 0.504
+        },
+        {
+          "end": "2026-03-19",
+          "play": "Will FC Midtjylland vs. Nottingham Forest FC end in a draw?",
+          "username": "HedgeMaster88",
+          "won": true,
+          "pnl_2c": 35.14,
+          "equity": -332.9,
+          "fill": 0.74
+        },
+        {
+          "end": "2026-03-21",
+          "play": "Will Columbus Crew win on 2026-03-21?",
+          "username": "HedgeMaster88",
+          "won": true,
+          "pnl_2c": 68.76,
+          "equity": -264.14,
+          "fill": 0.593
+        },
+        {
+          "end": "2026-03-21",
+          "play": "Philadelphia Union vs. Chicago Fire FC: O/U 2.5",
+          "username": "HedgeMaster88",
+          "won": true,
+          "pnl_2c": 85.19,
+          "equity": -178.95,
+          "fill": 0.54
+        },
+        {
+          "end": "2026-03-21",
+          "play": "Nashville SC vs. Orlando City SC: O/U 2.5",
+          "username": "HedgeMaster88",
+          "won": true,
+          "pnl_2c": 60.09,
+          "equity": -118.87,
+          "fill": 0.625
+        },
+        {
+          "end": "2026-03-22",
+          "play": "Will Real Madrid CF win on 2026-03-22?",
+          "username": "HedgeMaster88",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": -218.87,
+          "fill": 0.517
+        },
+        {
+          "end": "2026-03-22",
+          "play": "Will San Diego FC win on 2026-03-22?",
+          "username": "HedgeMaster88",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": -318.87,
+          "fill": 0.519
+        },
+        {
+          "end": "2026-03-22",
+          "play": "FC Nantes vs. RC Strasbourg Alsace: O/U 2.5",
+          "username": "HedgeMaster88",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": -418.87,
+          "fill": 0.529
+        },
+        {
+          "end": "2026-03-23",
+          "play": "Will AA Argentinos Juniors win on 2026-03-22?",
+          "username": "HedgeMaster88",
+          "won": true,
+          "pnl_2c": 85.67,
+          "equity": -333.2,
+          "fill": 0.539
+        }
+      ],
+      "equity_end": -333.2,
+      "source": "as-of take rule, VWAP+2¢, hold-to-resolution"
+    },
+    {
+      "username": "Supah9ga",
+      "wallet": "0x57cd939930fd119067ca9dc42b22b3e15708a0fb",
+      "display_name": "Supah9ga",
+      "n": 11,
+      "wins": 4,
+      "losses": 7,
+      "win_rate": 36.36,
+      "roi_2c": -19.92,
+      "pnl_2c": -219.07,
+      "max_dd": -663.01,
+      "sharpe_daily_roi": 0.0,
+      "first": "2026-03-22",
+      "last": "2026-04-13",
+      "equity_curve": [
+        {
+          "end": "2026-03-22",
+          "play": "Will Newcastle United FC win on 2026-03-22?",
+          "username": "Supah9ga",
+          "won": true,
+          "pnl_2c": 156.41,
+          "equity": 156.41,
+          "fill": 0.39
+        },
+        {
+          "end": "2026-03-22",
+          "play": "Will Stade Rennais FC 1901 win on 2026-03-22?",
+          "username": "Supah9ga",
+          "won": true,
+          "pnl_2c": 275.35,
+          "equity": 431.76,
+          "fill": 0.266
+        },
+        {
+          "end": "2026-03-22",
+          "play": "Will AS Roma win on 2026-03-22?",
+          "username": "Supah9ga",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 331.76,
+          "fill": 0.36
+        },
+        {
+          "end": "2026-03-22",
+          "play": "Will Real Madrid CF win on 2026-03-22?",
+          "username": "Supah9ga",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 231.76,
+          "fill": 0.527
+        },
+        {
+          "end": "2026-03-22",
+          "play": "Will Club Atlético de Madrid win on 2026-03-22?",
+          "username": "Supah9ga",
+          "won": true,
+          "pnl_2c": 36.99,
+          "equity": 268.75,
+          "fill": 0.73
+        },
+        {
+          "end": "2026-04-03",
+          "play": "Will Paris Saint-Germain FC win on 2026-04-03?",
+          "username": "Supah9ga",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 168.75,
+          "fill": 0.26
+        },
+        {
+          "end": "2026-04-04",
+          "play": "Will FC Bayern München win on 2026-04-04?",
+          "username": "Supah9ga",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": 68.75,
+          "fill": 0.375
+        },
+        {
+          "end": "2026-04-05",
+          "play": "Will FC Internazionale Milano win on 2026-04-05?",
+          "username": "Supah9ga",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": -31.25,
+          "fill": 0.41
+        },
+        {
+          "end": "2026-04-12",
+          "play": "Will VfB Stuttgart win on 2026-04-12?",
+          "username": "Supah9ga",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": -131.25,
+          "fill": 0.26
+        },
+        {
+          "end": "2026-04-13",
+          "play": "Will Rory McIlroy win the 2026 Masters tournament?",
+          "username": "Supah9ga",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": -231.25,
+          "fill": 0.32
+        },
+        {
+          "end": "2026-04-13",
+          "play": "Will Scottie Scheffler win the 2026 Masters tournament?",
+          "username": "Supah9ga",
+          "won": true,
+          "pnl_2c": 12.18,
+          "equity": -219.07,
+          "fill": 0.891
+        }
+      ],
+      "equity_end": -219.07,
+      "source": "as-of take rule, VWAP+2¢, hold-to-resolution"
+    },
+    {
+      "username": "Vetch",
+      "wallet": "0x9c82c60829df081d593055ee5fa288870c051f13",
+      "display_name": "Vetch",
+      "n": 7,
+      "wins": 3,
+      "losses": 4,
+      "win_rate": 42.86,
+      "roi_2c": -33.93,
+      "pnl_2c": -237.52,
+      "max_dd": -250.29,
+      "sharpe_daily_roi": 0.0,
+      "first": "2026-03-14",
+      "last": "2026-03-18",
+      "equity_curve": [
+        {
+          "end": "2026-03-14",
+          "play": "Valorant: Paper Rex vs G2 Esports (BO3) - VCT Masters Santiago Playoffs",
+          "username": "Vetch",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": -100.0,
+          "fill": 0.509
+        },
+        {
+          "end": "2026-03-15",
+          "play": "Counter-Strike: FUT Esports vs Astralis (BO3) - ESL Pro League Playoffs",
+          "username": "Vetch",
+          "won": true,
+          "pnl_2c": 112.77,
+          "equity": 12.77,
+          "fill": 0.47
+        },
+        {
+          "end": "2026-03-16",
+          "play": "Valorant: Nongshim RedForce vs Paper Rex (BO5) - VCT Masters Santiago Playoffs",
+          "username": "Vetch",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": -87.23,
+          "fill": 0.551
+        },
+        {
+          "end": "2026-03-16",
+          "play": "LoL: G2 Esports vs Team Secret Whales (BO5) - First Stand Group A",
+          "username": "Vetch",
+          "won": true,
+          "pnl_2c": 21.12,
+          "equity": -66.11,
+          "fill": 0.826
+        },
+        {
+          "end": "2026-03-17",
+          "play": "LoL: LYON vs LOUD (BO5) - First Stand Group B",
+          "username": "Vetch",
+          "won": true,
+          "pnl_2c": 28.59,
+          "equity": -37.52,
+          "fill": 0.778
+        },
+        {
+          "end": "2026-03-17",
+          "play": "BNP Paribas Open: Novak Djokovic vs Jack Draper",
+          "username": "Vetch",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": -137.52,
+          "fill": 0.595
+        },
+        {
+          "end": "2026-03-18",
+          "play": "LoL: Bilibili Gaming vs G2 Esports (BO5) - First Stand Group A",
+          "username": "Vetch",
+          "won": false,
+          "pnl_2c": -100.0,
+          "equity": -237.52,
+          "fill": 0.2
+        }
+      ],
+      "equity_end": -237.52,
+      "source": "as-of take rule, VWAP+2¢, hold-to-resolution"
+    }
+  ],
+  "plays": [
+    {
+      "end": "2026-03-14",
+      "play": "Nets vs. 76ers",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 42.86,
+      "equity": 42.86,
+      "fill": 0.7,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-14",
+      "play": "Atlanta United FC vs. Philadelphia Union: O/U 2.5",
+      "username": "HedgeMaster88",
+      "won": true,
+      "pnl_2c": 92.13,
+      "equity": 134.99,
+      "fill": 0.52,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-14",
+      "play": "Will Chelsea FC win on 2026-03-14?",
+      "username": "HedgeMaster88",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 34.99,
+      "fill": 0.57,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-14",
+      "play": "Charlotte FC vs. Inter Miami CF: O/U 2.5",
+      "username": "HedgeMaster88",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": -65.01,
+      "fill": 0.6,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-14",
+      "play": "Will Real Madrid CF win on 2026-03-14?",
+      "username": "HedgeMaster88",
+      "won": true,
+      "pnl_2c": 28.21,
+      "equity": -36.81,
+      "fill": 0.78,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-14",
+      "play": "Valorant: Paper Rex vs G2 Esports (BO3) - VCT Masters Santiago Playoffs",
+      "username": "Vetch",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": -136.81,
+      "fill": 0.509,
+      "display_name": "Vetch"
+    },
+    {
+      "end": "2026-03-15",
+      "play": "Liverpool FC vs. Tottenham Hotspur FC: O/U 2.5",
+      "username": "HedgeMaster88",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": -236.81,
+      "fill": 0.73,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-15",
+      "play": "UFC Fight Night: Brad Tavares vs. Eryk Anders (Middleweight, Prelims)",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 64.77,
+      "equity": -172.04,
+      "fill": 0.607,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-15",
+      "play": "Penn Quakers vs. Yale Bulldogs",
+      "username": "Capman",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": -272.04,
+      "fill": 0.692,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-15",
+      "play": "Counter-Strike: FUT Esports vs Astralis (BO3) - ESL Pro League Playoffs",
+      "username": "Vetch",
+      "won": true,
+      "pnl_2c": 112.77,
+      "equity": -159.27,
+      "fill": 0.47,
+      "display_name": "Vetch"
+    },
+    {
+      "end": "2026-03-15",
+      "play": "UFC Fight Night: Andre Fili vs. Jose Miguel Delgado (Featherweight, Prelims)",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 27.53,
+      "equity": -131.75,
+      "fill": 0.784,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-15",
+      "play": "Penn Quakers vs. Yale Bulldogs",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 114.24,
+      "equity": -17.51,
+      "fill": 0.467,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-15",
+      "play": "Will Stade Rennais FC 1901 win on 2026-03-15?",
+      "username": "HedgeMaster88",
+      "won": true,
+      "pnl_2c": 72.41,
+      "equity": 54.9,
+      "fill": 0.58,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-15",
+      "play": "Will Cruzeiro EC win on 2026-03-15?",
+      "username": "HedgeMaster88",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": -45.1,
+      "fill": 0.526,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-15",
+      "play": "Liverpool FC vs. Tottenham Hotspur FC: O/U 3.5",
+      "username": "HedgeMaster88",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": -145.1,
+      "fill": 0.506,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-15",
+      "play": "Will FC Cincinnati win on 2026-03-15?",
+      "username": "HedgeMaster88",
+      "won": true,
+      "pnl_2c": 40.89,
+      "equity": -104.21,
+      "fill": 0.71,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-15",
+      "play": "Kings vs. Clippers",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 119.46,
+      "equity": 15.25,
+      "fill": 0.456,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-16",
+      "play": "Valorant: Nongshim RedForce vs Paper Rex (BO5) - VCT Masters Santiago Playoffs",
+      "username": "Vetch",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": -84.75,
+      "fill": 0.551,
+      "display_name": "Vetch"
+    },
+    {
+      "end": "2026-03-16",
+      "play": "Warriors vs. Knicks",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 13.69,
+      "equity": -71.06,
+      "fill": 0.88,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-16",
+      "play": "LoL: G2 Esports vs Team Secret Whales (BO5) - First Stand Group A",
+      "username": "Vetch",
+      "won": true,
+      "pnl_2c": 21.12,
+      "equity": -49.94,
+      "fill": 0.826,
+      "display_name": "Vetch"
+    },
+    {
+      "end": "2026-03-16",
+      "play": "Suns vs. Celtics",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 176.58,
+      "equity": 126.64,
+      "fill": 0.362,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-17",
+      "play": "BNP Paribas Open: Novak Djokovic vs Jack Draper",
+      "username": "Vetch",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 26.64,
+      "fill": 0.595,
+      "display_name": "Vetch"
+    },
+    {
+      "end": "2026-03-17",
+      "play": "UNCW Seahawks vs. Yale Bulldogs",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 38.53,
+      "equity": 65.17,
+      "fill": 0.722,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-17",
+      "play": "Spurs vs. Clippers: O/U 232.5",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 25.46,
+      "equity": 90.63,
+      "fill": 0.797,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-17",
+      "play": "LoL: LYON vs LOUD (BO5) - First Stand Group B",
+      "username": "Vetch",
+      "won": true,
+      "pnl_2c": 28.59,
+      "equity": 119.22,
+      "fill": 0.778,
+      "display_name": "Vetch"
+    },
+    {
+      "end": "2026-03-17",
+      "play": "Liberty Flames vs. George Mason Patriots",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 28.12,
+      "equity": 147.35,
+      "fill": 0.78,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-17",
+      "play": "Lakers vs. Rockets",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 21.95,
+      "equity": 169.3,
+      "fill": 0.82,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-17",
+      "play": "Will Real Madrid CF win on 2026-03-17?",
+      "username": "HedgeMaster88",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 69.3,
+      "fill": 0.85,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-17",
+      "play": "Manchester City FC vs. Real Madrid CF: Both Teams to Score",
+      "username": "HedgeMaster88",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": -30.7,
+      "fill": 0.444,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-17",
+      "play": "Thunder vs. Magic: O/U 220.5",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 11.54,
+      "equity": -19.16,
+      "fill": 0.897,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-18",
+      "play": "Cavaliers vs. Bucks",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 24.92,
+      "equity": 5.76,
+      "fill": 0.801,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-18",
+      "play": "LoL: Bilibili Gaming vs G2 Esports (BO5) - First Stand Group A",
+      "username": "Vetch",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": -94.24,
+      "fill": 0.2,
+      "display_name": "Vetch"
+    },
+    {
+      "end": "2026-03-18",
+      "play": "Stephen F. Austin Lumberjacks vs. Tulsa Golden Hurricane",
+      "username": "Capman",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": -194.24,
+      "fill": 0.426,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-19",
+      "play": "Texas A&M Aggies vs. Saint Mary's Gaels",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 14.91,
+      "equity": -179.34,
+      "fill": 0.87,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-19",
+      "play": "Clippers vs. Pelicans",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 14.94,
+      "equity": -164.4,
+      "fill": 0.87,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-19",
+      "play": "Will FC Midtjylland vs. Nottingham Forest FC end in a draw?",
+      "username": "HedgeMaster88",
+      "won": true,
+      "pnl_2c": 35.14,
+      "equity": -129.26,
+      "fill": 0.74,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-19",
+      "play": "FC Porto vs. VfB Stuttgart: O/U 2.5",
+      "username": "HedgeMaster88",
+      "won": true,
+      "pnl_2c": 98.33,
+      "equity": -30.93,
+      "fill": 0.504,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-19",
+      "play": "TCU Horned Frogs vs. Ohio State Buckeyes",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 51.9,
+      "equity": 20.97,
+      "fill": 0.658,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-19",
+      "play": "Magic vs. Hornets",
+      "username": "Capman",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": -79.03,
+      "fill": 0.36,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-19",
+      "play": "McNeese State Cowboys vs. Vanderbilt Commodores: O/U 147.5",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 58.7,
+      "equity": -20.33,
+      "fill": 0.63,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-19",
+      "play": "VCU Rams vs. North Carolina Tar Heels",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 111.36,
+      "equity": 91.03,
+      "fill": 0.473,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-20",
+      "play": "Spread: Virginia Cavaliers (-5.5)",
+      "username": "Capman",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": -8.97,
+      "fill": 0.593,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-20",
+      "play": "Santa Clara Broncos vs. Kentucky Wildcats",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 101.86,
+      "equity": 92.88,
+      "fill": 0.495,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-20",
+      "play": "Iowa Hawkeyes vs. Clemson Tigers: O/U 128.5",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 21.23,
+      "equity": 114.11,
+      "fill": 0.825,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-21",
+      "play": "Lakers vs. Magic",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 46.38,
+      "equity": 160.49,
+      "fill": 0.683,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-21",
+      "play": "Lakers vs. Magic: O/U 234.5",
+      "username": "Capman",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 60.49,
+      "fill": 0.53,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-21",
+      "play": "High Point Panthers vs. Arkansas Razorbacks",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 42.16,
+      "equity": 102.65,
+      "fill": 0.703,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-21",
+      "play": "Spread: Florida Gators (-35.5)",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 95.38,
+      "equity": 198.03,
+      "fill": 0.512,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-21",
+      "play": "Nashville SC vs. Orlando City SC: O/U 2.5",
+      "username": "HedgeMaster88",
+      "won": true,
+      "pnl_2c": 60.09,
+      "equity": 258.12,
+      "fill": 0.625,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-21",
+      "play": "Vanderbilt Commodores vs. Nebraska Cornhuskers",
+      "username": "Capman",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 158.12,
+      "fill": 0.732,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-21",
+      "play": "Will Columbus Crew win on 2026-03-21?",
+      "username": "HedgeMaster88",
+      "won": true,
+      "pnl_2c": 68.76,
+      "equity": 226.88,
+      "fill": 0.593,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-21",
+      "play": "Texas Longhorns vs. Gonzaga Bulldogs: O/U 141.5",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 71.17,
+      "equity": 298.05,
+      "fill": 0.584,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-21",
+      "play": "Philadelphia Union vs. Chicago Fire FC: O/U 2.5",
+      "username": "HedgeMaster88",
+      "won": true,
+      "pnl_2c": 85.19,
+      "equity": 383.23,
+      "fill": 0.54,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-22",
+      "play": "Kentucky Wildcats vs. Iowa State Cyclones: O/U 146.5",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 23.4,
+      "equity": 406.63,
+      "fill": 0.81,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-22",
+      "play": "Will Newcastle United FC win on 2026-03-22?",
+      "username": "Supah9ga",
+      "won": true,
+      "pnl_2c": 156.41,
+      "equity": 563.04,
+      "fill": 0.39,
+      "display_name": "Supah9ga"
+    },
+    {
+      "end": "2026-03-22",
+      "play": "Will Stade Rennais FC 1901 win on 2026-03-22?",
+      "username": "Supah9ga",
+      "won": true,
+      "pnl_2c": 275.35,
+      "equity": 838.39,
+      "fill": 0.266,
+      "display_name": "Supah9ga"
+    },
+    {
+      "end": "2026-03-22",
+      "play": "Will Real Madrid CF win on 2026-03-22?",
+      "username": "HedgeMaster88",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 738.39,
+      "fill": 0.517,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-22",
+      "play": "Will AS Roma win on 2026-03-22?",
+      "username": "Supah9ga",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 638.39,
+      "fill": 0.36,
+      "display_name": "Supah9ga"
+    },
+    {
+      "end": "2026-03-22",
+      "play": "Will Real Madrid CF win on 2026-03-22?",
+      "username": "Supah9ga",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 538.39,
+      "fill": 0.527,
+      "display_name": "Supah9ga"
+    },
+    {
+      "end": "2026-03-22",
+      "play": "Miami Hurricanes vs. Purdue Boilermakers: O/U 147.5",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 40.06,
+      "equity": 578.45,
+      "fill": 0.714,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-22",
+      "play": "Will San Diego FC win on 2026-03-22?",
+      "username": "HedgeMaster88",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 478.45,
+      "fill": 0.519,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-22",
+      "play": "FC Nantes vs. RC Strasbourg Alsace: O/U 2.5",
+      "username": "HedgeMaster88",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 378.45,
+      "fill": 0.529,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-22",
+      "play": "Will Club Atlético de Madrid win on 2026-03-22?",
+      "username": "Supah9ga",
+      "won": true,
+      "pnl_2c": 36.99,
+      "equity": 415.44,
+      "fill": 0.73,
+      "display_name": "Supah9ga"
+    },
+    {
+      "end": "2026-03-23",
+      "play": "Raptors vs. Suns",
+      "username": "Capman",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 315.44,
+      "fill": 0.3,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-23",
+      "play": "Timberwolves vs. Celtics",
+      "username": "Capman",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 215.44,
+      "fill": 0.52,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-23",
+      "play": "Will AA Argentinos Juniors win on 2026-03-22?",
+      "username": "HedgeMaster88",
+      "won": true,
+      "pnl_2c": 85.67,
+      "equity": 301.11,
+      "fill": 0.539,
+      "display_name": "HedgeMaster88"
+    },
+    {
+      "end": "2026-03-23",
+      "play": "Lakers vs. Pistons",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 27.73,
+      "equity": 328.84,
+      "fill": 0.783,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-24",
+      "play": "Blue Jackets vs. Flyers",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 63.91,
+      "equity": 392.75,
+      "fill": 0.61,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-25",
+      "play": "Miami Open: Aleksandar Kovacevic vs Rei Sakamoto",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 79.04,
+      "equity": 471.8,
+      "fill": 0.559,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-26",
+      "play": "Miami Open: Valentin Royer vs Thiago Agustin Tirante",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 26.7,
+      "equity": 498.5,
+      "fill": 0.789,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-26",
+      "play": "Nebraska Cornhuskers vs. Iowa Hawkeyes",
+      "username": "Capman",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 398.5,
+      "fill": 0.63,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-26",
+      "play": "Nets vs. Warriors",
+      "username": "Capman",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 298.5,
+      "fill": 0.239,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-26",
+      "play": "Miami Open: Valentin Royer vs Thiago Agustin Tirante",
+      "username": "Capman",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 198.5,
+      "fill": 0.304,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-26",
+      "play": "Wild vs. Panthers",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 18.84,
+      "equity": 217.33,
+      "fill": 0.841,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-26",
+      "play": "Nets vs. Warriors",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 44.01,
+      "equity": 261.34,
+      "fill": 0.694,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-27",
+      "play": "Tennessee Volunteers vs. Iowa State Cyclones",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 103.25,
+      "equity": 364.59,
+      "fill": 0.492,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-27",
+      "play": "Clippers vs. Pacers",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 25.19,
+      "equity": 389.78,
+      "fill": 0.799,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-27",
+      "play": "Miami Open: Tommy Paul vs Adrian Mannarino",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 38.34,
+      "equity": 428.12,
+      "fill": 0.723,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-28",
+      "play": "Jets vs. Avalanche",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 11.32,
+      "equity": 439.44,
+      "fill": 0.898,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-28",
+      "play": "76ers vs. Hornets",
+      "username": "Capman",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 339.44,
+      "fill": 0.265,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-28",
+      "play": "Illinois Fighting Illini vs. Iowa Hawkeyes",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 35.91,
+      "equity": 375.35,
+      "fill": 0.736,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-28",
+      "play": "Illinois Fighting Illini vs. Iowa Hawkeyes",
+      "username": "Capman",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 275.35,
+      "fill": 0.311,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-28",
+      "play": "Tennessee Volunteers vs. Iowa State Cyclones: O/U 138.5",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 17.69,
+      "equity": 293.04,
+      "fill": 0.85,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-28",
+      "play": "Michigan State Spartans vs. Connecticut Huskies",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 25.58,
+      "equity": 318.62,
+      "fill": 0.796,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-28",
+      "play": "76ers vs. Hornets",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 134.02,
+      "equity": 452.64,
+      "fill": 0.427,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-29",
+      "play": "Spread: Clippers (-13.5)",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 22.91,
+      "equity": 475.55,
+      "fill": 0.814,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-29",
+      "play": "Spread: Trail Blazers (-19.5)",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 100.52,
+      "equity": 576.07,
+      "fill": 0.499,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-29",
+      "play": "UFC Fight Night: Ignacio Bahamondes vs. Tofiq Musayev (Lightweight, Prelims)",
+      "username": "Capman",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 476.07,
+      "fill": 0.547,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-29",
+      "play": "Miami Open: Carlos Alcaraz vs Sebastian Korda",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 68.83,
+      "equity": 544.91,
+      "fill": 0.592,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-29",
+      "play": "Miami Open: Tommy Paul vs Raphael Collignon",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 15.46,
+      "equity": 560.36,
+      "fill": 0.866,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-29",
+      "play": "Spread: Michigan Wolverines (-7.5)",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 14.94,
+      "equity": 575.31,
+      "fill": 0.87,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-30",
+      "play": "76ers vs. Heat",
+      "username": "Capman",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 475.31,
+      "fill": 0.72,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-31",
+      "play": "Bulls vs. Spurs: O/U 242.5",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 17.15,
+      "equity": 492.46,
+      "fill": 0.854,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-31",
+      "play": "Pistons vs. Thunder",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 23.8,
+      "equity": 516.26,
+      "fill": 0.808,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-03-31",
+      "play": "Suns vs. Magic",
+      "username": "Capman",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 416.26,
+      "fill": 0.52,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-04-03",
+      "play": "Will Paris Saint-Germain FC win on 2026-04-03?",
+      "username": "Supah9ga",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 316.26,
+      "fill": 0.26,
+      "display_name": "Supah9ga"
+    },
+    {
+      "end": "2026-04-04",
+      "play": "Credit One Charleston Open, Qualification: Aliona Bolsova vs Ekaterine Gorgodze",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 82.68,
+      "equity": 398.94,
+      "fill": 0.547,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-04-04",
+      "play": "Will FC Bayern München win on 2026-04-04?",
+      "username": "Supah9ga",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 298.94,
+      "fill": 0.375,
+      "display_name": "Supah9ga"
+    },
+    {
+      "end": "2026-04-05",
+      "play": "Colorado Rockies vs. Miami Marlins",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 85.76,
+      "equity": 384.7,
+      "fill": 0.538,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-04-05",
+      "play": "Will FC Internazionale Milano win on 2026-04-05?",
+      "username": "Supah9ga",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 284.7,
+      "fill": 0.41,
+      "display_name": "Supah9ga"
+    },
+    {
+      "end": "2026-04-07",
+      "play": "San Francisco Giants vs. San Diego Padres",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 18.64,
+      "equity": 303.34,
+      "fill": 0.843,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-04-08",
+      "play": "Texas Rangers vs. Baltimore Orioles",
+      "username": "Capman",
+      "won": true,
+      "pnl_2c": 17.64,
+      "equity": 320.98,
+      "fill": 0.85,
+      "display_name": "Capman"
+    },
+    {
+      "end": "2026-04-12",
+      "play": "Will VfB Stuttgart win on 2026-04-12?",
+      "username": "Supah9ga",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 220.98,
+      "fill": 0.26,
+      "display_name": "Supah9ga"
+    },
+    {
+      "end": "2026-04-13",
+      "play": "Will Rory McIlroy win the 2026 Masters tournament?",
+      "username": "Supah9ga",
+      "won": false,
+      "pnl_2c": -100.0,
+      "equity": 120.98,
+      "fill": 0.32,
+      "display_name": "Supah9ga"
+    },
+    {
+      "end": "2026-04-13",
+      "play": "Will Scottie Scheffler win the 2026 Masters tournament?",
+      "username": "Supah9ga",
+      "won": true,
+      "pnl_2c": 12.18,
+      "equity": 133.16,
+      "fill": 0.891,
+      "display_name": "Supah9ga"
+    }
+  ],
+  "equity_curve": [
+    {
+      "t": "2026-03-14",
+      "equity": 42.86,
+      "pnl": 42.86
+    },
+    {
+      "t": "2026-03-14",
+      "equity": 134.99,
+      "pnl": 92.13
+    },
+    {
+      "t": "2026-03-14",
+      "equity": 34.99,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-14",
+      "equity": -65.01,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-14",
+      "equity": -36.81,
+      "pnl": 28.21
+    },
+    {
+      "t": "2026-03-14",
+      "equity": -136.81,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-15",
+      "equity": -236.81,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-15",
+      "equity": -172.04,
+      "pnl": 64.77
+    },
+    {
+      "t": "2026-03-15",
+      "equity": -272.04,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-15",
+      "equity": -159.27,
+      "pnl": 112.77
+    },
+    {
+      "t": "2026-03-15",
+      "equity": -131.75,
+      "pnl": 27.53
+    },
+    {
+      "t": "2026-03-15",
+      "equity": -17.51,
+      "pnl": 114.24
+    },
+    {
+      "t": "2026-03-15",
+      "equity": 54.9,
+      "pnl": 72.41
+    },
+    {
+      "t": "2026-03-15",
+      "equity": -45.1,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-15",
+      "equity": -145.1,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-15",
+      "equity": -104.21,
+      "pnl": 40.89
+    },
+    {
+      "t": "2026-03-15",
+      "equity": 15.25,
+      "pnl": 119.46
+    },
+    {
+      "t": "2026-03-16",
+      "equity": -84.75,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-16",
+      "equity": -71.06,
+      "pnl": 13.69
+    },
+    {
+      "t": "2026-03-16",
+      "equity": -49.94,
+      "pnl": 21.12
+    },
+    {
+      "t": "2026-03-16",
+      "equity": 126.64,
+      "pnl": 176.58
+    },
+    {
+      "t": "2026-03-17",
+      "equity": 26.64,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-17",
+      "equity": 65.17,
+      "pnl": 38.53
+    },
+    {
+      "t": "2026-03-17",
+      "equity": 90.63,
+      "pnl": 25.46
+    },
+    {
+      "t": "2026-03-17",
+      "equity": 119.22,
+      "pnl": 28.59
+    },
+    {
+      "t": "2026-03-17",
+      "equity": 147.35,
+      "pnl": 28.12
+    },
+    {
+      "t": "2026-03-17",
+      "equity": 169.3,
+      "pnl": 21.95
+    },
+    {
+      "t": "2026-03-17",
+      "equity": 69.3,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-17",
+      "equity": -30.7,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-17",
+      "equity": -19.16,
+      "pnl": 11.54
+    },
+    {
+      "t": "2026-03-18",
+      "equity": 5.76,
+      "pnl": 24.92
+    },
+    {
+      "t": "2026-03-18",
+      "equity": -94.24,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-18",
+      "equity": -194.24,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-19",
+      "equity": -179.34,
+      "pnl": 14.91
+    },
+    {
+      "t": "2026-03-19",
+      "equity": -164.4,
+      "pnl": 14.94
+    },
+    {
+      "t": "2026-03-19",
+      "equity": -129.26,
+      "pnl": 35.14
+    },
+    {
+      "t": "2026-03-19",
+      "equity": -30.93,
+      "pnl": 98.33
+    },
+    {
+      "t": "2026-03-19",
+      "equity": 20.97,
+      "pnl": 51.9
+    },
+    {
+      "t": "2026-03-19",
+      "equity": -79.03,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-19",
+      "equity": -20.33,
+      "pnl": 58.7
+    },
+    {
+      "t": "2026-03-19",
+      "equity": 91.03,
+      "pnl": 111.36
+    },
+    {
+      "t": "2026-03-20",
+      "equity": -8.97,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-20",
+      "equity": 92.88,
+      "pnl": 101.86
+    },
+    {
+      "t": "2026-03-20",
+      "equity": 114.11,
+      "pnl": 21.23
+    },
+    {
+      "t": "2026-03-21",
+      "equity": 160.49,
+      "pnl": 46.38
+    },
+    {
+      "t": "2026-03-21",
+      "equity": 60.49,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-21",
+      "equity": 102.65,
+      "pnl": 42.16
+    },
+    {
+      "t": "2026-03-21",
+      "equity": 198.03,
+      "pnl": 95.38
+    },
+    {
+      "t": "2026-03-21",
+      "equity": 258.12,
+      "pnl": 60.09
+    },
+    {
+      "t": "2026-03-21",
+      "equity": 158.12,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-21",
+      "equity": 226.88,
+      "pnl": 68.76
+    },
+    {
+      "t": "2026-03-21",
+      "equity": 298.05,
+      "pnl": 71.17
+    },
+    {
+      "t": "2026-03-21",
+      "equity": 383.23,
+      "pnl": 85.19
+    },
+    {
+      "t": "2026-03-22",
+      "equity": 406.63,
+      "pnl": 23.4
+    },
+    {
+      "t": "2026-03-22",
+      "equity": 563.04,
+      "pnl": 156.41
+    },
+    {
+      "t": "2026-03-22",
+      "equity": 838.39,
+      "pnl": 275.35
+    },
+    {
+      "t": "2026-03-22",
+      "equity": 738.39,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-22",
+      "equity": 638.39,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-22",
+      "equity": 538.39,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-22",
+      "equity": 578.45,
+      "pnl": 40.06
+    },
+    {
+      "t": "2026-03-22",
+      "equity": 478.45,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-22",
+      "equity": 378.45,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-22",
+      "equity": 415.44,
+      "pnl": 36.99
+    },
+    {
+      "t": "2026-03-23",
+      "equity": 315.44,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-23",
+      "equity": 215.44,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-23",
+      "equity": 301.11,
+      "pnl": 85.67
+    },
+    {
+      "t": "2026-03-23",
+      "equity": 328.84,
+      "pnl": 27.73
+    },
+    {
+      "t": "2026-03-24",
+      "equity": 392.75,
+      "pnl": 63.91
+    },
+    {
+      "t": "2026-03-25",
+      "equity": 471.8,
+      "pnl": 79.04
+    },
+    {
+      "t": "2026-03-26",
+      "equity": 498.5,
+      "pnl": 26.7
+    },
+    {
+      "t": "2026-03-26",
+      "equity": 398.5,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-26",
+      "equity": 298.5,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-26",
+      "equity": 198.5,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-26",
+      "equity": 217.33,
+      "pnl": 18.84
+    },
+    {
+      "t": "2026-03-26",
+      "equity": 261.34,
+      "pnl": 44.01
+    },
+    {
+      "t": "2026-03-27",
+      "equity": 364.59,
+      "pnl": 103.25
+    },
+    {
+      "t": "2026-03-27",
+      "equity": 389.78,
+      "pnl": 25.19
+    },
+    {
+      "t": "2026-03-27",
+      "equity": 428.12,
+      "pnl": 38.34
+    },
+    {
+      "t": "2026-03-28",
+      "equity": 439.44,
+      "pnl": 11.32
+    },
+    {
+      "t": "2026-03-28",
+      "equity": 339.44,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-28",
+      "equity": 375.35,
+      "pnl": 35.91
+    },
+    {
+      "t": "2026-03-28",
+      "equity": 275.35,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-28",
+      "equity": 293.04,
+      "pnl": 17.69
+    },
+    {
+      "t": "2026-03-28",
+      "equity": 318.62,
+      "pnl": 25.58
+    },
+    {
+      "t": "2026-03-28",
+      "equity": 452.64,
+      "pnl": 134.02
+    },
+    {
+      "t": "2026-03-29",
+      "equity": 475.55,
+      "pnl": 22.91
+    },
+    {
+      "t": "2026-03-29",
+      "equity": 576.07,
+      "pnl": 100.52
+    },
+    {
+      "t": "2026-03-29",
+      "equity": 476.07,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-29",
+      "equity": 544.91,
+      "pnl": 68.83
+    },
+    {
+      "t": "2026-03-29",
+      "equity": 560.36,
+      "pnl": 15.46
+    },
+    {
+      "t": "2026-03-29",
+      "equity": 575.31,
+      "pnl": 14.94
+    },
+    {
+      "t": "2026-03-30",
+      "equity": 475.31,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-03-31",
+      "equity": 492.46,
+      "pnl": 17.15
+    },
+    {
+      "t": "2026-03-31",
+      "equity": 516.26,
+      "pnl": 23.8
+    },
+    {
+      "t": "2026-03-31",
+      "equity": 416.26,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-04-03",
+      "equity": 316.26,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-04-04",
+      "equity": 398.94,
+      "pnl": 82.68
+    },
+    {
+      "t": "2026-04-04",
+      "equity": 298.94,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-04-05",
+      "equity": 384.7,
+      "pnl": 85.76
+    },
+    {
+      "t": "2026-04-05",
+      "equity": 284.7,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-04-07",
+      "equity": 303.34,
+      "pnl": 18.64
+    },
+    {
+      "t": "2026-04-08",
+      "equity": 320.98,
+      "pnl": 17.64
+    },
+    {
+      "t": "2026-04-12",
+      "equity": 220.98,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-04-13",
+      "equity": 120.98,
+      "pnl": -100.0
+    },
+    {
+      "t": "2026-04-13",
+      "equity": 133.16,
+      "pnl": 12.18
+    }
+  ],
+  "blocked": [
+    {
+      "username": "0x8a3aB8120807bD64a3De48695110e390fa2ceB9a",
+      "wallet": "0x8a3ab8120807bd64a3de48695110e390fa2ceb9a",
+      "display_name": "8a3a",
+      "why": "no trader CSV on disk — not zero-filled"
+    },
+    {
+      "username": "HVAB",
+      "wallet": "0x8546a601f7c7cc3dae7141f20b0e09e42bbf35b8",
+      "display_name": "HVAB",
+      "why": "no trader CSV on disk — not zero-filled"
+    }
+  ],
+  "stake": 100.0,
+  "how_to_read": "n is tickets the live take rule would have taken in the last 30d of resolved unique-book tape. ROI/PnL are unit $100 at VWAP+2¢. Blocked names have no honest tape — do not treat them as 0-0."
+}

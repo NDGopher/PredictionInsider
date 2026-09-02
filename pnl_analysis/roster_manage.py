@@ -10,6 +10,7 @@ Operations:
   scout     Show scout candidates and optionally add to watch
   list      List all traders by status
   stale     Auto-bench traders with no joinable prints in 90+ days
+  auto      Apply activity+equity promote/demote (see auto_promote.py)
 
 Examples:
   python roster_manage.py add 0x1234... "NewTrader" --why "Strong +ROI curve, recent 30d"
@@ -579,6 +580,19 @@ def cmd_scout(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_auto(args: argparse.Namespace) -> int:
+    """Apply promote/demote/bench from activity + equity (auto_promote.py)."""
+    from auto_promote import apply_promotions
+
+    payload = apply_promotions(dry_run=bool(args.dry_run))
+    c = payload.get("counts") or {}
+    print(
+        f"[roster auto] promoted={c.get('promoted')} demoted={c.get('demoted')} "
+        f"benched={c.get('benched')} watched={c.get('watched')}"
+    )
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Manage the live copy roster without code changes",
@@ -632,6 +646,9 @@ def main() -> int:
     p_scout.add_argument("--max-new", type=int, default=10, help="Max candidates to show")
     p_scout.add_argument("--write", action="store_true", help="Add candidates to roster as scouts")
 
+    p_auto = subparsers.add_parser("auto", help="Apply activity+equity promote/demote")
+    p_auto.add_argument("--dry-run", action="store_true", help="Do not write extra_traders.json")
+
     args = parser.parse_args()
 
     commands = {
@@ -643,6 +660,7 @@ def main() -> int:
         "list": cmd_list,
         "stale": cmd_stale,
         "scout": cmd_scout,
+        "auto": cmd_auto,
     }
 
     return commands[args.command](args)

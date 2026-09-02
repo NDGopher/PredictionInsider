@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ExternalLink, Flame, PauseCircle, Radio } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
+import { englishName } from "@/lib/traderDisplay";
 
 interface PriceFmt {
   price: number;
@@ -69,6 +70,7 @@ interface TakePlaysResponse {
   pauseReason?: string | null;
   live?: TakePlay[];
   near?: TakePlay[];
+  skip?: TakePlay[];
   csvOpen?: { live?: TakePlay[]; near?: TakePlay[] };
   telegramConfigured?: boolean;
   quotesAt?: number | null;
@@ -153,7 +155,7 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
     <Card data-testid={take ? "card-take-play" : "card-near-play"}>
       <CardContent className="p-4 space-y-2">
         <div className="flex flex-wrap items-center gap-1.5">
-          {take ? <Badge>TAKE</Badge> : <Badge variant="outline">NEAR</Badge>}
+          {take ? <Badge>TAKE</Badge> : play.misses.length > 2 ? <Badge variant="secondary">SKIP</Badge> : <Badge variant="outline">NEAR</Badge>}
           <Badge>{play.submarket}</Badge>
           <Badge variant="outline">{play.sport || "—"}</Badge>
           <Badge variant="outline">Q {Math.round(play.q)}</Badge>
@@ -174,7 +176,7 @@ function PlayCard({ play, take }: { play: TakePlay; take: boolean }) {
           <PriceRow label="Their VWAP" price={play.avgEntryPrice} fmt={play.vwapFmt} />
         </div>
         <div className="text-[11px] text-muted-foreground">
-          Decimal = 1/price · American next to it. {play.traders.join(", ") || "matched book"}
+          Decimal = 1/price · American next to it. {(play.traders.map((t) => englishName(t)).join(", ") || "matched book")}
           {play.sportRoi != null ? ` · sport ROI ${play.sportRoi.toFixed(0)}%` : ""}
         </div>
         {!take && play.misses.length > 0 && (
@@ -212,12 +214,14 @@ export default function TakeBookFeed() {
     refetchInterval: 12_000,
   });
 
-  const liveAll = (data?.live || []).filter((p) => p.valid !== false);
+  const liveAll = [...(data?.live || []), ...(data?.csvOpen?.live || [])].filter((p) => p.valid !== false);
   const nearAll = [...(data?.near || []), ...(data?.csvOpen?.near || [])];
+  const skipAll = data?.skip || [];
   const [laneTab, setLaneTab] = useState<"sports" | "other">("sports");
   const inLane = (p: TakePlay) => p.lane !== "futures" && p.submarket !== "Futures" && (p.lane || "sports") === laneTab;
   const live = liveAll.filter(inLane);
   const near = nearAll.filter(inLane).slice(0, 8);
+  const skip = skipAll.filter(inLane).slice(0, 6);
   const w30 = data?.health?.windows?.last_30d;
   const w60 = data?.health?.windows?.last_60d;
   const w90 = data?.health?.windows?.last_90d;
@@ -280,6 +284,7 @@ export default function TakeBookFeed() {
             <Badge variant="outline">Telegram off — set TELEGRAM_BOT_TOKEN</Badge>
           )}
           <Button size="sm" variant="outline" onClick={() => refetch()}>Refresh</Button>
+          <Link href="/desk" className="text-xs text-primary">Copy desk →</Link>
           <Link href="/bets" className="text-xs text-primary">My Bets →</Link>
           <Link href="/strategies" className="text-xs text-primary">Research →</Link>
         </div>
@@ -309,8 +314,17 @@ export default function TakeBookFeed() {
 
       {near.length > 0 && (
         <div className="space-y-2">
-          <div className="text-xs uppercase tracking-widest text-muted-foreground">Close — missing one or two gates</div>
+          <div className="text-xs uppercase tracking-widest text-muted-foreground">NEAR — missing one or two gates</div>
           {near.map((p) => (
+            <PlayCard key={p.id} play={p} take={false} />
+          ))}
+        </div>
+      )}
+
+      {skip.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-xs uppercase tracking-widest text-muted-foreground">SKIP — three or more misses, futures, or NFL</div>
+          {skip.map((p) => (
             <PlayCard key={p.id} play={p} take={false} />
           ))}
         </div>
