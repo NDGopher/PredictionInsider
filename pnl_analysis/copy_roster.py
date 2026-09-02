@@ -88,6 +88,19 @@ HARD_SKIP_WALLETS = {
     "0x2005d16a84ceefa912d4e380cd32e7ff827875ea",  # RN1
 }
 
+# Path-B specialist exception: WR 75–85 allowed if walk-forward Elite AND:
+#   curve-book unique≥10%, joinable median, sports specialty, not hedge-MM
+WR_HI_SPECIALIST = 85.0
+ELITE_PATH_B_MIN_UNIQUE_ROI = 10.0
+ELITE_ROSTER_PATH = OUTPUT_DIR / "verified_elite_roster.json"
+
+# Hedge-MM / grinder books excluded from Path-B specialist exception
+PATH_B_EXCLUDED_USERNAMES = {
+    "Vigilant-Environment",
+    "sentrio",
+    "Mysaria",
+}
+
 
 def _load_json(path: Path) -> Any:
     if not path.exists():
@@ -118,6 +131,48 @@ def load_extra_status() -> dict[str, str]:
     return out
 
 
+def load_elite_roster() -> dict[str, dict[str, Any]]:
+    """Load verified_elite_roster.json and return wallet→elite_info map."""
+    data = _load_json(ELITE_ROSTER_PATH)
+    out: dict[str, dict[str, Any]] = {}
+    if not isinstance(data, dict):
+        return out
+    for entry in data.get("elite") or []:
+        if not isinstance(entry, dict):
+            continue
+        w = str(entry.get("wallet") or "").strip().lower()
+        if w:
+            out[w] = entry
+    return out
+
+
+def is_path_b_specialist(
+    username: str, wallet: str, wr: float, roi: float | None, median: float,
+    elite_roster: dict[str, dict[str, Any]],
+) -> tuple[bool, str]:
+    """Check if a trader qualifies for Path-B specialist exception.
+    
+    Path-B: WR 75–85 allowed if:
+      - Walk-forward Elite in verified_elite_roster
+      - curve-book unique ROI ≥10%
+      - joinable median (<$15k)
+      - Not in PATH_B_EXCLUDED (hedge-MM / grinder)
+    """
+    if username in PATH_B_EXCLUDED_USERNAMES:
+        return False, "path_b_excluded_grinder_mm"
+    if wr < WR_HI or wr > WR_HI_SPECIALIST:
+        return False, f"wr={wr:.0f}_not_specialist_range"
+    elite_info = elite_roster.get(wallet.lower())
+    if elite_info is None:
+        return False, "not_walkforward_elite"
+    elite_unique = _f(elite_info.get("unique_roi"))
+    if elite_unique is None or elite_unique < ELITE_PATH_B_MIN_UNIQUE_ROI:
+        return False, f"elite_unique={elite_unique}_lt_{ELITE_PATH_B_MIN_UNIQUE_ROI}"
+    if median >= MEDIAN_JOIN_MAX:
+        return False, f"median=${median:,.0f}_unjoinable"
+    return True, f"path_b_specialist wr={wr:.0f} elite_unique={elite_unique:.1f}%"
+
+
 def _f(v: Any) -> float | None:
     try:
         if v is None:
@@ -127,7 +182,12 @@ def _f(v: Any) -> float | None:
         return None
 
 
-def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[str, Any]:
+def classify_trader(
+    row: dict[str, Any],
+    extra_status: dict[str, str],
+    elite_roster: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    elite_roster = elite_roster or {}
     username = str(row.get("username") or "")
     wallet = str(row.get("wallet") or "").lower()
     our = row.get("our") or {}
@@ -142,6 +202,19 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
     wr = _f(our.get("win_rate")) or 0.0
     median = _f(our.get("median_stake")) or 0.0
     roi = _f(our.get("roi"))
+    
+    # Elite roster members: use elite roster data if local book is missing
+    elite_info = elite_roster.get(wallet)
+    is_elite_roster = elite_info is not None
+    if is_elite_roster:
+        elite_median = _f(elite_info.get("median"))
+        elite_unique = _f(elite_info.get("unique_roi"))
+        elite_active = int(elite_info.get("active_30d") or 0)
+        # Override median/roi from elite roster if local data is missing
+        if (median <= 0 or median >= 1e8) and elite_median is not None:
+            median = elite_median
+        if roi is None and elite_unique is not None:
+            roi = elite_unique
     try:
         events = int(our.get("events") or 0)
     except (TypeError, ValueError):
@@ -186,19 +259,39 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
         reasons.append("winner_capped")
 
     hard = _is_hard_skip(reasons)
-    joinable = (
-        CLOSED_MIN <= closed <= CLOSED_MAX_COPY
+    # Elite roster members bypass CLOSED_MIN check (walk-forward already validated)
+    closed_ok = (CLOSED_MIN <= closed <= CLOSED_MAX_COPY) or is_elite_roster
+    # Standard joinable: WR 48–75
+    standard_joinable = (
+        closed_ok
         and WR_LO <= wr <= WR_HI
         and median < MEDIAN_JOIN_MAX
         and not hard
         and lane not in {"kicked", "reference"}
     )
-    live = joinable and matched and recency in LIVE_RECENCY
+    # Path-B specialist exception: WR 75–85 for walk-forward Elite
+    path_b_ok, path_b_why = is_path_b_specialist(username, wallet, wr, roi, median, elite_roster)
+    specialist_joinable = (
+        path_b_ok
+        and closed_ok
+        and not hard
+        and lane not in {"kicked", "reference"}
+    )
+    joinable = standard_joinable or specialist_joinable
+    if specialist_joinable and not standard_joinable:
+        reasons.append(path_b_why)
+    if is_elite_roster and not standard_joinable:
+        reasons.append(f"elite_roster_bypass closed={closed}")
+    
+    # Elite roster members bypass matched requirement (walk-forward already validated)
+    live = joinable and (matched or is_elite_roster) and recency in LIVE_RECENCY
     # Plain discovery watch stays off live until auto_promote flips status → take_book.
-    # Once status is take_book/live, this block does not apply.
-    if live and extra == "watch":
+    # Exception: verified_elite_roster elite names skip the watch gate.
+    if live and extra == "watch" and not is_elite_roster:
         reasons.append("extra_watch_pending_auto_promote")
         live = False
+    elif live and extra == "watch" and is_elite_roster:
+        reasons.append("elite_roster_overrides_watch")
     last_30_roi = _f(our.get("last_30d_roi"))
     # Turnaround: lifetime unique ROI can be flat/red while last-30d is strongly green
     # (SDTrading-style). Allow live when HOT/WARM + joinable + last30 gates fire.
@@ -231,8 +324,10 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
         live = False
     bench = False
     # Discovery watch stays watch (fetch + screen) until auto-promoted to take_book.
-    if extra != "watch" and not live and not hard and lane not in {"kicked", "reference"}:
-        if take_book or (matched and CLOSED_MIN <= closed <= CLOSED_MAX_COPY and WR_LO <= wr <= WR_HI):
+    # Exception: elite roster names can go to bench even with watch status.
+    if (extra != "watch" or is_elite_roster) and not live and not hard and lane not in {"kicked", "reference"}:
+        wr_ok = WR_LO <= wr <= WR_HI or (path_b_ok and WR_HI < wr <= WR_HI_SPECIALIST)
+        if take_book or (matched and CLOSED_MIN <= closed <= CLOSED_MAX_COPY and wr_ok):
             bench = True
             if recency in {"DROP", "DARK"}:
                 reasons.append(f"stale_{recency}")
@@ -293,13 +388,14 @@ def classify_trader(row: dict[str, Any], extra_status: dict[str, str]) -> dict[s
 def build_universe() -> dict[str, Any]:
     ranks = _load_json(RANKS_PATH) or {}
     extra_status = load_extra_status()
+    elite_roster = load_elite_roster()
     take = load_take_book()
     traders: list[dict[str, Any]] = []
     seen: set[str] = set()
     for row in ranks.get("traders") or []:
         if not isinstance(row, dict):
             continue
-        classified = classify_trader(row, extra_status)
+        classified = classify_trader(row, extra_status, elite_roster)
         w = classified["wallet"]
         if not w or w in seen:
             continue
@@ -315,7 +411,11 @@ def build_universe() -> dict[str, Any]:
         "method": (
             "Live copy = Polydata-matched, joinable (40–12k closed, WR 48–75, median <$15k), "
             "HOT/WARM, unique-book ROI ≥5%, ≥40 events, ≥8 settled prints in 30d. "
-            "extra_traders status=watch stays discovery until auto_promote flips to take_book. "
+            "Path-B specialist exception: WR 75–85 allowed for walk-forward Elite "
+            "(verified_elite_roster) with curve-book unique≥10%, joinable median, sports specialty. "
+            "Excludes Vigilant-Environment/sentrio/Mysaria (grinder/MM). "
+            "extra_traders status=watch stays discovery until auto_promote flips to take_book "
+            "(exception: verified_elite_roster elite names override watch gate). "
             "Auto-promote is automatic when joinable + HOT/WARM + (unique ROI≥5% or turnaround last30). "
             "Skip = 100k+ Polydata trades, 50k+ CSV rows, MM, kicked grinders, no CSV. "
             "Bench = take-book 12 who are stale, quiet, whale-sized, unique ROI too low, "
@@ -329,6 +429,9 @@ def build_universe() -> dict[str, Any]:
             "closed_max_copy": CLOSED_MAX_COPY,
             "median_join_max": MEDIAN_JOIN_MAX,
             "wr": [WR_LO, WR_HI],
+            "wr_specialist": WR_HI_SPECIALIST,
+            "path_b_min_unique_roi": ELITE_PATH_B_MIN_UNIQUE_ROI,
+            "path_b_excluded": sorted(PATH_B_EXCLUDED_USERNAMES),
             "live_recency": sorted(LIVE_RECENCY),
             "live_min_roi": LIVE_MIN_ROI,
             "live_min_events": LIVE_MIN_EVENTS,

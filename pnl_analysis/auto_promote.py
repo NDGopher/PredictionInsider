@@ -28,15 +28,19 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from copy_roster import (  # noqa: E402
+    ELITE_PATH_B_MIN_UNIQUE_ROI,
     EXTRA_PATH,
     LIVE_MIN_LAST30_N,
     LIVE_MIN_ROI,
     MEDIAN_JOIN_MAX,
     OUTPUT_DIR,
+    PATH_B_EXCLUDED_USERNAMES,
     TAKE_RULE_BLEED_BENCH,
     WR_HI,
+    WR_HI_SPECIALIST,
     WR_LO,
     build_universe,
+    load_elite_roster,
     write_universe,
 )
 from equity_regime import regime_for_trader  # noqa: E402
@@ -78,8 +82,15 @@ def _lab_take(username: str) -> dict[str, Any]:
     return {}
 
 
-def should_auto_live(t: dict[str, Any], regime: dict[str, Any], take: dict[str, Any]) -> tuple[bool, str]:
+def should_auto_live(
+    t: dict[str, Any],
+    regime: dict[str, Any],
+    take: dict[str, Any],
+    elite_roster: dict[str, Any] | None = None,
+) -> tuple[bool, str]:
+    elite_roster = elite_roster or {}
     username = str(t.get("username") or "")
+    wallet = str(t.get("wallet") or "").lower()
     if username in TAKE_RULE_BLEED_BENCH:
         return False, "take_rule_bleed_bench"
     if not t.get("joinable"):
@@ -88,8 +99,21 @@ def should_auto_live(t: dict[str, Any], regime: dict[str, Any], take: dict[str, 
     wr = _f(t.get("win_rate")) or 0.0
     if median >= MEDIAN_JOIN_MAX:
         return False, "whale_median"
-    if not (WR_LO <= wr <= WR_HI):
+    
+    # Path-B specialist: WR 75–85 allowed for walk-forward Elite
+    is_elite = wallet in elite_roster
+    elite_info = elite_roster.get(wallet) or {}
+    elite_unique = _f(elite_info.get("unique_roi"))
+    path_b_ok = (
+        is_elite
+        and username not in PATH_B_EXCLUDED_USERNAMES
+        and WR_HI < wr <= WR_HI_SPECIALIST
+        and elite_unique is not None
+        and elite_unique >= ELITE_PATH_B_MIN_UNIQUE_ROI
+    )
+    if not (WR_LO <= wr <= WR_HI) and not path_b_ok:
         return False, f"wr_out_of_band_{wr}"
+    
     recency = str(t.get("recency") or "")
     if recency not in {"HOT", "WARM"}:
         return False, f"recency_{recency or 'UNKNOWN'}"
@@ -125,6 +149,13 @@ def should_auto_live(t: dict[str, Any], regime: dict[str, Any], take: dict[str, 
             f"auto_live regime={reg} last30={l30_roi}% n={last30_n} "
             f"({regime.get('why')})"
         )
+    
+    # Path B specialist: walk-forward Elite with high WR specialty
+    if path_b_ok and last30_n >= LIVE_MIN_LAST30_N:
+        return True, (
+            f"auto_live path_b_specialist wr={wr:.0f} elite_unique={elite_unique:.1f}% "
+            f"last30_n={last30_n}"
+        )
 
     return False, f"gates_fail life={life_roi} regime={reg} l30={l30_roi}"
 
@@ -132,6 +163,7 @@ def should_auto_live(t: dict[str, Any], regime: dict[str, Any], take: dict[str, 
 def apply_promotions(*, dry_run: bool = False) -> dict[str, Any]:
     uni = build_universe()
     extra = _load_extra()
+    elite_roster = load_elite_roster()
     by_wallet = {str(r.get("wallet") or "").lower(): r for r in extra if isinstance(r, dict)}
     now = datetime.now(timezone.utc).isoformat()
     promoted: list[dict[str, Any]] = []
@@ -171,7 +203,7 @@ def apply_promotions(*, dry_run: bool = False) -> dict[str, Any]:
             continue
         regime = regime_for_trader(wallet, username)
         take = _lab_take(username)
-        ok, why = should_auto_live(t, regime, take)
+        ok, why = should_auto_live(t, regime, take, elite_roster)
         entry = {
             "username": username,
             "wallet": wallet,
@@ -219,6 +251,8 @@ def apply_promotions(*, dry_run: bool = False) -> dict[str, Any]:
         "method": (
             "Automatic watch/bench → take_book when joinable + HOT/WARM + "
             "(unique ROI≥5% or regime turnaround/hot last30≥8% n≥30). "
+            "Path-B specialist: WR 75–85 allowed for walk-forward Elite "
+            "(verified_elite_roster) with unique≥10%, excludes Vigilant-Environment/sentrio/Mysaria. "
             "Take-rule n≥12 with −ROI blocks. Rebuilds copy_universe."
         ),
         "promoted": promoted,
