@@ -346,7 +346,7 @@ export function mapCsvOpenRow(row: Record<string, unknown>): AnnotatedTakePlay {
     side,
     sport,
     submarket,
-    playLabel: formatBetHeadline(pick, submarket, sport),
+    playLabel: title ? `${pick} — ${title}` : formatBetHeadline(pick, submarket, sport),
     pick,
     lane: playLane(sport, submarket),
     outcomeLabel: pick,
