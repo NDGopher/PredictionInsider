@@ -1,17 +1,26 @@
 # Copy desk
 
-The desk is `/desk` plus `/api/desk`. It shows **now** (TAKE / NEAR / SKIP) next to the **last 30 wall-clock days** the same rule would have taken. It does not invent fills or PnL.
+The desk is `/desk` plus `/api/desk`. It is an OddsJam-style board, not only a TAKE strip:
+
+1. **TOP / TAKE** — live copy tickets that pass the take rule (Q≥60, sport ROI, size, 10–88¢, no NFL). Empty TAKE stays honest.
+2. **ALL PLAYS RANKED** — every open book/play from the universe, ranked by edge / Q / size / sport ROI / fillability, with English names and why-this-rank.
+3. **30d would-have + promote reasons + equity** — unchanged.
+
+It does not invent fills or PnL. Postgres is the tape.
+
+Discovery is automatic. The operator does not add/remove traders by hand. `add-username` remains an escape hatch.
 
 ## Ingest architecture
 
 ```
-username / roster
-    → wallet_resolve (address | extra_traders | Gamma public-search | leaderboard)
-    → Polymarket Data API /activity + /trades  (incremental, last-seen cursor)
-    → Postgres desk_fills
+auto_discover (sports/all LB + Gamma public-search + activity/trades heat)
+    → resolve username → proxy trading wallet (never a CSV filename / random EOA)
+    → recommended scouts (unresolved stay blocked — never fake 0-0)
+    → live_ingest → Postgres desk_fills
     → desk_unique_books (BUY VWAP + market resolution / REDEEM)
-    → would_have_30d + auto_promote
-    → /api/desk
+    → would_have_30d + copy_roster + auto_promote gates
+      (scout → watch → take_book / bench)
+    → /api/desk  (TAKE strip + ranked all-plays)
 ```
 
 **Source of truth is Postgres**, not `pnl_analysis/output/*.csv`. Those CSVs are leftover exports and are not the live book.
@@ -29,10 +38,22 @@ username / roster
 
 ### Refresh cadence
 
-- **Desk load** (`GET /api/desk`): if the last kick is older than `PI_DESK_REFRESH_MINUTES` (default **15**), spawn incremental ingest in the background. The request itself queries Postgres/JSON and returns in seconds.
+- **Desk load** (`GET /api/desk`): if the last kick is older than `PI_DESK_REFRESH_MINUTES` (default **15**), spawn auto-discover + incremental ingest in the background. The request itself queries Postgres/JSON and returns in seconds.
 - **Loop**: `startDeskIngestLoop()` on server boot, same 15-minute interval.
 - **Manual**: `POST /api/desk/refresh` or `npm run desk:refresh`.
 - After ingest: `would_have_30d.py` then `copy_roster.py` then `auto_promote.py` on the **fresh** unique books.
+
+### Auto discovery (no UI chore)
+
+`pnl_analysis/auto_discover.py` continuously pulls:
+
+- Polymarket sports / all leaderboards (all / month / week)
+- Gamma `public-search` profiles (`proxyWallet`)
+- Recent `/trades` activity heat
+
+Each handle is resolved to the **proxy trading wallet**. Unresolved names are written to `desk_wallets` with `resolved=false` and shown as blocked — never a silent 0–0 book. Vetted names become **scout**; existing `auto_promote.py` gates move scout → watch → take_book / bench.
+
+`add-username` is still there if you need to force a handle. The desk should fill itself.
 
 ### How wallets are resolved
 

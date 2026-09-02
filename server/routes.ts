@@ -20,7 +20,8 @@ import {
   type TailStrategyFilters,
 } from "./tailStrategies";
 import { collectTakePlays, enrichTakePlaysWithBook, loadLaneBacktest, loadTakeHealthFile, loadTrustedCopyBooks, mapCsvOpenRows, takeStrategyCard, type TakePlayBundle } from "./takePlays";
-import { loadDeskIngestStatus, loadDeskPayload } from "./desk";
+import { attachDeskPlays, deskEnglishName, loadDeskIngestStatus, loadDeskPayload } from "./desk";
+import { rankOpenPlays } from "./rankPlays";
 import { maybeRefreshDeskIngest } from "./deskIngest";
 import { syncTakeBookAlerts, telegramConfigured } from "./telegramTakeAlerts";
 import { cancelUnfilledTake, paperLogTakePlays } from "./paperTakeBets";
@@ -6247,13 +6248,17 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const health = loadTakeHealthFile();
       const csvLive = mapCsvOpenRows(health?.live_open || []);
       const csvNear = mapCsvOpenRows(health?.near_open || []);
+      const universe = [...bundle.live, ...bundle.near, ...bundle.skip, ...csvLive, ...csvNear];
+      const ranked = rankOpenPlays(universe, deskEnglishName);
+      const takeTickets = ranked.filter((p) => p.takeLane === "TAKE");
       const payload = loadDeskPayload({
-        take: bundle.live.length + csvLive.filter((p) => p.take && p.valid).length,
-        near: bundle.near.length + csvNear.length,
-        skip: bundle.skip.length,
+        take: takeTickets.length,
+        near: ranked.filter((p) => p.takeLane === "NEAR").length,
+        skip: ranked.filter((p) => p.takeLane === "SKIP").length,
         paused: bundle.paused,
         pauseReason: bundle.pauseReason,
       });
+      attachDeskPlays(payload, ranked);
       payload.ingest = await loadDeskIngestStatus();
       res.setHeader("Cache-Control", "no-store");
       res.json(payload);

@@ -6,8 +6,11 @@
 import fs from "fs";
 import path from "path";
 import { Pool } from "pg";
-import type { DeskResponse } from "@shared/schema";
+import type { DeskDiscovery, DeskRankedPlay, DeskResponse } from "@shared/schema";
 import { deskIngestFreshness, getDeskRefreshIntervalMs } from "./deskIngest";
+
+export const DESK_RANK_HOW =
+  "Ranked by edge (¢ under take cap) + Q + relative size + sport ROI + fillability (10–88¢ and live ask ≤ cap). NFL/futures score 0 fill. Empty TAKE is honest.";
 
 let tapePool: Pool | null = null;
 
@@ -88,6 +91,10 @@ function num(v: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+export function deskEnglishName(username: string, wallet?: string): string {
+  return englishFromRow(username, wallet);
+}
+
 function englishFromRow(username: unknown, wallet: unknown, display?: unknown): string {
   if (typeof display === "string" && display.trim()) return display;
   const user = String(username || "");
@@ -105,6 +112,38 @@ function englishFromRow(username: unknown, wallet: unknown, display?: unknown): 
     return `Book ${user.replace(/^0x/i, "").slice(0, 4)}`;
   }
   return user || (w ? `Book ${w.replace(/^0x/, "").slice(0, 4)}` : "Book");
+}
+
+export function loadDeskDiscovery(): DeskDiscovery {
+  const disc = loadJson("pnl_analysis/output/discovered_candidates.json") || {};
+  const promo = loadJson("pnl_analysis/output/auto_promote_log.json") || {};
+  const recommended = Array.isArray(disc.recommended) ? (disc.recommended as JsonMap[]) : [];
+  const unresolved = Array.isArray(disc.unresolved) ? (disc.unresolved as JsonMap[]) : [];
+  const scouts = Array.isArray(promo.scouts_added) ? (promo.scouts_added as JsonMap[]) : [];
+  const names = recommended.slice(0, 12).map((r) => ({
+    displayName: englishFromRow(r.username, r.wallet, r.display_name),
+    username: r.username != null ? String(r.username) : undefined,
+    source: r.source != null ? String(r.source) : undefined,
+    why: r.screen_score != null ? `screen ${r.screen_score}` : undefined,
+  }));
+  return {
+    generatedAt: disc.generated_at != null ? String(disc.generated_at) : null,
+    method: String(
+      disc.method
+      || "Leaderboards + public-search + activity heat → proxy wallet → scout. Unresolved stay blocked.",
+    ),
+    recommended: recommended.length,
+    unresolved: unresolved.length,
+    scoutsAdded: scouts.length,
+    names,
+  };
+}
+
+export function attachDeskPlays(payload: DeskResponse, ranked: DeskRankedPlay[]): DeskResponse {
+  payload.rankedPlays = ranked;
+  payload.takeTickets = ranked.filter((p) => p.takeLane === "TAKE");
+  payload.rankHow = DESK_RANK_HOW;
+  return payload;
 }
 
 export function loadDeskPayload(now: {
@@ -262,6 +301,10 @@ export function loadDeskPayload(now: {
     wouldHave,
     plays,
     equityCurve,
+    takeTickets: [],
+    rankedPlays: [],
+    rankHow: DESK_RANK_HOW,
+    discovery: loadDeskDiscovery(),
     actions: {
       promoted: mapAction(promo.promoted),
       demoted: mapAction(promo.demoted),

@@ -216,6 +216,45 @@ export const deskWouldHavePlaySchema = z.object({
   equity: z.number().optional(),
 });
 
+export const deskRankedPlaySchema = z.object({
+  rank: z.number(),
+  rankScore: z.number(),
+  whyRank: z.string(),
+  takeLane: z.enum(["TAKE", "NEAR", "SKIP"]),
+  id: z.string(),
+  displayName: z.string(),
+  traders: z.array(z.string()),
+  playLabel: z.string(),
+  marketQuestion: z.string(),
+  sport: z.string().optional(),
+  submarket: z.string(),
+  q: z.number(),
+  rel: z.number(),
+  sportRoi: z.number().nullable(),
+  edgeCents: z.number(),
+  liveAsk: z.number().nullable(),
+  takeCap: z.number(),
+  fillable: z.boolean(),
+  fillability: z.number(),
+  misses: z.array(z.string()),
+  url: z.string().optional(),
+  slug: z.string().optional(),
+});
+
+export const deskDiscoverySchema = z.object({
+  generatedAt: z.string().nullable(),
+  method: z.string(),
+  recommended: z.number(),
+  unresolved: z.number(),
+  scoutsAdded: z.number(),
+  names: z.array(z.object({
+    displayName: z.string(),
+    username: z.string().optional(),
+    source: z.string().optional(),
+    why: z.string().optional(),
+  })),
+});
+
 export const deskResponseSchema = z.object({
   generatedAt: z.string().nullable(),
   asOf: z.string().nullable(),
@@ -242,6 +281,10 @@ export const deskResponseSchema = z.object({
   wouldHave: z.array(deskTraderWouldHaveSchema),
   plays: z.array(deskWouldHavePlaySchema),
   equityCurve: z.array(deskEquityPointSchema),
+  takeTickets: z.array(deskRankedPlaySchema).optional(),
+  rankedPlays: z.array(deskRankedPlaySchema).optional(),
+  rankHow: z.string().optional(),
+  discovery: deskDiscoverySchema.optional(),
   actions: z.object({
     promoted: z.array(deskActionSchema),
     demoted: z.array(deskActionSchema),
@@ -268,6 +311,8 @@ export type Trader = z.infer<typeof traderSchema>;
 export type DeskResponse = z.infer<typeof deskResponseSchema>;
 export type DeskRosterRow = z.infer<typeof deskRosterRowSchema>;
 export type DeskTraderWouldHave = z.infer<typeof deskTraderWouldHaveSchema>;
+export type DeskRankedPlay = z.infer<typeof deskRankedPlaySchema>;
+export type DeskDiscovery = z.infer<typeof deskDiscoverySchema>;
 export type Trade = z.infer<typeof tradeSchema>;
 export type Signal = z.infer<typeof signalSchema>;
 export type Market = z.infer<typeof marketSchema>;

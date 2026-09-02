@@ -50,6 +50,8 @@ async function runChain(): Promise<void> {
   running = true;
   lastKickMs = Date.now();
   try {
+    console.log("[desk-ingest] auto-discover elites (leaderboard / search / heat)");
+    await spawnStep("pnl_analysis/auto_discover.py", []);
     console.log("[desk-ingest] activity/trades → Postgres (incremental)");
     const ingest = await spawnStep("pnl_analysis/live_ingest.py", ["--copy-focus"]);
     if (ingest !== 0) {
